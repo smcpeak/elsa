@@ -1,0 +1,292 @@
+Index: template.cc
+===================================================================
+--- template.cc	(revision 2431)
++++ template.cc	(working copy)
+@@ -914,7 +914,7 @@
+       CTypePrinter typePrinter0;
+       stringBuilder sb;
+       StringBuilderOutStream sbout0(sb);
+-      typePrinter0.print(sbout0, value.t);
++      typePrinter0.print(sbout0, value.t, "" /*do not print "anon"*/);
+       return sb;
+     }
+     case STA_INT:       return stringc << "/*int*/ " << value.i;
+@@ -2177,6 +2177,35 @@
+ // there is one.
+ void syncDefaultArgsWithDefinition(Variable *instV, TemplateInfo *instTI)
+ {
++  // SGM 2006-09-17: I can't figure out why I wanted to do this in
++  // the first place.  The basic default-args design is:
++  //
++  // * The template primary has the default arg expression, but it has
++  // only been tchecked for parsing and non-depenendent lookup
++  // purposes.
++  //
++  // * When the template is instantiated, the entire primary's AST is
++  // cloned, so the default arg gets cloned too.  But it is still not
++  // fully tchecked.
++  //
++  // * When the default arg is needed (possibly right after
++  // instantiating), it is tchecked in place.  This is at the
++  // declaration site.
++  //
++  // I don't see where the definition gets involved in any of this,
++  // unless it is the only declaration, in which case there is still
++  // no need to explicitly sync b/c that is where the default args are
++  // already.
++  //
++  // Disabling this fixed in/dk0127.cc, which was failing because when
++  // the argument is copied below, I do not clone 'sem->value', but
++  // rather just build an IN_expr on top of it, which breaks the
++  // tree-ness property of the AST.  I wrote a few more tests in
++  // in/t0588.cc, but still can't find a reason to copy the args to
++  // the defn.
++  //
++  #if 0      // disabled; see comments above
++
+   if (!instV->funcDefn || !instTI->instantiateBody) {
+     return;
+   }
+@@ -2208,6 +2237,12 @@
+       continue;       // already transferred
+     }
+ 
++    // NOTE: This line is buggy, as it does not clone sem->value,
++    // which breaks the tree-ness of the AST.  Cloning it alone would
++    // not be enough, though, because the clone would need to be
++    // tchecked.  Anyway, I no longer remember why I wanted to do any
++    // of this, so the whole block of code is disabled.  See the
++    // comments above.
+     d->init = new IN_expr(sem->loc /* not perfect, but it will do */,
+                           sem->value);
+   }
+@@ -2222,6 +2257,8 @@
+     syntactic = syntactic->butFirst();
+   }
+   xassert(!syntactic && semantic.isDone());
++
++  #endif // 0
+ }
+ 
+ 
+@@ -2325,9 +2362,12 @@
+   for (int i = noDefaults+m; i < noDefaults+n+m; i++) {
+     Variable *param = ft->params.nth(i);
+     if (param->value) {
+-      Expression *value0 = param->value;
+-      param->value->tcheck(*this, value0);
+-      param->setValue(value0);
++      // this dance is necessary because Variable::value is const,
++      // forcing updates to go through setValue
++      Expression *tmp = param->value;
++      tmp->tcheck(*this, tmp);
++      param->setValue(tmp);
++
+       instTI->uninstantiatedDefaultArgs--;
+     }
+     else {
+Index: cc_scope.cc
+===================================================================
+--- cc_scope.cc	(revision 2431)
++++ cc_scope.cc	(working copy)
+@@ -1193,18 +1193,60 @@
+   if (!curCompound || !(curCompound->templateInfo())) return sb;
+   TemplateInfo *tinfo = curCompound->templateInfo();
+   if (tinfo->isPrimary()) {
+-    // print the params like arguments for a primary
+-    sb << tinfo->paramsLikeArgsToString();
++    if (tinfo->params.isEmpty()) {
++      // it has template info because it is contained inside a
++      // template, but this class is not itself a template, so do not
++      // print template arguments as if it were
++    }
++    else {
++      // print the params like arguments for a primary
++      sb << tinfo->paramsLikeArgsToString();
++    }
+   }
+   else {
+-    if (tinfo->isInstantiation() &&
+-        tinfo->instantiationOf->templateInfo()->isPartialSpec()) {
+-      // print the partial spec args first, so then the instantiation
+-      // args can be interpreted relative to the partial spec args
+-      fqn_STemplateArgs(sb, tinfo->instantiationOf->templateInfo()->arguments);
++    if (tinfo->isInstantiation()) {
++      if (tinfo->instantiationOf->templateInfo()->isPartialSpec()) {
++        // print the partial spec args first, so then the instantiation
++        // args can be interpreted relative to the partial spec args
++        fqn_STemplateArgs(sb, tinfo->instantiationOf->templateInfo()->arguments);
++      }
++      else {
++        // Kind of a disaster here.  'tinfo->arguments' includes arguments
++        // applied to the templates that enclose this template.  So we
++        // need to just look at the last 'n' arguments where 'n' is the
++        // number of parameters of the template this was actually
++        // instantiated from.
++        //
++        // TODO: The arguments need to be split into two lists.
++
++        // How many arguments should we be printing?
++        int n = tinfo->instantiationOf->templateInfo()->params.count();
++        if (n == 0) {
++          // This isn't even itself a template.
++        }
++        else {
++          // How many arguments do we need to skip?
++          int skip = tinfo->arguments.count() - n;
++          xassert(skip >= 0);
++
++          // set up iterator for skipping
++          SObjList<STemplateArgument> const &slist =
++            objToSObjListC(tinfo->arguments);
++          SObjListIter<STemplateArgument> iter(slist);
++
++          // skip
++          while (skip--) {
++            iter.adv();
++          }
++
++          // finally, print
++          sb << sargsToString(iter);
++        }
++      }
+     }
+-
+-    fqn_STemplateArgs(sb, tinfo->arguments);
++    else {
++      fqn_STemplateArgs(sb, tinfo->arguments);
++    }
+   }
+ 
+   return sb;
+Index: gnu.cc
+===================================================================
+--- gnu.cc	(revision 2431)
++++ gnu.cc	(working copy)
+@@ -34,11 +34,11 @@
+   Type *t_void = getSimpleType(ST_VOID);
+   Type *t_ellipsis_ptr = makePtrType(getSimpleType(ST_ELLIPSIS));
+ //    Type *t_voidconst = getSimpleType(SL_INIT, ST_VOID, CV_CONST);
+-  Type *t_voidptr = makePtrType(t_void);
++//    Type *t_voidptr = makePtrType(t_void);
+ //    Type *t_voidconstptr = makePtrType(SL_INIT, t_voidconst);
+ 
+   Type *t_int = getSimpleType(ST_INT);
+-  Type *t_unsigned_int = getSimpleType(ST_UNSIGNED_INT);
++//    Type *t_unsigned_int = getSimpleType(ST_UNSIGNED_INT);
+   Type *t_char = getSimpleType(ST_CHAR);
+   Type *t_charconst = getSimpleType(ST_CHAR, CV_CONST);
+   Type *t_charptr = makePtrType(t_char);
+Index: regrtest
+===================================================================
+--- regrtest	(revision 2431)
++++ regrtest	(working copy)
+@@ -865,6 +865,8 @@
+ testparse t0584.cc
+ failparse t0585.cc "explicit invocation of dtor of template class"
+ testparse t0586.cc
++failparse t0587.cc "conversion of static method of template to func ptr"
++testparse t0588.cc
+ 
+ # another set of tests, generally isolated by Daniel
+ testparse d0001.cc
+@@ -984,7 +986,7 @@
+ testparse d0124.cc
+ testparse d0125.cc # __builtin_va_copy
+ testparse d0126.cc
+-failparse_special treeCheck dk0127.cc "a non-tree AST results: default param arg in template class inner class"
++testparse_special treeCheck dk0127.cc #"a non-tree AST results: default param arg in template class inner class"
+ 
+ testparse k0001.cc #"left side of .* must be a class or reference to a class"
+ testparse k0002.cc #"template function declared in another class (as a friend)"
+Index: variable.cc
+===================================================================
+--- variable.cc	(revision 2431)
++++ variable.cc	(working copy)
+@@ -351,6 +351,13 @@
+ 
+ string Variable::toQualifiedString() const
+ {
++  if (isType()) {
++    // I'm seeing printouts like "S1<T>::S2 S1<T>::S2", where the type
++    // is printed twice.  I think for types we should just print the
++    // type itself.
++    return type->toCString();
++  }
++
+   string qname;
+   if (name) {
+     qname = fullyQualifiedName0();
+Index: in/t0587.cc
+===================================================================
+--- in/t0587.cc	(revision 0)
++++ in/t0587.cc	(revision 0)
+@@ -0,0 +1,25 @@
++// t0587.cc
++// Elsa version of oink/Test/template_impl_addrof_func1.cc
++
++template <typename T>
++struct S1 {
++  static void foo();
++};
++
++template <class T>
++class B {};
++
++template <typename T>
++void S1<T>::foo()
++{
++  // this function should be instantiated, meaning when the following
++  // line is uncommented, we detect the error
++  //ERROR(1): 1 + B<T>::nonexist;
++}
++
++typedef void (*func)(void);
++
++int main()
++{
++  func f = /* missing "&" */ S1<int>::foo;
++}
+Index: in/t0588.cc
+===================================================================
+--- in/t0588.cc	(revision 0)
++++ in/t0588.cc	(revision 0)
+@@ -0,0 +1,38 @@
++// t0588.cc
++// more tests w/ default args
++
++struct S {} *s;
++struct S2 {} *s2;
++
++template <class T>
++int f1(T *t, int x = 5);
++
++template <class T>
++int f1(T *t, int x);
++
++template <class T>
++int f1(T *t, int x)
++{
++  return x + 7;
++}
++
++int foo()
++{
++  return f1(s) + f1(s2);
++}
++
++
++
++template <class T>
++int f2(T *t, int x = 6)
++{
++  return x + 8;
++}
++
++int bar()
++{
++  return f2(s) + f2(s2);
++}
++
++
++// EOF
