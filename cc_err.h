@@ -4,11 +4,11 @@
 #ifndef CC_ERR_H
 #define CC_ERR_H
 
-#include "macros.h"    // ENUM_BITWISE_OR
-#include "str.h"       // string
-#include "srcloc.h"    // SourceLoc
+#include "macros.h"          // ENUM_BITWISE_OR
+#include "str.h"             // string
+#include "srcloc.h"          // SourceLoc
 
-#include <ostream.h>   // ostream
+#include "sm-ostream.h"      // ostream
 
 
 // flags on errors

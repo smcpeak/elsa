@@ -165,7 +165,7 @@ TreeWalkOutStream & TreeWalkOutStream::operator << (ostream& (*manipfunc)(ostrea
 
 // **** class TreeWalkDebug
 
-TreeWalkDebug::TreeWalkDebug(char *message, TreeWalkOutStream &out)
+TreeWalkDebug::TreeWalkDebug(char const *message, TreeWalkOutStream &out)
   : out(out)
 {
   out << message << endl;

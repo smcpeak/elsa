@@ -3,7 +3,7 @@
 
 #include "serialno.h"         // this module
 #include "trace.h"            // tracingSys
-#include "fstream.h"          // ifstream
+#include "sm-fstream.h"       // ifstream
 
 
 // -------------------- serial numbers ON --------------------

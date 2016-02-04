@@ -443,7 +443,7 @@ bool isInequality(BinaryOp op)
 
 bool isOverloadable(BinaryOp op)
 {
-  return BIN_EQUAL <= op && op <= BIN_BRACKETS ||
+  return (BIN_EQUAL <= op && op <= BIN_BRACKETS) ||
          op == BIN_ARROW_STAR;
 }
 

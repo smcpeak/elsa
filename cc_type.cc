@@ -27,6 +27,8 @@
 // syntax for denoting them.  (toString() uses C's syntax, but that's
 // just for debugging.)
 
+#include "sm-stdint.h"  // uintptr_t
+
 #include <stdlib.h>     // getenv
 
 
@@ -1670,7 +1672,7 @@ inline unsigned cvHash(CVFlags cv)
 unsigned CVAtomicType::innerHashValue() const
 {
   // underlying atomic is pointer-based equality
-  return (unsigned)atomic +
+  return (unsigned)(uintptr_t)atomic +
          cvHash(cv);
          // T_ATOMIC is zero anyway
 }
@@ -2365,7 +2367,7 @@ unsigned PointerToMemberType::innerHashValue() const
   return atType->innerHashValue() * HASH_KICK +
          cvHash(cv) +
          T_POINTERTOMEMBER * TAG_KICK +
-         (unsigned)inClass();   // we'll see...
+         (unsigned)(uintptr_t)inClass();   // we'll see...
 }
 
 
@@ -2743,7 +2745,7 @@ Type *TypeFactory::applyCVToType(SourceLoc loc, CVFlags cv, Type *baseType,
 
   CVFlags now = baseType->getCVFlags();
   if (wantsQualifiedTypeReuseOptimization() &&
-      now | cv == now) {
+      (now | cv) == now) {
     // no change, 'cv' already contained in the existing flags
     return baseType;
   }

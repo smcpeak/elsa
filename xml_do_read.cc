@@ -1,7 +1,7 @@
 // xml_do_read.cc          see license.txt for copyright and terms of use
 
 #include "xml_do_read.h"        // this module
-#include "fstream.h"            // ifstream
+#include "sm-fstream.h"         // ifstream
 #include "xml_lexer.h"          // XmlLexer
 #include "xml_file_reader.h"    // XmlFileReader
 #include "xml_type_reader.h"    // XmlTypeReader

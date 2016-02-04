@@ -30,7 +30,8 @@
   // modified Lexer::svalTok()
   checkForNonsep(TOK_INT_LITERAL);
   updLoc();
-  sval = (SemanticValue)addString("0", 1);
+  char zero[2] = "0";      // addString modifies/restores its arg
+  sval = (SemanticValue)addString(zero, 1);
   return TOK_INT_LITERAL;
 }
 

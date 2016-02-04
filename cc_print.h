@@ -12,7 +12,7 @@
 #include "cc_ast.h"             // C++ AST; this module
 #include "str.h"                // stringBuilder
 
-#include <iostream.h>           // ostream
+#include "sm-iostream.h"        // ostream
 
 // this virtual semi-abstract class is intended to act as a
 // "superclass" for ostream, stringBuilder, and any other "output
@@ -224,7 +224,7 @@ extern TreeWalkOutStream treeWalkOut;
 class TreeWalkDebug {
   TreeWalkOutStream &out;
   public:
-  TreeWalkDebug(char *message, TreeWalkOutStream &out = treeWalkOut);
+  TreeWalkDebug(char const *message, TreeWalkOutStream &out = treeWalkOut);
   ~TreeWalkDebug();
 };
 

@@ -12,7 +12,7 @@
 
 #include "sm_flexlexer.h"   // yyFlexLexer
 
-#include <iostream.h>       // istream
+#include "sm-iostream.h"    // istream
 #include "lexerint.h"       // LexerInterface
 #include "strtable.h"       // StringRef, StringTable
 

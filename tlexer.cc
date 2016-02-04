@@ -8,7 +8,7 @@
 #include "nonport.h"       // getMilliseconds
 #include "trace.h"         // tracingSys
 
-#include <iostream.h>      // cout
+#include "sm-iostream.h"   // cout
 
 
 void entry(int argc, char **argv)

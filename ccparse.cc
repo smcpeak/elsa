@@ -5,7 +5,7 @@
 #include "astvisit.h"     // ASTVisitorEx
 #include "trace.h"        // TRACE
 
-#include <iostream.h>     // cout
+#include "sm-iostream.h"  // cout
 
 
 // ----------------------- ParseEnv -----------------------
@@ -38,7 +38,7 @@ SimpleTypeId ParseEnv::uberSimpleType(SourceLoc loc, UberModifiers m)
   m = (UberModifiers)(m & UM_TYPEKEYS);
 
   // implement cppstd Table 7, p.109
-  switch (m) {
+  switch ((int /*suppress GCC warning*/)m) {
     case UM_CHAR:                         return ST_CHAR;
     case UM_UNSIGNED | UM_CHAR:           return ST_UNSIGNED_CHAR;
     case UM_SIGNED | UM_CHAR:             return ST_SIGNED_CHAR;
