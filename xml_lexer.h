@@ -7,11 +7,18 @@
 #include "sm-fstream.h"         // ifstream
 
 #include "str.h"                // string
-#include "sm_flexlexer.h"       // yyFlexLexer
-#include "baselexer.h"          // FLEX_OUTPUT_METHOD_DECLS
 #include "xml_enum.h"           // XTOK_*
 
-class XmlLexer : private yyFlexLexer {
+// Get the definition of 'xmlBaseFlexLexer' by #including FlexLexer.h
+// with a customized definition of 'yyFlexLexer'.
+#ifndef XML_BASE_LEXER_DEFINED
+#define XML_BASE_LEXER_DEFINED
+#undef yyFlexLexer
+#define yyFlexLexer xmlBaseFlexLexer
+#include "FlexLexer.h"          // xmlBaseFlexLexer
+#endif // XML_BASE_LEXER_DEFINED
+
+class XmlLexer : private xmlBaseFlexLexer {
 private:
   inline int yyunderflow(); // helper for read_xml_string
   bool read_xml_string();   // used by lexer when reading strings
@@ -45,7 +52,8 @@ public:
   string tokenKindDesc(int kind) const;
   string tokenKindDescV(int kind) const;
 
-  FLEX_OUTPUT_METHOD_DECLS
+  // Generated lexer implementation.
+  virtual int yylex();
 };
 
 #endif // XML_LEXER_H

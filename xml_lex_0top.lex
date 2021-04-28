@@ -7,6 +7,15 @@
 /* ----------------------- C definitions ---------------------- */
 %{
 
+// Ugly hack: At this point in the generated .cc file, FlexLexer.h will
+// already have been included, thereby defining 'xmlBaseFlexLexer'.  But
+// that part of FlexLexer.h does not have a multiple inclusion guard
+// since it's supposed to be multiply-included after redefining
+// 'yyFlexLexer'.  By defining this symbol, we will avoid re-including
+// FlexLexer.h from xml_lexer.h (but still define 'XmlLexer', which we
+// need).
+#define XML_BASE_LEXER_DEFINED
+
 #include "xml_lexer.h"       // Lexer class
 
 // this works around a problem with cygwin & fileno
