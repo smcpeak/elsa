@@ -1011,10 +1011,10 @@ testparse k0006.cc #"error: E_alignofType is not constEval'able"
 testparse k0007.cc
 # renamed k0008.cc to gnu/g0022.cc because it is a GNU feature
 testparse k0009.cc #"clash between function and instantiated template parameter member"
-testparse_special only_works_on_32bit k0010.cc
+testparse k0010.cc # requires that certain types have certain sizes
 # smcpeak: This does not fail on x86_64 because the test does
 # not run, so disabling it altogether.
-#failparse_special only_works_on_32bit k0010a.cc "compile-time type size checking - long long"
+failparse k0010a.cc "compile-time type value checking - long long"
 testparse k0011.cc
 testparse k0012.cc
 testparse k0013.cc #"cannot convert argument type `float (*)[4]' to parameter 1 type `float const (*)[4]'"
