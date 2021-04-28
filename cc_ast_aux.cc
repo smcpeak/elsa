@@ -398,7 +398,7 @@ string refersTo(Variable *v)
   if (v->getUsingAlias()) {
     sb << ", alias of " << toString(v->skipAlias()->loc);
   }
-  sb << stringf(" (0x%08X)", (long)v);
+  sb << " (" << (void*)v << ")";
   return sb;
 }
 
