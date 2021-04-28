@@ -1,6 +1,7 @@
 Makefile
 *.o
 *.d
+*.exe
 *.gen.cc
 *.gen.h
 *.gen.out
@@ -12,6 +13,7 @@ cc_tokens.cc
 cc_tokens.h
 config.status
 config.summary
+lex.backup
 lexer.lex
 lexer.yy.cc
 testcout
