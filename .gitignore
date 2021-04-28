@@ -8,6 +8,7 @@ Makefile
 *.gen.tokens
 *.gen.lex
 *.gen.yy.cc
+*.log
 cc_tokens.ids
 cc_tokens.cc
 cc_tokens.h
