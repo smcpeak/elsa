@@ -151,12 +151,12 @@ $summary = getStandardConfigSummary();
 
 $summary .= <<"OUTER_EOF";
 cat <<EOF
-  LDFLAGS:     @LDFLAGS
-  SMBASE:      $SMBASE
-  AST:         $AST
-  ELKHOUND:    $ELKHOUND
-  USE_GNU:     $USE_GNU
-  USE_KANDR:   $USE_KANDR
+  LDFLAGS:         @LDFLAGS
+  SMBASE:          $SMBASE
+  AST:             $AST
+  ELKHOUND:        $ELKHOUND
+  USE_GNU:         $USE_GNU
+  USE_KANDR:       $USE_KANDR
 EOF
 OUTER_EOF
 
