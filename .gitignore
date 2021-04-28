@@ -1,6 +1,7 @@
 # .gitignore
 # Should be maintained in sorted order: "env LANG=C sort".
 
+*.a
 *.d
 *.exe
 *.gen.cc
@@ -20,6 +21,7 @@ config.status
 config.summary
 in/*.error*.cc
 in/big/*.i
+iptparse.yy.cc
 lex.backup
 lexer.lex
 lexer.yy.cc
