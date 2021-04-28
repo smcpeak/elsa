@@ -103,7 +103,13 @@ for my $name(@names) {
         # I made that printing conditional upon the tracing flag
         my $flags = "-tr prettyPrint";
 #          my $cppflags = "-lang-c++";      # This doesn't work!
-        my $cpp = "cpp -D__cplusplus -D__LINUX__ -D__UNIX__ -DNDEBUG";
+
+        # smcpeak: The particular value of '__cplusplus' is chosen to
+        # make my cpp not complain about a redefinition, but this is
+        # fragile.  I am not sure why it even needs to be defined, but
+        # for now I will just move on.
+        my $cpp = "cpp -D__cplusplus=199711L -D__LINUX__ -D__UNIX__ -DNDEBUG";
+
         run_command "$cpp $name", "$outname.0cppout.cc";
         run_command "$parser $flags $outname.0cppout.cc", "$outname.1rawout.cc";
         run_only "cpp < $outname.1rawout.cc | perl ./chop_out", "$outname.2out.cc";
