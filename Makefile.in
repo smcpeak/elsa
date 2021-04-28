@@ -20,8 +20,10 @@ LIBAST      := $(AST)/libast.a
 LIBELKHOUND := $(ELKHOUND)/libelkhound.a
 
 # external tools
-PERL := @PERL@
-DEP := $(PERL) $(SMBASE)/depend.pl
+PERL   := @PERL@
+DEP    := $(PERL) $(SMBASE)/depend.pl
+AR     := ar
+RANLIB := ranlib
 
 FLEXDIR := ../flex
 RUNFLEX := $(FLEXDIR)/flex -b
@@ -321,11 +323,18 @@ CCPARSE_OBJS := \
   ccparse.o
 -include $(CCPARSE_OBJS:.o=.d) main.d
 
+# Parser as a library.
+TOCLEAN += libelsa.a
+libelsa.a: $(CCPARSE_OBJS)
+	rm -f $@
+	$(AR) -r $@ $(CCPARSE_OBJS)
+	-$(RANLIB) $@
+
 
 # parser binary
 TOCLEAN += ccparse
-ccparse: $(CCPARSE_OBJS) main.o $(libraries)
-	$(CXX) -o $@ $(CCPARSE_OBJS) main.o $(LDFLAGS)
+ccparse: libelsa.a main.o $(libraries)
+	$(CXX) -o $@ main.o libelsa.a $(LDFLAGS)
 
 
 # run the binary; the 'quicktest' file is so we don't run it if
