@@ -14,7 +14,7 @@
 template <class T>
 struct A {
   typedef int INT;
-  
+
   INT a1();
   typename A<T>::INT a2();
 
@@ -22,17 +22,17 @@ struct A {
     typedef float FLOAT;
 
     FLOAT b1();
-    
+
     template <class V>
     struct D {
       typedef char CHAR;
-      
+
       CHAR d1();
     };
-    
+
     struct E {
       typedef short SHORT;
-      
+
       SHORT e1();
     };
   };
@@ -136,7 +136,7 @@ void foo()
   c.c1();
   c.c2();
   c.c3();
-  
+
   A<int>::C<int>::F<int> f;
   f.f1();
 

@@ -6,7 +6,7 @@ public:
   int x;
 };
 class B {};
-                            
+
 // just let me inherit from A in a way that all subobjects
 // can still be unambiguously named; g++ has a warning for this,
 // "warning: direct base `A' inaccessible in `D' due to ambiguity"

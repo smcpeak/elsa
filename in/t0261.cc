@@ -7,10 +7,10 @@ class A {
   struct B {
     int x;
     char y;
-    
-    int foo() 
+
+    int foo()
     { return sizeof(T) + x; }
-    
+
     int bar();
   };
 };
@@ -19,7 +19,7 @@ class A {
 A<int> *aptr;
 
 // instantiate class defn
-A<int> a;                
+A<int> a;
 
 // eager-instantiate all of A<int>
 template class A<int>;

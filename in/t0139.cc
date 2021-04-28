@@ -32,8 +32,8 @@ bool operator&& (bool x, bool y);       // line 31
 
 void f4()
 {
-  A a;                                 
-  
+  A a;
+
   // now this uses the user's operator function
   __testOverload(a&&a, 31);
 }

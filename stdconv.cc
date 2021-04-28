@@ -102,8 +102,8 @@ StandardConversion removeLval(StandardConversion scs)
 bool isSubsequenceOf(StandardConversion left, StandardConversion right)
 {
   StandardConversion L, R;
-  
-  L = left & SC_GROUP_1_MASK;                                   
+
+  L = left & SC_GROUP_1_MASK;
   R = right & SC_GROUP_1_MASK;
   if (!( L == SC_IDENTITY || L == R )) {
     return false;
@@ -132,11 +132,11 @@ SCRank getRank(StandardConversion scs)
   if ((scs & SC_GROUP_2_MASK) >= SC_INT_CONV) {
     return SCR_CONVERSION;
   }
-  
+
   if (scs & SC_GROUP_2_MASK) {
     return SCR_PROMOTION;
   }
-  
+
   return SCR_EXACT;
 }
 
@@ -281,10 +281,10 @@ bool Conversion::stripPtrCtor(CVFlags scv, CVFlags dcv, bool isReference)
       // still be able to pass 13.3.3.2 para 3 ex. 2
       xassert(ret == SC_IDENTITY);     // shouldn't have had anything added yet
       //ret |= SC_QUAL_CONV;
-      
+
       // trying again.. 13.3.3.1.4 para 1
       ret |= SC_IDENTITY;
-      
+
       // old code; if ultimately this solution works, I'll drop the
       // 'isReference' parameter to this function entirely...
       //ret |= SC_LVAL_TO_RVAL;
@@ -379,7 +379,7 @@ bool canConvertToBaseClass(Type const *src, Type const *dest, bool &ambig)
   return false;
 }
 
-    
+
 // not sure if this is such a good idea..
 bool couldBeAnything(Type const *t)
 {
@@ -433,12 +433,12 @@ StandardConversion getStandardConversion
 
     // strip off the destination reference
     dest = dest->asReferenceTypeC()->atType;
-    
+
     // now, one final exception: ordinarily, there's no standard
     // conversion from C to P (where C inherits from P); but it *is*
     // legal to bind an rvalue of type C to a const reference to P
     // (cppstd 13.3.3.1.4 para 1)
-    if (dest->isCompoundType() && 
+    if (dest->isCompoundType() &&
         src->isCompoundType() &&
         src->asCompoundTypeC()->hasStrictBaseClass(dest->asCompoundTypeC())) {
       // TODO: ambiguous? inaccessible?
@@ -544,7 +544,7 @@ StandardConversion getStandardConversion
         // descriptive patterns
         CVFlags srcCV = getSrcCVFlags(src);
         CVFlags destCV = getDestCVFlags(dest, srcCV);
-        
+
         if (conv.stripPtrCtor(srcCV, destCV, isReference))
           { return conv.ret; }
 
@@ -659,7 +659,7 @@ StandardConversion getStandardConversion
   // if I check equality here, will it mess anything up?
   // no, looks ok; I'm going to try folding polymorphic
   // checking into equality itself...
-  // 
+  //
   // appears to work!  I'll tag the old stuff with "delete me"
   // for the moment
   if (src->equals(dest, MF_POLYMORPHIC)) {
@@ -742,7 +742,7 @@ StandardConversion getStandardConversion
         // just strip the reference part of the dest; this is like binding
         // the (const) reference, which is not an explicit part of the
         // "conversion"
-        return getStandardConversion(errorMsg, srcSpecial, conv.src, 
+        return getStandardConversion(errorMsg, srcSpecial, conv.src,
                                      conv.dest->asRvalC(), destIsReceiver);
       }
 
@@ -884,7 +884,7 @@ Type *makeSimpleType(TypeFactory &tfac, SimpleTypeId id)
 Type *getConcreteDestType(TypeFactory &tfac, Type *srcType,
                           StandardConversion sconv,
                           SimpleTypeId destPolyType)
-{                 
+{
   // move 'srcType' closer to the actual dest type according to group 1
   if (sconv & SC_LVAL_TO_RVAL) {
     srcType = srcType->getAtType();
@@ -944,7 +944,7 @@ Type *getConcreteDestType(TypeFactory &tfac, Type *srcType,
   }
 }
 
-     
+
 void getIntegerStats(SimpleTypeId id, int &length, int &uns)
 {
   switch (id) {
@@ -1062,7 +1062,7 @@ static SimpleTypeId uacHelper(SimpleTypeId leftId, SimpleTypeId rightId)
     { ST_LONG_LONG,     ST_UNSIGNED_LONG_LONG }
   };
   SimpleTypeId lubId = map[lubLength][lubUns];
-  
+
   return lubId;
 }
 
@@ -1076,7 +1076,7 @@ SimpleTypeId applyIntegralPromotions(Type *t)
     return ST_INT;
   }
   SimpleTypeId id = t->asSimpleTypeC()->type;
-  
+
   return applyIntegralPromotions(id);
 }
 
@@ -1146,7 +1146,7 @@ bool isReferenceRelatedTo(Type *t1, Type *t2)
   if (t2->equals(t1, MF_IGNORE_TOP_CV | MF_POLYMORPHIC)) {
     return true;
   }
-  
+
   // this implicitly skips toplevel cv
   if (t1->isCompoundType() &&
       t2->isCompoundType() &&
@@ -1171,12 +1171,12 @@ int referenceCompatibility(Type *t1, Type *t2)
   if (cv1 == cv2) {
     return 2;      // exact match
   }
-  
+
   if ((cv1 & cv2) == cv2) {
     // cv1 is a superset
     return 1;      // "compatible with added qualification"
   }
-  
+
   return 0;        // not compatible
 }
 

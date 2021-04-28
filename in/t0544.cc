@@ -15,7 +15,7 @@ struct C {};
 
 
 // initialize an "aggregate"
-struct B 
+struct B
 //ERROR(2): :C                  // base class
 {
 //ERROR(1): private:            // private data
@@ -38,7 +38,7 @@ enum SimpleTypeId {
 };
 
 class SimpleType {
-public:  
+public:
   SimpleType (SimpleTypeId t);
 };
 

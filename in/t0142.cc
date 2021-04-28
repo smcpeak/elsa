@@ -8,7 +8,7 @@ void ddummy() { __testOverload(dummy(), 5); }
 struct A {
   operator void* ();
 };
-          
+
 typedef int (*FuncPtr)();
 struct B {
   operator FuncPtr ();
@@ -38,8 +38,8 @@ void f1()
   +a;
   +b;
   +c;
-  +d;     
-  
+  +d;
+
   // ambiguous
   //ERROR(1): +e;
 }

@@ -9,7 +9,7 @@ if [ "$1" = "" ]; then
 fi
 
 export msg="$1"
-             
+
 delta=../delta/bin/multidelta
 if [ ! -x $delta ]; then
   echo "error: can't run $delta"

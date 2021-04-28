@@ -8,7 +8,7 @@ A *p;
 void foo()
 {
   delete p;
-}          
+}
 
 // this program is valid (has defined behavior) only if this
 // definition appears (e.g. in another translation unit) with

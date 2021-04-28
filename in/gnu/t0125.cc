@@ -60,7 +60,7 @@ extern inline void read_lock2(rwlock_t *rw)
           if (true)//__builtin_constant_p( rw ))
             asm volatile("lock ; "  "subl $1,%0\n\t" "js 2f\n" "1:\n" ".section .text.lock,\"ax\"\n" "2:\tpushl %%eax\n\t" "leal %0,%%eax\n\t" "call "     "__read_lock_failed"   "\n\t" "popl %%eax\n\t" "jmp 1b\n" ".previous" :"=m" ((*(__dummy_lock_t *)(   rw   )) )) ; else asm volatile("lock ; "  "subl $1,(%0)\n\t" "js 2f\n" "1:\n" ".section .text.lock,\"ax\"\n" "2:\tcall "     "__read_lock_failed"   "\n\t" "jmp 1b\n" ".previous"
   ::"a" (  rw  )                // NOTE double colon!
-  : "memory") ; 
+  : "memory") ;
         } while (0) ;
 }
 

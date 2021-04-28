@@ -29,7 +29,7 @@
 <p>
 This page contains data model diagrams useful for understanding the
 C++ language.  They show the various concepts in C++ static
-(compile-time) semantics, and their interrelationships. 
+(compile-time) semantics, and their interrelationships.
 
 <p>
 One use of these data models is to help understand the C++ Standard
@@ -222,7 +222,7 @@ It is simply a convenient appelation for an important concept.
 <h3>StorageClass</h3>
 
 <p>
-The "storage" member of Variable is a subset of StorageClass, which 
+The "storage" member of Variable is a subset of StorageClass, which
 has (exactly) the following members:
 <ul>
 <li><tt>auto</tt>
@@ -277,7 +277,7 @@ DataVariables are partitioned:
 <li>FunctionParameter: Appears in a BlockScope (for FunctionDefinitions) or
     a PrototypeScope, denotes a function parameter.
     (TODO: Hmmm.  How are ProtoypeScopes related
-    to FunctionTypes and FunctionDefinitions?)       
+    to FunctionTypes and FunctionDefinitions?)
     A FunctionParameter may have a default value expression [8.3.6].
 <li>DataMember: Appears in a ClassType scope, denotes a data member
     of a class (or struct or union).  These are further subdivided
@@ -306,7 +306,7 @@ or copy assignment operator that is implicitly declared [12p1].
 <h2>TypeName</h2>
 
 <p>
-A TypeName names a type for purposes of lookup.  
+A TypeName names a type for purposes of lookup.
 
 <h3>Typedef</h3>
 
@@ -403,7 +403,7 @@ and possibly cv-qualifies [3.9.3] it.
 <h3>IndirectionType</h3>
 
 <p>
-IndirectionType is the common ancestor for the types that are 
+IndirectionType is the common ancestor for the types that are
 constructed primarily from one other type.
 
 <h3>PointerType</h3>
@@ -451,7 +451,7 @@ relationships.
 NamedAtomicType was already discussed above.  However, in this context
 it is worth explaining that even though class types are in some sense
 built by applying a "type constructor", this data model and the C++
-language regard the <tt>class { ... }</tt> syntax as creating a new type, 
+language regard the <tt>class { ... }</tt> syntax as creating a new type,
 <em>not</em> equivalent to another type built with the same syntax.
 
 <h3>FundamentalType</h3>
@@ -620,7 +620,7 @@ A TemplateMetaParameter is syntactically introduced with something like
 </pre>
 and known in the Standard as a "template template parameter".  It can
 be bound to a ClassTemplate, enabling one template to use multiple
-specializations of another (class) template.  
+specializations of another (class) template.
 
 <p>
 Note that it is not possible to pass a template function or a template
@@ -740,7 +740,7 @@ An implicit specialization (also called an "instantiation") is
 generated automatically by the compiler by filling the holes of the
 Template definition with the supplied arguments.  An explicit
 specialization is supplied by the programmer, and effectively overrides
-implicit instantiation for a specific argument sequence.  
+implicit instantiation for a specific argument sequence.
 
 <p>
 Note that the "explicit" attribute is a <em>mutable</em> boolean
@@ -801,7 +801,7 @@ Abstract types are supported by several extensions of NamedAtomicType.
 <h3>TypeNameMetaParameter (as a NamedAtomicType)</h3>
 
 <p>
-Discussed above, a TypeNameMetaParameter is the leaf of any 
+Discussed above, a TypeNameMetaParameter is the leaf of any
 abstract type.  Note that a TypeNameMetaParameter need not be
 abstract (it could be a TypeNameMetaBinding).
 
@@ -815,7 +815,7 @@ ClassTemplate or a TemplateMetaParameter.  For example:
 <pre>
   template &lt;class T&gt;
   struct A;
-  
+
   template &lt;class T&gt;
   struct B {
     A&lt;T&gt; a;
@@ -973,9 +973,9 @@ the order in which they appear syntactically [14.7.3p17(?)].
 This is work in progress, so no pretty pictures yet.
 
 <pre>
-  TranslationUnit: 
+  TranslationUnit:
     decls: Declaration[]
-    
+
   Declaration
     - BlockDeclaration
     | - SimpleDeclaration
@@ -1013,11 +1013,11 @@ This is work in progress, so no pretty pictures yet.
     - NamespaceDefinition
         n: Id?
         decls[]
-        
+
   InitDeclarator
     declarator
     init?
-    
+
   Initializer
     - IN_expr
     |   expr
@@ -1025,11 +1025,11 @@ This is work in progress, so no pretty pictures yet.
     |   initializer[]
     - IN_ctor
         args: Expression[+]
-        
+
   DeclSpecifier(Seq)
     declflag*
     typeSpec
-    
+
   DeclFlag
     - StorageClass
       - auto
@@ -1046,7 +1046,7 @@ This is work in progress, so no pretty pictures yet.
     - CVFlag
       - const
       - volatile
-      
+
   TypeSpecifier
     - TS_name
     |   t?
@@ -1064,7 +1064,7 @@ This is work in progress, so no pretty pictures yet.
     |   PQName
     - TS_fundamental
         FundamentalType
-        
+
   Declarator           &lt;----+
     - D_name                |
     |   PQName?             |

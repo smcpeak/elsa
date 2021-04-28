@@ -1,6 +1,6 @@
 // t0135.cc
 // experiments with operator<
-          
+
 enum E {};
 
 struct A {

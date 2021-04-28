@@ -13,7 +13,7 @@ public:
   //static int y;
 
   int h(int j=9);
-  
+
   // ctor with "inline"
   inline Foo(int *x);
 };
@@ -34,7 +34,7 @@ typedef struct
 
 // enum where one value is used to initialize another
 enum Blah { A, B, C=B, D };
-  
+
 
 
 // struct with same name as function
@@ -45,7 +45,7 @@ struct stat {
 extern int stat (const  char *   __file,
 		 struct stat *   __buf)  ;
 
-  
+
 // struct with same name as variable
 struct timezone
   {

@@ -82,7 +82,7 @@ void ErrorList::prependError(ErrorMsg * /*owner*/ obj)
 
 
 void ErrorList::takeMessages(ErrorList &src)
-{ 
+{
   if (list.isEmpty()) {
     // this is a common case, and 'concat' is O(1) in this case
     list.concat(src.list);

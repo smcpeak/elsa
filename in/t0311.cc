@@ -27,7 +27,7 @@ void foo(int x)
 
   // I really don't know what the right spec is here, so I'm
   // just going to cross my fingers ....
-  
+
   int A::*pma = 0;
   int const A::*pmac = 0;
   __elsa_checkType(x? pma : pmac, (int const A::*)0);

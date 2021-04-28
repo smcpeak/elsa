@@ -3,7 +3,7 @@
 # to parse them with Elsa
 
 use strict 'subs';
-  
+
 $SIG{INT} = \&sigIntHandler;
 
 $lineNum = 0;
@@ -58,13 +58,13 @@ sub sigIntHandler {
 
 sub runecho {
   print(@_, "\n");
-  
+
   my $code = system(@_);
   if ($code == 2) {
     # ctrl-c
     sigIntHandler();
   }
-  
+
   return $code;
 }
 

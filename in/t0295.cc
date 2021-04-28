@@ -3,7 +3,7 @@
 
 struct A {
   int* operator* ();    // use this one
-  
+
   // these are red herrings
   operator int* ();
   operator float* ();

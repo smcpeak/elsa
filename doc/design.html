@@ -43,8 +43,8 @@ places), and drafts
 of the standard can be found on
 <a href="http://www.csci.csusb.edu/dick/c++std/">Dick Botting's page</a>.
 
-<li>C is defined by the C89 and C99 specs, 
-"ISO/IEC 9899:1990 Programming languages -- C" and 
+<li>C is defined by the C89 and C99 specs,
+"ISO/IEC 9899:1990 Programming languages -- C" and
 "ISO/IEC 9899:1999 Programming languages -- C", respectively.
 
 <li>Elsa also supports the older C syntax described in
@@ -434,7 +434,7 @@ made, <span class="variable">inner2_tcheck</span> is invoked to finish
 checking th argument list.
 
 <p>
-There are a few other ad-hoc disambiguation strategies here and 
+There are a few other ad-hoc disambiguation strategies here and
 there, such as for deciding between statements and declarations, and
 resolving uses of implicit int (when K&amp;R support is enabled).
 
@@ -448,7 +448,7 @@ Declared entities are represented by Variable objects
 the process of mapping a name (which is a string of characters)
 and a context (scopes, etc.) to a Variable.  AST nodes that
 contain names subject to lookup, such as
-<span class="variable">E_variable</span> or 
+<span class="variable">E_variable</span> or
 <span class="variable">E_fieldAcc</span>, contain
 a <span class="variable">var</span> field.  The
 <span class="variable">var</span> field is initially NULL, and
@@ -467,7 +467,7 @@ rules in the standard are implemented in Elsa.
 
 <p>
 There are many kinds of entities represented by Variables, as shown in
-the following diagram.  The rectangles and arrows represent a kind of 
+the following diagram.  The rectangles and arrows represent a kind of
 inheritance hierarchy; e.g., a Class is one of the type-denoting
 Variables (note that this is only conceptual inheritance; in the
 implementation, there is just one class called Variable).  The ellipses
@@ -484,7 +484,7 @@ few oddballs, such as enumerators and namespaces, round out the set.
 The neighborhoods of the class and function template boxes are
 expanded in a later diagram, below.
 
-<p>                                            
+<p>
 Every Variable has a name (but it might be NULL), a type (only NULL
 for namespaces), and some flags.  The name is how the entity is found
 by lookup.  The type is either the denoted type (for type entities) or
@@ -527,7 +527,7 @@ call site arguments to pick the correct entity.  Then, the
 <span class="variable">E_variable</span> or
 <span class="variable">E_fieldAcc</span> node's
 <span class="variable">var</span> field is modified so that it
-points directly at the chosen element.  
+points directly at the chosen element.
 
 <p>
 At the moment, there is no way to distinguish between a Variable
@@ -591,8 +591,8 @@ Elsa does template instantiation for three reasons.  First,
 instantiation of template class declarations is required in order to
 disambiguate the AST, since a template class member can be either
 a type or a variable name, and that affects how a use of that name
-is parsed.  
-      
+is parsed.
+
 <p>
 Second, instantiation is required to do annotation such as for
 expression types, since the type of an expression involving a member
@@ -665,13 +665,13 @@ definition is cloned and re-type-checked.
 <p>
 Function members of class templates are <em>not</em> instantiated
 until a use of the member is seen.  For members whose definition appears
-"inline" in the class body, the 
+"inline" in the class body, the
 <span class="variable">MR_func::f</span> field points at the
 <em>uninstantiated</em> template body.  The body will be cloned
 and type-checked only when it is instantiated.  One consequence of this
 design is that analyses (usually) need to avoid looking at such uninstantiated
-members; one way to do this is by using 
-<span class="variable">ASTTemplVisitor</span> 
+members; one way to do this is by using
+<span class="variable">ASTTemplVisitor</span>
 (<a href="../cc_ast_aux.h">cc_ast_aux</a>) to do the traversal, as it
 automatically skips such methods.
 
@@ -726,7 +726,7 @@ type parameters are bound to (unique) instances of
 <a name="elaboration_cdtors"></a>
 <h1>4. Elaboration of constructors and destructors</h1>
 
-Constructors and destructors: 
+Constructors and destructors:
 <ul>
 
 <li> A struct/class with no ctor gets a no arg ctor that calls the no
@@ -762,7 +762,7 @@ yields <a href="gendoc/3.4.5.png">3.4.5.png</a>.
 <p>Tracing flag "prettyPrint" will print out the AST as C++.  One use
 of this feature is to do some analysis on the source code, then print it
 out with analysis results intermixed as annotations that can then be
-fed to another analysis tool.  <b>Bug:</b> (2005-05-29) Not all C++ 
+fed to another analysis tool.  <b>Bug:</b> (2005-05-29) Not all C++
 constructs are correctly printed yet.
 
 
@@ -871,8 +871,8 @@ per se, but <tt>astgen</tt> in general).
 
 <p>
 New Type classes can be added by creating new subclasses of AtomicType
-and Type (<a href="../cc_type.h"><tt>cc_type.h</tt></a>), and implementing 
-the appropriate virtual methods.  Operations on the new types can be defined 
+and Type (<a href="../cc_type.h"><tt>cc_type.h</tt></a>), and implementing
+the appropriate virtual methods.  Operations on the new types can be defined
 by creating a subclass of Env (<a href="../cc_env.h"><tt>cc_env.h</tt></a>)
 and overriding some of its methods.  Flaws: not very powerful; you can
 only change behaviors for which hooks are already provided.
@@ -886,7 +886,7 @@ new nodes.  Flaws: hard to do context-dependent behaviors.
 <p>
 New fields and methods can be added to the Type superclass by replacing
 the definition of Type by defining the <tt>TYPE_CLASS_FILE</tt> macro.
-See <a href="cc_type.html#basetype">cc_type.html, Section 6</a> for 
+See <a href="cc_type.html#basetype">cc_type.html, Section 6</a> for
 more information.  Flaws: can only change the Type class, not others.
 
 <p>
@@ -1017,7 +1017,7 @@ Ideally, a <tt>regrtest</tt> testcase should have these properties:
     the testcase (including comments) it should be possible to
     identify what is being tested.  This makes it easier to
     debug Elsa when a particular test starts failing.  (It is fine
-    if a single testcase file tests many things, as long as each 
+    if a single testcase file tests many things, as long as each
     thing is itself identifiable.)
 <li>Unique: There should not be another testcase that tests the
     exact same set of features.  Or if there is, the dominating test
@@ -1076,7 +1076,7 @@ criteria:
 <p>
 We have considerable support for automating the minimization process.
 The <a href="http://delta.tigris.org">Delta</a> tool will minimize an
-input with respect to arbitrary criteria, and the 
+input with respect to arbitrary criteria, and the
 <a href="../test-for-error"><tt>test-for-error</tt></a> script provides
 the good/bad criteria above.  The two are combined in the
 <a href="../run-delta-loop"><tt>run-delta-loop</tt></a> script.  These
@@ -1237,7 +1237,7 @@ associating each debugging output command with a flag that must
 be enabled for that output to be seen.  This is all implemented
 by the
 <a href="../../smbase/trace.html"><tt>trace</tt></a>
-module in 
+module in
 <a href="../../smbase/index.html">smbase</a>.
 
 <p>
@@ -1483,7 +1483,7 @@ distracting influence, as programmers can begin to act as if
 all that is needed to adequately document their code is to provide
 (say) doxygen attributes X, Y and Z; when in fact, the essence of
 good documentation is <em>communication</em> and <em>substance</em>,
-not form.  
+not form.
 
 
 <a name="assertions"></a>
@@ -1581,7 +1581,7 @@ fairly easy to fix them.  Lesson learned.
 But to the extent Elsa does try to enforce the rules of the language,
 there is another problem: sometimes it properly rejects inputs that
 another compiler mistakenly accepts!  In that case we may need to add
-a flag to CCLang (<a href="../cc_lang.h">cc_lang.h</a>) to emulate 
+a flag to CCLang (<a href="../cc_lang.h">cc_lang.h</a>) to emulate
 the bug.
 
 <p>

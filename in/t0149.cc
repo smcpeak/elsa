@@ -28,7 +28,7 @@ void f1()
   a %= 3;
   av %= 3;
   //ERROR(1): b %= 3;     // can't convert to reference-to-integral
-  
+
   //ERROR(2): a %= bad;
 }
 

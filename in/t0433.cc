@@ -4,7 +4,7 @@
 template <class T>
 struct A {
   typedef T some_type;
-  
+
   int foo1(some_type s);
   int foo2(some_type s);
 };

@@ -57,7 +57,7 @@ struct PIntLong2 {
   operator long*();
 };
 
-       
+
 //       A        .
 //      / \       .
 //     B   C      .
@@ -107,19 +107,19 @@ private:
 };
 
 struct AcceptPA {
-  void func(A*);    
+  void func(A*);
   private:  void func(B*);  void func(C*);  void func(D*);
 };
 struct AcceptPB {
-  void func(B*);    
+  void func(B*);
   private:  void func(A*);  void func(C*);  void func(D*);
 };
 struct AcceptPC {
-  void func(C*);    
+  void func(C*);
   private:  void func(A*);  void func(B*);  void func(D*);
 };
 struct AcceptPD {
-  void func(D*);    
+  void func(D*);
   private:  void func(A*);  void func(B*);  void func(C*);
 };
 

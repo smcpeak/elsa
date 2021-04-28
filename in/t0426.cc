@@ -1,5 +1,5 @@
 // t0426.cc
-// more complicated version of t0425.cc:                 
+// more complicated version of t0425.cc:
 
 // use of self-name with different arguments as qualifier, and
 // the qualified name then becomes a typedef

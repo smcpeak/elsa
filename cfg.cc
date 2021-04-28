@@ -105,7 +105,7 @@ void CFGEnv::addPendingGoto(S_goto *source)
 {
   // sm: I'm not sure what I was thinking when I had 'gotos' as
   // a dictionary...
-  
+
   gotos.push(source);
 }
 
@@ -356,10 +356,10 @@ void S_decl::icfg(CFGEnv &env)
 
 
 void S_try::icfg(CFGEnv &env)
-{ 
+{
   // control flows into the body
   body->computeCFG(env);
-  
+
   // but, it could spontaneously arrive at any of the handlers..
   // hmm.. that raises at least two issues:
   //   - control can transfer away from any statement at any time,
@@ -536,7 +536,7 @@ void reversePostorder(NextPtrList &order, Function *func)
   // and the postorder explicitly
   SObjSet<Statement*> seen, seenCont;
   rp_dfs(order, NextPtr(func->body, false /*isContinue*/), seen, seenCont);
-  
+
   // reverse the list
   int low=0, high=order.length()-1;
   while (low < high) {
@@ -595,7 +595,7 @@ int computeUnitCFG(TranslationUnit *unit)
   // find the statement-expressions, and treat them as relatively
   // isolated pieces (push & pop the environment) of the CFG, but
   // still in the context of the function (for gotos, etc.)
-  
+
   return env.errors;
 }
 

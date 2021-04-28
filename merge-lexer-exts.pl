@@ -31,7 +31,7 @@ EOF
 
 $base = $ARGV[0];
 shift @ARGV;
-                     
+
 open(IN, "<$base") or die("cannot open $base: $!\n");
 while (defined($line = <IN>)) {
   # re-echo all, including marker line, to allow composition via

@@ -12,7 +12,7 @@ void f()
   // not the same type!
   char const arr2[16];
   //ERROR(1): __elsa_checkType(sName, arr2);
-  
+
   // this is not a legal type
   // UPDATE: dsw: I moved this test to t0228b.cc so I can turn it off
   // in the presence of GNU

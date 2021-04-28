@@ -7,7 +7,7 @@ void f(T *t, char c);
 void foo(char const &c)
 {
   int *i;
-  
+
   f(i, c);
 }
 

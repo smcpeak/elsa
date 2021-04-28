@@ -12,7 +12,7 @@ void f()
 {
   foo<3>(4);         // template function call
   bar<3>(4);         // comparison expression
-  
+
   //ERROR(1): foo<3>4;           // syntax error, arguments must be parenthesized
   //ERROR(2): bar<>(4);          // error, bar is not a template
 }

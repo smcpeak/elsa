@@ -8,6 +8,6 @@ struct A {
 void f()
 {
   A a;
-  
+
   a != 0;
 }

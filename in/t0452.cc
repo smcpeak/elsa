@@ -14,13 +14,13 @@ struct A {
     typedef int INT;
     INT bar();
   };
-  
+
   int f();
 };
 
 template <class T>
 template <class U>
-int A<T>::B<U>::foo() 
+int A<T>::B<U>::foo()
 {
   int x;
   //ERROR(6): x = sizeof(typename INT);

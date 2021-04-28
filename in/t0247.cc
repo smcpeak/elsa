@@ -27,6 +27,6 @@ int main()
 {
   int y;
   int z = f<1, int>(y);     // use primary
-  
+
   f<2, int>(y);             // use specialziation
 }

@@ -29,7 +29,7 @@ void foo()
   A a;
   int x = 0;
   float y = 0;
-  
+
   a.f(x);      // uses specialization
   a.f(y);      // uses primary
 }

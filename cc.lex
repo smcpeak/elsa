@@ -296,7 +296,7 @@ PPCHAR        ([^\\\n]|{BACKSL}{NOTNL})
 {DIGITS}"."?[eE]{SIGN}?           |
 "."{DIGITS}[eE]{SIGN}?            {
   err("floating literal with no digits after the 'e'");
-  
+
   /* in recovery rules like this it's best to yield the best-guess
    * token type, instead of some TOK_ERROR, so the parser can still
    * try to make sense of the input; having reported the error is
@@ -424,7 +424,7 @@ PPCHAR        ([^\\\n]|{BACKSL}{NOTNL})
 "/""*"([^*]|"*"*[^*/])*"*"+"/"     {
   // the pattern is a little complicated because the naive one,
   //   "/""*"([^*]|"*"[^/])*"*/"
-  // fails to match e.g. "/***/" 
+  // fails to match e.g. "/***/"
   whitespace();
 }
 

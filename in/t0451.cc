@@ -56,7 +56,7 @@ struct E : A, D {
 };
 
 struct F : A, B, D {
-  F(int) 
+  F(int)
     : A(1)
     //ERROR(10): , B(1)
     , D(1)

@@ -6,7 +6,7 @@
 #include "template.h"   // Type, TemplateInfo, etc.
 #include "variable.h"   // Variable
 #include "cc_print.h"   // PrintEnv
-    
+
 
 
 string mangleAtomic(AtomicType const *t)
@@ -57,7 +57,7 @@ string mangleAtomic(AtomicType const *t)
 
     stringBuilder sb;
     sb << "enum ";
-      
+
     // sm: again, to fail to include the name is a bug
     // dsw: yup
     //if (!(tsf & TTS_CANON)) {
@@ -69,7 +69,7 @@ string mangleAtomic(AtomicType const *t)
 
   case AtomicType::T_TYPEVAR:
     return string("TVAR");      // dsw: my replacement for an actual name
-      
+
   case AtomicType::T_PSEUDOINSTANTIATION:
     // sm: not clear what should happen here; I think in fact
     // that pseudoinstantiations should not be "linker visible"
@@ -82,7 +82,7 @@ string mangleAtomic(AtomicType const *t)
   }
 }
 
-                              
+
 // cc_type.cc
 string cvToString(CVFlags cv);
 
@@ -149,10 +149,10 @@ string leftMangle(Type const *t, bool innerParen)
       }
       return s;
     }
-    
+
     case Type::T_FUNCTION: {
       FunctionType const *ft = t->asFunctionTypeC();
-      
+
       stringBuilder sb;
 
       // FIX: FUNC TEMPLATE LOSS
@@ -184,7 +184,7 @@ string leftMangle(Type const *t, bool innerParen)
 
     case Type::T_ARRAY: {
       ArrayType const *at = t->asArrayTypeC();
-      
+
       return leftMangle(at->eltType);
     }
 
@@ -198,7 +198,7 @@ string leftMangle(Type const *t, bool innerParen)
           ptm->atType->isArrayType()) {
         s << "(";
       }
-      
+
       // sm: the following line fails when the 'inClass' is
       // a type variable
       //s << ptm->inClass()->name << "::*";
@@ -358,11 +358,11 @@ string mangleVariable(Variable const *v)
   else {
     sb << mangle(v->type);
   }
-  
+
   #if 0
   if (value && (!(tsf & TTS_CANON))) {
     sb << renderExpressionAsString(" = ", value);
-  }    
+  }
   #endif // 0
 
   return sb;

@@ -4,7 +4,7 @@
 class Foo {
 public:
   typedef int Int;
-  
+
   void f()
   {
     Int x;

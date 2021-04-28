@@ -7,7 +7,7 @@ struct A {
 public:
   A(const char *s);
 };
-                    
+
 // what if A<char> has already been instantiated?
 //typedef A<char> foo;
 

@@ -30,7 +30,7 @@ void foo()
   // be convertible to ptr-to-derived-member (no param lists involved)
 
   another( &A::x );
-  
+
   int Base::*bptr2;
   another(bptr2);
 }

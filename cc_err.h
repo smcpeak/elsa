@@ -27,7 +27,7 @@ enum ErrorFlags {
   // cppstd does not require diagnosis of errors in uninstantiated
   // template code, changing an EF_STRONG to EF_NONE should not cause
   // Elsa to become nonconformant, merely less convenient.  Nevertheless,
-  // some of our regression tests contain (intentional) errors that are 
+  // some of our regression tests contain (intentional) errors that are
   // diagnosed only because of EF_STRONG.
   //
   // 2005-08-08: Removed EF_STRONG_WARNING, replacing uses of it with
@@ -47,12 +47,12 @@ enum ErrorFlags {
   // presence of this error message in the error list *cannot* be
   // used to justify reducing the severity of the x_assert.
   EF_FROM_DISAMB   = 0x08,
-  
+
   // This flag means the error arose during type checking of an
   // uninstantiated template body.  In permissive mode, such messages
   // are turned into warnings.
   EF_FROM_TEMPLATE = 0x10,
-  
+
   // When an error is turned into a warning due to permissive mode,
   // this flag is set; i.e., it would have been an error in strict
   // mode.
@@ -72,7 +72,7 @@ public:
   SourceLoc loc;          // where the error happened
   string msg;             // english explanation
   ErrorFlags flags;       // various
-  
+
   // string of instantiation locations leading to the error; if
   // no instantiations are involved, this should be "", which does
   // not require any allocation to store (you can also pass NULL
@@ -98,7 +98,7 @@ public:
 // list of errors; a reference to this will be passed to functions
 // that want to report errors to the user
 class ErrorList {
-private:           
+private:
   // the error objects are actually stored in reverse order, such
   // that (effectively) appending is fast and prepending is slow;
   // this field is private because I want to isolate knowledge of
@@ -123,16 +123,16 @@ public:
   // 'src' empty, and takes time no more than proportional to the
   // length of the 'src' list; it's O(1) if 'this' is empty
   void takeMessages(ErrorList &src);         // append
-  
+
   // this one takes time proportional to 'this' list
-  void prependMessages(ErrorList &src);      // prepend 
+  void prependMessages(ErrorList &src);      // prepend
 
   // mark all of the messages with EF_WARNING
   void markAllAsWarnings();
-  
+
   // mark all with EF_FROM_DISAMB
   void markAllAsFromDisamb();
-                                         
+
   // mark with arbitrary flags
   void markAllWithFlag(ErrorFlags flags);
 
@@ -146,14 +146,14 @@ public:
   int count() const;            // total
   int numErrors() const;        // # that are not EF_WARNING
   int numWarnings() const;      // # that *are* EF_WARNING
-      
+
   // number of errors with any flags set in 'flags'
   int countWithAnyFlag(ErrorFlags flags) const;
 
   // true if any are EF_DISAMBIGUATES
   bool hasDisambErrors() const;
   bool isEmpty() const { return list.isEmpty(); }
-                                      
+
   // did any of the errors arise from outside a disambiguation process?
   bool hasFromNonDisambErrors() const;
 

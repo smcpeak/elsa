@@ -1,5 +1,5 @@
 // t0570.cc
-// matching with a DQT    
+// matching with a DQT
 
 // see also t0488.cc
 
@@ -19,7 +19,7 @@ void foo()
 }
 
 
-      
+
 // this ought to fail template argument deduction, but
 // *not* by going into an infinite loop
 template <class T>
@@ -29,7 +29,7 @@ void goo()
 {
   int i, j;
   //ERROR(1): g(i, j);     // arg deduction should fail
-  
+
   // but this is ok
   g<int>(i,j);
 }

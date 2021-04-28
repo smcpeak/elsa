@@ -5,9 +5,9 @@
 void f(int const &x);
 
 void foo(unsigned int &y)
-{                       
+{
   f(y);
-  
+
   int const &x = y;
 }
 

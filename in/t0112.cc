@@ -1,5 +1,5 @@
 // t0112.cc
-// some random problem..   
+// some random problem..
 
 
 template <class CharT>
@@ -11,7 +11,7 @@ class nsSharedBufferHandle : SomeBase<CharT>
       void
       AcquireReference() const
         {
-          nsSharedBufferHandle<CharT>* mutable_this = 
+          nsSharedBufferHandle<CharT>* mutable_this =
             const_cast<  nsSharedBufferHandle<CharT>*  >(  this ) ;
           mutable_this->set_refcount( get_refcount()+1 );
         }

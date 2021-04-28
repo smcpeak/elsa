@@ -17,7 +17,7 @@ void getToken()
 {
   lookahead = getNextToken();
 }
- 
+
 
 // string representation of current token
 string tokenToString()
@@ -71,7 +71,7 @@ void parseBracePair(ArrayStack<Interval> &pairs)
   pairs.push(Interval(lo, hi));
 }
 
-                              
+
 // return a random number in [0,n-1], uniformly distributed
 static int randomNumber(int n)
 {
@@ -84,15 +84,15 @@ void shuffleRange(ArrayStack<Interval> &pairs, int lo, int hi)
   while (lo < hi) {
     // exchange 'lo' with a random element above it
     int other = lo+1+randomNumber(hi-lo);
-    
+
     // should only be exchanging elements with equal size
     xassert(pairs[lo].size() == pairs[other].size());
-                       
+
     // swap
     Interval tmp = pairs[lo];
     pairs[lo] = pairs[other];
     pairs[other] = tmp;
-    
+
     lo++;
   }
 }
@@ -189,7 +189,7 @@ void entry(int argc, char *argv[])
   }
 
   cout << "link chases: " << Node::linkChases << "\n";
-  
+
   delete tree;
 }
 

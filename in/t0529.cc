@@ -22,7 +22,7 @@ struct B {
     A const b;
     __testOverload(b.g(), 6);
   }
-  
+
   // using the mutable member, it's not const
   void k() const
   {

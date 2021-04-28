@@ -69,7 +69,7 @@ void f()
   __getStandardConversion((Foo &)0, (Foo const &)0, SC_IDENTITY);
   __getStandardConversion((Derived)0, (Derived const &)0, SC_IDENTITY);
   __getStandardConversion((Derived)0, (Base const &)0, SC_PTR_CONV);
-                                                            
+
   // binding an rvalue to a non-const reference
   __getStandardConversion((Derived)0, (Derived &)0, SC_ERROR);
   __getStandardConversion((Derived)0, (Base &)0, SC_ERROR);

@@ -3,7 +3,7 @@
 
 template <class T>
 struct C {
-  C(T *x);    
+  C(T *x);
 };
 
 template <class T>

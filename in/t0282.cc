@@ -33,7 +33,7 @@ void g()
 {
   __elsa_checkType(c2 + i,  (int)0);
   __elsa_checkType(c2 + c2, (int)0);     // char + char = int
-  
+
   __elsa_checkType(u2 + l, (unsigned long)0);
 }
 

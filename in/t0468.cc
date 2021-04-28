@@ -17,7 +17,7 @@ struct A : public B<char, U> {
   void call_f() {
     f();
   }
-  
+
   // a normal func, then 'using' brings in an overloaded version
   int g(int);
   using B<char, U>::g;

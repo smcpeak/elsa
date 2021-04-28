@@ -9,7 +9,7 @@ struct C : T {
 struct B {
   int a;
 };
-        
+
 template <class T>
 struct D {
   C<T> c;

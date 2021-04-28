@@ -46,8 +46,8 @@ void j(D &d)
   foo(d);
   foo(e);     // possible via implicit conversion
 
-  *d;         // finds ::operator*(D)                                
-  
+  *d;         // finds ::operator*(D)
+
   // icc recognizes this as illegal, gcc (3.4.0, 3.4.3) does not
   //ERROR(1): *e;         // finds nothing, since no class-typed args
 }

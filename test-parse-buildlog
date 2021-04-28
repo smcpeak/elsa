@@ -12,7 +12,7 @@
 #   .    success
 #
 # Finally, on stderr the sum of all failures will be printed.
-#                                              
+#
 # Then, the saved log can be examined for lines that begin with
 # "failing" to find the details on what failed.
 
@@ -111,7 +111,7 @@ sub timeStamp {
   $curDate = `date`;
   chomp($curDate);
   print("time: $curDate\n");
-}           
+}
 
 timeStamp();
 
@@ -268,10 +268,10 @@ sub run {
 
   if ($code != 0) {
     my $expl;
-    if ($code >= 256) {    
+    if ($code >= 256) {
       # ordinary exit with nonzero status
       $code = $code >> 8;
-      $expl = "code $code";              
+      $expl = "code $code";
     }
     else {
       # terminated by signal

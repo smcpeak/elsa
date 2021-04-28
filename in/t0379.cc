@@ -7,7 +7,7 @@ namespace A {
     int g();
   };
   int x;
-  
+
   namespace C {
     int y;
   }

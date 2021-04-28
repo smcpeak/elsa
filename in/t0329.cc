@@ -16,11 +16,11 @@ typedef A A3;
 
 void f()
 {
-  A a;                          
+  A a;
 
   // use the class name directly
   a.A::foo();
-                   
+
   // use a global typedef alias
   a.A2::foo();
 

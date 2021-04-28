@@ -3,10 +3,10 @@ readme.txt for Elkhound/Elsa distribution
 
 This release is provided under the BSD license.  See license.txt.
 
-Elkhound is a parser generator.  
+Elkhound is a parser generator.
 Elsa is a C/C++ parser that uses Elkhound.
 
-See additional documentation in index.html in the various 
+See additional documentation in index.html in the various
 subdirectories.
 
 Alternatively, see the Documentation section of
@@ -15,7 +15,7 @@ http://www.cs.berkeley.edu/~smcpeak/elkhound/ .
 
 Build instructions:
 
-  $ ./configure 
+  $ ./configure
   $ make
   $ make check     (optional but a good idea)
 

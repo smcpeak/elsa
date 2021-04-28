@@ -6,7 +6,7 @@ struct B {};
 template <class T>
 struct A {
   static int a;
-  
+
   static B b1;
   static struct B b2;
   static B b3;

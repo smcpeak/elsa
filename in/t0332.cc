@@ -6,7 +6,7 @@ void f(char * const &p);
 void foo()
 {
   char arr[2];
-  
+
   f(arr);
   f("whatever");
 }

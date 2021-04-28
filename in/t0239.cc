@@ -17,7 +17,7 @@ void f()
 {
   int *i;
   float *f;
-         
+
   foo(f);      // use primary
   foo(i);      // use specialization
 }

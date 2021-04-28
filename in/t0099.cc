@@ -6,7 +6,7 @@ class streambuf;
 typedef int __ssize_t;
 
 struct _ios_fields
-{  
+{
     streambuf *_strbuf;
 };
 

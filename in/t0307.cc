@@ -17,7 +17,7 @@ void f(A const &aref)
   //ERROR(1): b? 3 : 4;       // no conversion operator
 
   //ERROR(2): aref? 5 : 6;    // operator not usable b/c of 'const'
-  
+
   A const *aptr;
   aptr? 7 : 8;                // pointer-to-bool conversion ok
 }

@@ -19,7 +19,7 @@ namespace N1 {
   struct A {
     enum { B=2 };
   };
-  
+
   enum { C=5 };
 
   //         +--------ntparam-----------+

@@ -58,6 +58,6 @@ void foo()
   //ERROR(9): ~p;    // '~' to pointer
   //ERROR(10): ~s;   // '~' to struct
   //ERROR(11): ~foo; // '~' to function
-  
+
   // see also t0343.cc
 }

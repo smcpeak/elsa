@@ -1,7 +1,7 @@
 // t0252.cc
 // forward-declare a template class specialization
 // needed for ostream, char_traits<char>
-        
+
 // fwd declare the primary
 template <class T>
 class A;

@@ -10,7 +10,7 @@ void emitTable(MyEmitCode &out, EltType const *table, int size, int rowLength,
 {
 }
 
- 
+
 template <class EltType>
 void emitOffsetTable(MyEmitCode &out, EltType **table, EltType *base, int size,
                      char const *typeName, char const *tableName, char const *baseName)

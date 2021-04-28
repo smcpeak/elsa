@@ -8,7 +8,7 @@ struct QGArray
 };
 
 
-template < class type > 
+template < class type >
 class QArray : public QGArray {
 public:
   void duplicate (const type * a, unsigned n)

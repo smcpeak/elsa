@@ -10,7 +10,7 @@ struct A f() {
   // declarator should not make cdtor statements
   struct A a2;
   struct A a3 = {1};            // IN_compound
-  
+
   // sm: commented this out because it's a gnu extension.. I suppose
   // we could have a special directory for GNU/C tests..
   //struct A a4 = (struct A) {2};

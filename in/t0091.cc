@@ -32,7 +32,7 @@ void f()
 {
   uint x;
   x.~uint();    // legal
-  
+
   //ERROR(1): x.~uint(1);   // not legal
 }
 

@@ -7,7 +7,7 @@ struct A {
   {
     g(p);
   }
-  
+
   void g(T *p);
 };
 
@@ -16,7 +16,7 @@ void foo()
   A<char> a;
   char *p = 0;
   a.f(p);
-  
+
   // confusion partly arises because some specializations are invalid
   A<float> b;
   //ERROR(1): b.f(p);

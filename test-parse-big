@@ -49,7 +49,7 @@ while [ "$1" != "" ]; do
       ./test-parse-buildlog $HOME/bld/doxygen-1.2.14/make.out >doxygen.parse.out
       if [ $? = 130 ]; then exit 130; fi
       ;;
-        
+
     pine)
       # 80 modules
       echo "Pine 4.44"

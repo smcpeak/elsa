@@ -4,5 +4,5 @@
 template <int s, int t = s>
 class B;
 
-template <int z, int t> 
+template <int z, int t>
 class B {};

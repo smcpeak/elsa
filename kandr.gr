@@ -153,7 +153,7 @@ nonterm(IDeclarator*) KandRDirectDeclarator {
 //       ql:QLiterals                      // qualifier literals
 //       cv:CVQualifierSeqOpt
       { return new_D_func_kandr
-          (lang, 
+          (lang,
            loc,
            d,
            NULL/* no normal params*/,
@@ -162,7 +162,7 @@ nonterm(IDeclarator*) KandRDirectDeclarator {
            kAndR_params
            );
       }
-      
+
   // sm: for in/c/k0003.c; the KandR declarator structure is
   // pretty messed up, but when I made a few tweaks it introduced
   // quite a few conflicts...
@@ -225,7 +225,7 @@ nonterm(FakeList<PQ_name>*) KandRIdentifierList {
   -> i:KandRIdentifier
        { return FakeList<PQ_name>::makeList(i); }
   -> i:KandRIdentifier "," e:KandRIdentifierList
-       { i->setNext(e->first()); 
+       { i->setNext(e->first());
          return FakeList<PQ_name>::makeList(i); }
 }
 
@@ -235,7 +235,7 @@ nonterm(PQ_name*) KandRIdentifier {
 }
 
 // implicit-int ****************
-                            
+
 // modifiers that can precede a function decl/defn in C; note
 // that the only intersection with CDtorModifier is "inline"
 nonterm(UberModifiers) CFuncModifier_no_inline {
@@ -285,7 +285,7 @@ nonterm(Function*) ImplIntFunctionDefinition {
   // in/k0006.c: need some more variants; I spell them out to avoid
   // introducing too many conflicts
   -> m1:CFuncModifier_no_inline m2:CFuncModifierSeq d:Declarator b:FunctionBody
-       {                              
+       {
          UberModifiers m = uberCombine(loc, m1, m2);
          DeclFlags df = uberDeclFlags(m);
          CVFlags cv = uberCVFlags(m);

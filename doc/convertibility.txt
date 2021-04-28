@@ -8,7 +8,7 @@ Author: Scott McPeak
 --- Introduction ---
 
 This is a characterization of (standard) convertibility relation (C++
-standard, section 4), and its role in operator overload analysis. 
+standard, section 4), and its role in operator overload analysis.
 The first part builds a partial order on types, R, to describe
 convertibility.  The second part uses R to assist in the
 implementation of operator overload resolution.
@@ -299,12 +299,12 @@ operator overload resolution.  The difficulty arises from section
 
   "For every T, where T is a pointer to object type, there exist
   candidate operator functions of the form
-  
+
     ptrdiff_t  operator- (T, T);"
-    
+
 Two things make this difficult.  First, this is an infinite set
 of candidate functions; we can't straightforwardly materialize all
-of the candidates and hand them to overload resolution.  
+of the candidates and hand them to overload resolution.
 
 Second, the types of the arguments are *correlated*; in fact, they
 have to be equal.  If they were not correlated (as in e.g. 13.6
@@ -317,12 +317,12 @@ ambiguity in *both* arguments but still an unambiguous call:
     operator int* ();
     operator float* ();
   };
-  
+
   struct B {
     operator float* ();
     operator char* ();
   };
-  
+
   int f()
   {
     A a;
@@ -335,7 +335,7 @@ such type (float*) can be converted-to by both arguments.  So the
 candidate
 
   ptrdiff_t  operator- (float*,float*);
-  
+
 is the unambiguous best candidate, and the call site has implicit
 calls to A::operator float*() and B::operator float*().
 
@@ -346,11 +346,11 @@ appear anywhere in the program.  For example:
   struct C {
     operator int const **();
   };
-  
+
   struct D {
     operator int volatile **();
   };
-  
+
   int g()
   {
     C c;
@@ -362,7 +362,7 @@ The winning candidate is
 
   ptrdiff_t  operator- (int const volatile * const *,
                         int const volatile * const *);
-                        
+
 even though that parameter type doesn't appear in the program.  In
 fact, current versions of GCC (through 3.3 at least) mistakenly
 believe the expression above is illegal, because GCC only tries (a
@@ -371,7 +371,7 @@ subset of) types that do appear in the program.
 So what's the answer?  Well, consider any pair of types to which both
 arguments can convert (directly).  If the ultimate resolution picks
 those two conversions, what would the instantiation of the operator
-function be? 
+function be?
 
 Suppose the first argument to operator- has a conversion to U, and the
 second has a conversion to V.  We need a type T such that both U and V
@@ -518,7 +518,7 @@ conversion functions, the program is very likely to use the same
 But the question remains: could this algorithm be improved to use
 fewer LUB calls?  I don't know.  I certainly don't see how, but also
 don't see an argument (such as a constructive adversary) to say that
-it could not be done.  
+it could not be done.
 
 Another interesting question: GCC's (current) algorithm appears to be
 linear, but it is also wrong.  Does that matter?  Do users need or

@@ -1,7 +1,7 @@
 struct A {};
 
 void f() {
- 
+
   struct {
     struct A z;
   } *p;

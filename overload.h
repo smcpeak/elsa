@@ -122,12 +122,12 @@ enum OverloadFlags {
   OF_NONE        = 0x00,           // nothing special
   OF_NO_USER     = 0x01,           // don't consider user-defined conversions
   OF_NO_EXPLICIT = 0x02,           // disregard DF_EXPLICIT Variables
-  
+
   // this flag means the candidate set may contain a mix of static
   // and nonstatic methods, and that resolution must explicitly
   // account for the non-uniformity
   OF_METHODS     = 0x04,
-  
+
   // overload resolution is being done at an operator invocation site
   OF_OPERATOR    = 0x08,
 
@@ -148,7 +148,7 @@ public:      // data
   OverloadFlags flags;
   PQName * /*nullable*/ finalName;
   ArgumentInfoArray &args;
-  
+
   // when non-NULL, this indicates the type of the expression
   // that is being copy-initialized, and plays a role in selecting
   // the best function (13.3.3, final bullet)
@@ -160,7 +160,7 @@ public:      // data
 
   // these are the "viable candidate functions" of the standard
   ObjArrayStack<Candidate> candidates;
-  
+
   // all candidates processed; used for error diagnosis
   ArrayStack<Variable*> origCandidates;
 
@@ -211,12 +211,12 @@ public:      // funcs
   // NULL if there is no clear winner
   Variable *resolve(bool &wasAmbig);
   Variable *resolve();     // ignore ambiguity info
-  
+
   // slightly richer interface: return the complete Candidate,
   // which contains the Variable, but also the conversions;
   // NOTE: the candidate will disappear when '*this' does!
   Candidate const * /*serf*/ resolveCandidate(bool &wasAmbig);
-  
+
   // determine the return value of a candidate
   Type *getReturnType(Candidate const *winner) const;
 };
@@ -274,7 +274,7 @@ ImplicitConversion getConversionOperator(
 //       conversion is worse than a ->S' conversion
 // if no type satisfies (a) and (b), return NULL; furthermore, if
 // a type satisfies (a) but not (b), then yield 'wasAmbig'
-//                 
+//
 // NOTE: This only works for pointers, pointers-to-member, and enums.
 // If you give it some other types, it might return one of them, but
 // it might not actually be the the LUB.  This doesn't cause a problem

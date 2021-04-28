@@ -3,9 +3,9 @@
 
 template <int n>
 struct A {};
-  
+
 int f();
-  
+
 struct B {
   int b;
 };

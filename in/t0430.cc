@@ -1,6 +1,6 @@
 // t0430.cc
 // build a dependent qualified type out of a typedef
- 
+
 template <class T>
 struct A {
   typedef T *foo_t;

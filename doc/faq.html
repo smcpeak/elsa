@@ -99,7 +99,7 @@ To fix the code, change it to:
 <p>
 This change has the effect of making <tt>x</tt> depend on the template
 arguments (since <tt>this</tt> inside a template class is considered
-dependent), and hence lookup of <tt>x</tt> will be delayed until 
+dependent), and hence lookup of <tt>x</tt> will be delayed until
 the template is instantiated, at which point we will know which <Tt>Base</Tt>
 will be used and can therefore look inside it.  Assuming the <Tt>Base</Tt>
 used is the one shown above, <tt>x</tt> will then be found.

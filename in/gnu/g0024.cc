@@ -1,4 +1,4 @@
-// g0024.cc                               
+// g0024.cc
 // excerpt from gcc-2 header "stl_alloc.h" that contains invalid code
 // but I need to allow if I want to handle code preprocessed with
 // gcc-2

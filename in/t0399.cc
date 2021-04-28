@@ -15,6 +15,6 @@ void foo()
   C *c;
 
   x = c->B::A::i;
-  
+
   x = B::A::i;
 }

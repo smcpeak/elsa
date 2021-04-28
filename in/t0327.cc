@@ -14,5 +14,5 @@ void f(A<int> const &a);
 void foo()
 {
   int i;
-  f(i); 
+  f(i);
 }

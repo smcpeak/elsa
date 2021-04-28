@@ -4,7 +4,7 @@
 template <class T>
 struct A {
   typedef int INT;
-  
+
   void foo(INT i);
 };
 

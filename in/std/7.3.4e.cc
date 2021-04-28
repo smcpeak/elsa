@@ -26,7 +26,7 @@ void f()
   D::d1++;               // OK
   d2++;                  // OK: D::d2
   e++;                   // OK: E::e
-  
+
   // I don't get these right because my lookup interfaces are
   // not capable of returning sets of declarations
   //f(1);                  // error: ambiguous: D::f(int) or E::f(int)?

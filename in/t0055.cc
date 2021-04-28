@@ -1,6 +1,6 @@
 // t0055.cc
 // member initializer where member is a templatized base class
-      
+
 template <class T>
 class A {
 public:

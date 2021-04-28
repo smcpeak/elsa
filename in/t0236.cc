@@ -5,7 +5,7 @@ template <class T1>
 struct A {
   template <class V1>
   int foo(T1* x, V1 *w)
-  { 
+  {
     return sizeof(T1) + sizeof(V1);
   }
 

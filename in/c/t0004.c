@@ -7,7 +7,7 @@ struct Outer {
   } is;
   enum InnerEnum { InnerEnumerator } ie;
   int y;
-  
+
   // not legal C, but I wanted to test the mechanism that pushes
   // type definitions to the outer scope, so I'll leave it..
   typedef int InnerTypedef;

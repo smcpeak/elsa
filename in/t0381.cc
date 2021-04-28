@@ -23,7 +23,7 @@ int foo()
   {
     // similar for enums
     //ERROR(2): typedef enum E F;
-    
+
     enum F f;
   }
 

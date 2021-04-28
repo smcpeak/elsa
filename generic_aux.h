@@ -4,7 +4,7 @@
 
 #include "cc_ast.h"         // C++ AST
 
- 
+
 // generic get/set 'ambiguity'
 template <class NODE>
 NODE *getAmbiguity(NODE const *n)

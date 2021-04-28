@@ -17,7 +17,7 @@ typedef TPoint<double> fpoint;
 
 
 stringBuilder& operator<< (stringBuilder &sb, point const &pt)
-{   
+{
   // would require adding operators for stringBuilder, but
   // that is not what this file is intended to test
   //return sb << "(" << pt.x << ", " << pt.y << ")";
@@ -31,6 +31,6 @@ stringBuilder& operator<< (stringBuilder &sb, fpoint const &pt)
 }
 
 
- 
- 
- 
+
+
+

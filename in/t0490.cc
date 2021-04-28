@@ -15,7 +15,7 @@ typedef int (*arg2)(char * __restrict inbuf);
 void bar2(arg2 x)
 {
   // I actually think it is unsound to allow this, but the rules
-  // for C++ function types say to drop cv, and the rules for 
+  // for C++ function types say to drop cv, and the rules for
   // C99 restrict say to treat it like cv, so here we are.
   foo((arg2)x);
 }

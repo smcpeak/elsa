@@ -15,7 +15,7 @@ void foo()
 }
 
 
-// little trick to get compiler to tell me the 
+// little trick to get compiler to tell me the
 // value of a compile-time constant
 template <int x>
 class A {};
@@ -60,7 +60,7 @@ void bar()
   A<( 4 << 1 <? 1 )> a5;
   one(a5);
 
-  
+
   // it seems that '<?' and '>?' have equal precedence, with
   // left associativity
 
@@ -95,8 +95,8 @@ void bar()
   //   if '<?' is higher, this is 1    (yes)
   A<( 5 || 0 <? 0 )> a3;
   one(a3);
-  
-  
+
+
   // wrong types
   //ERROR(1): 3 <? a3;
   //ERROR(2): a3 >? 3;

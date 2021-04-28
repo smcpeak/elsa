@@ -9,8 +9,8 @@
 int main () {
     // invalid, rejected by gcc-3.4.3
     //ERROR(1): int x = (int) &((struct {int dummy1; int dummy2;} *) 0)->dummy2;
-    
-    
+
+
     // all these are invalid
     //ERROR(2): (struct { int x; }*)0;
     //ERROR(3): const_cast<struct { int x; }*>(0);

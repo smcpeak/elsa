@@ -6,7 +6,7 @@ template <class T>
 struct A {
   int foo(typename T::type1 x);
   int foo(typename T::type2 x);
-                                                
+
   // cannot apply template args to T
   //ERROR(1): int bar(typename T<int>::type3 x);
 };

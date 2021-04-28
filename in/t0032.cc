@@ -35,7 +35,7 @@ void someFunc()
 
 
 char *anotherFunc()
-{     
+{
   //ERROR(2): return mStr;
 }
 

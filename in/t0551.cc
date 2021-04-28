@@ -3,7 +3,7 @@
 // template specialization, but we should have remembered
 // the template itself
 
-template <class T> 
+template <class T>
 void f(T *p);
 
 struct C {
@@ -19,7 +19,7 @@ struct A {
   {
     B *b = 0;
     f(b);
-    
+
     C c;
     c.m(b);
   }

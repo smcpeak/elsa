@@ -3,7 +3,7 @@
 struct S {
   int x;
   int (*funcptr)(int);
-  
+
   template <int n>
   int templfunc(int);
 } *s;
@@ -17,7 +17,7 @@ int foo() {
 
   s->x<1>(2);
   s->x < 1 || 2 > (3);
-  
+
   s->templfunc<1>(2);
   (s->templfunc<1>)(2);
 }

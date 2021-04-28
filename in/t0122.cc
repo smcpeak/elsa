@@ -16,7 +16,7 @@ class X {
 
   static int L();
   friend int m();
-  
+
   X();
 };
 

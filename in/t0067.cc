@@ -4,7 +4,7 @@
 class Foo {
 public:
   void f(int, int);
-  int *f(int);     
+  int *f(int);
 };
 
 int main()

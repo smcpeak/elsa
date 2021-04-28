@@ -1,5 +1,5 @@
 // t0357.cc
-// trying to demonstrate effect of this-> elaboration 
+// trying to demonstrate effect of this-> elaboration
 // for parenthesized functions
 
 class C {

@@ -4,4 +4,4 @@
 
 class bad_alloc {};
 
-void* operator new(int size) throw(bad_alloc);             
+void* operator new(int size) throw(bad_alloc);

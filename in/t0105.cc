@@ -7,9 +7,9 @@ class Goo {
 
 class RefBox {
     public:
-    int x;                       
-    int &yref;                   
-    Goo &z;                      
+    int x;
+    int &yref;
+    Goo &z;
 
     RefBox(int x0, int &yref0, Goo &z0) : x(x0), yref(yref0), z(z0) {}
 };

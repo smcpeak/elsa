@@ -12,8 +12,8 @@ struct A {
   T g(T x, T y);                // forward declaration
 };
 
-template <class T> 
-T A<T>::f(T x, T y) 
+template <class T>
+T A<T>::f(T x, T y)
 {
   if (1) {                      // cqual doesn't see this is determined at compile time
     return x;                   // bad
@@ -22,8 +22,8 @@ T A<T>::f(T x, T y)
   }
 }
 
-template <class T> 
-T A<T>::g(T x, T y) 
+template <class T>
+T A<T>::g(T x, T y)
 {
   if (1) {                      // cqual doesn't see this is determined at compile time
     return 17;                  // irrelevant
@@ -32,7 +32,7 @@ T A<T>::g(T x, T y)
   }
 }
 
-int main() 
+int main()
 {
   int /*$tainted*/ x;
 //    int x = 1;

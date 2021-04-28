@@ -60,7 +60,7 @@ void foo(A a, A b, A c)
   S<A> s1(3, a,b,c);
   S<A> s2(3, a,b);
   //ERROR(6): S<A> s3(3, a);
-  
+
   // invoke constructor via E_constructor
   0, S<A>(3, a,b,c);
   0, S<A>(3, a,b);
@@ -70,7 +70,7 @@ void foo(A a, A b, A c)
   new S<A>(3, a,b,c);
   new S<A>(3, a,b);
   //ERROR(8): new S<A>(3, a);
-  
+
   // there is also invocation via member initializer, but that should
   // be covered if the above cases are since they all use the same code
 }

@@ -46,7 +46,7 @@ pushdown automaton is more powerful than a finite automaton in that it can
 deal with arbitrarily nested constructs.
 
 <p>
-Ignoring the dashed arrows (which are discussed below), this automaton is 
+Ignoring the dashed arrows (which are discussed below), this automaton is
 completely deterministic:
 in every state, for every next token, there is either zero or one
 possible transitions (zero transitions corresponds to a syntax error).
@@ -100,7 +100,7 @@ the grouping punctuator interpretation is used.  Example:
   int f(  int (x)  );        // same type as above
 
   int g(  int (y)  );        // 'g' accepts an integer
-  
+
   int h(  int ()  );         // 'h' accepts a function
 </pre>
 
@@ -118,7 +118,7 @@ In C++, objects can be initialized by invoking a constructor ("ctor"):
 </pre>
 
 <p>
-In the automaton, this possibility adds an transition on "leftparen" from 
+In the automaton, this possibility adds an transition on "leftparen" from
 "Declarator End" (DE) to the parsing of an argument list (not shown); the
 arc is labeled "ctor init (Note 4)" (CI).
 

@@ -4,14 +4,14 @@
 template <class T>
 struct A {
   friend int foo(T *t);
-  
+
   // friend that does not use any of the template params
   friend int zoo(int *p);
-  
+
   void member()
   {
     int *q = 0;
-    
+
     // I cannot tell whether these nondependent lookups should
     // find the friends; icc accepts while gcc rejects
     //foo(q);

@@ -40,9 +40,9 @@ struct B {
   ~B()
 //ERROR(7):    : something(5)     // stray member init
   {}
-  
+
   B();
-  
+
   int x;
   static int y;
   int f(int);
@@ -81,7 +81,7 @@ typedef int Func(int);
 
 
 // ------------------
-//ERROR(14): friend 
+//ERROR(14): friend
 class MyFriend {
   int x;
 };
@@ -148,7 +148,7 @@ typedef int &reference;
 struct E {
   E();
 };
- 
+
 // grouping parens on a ctor declarator
 (E::E)()      // icc rejects this!
 {}
@@ -183,7 +183,7 @@ int *makeSomeInts(int x)
   //ERROR(37): return new (int[/*oops*/]);
 
   //ERROR(38): return new int[4][x];
-  
+
   return 0;
 }
 
@@ -203,7 +203,7 @@ void makePtrsToMembers()
   //ERROR(40): void G::*ptr_to_void;
 
   //ERROR(41): int Nonexist::*ptr_to_nonexist;
-  
+
   typedef int INT;
   //ERROR(42): int INT::*ptr_to_int;
 }
@@ -213,7 +213,7 @@ void makePtrsToMembers()
 void charStuff()
 {
   char x;
-  
+
   x = 'a';                  // ok
   //ERROR(43): x = '';      // not ok
 }
@@ -239,7 +239,7 @@ int overloadedFunc(int);
 void useOverloadedFunc()
 {
   overloadedFunc(2);       // ok
-  
+
   //ERROR(47): overloadedFunc++;        // not ok
 }
 
@@ -249,7 +249,7 @@ void coerceArrayToPtr()
 {
   int a[3];
   int *p = 0;
-  
+
   a < p;
 }
 
@@ -257,10 +257,10 @@ void coerceArrayToPtr()
 // ------------------
 struct H {
   int x;
-  
+
   int &intref;
   //ERROR(55): void v;           // needed below
-  
+
   H();
 };
 
@@ -291,7 +291,7 @@ void derefFuncType()
 {
   typedef int (*Func)(int);
   Func f = 0;
-  
+
   f(3);          // ok
   (*f)(3);       // ok
   (**f)(3);      // ok

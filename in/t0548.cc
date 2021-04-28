@@ -57,7 +57,7 @@ namespace Case3 {
   public:
     template <class S>
     class B;
-            
+
     // mention B<T> before we'd get a chance to
     // transfer template member info
     B<T> *p;
@@ -96,7 +96,7 @@ template <class S>
 class A<T>::B {
 public:
   int x;
-  
+
   A<T> *p;
   B<S> *q;
 

@@ -36,7 +36,7 @@ void foo()
 {
   A<int> a1;
   a1.func(A<int>::value);
-  
+
   A<int*> a2;
   a2.func(A<int*>::value2);
 }

@@ -4743,7 +4743,7 @@ void Env::explicitlyInstantiate(Variable *var, DeclFlags instFlags)
       //    instantiation.  See oink/Test/extern_template1.cc (can't test
       //    linking in pure Elsa).
       tinfo->instantiationDisallowed = false;
-      
+
       // It's ok if we haven't seen the definition yet, however, the
       // presence of this explicit instantiation request means that the
       // definition must be somewhere in the translation unit (14.7.2

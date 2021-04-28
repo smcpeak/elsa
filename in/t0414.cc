@@ -10,17 +10,17 @@ namespace N {
   struct S {
     int y;
   };
-  
+
   int S(int);    // non-type names
-  
+
   void foo()
-  {        
+  {
     // what does "ignoring ..." means if we see a non-type in the 'variables'
     // space?  two possibilities:
     //   - skip the scope, which would find ::S
     //   - first check the tag space, which would find N::S
-    struct S s;                                            
-    
+    struct S s;
+
     //ERROR(1): s.x;    // legal?
                 s.y;    // legal?     icc and gcc like this one, i.e., N::S
 

@@ -13,7 +13,7 @@ void bar(T &t)
 }
 
 void foo()
-{ 
+{
   int x;
   bar(x);
 }

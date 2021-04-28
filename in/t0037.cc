@@ -7,9 +7,9 @@ public:
 };
 
 class Sub : private Super {
-public:    
+public:
   // publish 'x' despite private inheritance
-  Super::x;                                 
-  
+  Super::x;
+
   //ERROR(1): y;     // missing superclass
 };

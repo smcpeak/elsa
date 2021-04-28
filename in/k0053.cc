@@ -7,7 +7,7 @@
 
 // ERR-MATCH: attempt to instantiate `.*?', but no definition has been provided
 
-template <typename T> 
+template <typename T>
 struct S1;
 
 void foo(S1<int> *);
@@ -15,7 +15,7 @@ void foo(S1<int> *);
 void f()
 {
     S1<int>* ptr;
-    
+
     // this is ok; if we *could* instantiate 'S1<int>', then we
     // could consider base class conversions, but not being able
     // to instantiate it is not fatal

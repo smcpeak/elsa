@@ -57,7 +57,7 @@ protected:   // types
     // 'Type*' as being const.
     void setType(Type const *t) { sarg.setType(const_cast<Type*>(t)); }
     Type const *getType() const { return sarg.getType(); }
-                            
+
     // debugging
     string asString() const;
   };
@@ -66,14 +66,14 @@ protected:   // data
   // set of bindings
   typedef ObjMap<char const /*StringRef*/, Binding> BindingMap;
   BindingMap bindings;
-  
+
   // This is used to resolve DQTs during matching.  Originally I'd
   // hoped to keep MType unaware of the environment, but this now
   // seems unavoidable.  On the bright side, it means I can remove
   // all PQName resolution code from MType, since Env can do that.
   Env *env;                    // (nullable serf)
 
-public:      // data                    
+public:      // data
   // This is set to true if a failure to resolve a DQT is the cause of
   // a match failure.  It starts as false, but once set to true, MType
   // does not reset it, so it is up to the caller to reset this flag
@@ -188,7 +188,7 @@ public:      // funcs
   // If you need to resolve DQTs, you have to allowNonConst, so
   // the Env can/must be provided in the constructor call.
   //void setEnv(Env *e) { env=e; }
-  
+
   // what constness mode are we in?
   bool getAllowNonConst() const { return allowNonConst; }
 
@@ -202,7 +202,7 @@ public:      // funcs
   // object will have a record of the instantiation bindings; the
   // const version can only be called when 'nonConst' is false
   bool matchType(Type const *conc, Type const *pat, MatchFlags flags);
-  
+
   // a few more
   bool matchSTemplateArguments(ObjList<STemplateArgument> const &conc,
                                ObjList<STemplateArgument> const &pat,

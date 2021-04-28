@@ -55,7 +55,7 @@ ENUM_BITWISE_OPS(LookupFlags, LF_ALL_FLAGS)     // smbase/macros.h
 
 
 // filter a Variable w.r.t. a given set of flags, returning NULL
-// if the Variable does not pass through the filter  
+// if the Variable does not pass through the filter
 Variable *vfilter(Variable *v, LookupFlags flags);
 
 
@@ -68,7 +68,7 @@ private:     // disallowed
 public:
   LookupSet();
   ~LookupSet();
-  
+
   // copy list contents
   LookupSet(LookupSet const &obj);
   LookupSet& operator= (LookupSet const &obj);
@@ -85,14 +85,14 @@ public:
   // same as above except add 'v' itself, ignoring whether it
   // is an overload set
   void add(Variable *v);
-  
+
   // throw away all the entries except for one; this is used for
   // error recovery
   void removeAllButOne();
-  
+
   // remove any non-templates from the set
   void removeNonTemplates();
-  
+
   // construct a candidate list, one per line, indented
   string asString() const;
   void gdb() const;

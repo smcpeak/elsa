@@ -73,7 +73,7 @@ SimpleTypeId ParseEnv::uberSimpleType(SourceLoc loc, UberModifiers m)
     case UM_SIGNED | UM_LONG_LONG:             return ST_LONG_LONG;
     case UM_LONG_LONG | UM_INT:                return ST_LONG_LONG;
     case UM_LONG_LONG:                         return ST_LONG_LONG;
-    
+
     // C99/GNU complex types
     case UM_FLOAT | UM_COMPLEX:                return ST_FLOAT_COMPLEX;
     case UM_DOUBLE | UM_COMPLEX:               return ST_DOUBLE_COMPLEX;
@@ -115,7 +115,7 @@ UberModifiers ParseEnv
   if (dups) {
     if (dups == UM_INT && lang.allowRepeatedTypeSpecifierKeywords) {
       // in/c/dC0024.c
-      diagnose3(lang.allowRepeatedTypeSpecifierKeywords, loc, 
+      diagnose3(lang.allowRepeatedTypeSpecifierKeywords, loc,
                 "repeated 'int' type specifier (gcc bug allows it)");
     }
     else {

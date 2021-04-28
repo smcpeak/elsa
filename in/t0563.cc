@@ -20,7 +20,7 @@ void f(S *a, typename S::INT i)
 }
 
 void foo(A *a, int i)
-{             
+{
   // I believe this call is ambiguous because both templates
   // match, yet neither can match with the other.  However, both
   // ICC and GCC choose the first 'f'.

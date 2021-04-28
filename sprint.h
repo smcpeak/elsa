@@ -45,7 +45,7 @@ public:      // funcs
   virtual bool visitMember(Member *m)         { return in(m->loc); }
   virtual void postvisitMember(Member*)       { out(); }
 };
-  
+
 
 // convenient entry point
 void structurePrint(TranslationUnit *unit);

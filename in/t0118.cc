@@ -90,7 +90,7 @@ class H {
 class I {
   operator int ();                // line 91
   operator int& ();               // line 92
-}; 
+};
 
 class J {
   J(int);                         // line 96
@@ -173,7 +173,7 @@ void f()
                           IC_USER_DEFINED, SC_IDENTITY, 70, SC_IDENTITY);
   __getImplicitConversion(f, (double)0,
                           IC_USER_DEFINED, SC_IDENTITY, 76, SC_IDENTITY);
-                          
+
   G g;
   __getImplicitConversion(g, (A*)0,
                           IC_USER_DEFINED, SC_IDENTITY, 81, SC_IDENTITY);

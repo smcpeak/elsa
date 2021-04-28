@@ -9,8 +9,8 @@ void f()
 {
   A ac;
   int i;
-  
+
   // example is this line:
   //ERROR(1): &ac.operator int*i;    // parse error
-  
+
 }

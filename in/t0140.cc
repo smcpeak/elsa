@@ -15,7 +15,7 @@ void ddummy() { __testOverload(dummy(), 5); }
 struct F {};
 struct G {};
 struct H : F, G {};
-struct I : F, G {};   
+struct I : F, G {};
 struct J : H, I {};
 
 
@@ -124,7 +124,7 @@ int f4()
 {
   BE be;
   CD cd;
-  
+
   // this should cause multiple instantiations of
   //   operator- (A*,A*)
   // though ultimately it's the only viable candidate, and

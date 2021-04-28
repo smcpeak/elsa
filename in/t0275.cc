@@ -9,7 +9,7 @@ namespace M {
   class A {
     int foo(int);
   };
-                       
+
   //ERROR(1): int barf;      // hides type name above
 
   template <class T>

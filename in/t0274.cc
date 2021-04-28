@@ -7,7 +7,7 @@ namespace N {
   // lookup erroneously finds this one
   int C;
 
-  template <class T> 
+  template <class T>
   class B {
     void f(T);
   };

@@ -12,10 +12,10 @@ void foo()
 
   __elsa_checkType(2*d+4, (double)0);
   __elsa_checkType(4+2*d, (double)0);
-  
+
   char *p;
   int i;
-  
+
   __elsa_checkType(p+i, (char*)0);
   __elsa_checkType(p-i, (char*)0);
   __elsa_checkType(p-p, (int)0);

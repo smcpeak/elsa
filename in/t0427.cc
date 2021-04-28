@@ -24,7 +24,7 @@ struct D1 : B {
 
 struct D2 : D1 {
   using B::S;      //ERRORIFMISSING(1): this is required
-  
+
   int foo()
   {
     S<int> s;

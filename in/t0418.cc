@@ -17,7 +17,7 @@ int A<T>::foo(T *t)
 //ERROR(1): {
 //ERROR(1):   return 1;
 //ERROR(1): }
-          
+
 void f()
 {
   A<int> a;

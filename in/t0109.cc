@@ -17,7 +17,7 @@ void f()
 
   // <3> is not a template argument
   new Bar< 3 > +4 > +5;
-  
+
   // should be an error b/c Zoo is incomplete
   //ERROR(2): new Zoo;
 }

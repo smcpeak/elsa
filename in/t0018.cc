@@ -6,7 +6,7 @@ class Foo;
 int main()
 {
   Foo *x;
-  
+
   //ERROR(1): x->y;   // incomplete type
 
 }

@@ -87,7 +87,7 @@ void foo()
 
   //ERROR(11): a.INT::~INT();    // not a class
   //ERROR(12): a.INT2::~INT2();  // not a class
-  
+
   a.f(1);
   a.A::f(1,2);
   a.::A::f(2);
@@ -97,7 +97,7 @@ void foo()
   b.B::g(1,2);
   b.A::B::g(2);
   //ERROR(14): b.A::f(1);           // wrong class
-  
+
   //ERROR(15): a.INT;               // type
 
   E e;
@@ -123,7 +123,7 @@ void foo()
 
   A::N n;
   //ERROR(16): n.N::q;              // different: namespace vs. class
-  
+
   // the following two *are* legal, because qualified lookup
   // does not consider object and function names
 
@@ -132,7 +132,7 @@ void foo()
 
   A::N3 n3;
   n3.N3::q;            // object vs. class
-               
+
   //ERROR(17): a.~N2();
   //ERROR(18): a.~N3();
 

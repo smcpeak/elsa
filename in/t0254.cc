@@ -7,19 +7,19 @@ struct A {
 
   // must use the 'template' keyword
   //ERROR(1): typedef typename S::Inner<T>::its_type another_my_type;
-  
+
   // inner scope that is *not* a template
   typedef typename S::InnerNontemplate::another_type yet_another_type;
 
   // must not use 'template' if it is not a template
   //ERROR(2): typedef typename S::template InnerNontemplate::another_type yet_another_type2;
-  
-  
+
+
   // some tests where the name in question is at the end of the
   // qualifier chain, not in the middle
   typedef typename S::template Inner<T> inner_t;
   //ERROR(3): typedef typename S::Inner<T> inner_t2;
-  
+
   typedef typename S::InnerNontemplate innerNontemplate;
   //ERROR(4): typedef typename S::template InnerNontemplate innerNontemplate2;
 };
@@ -44,7 +44,7 @@ int f()
 
   int x = *pointer_to_integer;
   x = integer;
-  
+
   return x;
 }
 

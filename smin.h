@@ -27,23 +27,23 @@ public:      // data
 
   // original contents of 'sourceFname;
   GrowArray<char> source;
-  
-  // structural info about 'source'; must be set by client 
+
+  // structural info about 'source'; must be set by client
   // (nullable owner)
   IPTree *tree;
-  
+
   // record of which variants have been tried
   VariantResults results;
-  
+
   // count of tests run
   int passingTests;
   int failingTests;
   int cachedTests;
-  
+
   // sum of the lengths of all inputs tested
   long long testInputSum;
 
-private:     // funcs    
+private:     // funcs
   bool minimize(Node *n);
   bool minimizeChildren(Node *sub);
 

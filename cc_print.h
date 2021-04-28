@@ -251,14 +251,14 @@ class TypePrinter {
   // (has a NULL pointer there), /*anon*/ *will* be printed.  Thus,
   // /*anon*/ is only printed in places where name could go.
   virtual void print(OutStream &out, TypeLike const *type, char const *name = "") = 0;
-  
+
   // retrieve the TypeLike to print for a Variable; in Elsa, this
   // just gets Variable::type, but Oink does something else
   virtual TypeLike const *getTypeLike(Variable const *var);
-  
+
   // retrieve for a Function, nominally Function::funcType
   virtual TypeLike const *getFunctionTypeLike(Function const *func);
-  
+
   // and for an E_constructor, nominally Expression::type
   virtual TypeLike const *getE_constructorTypeLike(E_constructor const *c);
 };

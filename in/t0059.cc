@@ -11,7 +11,7 @@ struct nsReadableFragment
       {
         typedef char* char_ptr;
         typedef unsigned long ulong;
-        
+
         // this line caused a problem because it is two ambiguities
         // nested inside another ambiguity, and while checking the
         // first toplevel ambiguitiy I set the 'type' field of one

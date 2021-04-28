@@ -7,7 +7,7 @@
 // */*anon*/)'
 
 // ERR-MATCH: prior declaration of `operator delete'
-  
+
 // this would make both gcc and icc reject
 //ERROR(1): void operator delete(void *) throw();
 

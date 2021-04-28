@@ -42,13 +42,13 @@ void f()
 // may contain attribute specifiers, whether or not such a list may in
 // that context contain storage class specifiers.
 // [sm: what does "contain" main?  arbitrarily intermixed?  seems so...]
-// 
+//
 // my speculation on the places that a "declaration" can occur:
 //   - toplevel
 //   - function scope
 //   - struct member list
 //   - function parameter list
-            
+
 
 // toplevel:
         __attribute__((blah)) int                              x1;

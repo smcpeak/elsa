@@ -1,13 +1,13 @@
 // t0270.cc
 // minimized from ostream, basic_string<char> ctor
 
-template < typename _Tp > 
+template < typename _Tp >
 class allocator
 {
   typedef int _Alloc;
 };
 
-template < typename _CharT, 
+template < typename _CharT,
            typename _Alloc >
 class basic_string {
 public:

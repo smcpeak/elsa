@@ -8,7 +8,7 @@ struct C
 
 // specialization: one (the first!) parameter
 template <class U>
-struct C<int, U> 
+struct C<int, U>
 {};
 
 // make use of the primary

@@ -7,7 +7,7 @@ template <class T>
 struct Base {
   int S;
   int I;
-  
+
   // I made this overloaded to force Elsa to compare the
   // arguments to the parameters
   int foo(int);
@@ -37,7 +37,7 @@ struct Derived : Base<S> {
 
   void bar() {
     foo(2,3);     // non-dependent; uses ::foo(int, int)
-    
+
     S s;
     foo(s);       // dependent; uses Base<S>::foo
   }

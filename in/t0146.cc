@@ -52,7 +52,7 @@ void f1()
   //ERROR(1): b.operator int() = b;           // 'b' can't convert to an L&
   assign(d, b);        // was: "d = b"
   assign(e, 3);        // was: "e = 3"
-  
+
   // similar to netscape test; hit all the operators
   int mFlags;
   mFlags = ENUMVAL;

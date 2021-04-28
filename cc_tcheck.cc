@@ -6104,7 +6104,7 @@ void compareCtorArgsToParams(Env &env, Variable *ctor,
     if (defaultArgsUsed) {
       env.instantiateDefaultArgs(ctor, defaultArgsUsed);
     }
-                
+
     // in/dk1027.cc: instantiate the dtor too
     //
     // navigating up to get the class is inelegant..
@@ -6114,7 +6114,7 @@ void compareCtorArgsToParams(Env &env, Variable *ctor,
     // close enough
     CompoundType *ct = ctor->scope->curCompound;
     xassert(ct);
-    
+
     // ugh, hacking it again
     Variable *dtor = ct->rawLookupVariable(env.str(stringc << "~" << ct->name));
     if (!dtor) {
@@ -6122,7 +6122,7 @@ void compareCtorArgsToParams(Env &env, Variable *ctor,
       // right now
       return;
     }
-    
+
     // instantiate it if necessary
     env.ensureFuncBodyTChecked(dtor);
   }

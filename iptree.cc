@@ -204,7 +204,7 @@ Node const *Node::queryC(int n) const
     if (sub->ival.contains(n)) {
       return sub->queryC(n);
     }
-    
+
     if (n < sub->ival) {
       sub = sub->left;
     }
@@ -227,7 +227,7 @@ int writeSegment(FILE *fp, GrowArray<char> const &source,
   xassert(start+len <= source.size());
 
   fwrite(source.getArray()+start, 1, len, fp);
-  
+
   return len;
 }
 
@@ -308,7 +308,7 @@ int Node::write(FILE *fp, GrowArray<char> const &source,
     // omit C-F
     int C = ival.lo;
     ret += writeSegment(fp, source, B+1, C-(B+1));   // print B-C
-    
+
     // so when I print E-G, I will actually print F-G
     E = ival.hi;
   }
@@ -323,7 +323,7 @@ int Node::write(FILE *fp, GrowArray<char> const &source,
     G = ival.hi+1;
     ret += writeSegment(fp, source, E+1, G-(E+1));   // print E-G
   }
-  
+
   return ret;
 }
 
@@ -357,7 +357,7 @@ int Node::writeSubs(FILE *fp, GrowArray<char> const &source,
   if (right) {
     ret += right->writeSubs(fp, source, cursor, curOffset);
   }
-  
+
   return ret;
 }
 
@@ -385,10 +385,10 @@ void Node::debugPrintSubs(ostream &os, int ind) const
   if (left) {
     left->debugPrintSubs(os, ind);
   }
-            
+
   // myself
   debugPrint(os, ind);
-  
+
   // right siblings
   if (right) {
     right->debugPrintSubs(os, ind);
@@ -410,7 +410,7 @@ IPTree::~IPTree()
 
 
 Node *IPTree::insert(int lo, int hi)
-{ 
+{
   Node *n = new Node(lo, hi);
   top->insert(n);
   return n;
@@ -455,7 +455,7 @@ int IPTree::getLargestFiniteEndpoint()
   if (!sub) {
     return top->ival.lo;
   }
-  
+
   while (sub->right) {
     sub = sub->right;
   }
@@ -495,7 +495,7 @@ void readFile(rostring fname, GrowArray<char> &dest)
 
     curOffset += len;
   }
-  
+
   // trim the array
   dest.setSize(curOffset);
 }

@@ -15,7 +15,7 @@ class Statement {
   // 'getSuccessors()', and this is therefore protected
   protected NextPtr next;
   public friend class CFGEnv;     // allow CFGEnv to write 'next'
-  
+
   // retrieve all successors of this node, given how we got to this
   // node ('isContinue'), and put them into 'dest'; this can only
   // be called after 'computeCFG' has finished; if this returns an
@@ -30,7 +30,7 @@ class Statement {
   // is a function body)
   public void computeCFG(CFGEnv &env);
   pure_virtual void icfg(CFGEnv &env);    // TODO: make this private (must modify astgen)
-  
+
   // switch has many outgoing edges, so it needs more than just 'next'
   -> S_switch {
        // pointers to all of the cases (& default) in this switch; when

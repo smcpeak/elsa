@@ -23,7 +23,7 @@ void foo()
 
 
 //ERROR(3): long float g;    // malformed type
-                       
+
 // too many!
 //ERROR(4): long long long LLL;
 //ERROR(5): long long long long LLLL;

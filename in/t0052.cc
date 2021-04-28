@@ -22,7 +22,7 @@ void f()
 
   //ERROR(4): e.q;
   //ERROR(5): e.E::q;
-  
+
   //ERROR(6): e.x;    // ambiguous because A is not inherited virtually
 
   F f;

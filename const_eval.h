@@ -90,7 +90,7 @@ public:      // funcs
 
   // *this = *this <op> other;
   void applyBinary(BinaryOp op, CValue other);
-  
+
   // convert this value to 'newType', carrying along the value
   void convertToType(SimpleTypeId newType);
 
@@ -122,7 +122,7 @@ public:      // data
 public:
   ConstEval(Variable * /*nullable*/ dependentVar);
   ~ConstEval();
-  
+
   // evaluation of a Variable is exposed so that it can be
   // used with a Variable not wrapped in an E_variable
   CValue evaluateVariable(Variable *var);

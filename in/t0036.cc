@@ -1,6 +1,6 @@
 // cc.in36
 // testing template implemenation some more
-  
+
 template <class T>
 class Baz {
 public:

@@ -43,7 +43,7 @@ struct B {
   B<S,T> *f2();
   B<T,S> *f3();
   B<T,S> *f4();
-  
+
   static B* p5;
   static B<S,T> *p6;
   static B<T,S> *p7;

@@ -1,6 +1,6 @@
 // cc.in42
 // need to merge ForInitStatement
- 
+
 typedef int Node;
 
 int main()

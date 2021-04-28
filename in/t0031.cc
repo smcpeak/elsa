@@ -8,7 +8,7 @@ class Foo {
 int main()
 {
   void *x;
-  
+
   operator delete (x);
   operator delete[] (x);
 }

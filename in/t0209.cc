@@ -5,7 +5,7 @@ template <class T = int>
 class C {};
 
 int f()
-{    
+{
   // these should have the same type
   C<> *p;
   C<int> *q;

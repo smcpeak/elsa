@@ -5,7 +5,7 @@
 //   class Foo {
 //     ...
 //   };
-// the declarator is missing, and it thinks of "x;" the 
+// the declarator is missing, and it thinks of "x;" the
 // same way potentially..
 
 int const c;

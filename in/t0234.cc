@@ -1,7 +1,7 @@
 // t0234.cc
 // forward-declared function template with differing template
 // parameter lists
-                             
+
 // fwd
 template <class S1, class T1>
 int foo(S1 *s, T1 *t);

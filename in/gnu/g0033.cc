@@ -1,7 +1,7 @@
 // g0033.cc
 // does typeof applied to an array type incorporate knowledge
 // of a later-added size?
-        
+
 
 extern int a[];                 // initially, no size specified
 

@@ -169,7 +169,7 @@ int main()
 
   int A::*i = 0;
   f7(i);         // call f7< int >, converting int A::* to int const A::*
-  
+
   // bullet 3
   C j;
   f8(j);         // call f8<int>, converting C to B<int>
@@ -178,7 +178,7 @@ int main()
   D<int> k;
   f8(k);         // call f8<int>, converting D<int> to B<int>
   f9(&k);        // similar, but converting pointers
-  
+
   // The final part of para 3 mentions that the bullets are considered
   // only if type deduction would otherwise fail, and that multiple
   // possible deduced parameter types are cause for failure, but I do

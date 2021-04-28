@@ -66,7 +66,7 @@ int A<int>::a = 1;
 // duplicate definition
 //ERROR(3): template <>
 //ERROR(3): int A<int>::a = 1;
-                        
+
 
 // another explicit spec
 template <>
@@ -89,7 +89,7 @@ void foo()
   // this must find the explicit spec of 'u' because otherwise
   // the normal definition will try to call int(int,int,int)
   A<int> a;
-  
+
   // 14.7.1p1: 'u' must be used in some way to trigger the
   // instantiation of its definition, needed for error 4
   a.u;

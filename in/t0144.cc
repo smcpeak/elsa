@@ -30,7 +30,7 @@ struct F {
 };
 
 struct G {
-  operator bool& ();        
+  operator bool& ();
 };
 
 struct H {

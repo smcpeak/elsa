@@ -1,7 +1,7 @@
 // t0276.cc
 // problem with overload resolution when arguments include type vars
 
-     
+
 int foo(int);
 int foo(int, int);
 

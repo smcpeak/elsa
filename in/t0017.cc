@@ -5,7 +5,7 @@
 class Foo {
 public:
   int x, y;
-  
+
   Foo() : x(3), y(4) {}
   Foo(int z);
   Foo(double d);

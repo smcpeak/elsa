@@ -32,7 +32,7 @@ $execFname = $ARGV[0];
 
 $origCwd = `pwd`;
 chomp($origCwd);
-         
+
 $fqExecFname = $execFname;
 if ($execFname !~ m|^/|) {
   $fqExecFname = $origCwd . "/" . $execFname;
@@ -48,7 +48,7 @@ $ldNotes = "";
   if (!open($objdump, '-|', "objdump -h -w '$execFname'")) {
     die("cannot run objdump: $!\n");
   }
-  
+
   # for reading the section contents
   my $executable = new FileHandle $execFname, 'r';
 
@@ -73,7 +73,7 @@ $ldNotes = "";
       $ldNotes = readFilePart($executable, $offset, $size);
     }
   }
-  
+
   if (!$objdump->close()) {
     die("objdump failed (code $?)\n");
   }
@@ -172,7 +172,7 @@ foreach my $line (@ldTrace) {
   #      ignore it, since it got intercepted so it will be
   #      reconstructed.
   #
-  # For archives, if the archive exists but some member lacks 
+  # For archives, if the archive exists but some member lacks
   # interception info, then regard the whole archive as unintercepted.
   # Consequently, (1) it will be reported as such at the end, and (2)
   # the reconstruction link will link the archive as a unit, which
@@ -246,7 +246,7 @@ eval {
         $counter++;
         $rebuiltAsmFname = getTemporaryFname("rebuilt-obj-$counter", "s");
         $rebuiltObjFname = getTemporaryFname("rebuilt-obj-$counter", "o");
-        
+
         # if either file exists, remove it so that later I can test
         # for existence to confirm that a program did what I expect
         if (-f $rebuiltAsmFname) {
@@ -298,7 +298,7 @@ eval {
         if ($found != 1) {
           die("cc1 command section missing original asm fname\n");
         }
-        
+
         # uncompress the intercepted input file
         if (-f "${interceptedFname}.gz") {
           if (0!=system("gunzip -c '${interceptedFname}.gz' >'${interceptedFname}'")) {
@@ -308,7 +308,7 @@ eval {
         else {
           die("intercepted file is missing: ${interceptedFname}.gz\n");
         }
-        
+
         # rebuild the .s file
         diagnostic("invoking: @command");
         if (0!=system(@command)) {
@@ -318,7 +318,7 @@ eval {
         if (! -f $rebuiltAsmFname) {
           die("cc1 did not build $rebuiltAsmFname!\n");
         }
-        
+
         # rebuild the .o file
         #
         # NOTE: I am assuming that I do not need the original command line
@@ -390,7 +390,7 @@ if ($verbose) {
 #   http://www.gnu.org/software/binutils/manual/ld-2.9.1/html_chapter/ld_2.html#SEC3
 #
 # The description there appears to be somewhat inconsistent, sometimes
-# using "--" and sometimes "-" for what appear to be multiletter 
+# using "--" and sometimes "-" for what appear to be multiletter
 # options.  There could well be bugs in my interpretation.
 
 # After an initial attempt, I have discovered that parsing ld's
@@ -399,7 +399,7 @@ if ($verbose) {
 # incompatible argument languages.  It's a messy pile of ad-hoc
 # guesses and heuristics, further affected by the -m (linker
 # emulation) option.
-#                   
+#
 # Therefore I am switching strategies: I will only retain a few
 # options that (1) I can reliably parse, and (2) I estimate have a
 # high likelihood of being relevant.
@@ -483,11 +483,11 @@ push @newLdCommand, (@rebuiltObjs, @unintercepted);
 # specify an output file
 $reconstructedExec = $fqExecFname . "-recons";
 push @newLdCommand, ("-o", $reconstructedExec);
-    
+
 # run ld
 diagnostic("invoking: @newLdCommand");
 system(@newLdCommand);
-if ($?) {                                              
+if ($?) {
   my $code = $?;
   printf("leaving %d temporary files in /tmp/%s\n", $#rebuiltObjs+1, $ENV{"USER"});
   my $exit_value  = $code >> 8;
@@ -513,16 +513,16 @@ exit(0);
 # ------------------- subroutines -------------------
 sub archiveMemberHasInterceptionInfo {
   my ($archiveFname, $objFname) = @_;
-  
+
   # extract the archive member
   my $tmpfile = getTemporaryFname("reconstruct", ".o");
   if (0!=system("ar p '$archiveFname' '$objFname' >$tmpfile")) {
     die("ar p '$archiveFname' '$objFname' failed (code $?)\n");
   }
-  
+
   # test it
   my $ret = objHasInterceptionInfo($tmpfile);
-                   
+
   # clean up
   unlink($tmpfile);
   return $ret;
@@ -531,11 +531,11 @@ sub archiveMemberHasInterceptionInfo {
 
 sub objHasInterceptionInfo {
   my ($fname) = @_;
-  
+
   if (!open(DUMP, '-|', "objdump -h -w '$fname'")) {
     die("cannot run objdump: $!\n");
   }
-                  
+
   my $line;
   my $ret = 0;
   while (defined($line = <DUMP>)) {
@@ -555,7 +555,7 @@ sub objHasInterceptionInfo {
 
   # it is possible this premature close may trigger a SIGPIPE
   # in objdump, and hence a "failure" return from 'close';
-  # therefore ignore the return code  
+  # therefore ignore the return code
   close(DUMP);
 
   return $ret;
@@ -589,7 +589,7 @@ sub readFilePart {
   return $buffer;
 }
 
-  
+
 # get a temporary fname that is not subject to race condition
 # attacks, etc.
 sub getTemporaryFname {

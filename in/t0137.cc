@@ -1,6 +1,6 @@
 // t0137.cc
 // overloading of operator[]
-  
+
 void dummy();               // line 4
 
 struct A {

@@ -4,11 +4,11 @@
 template < typename _Tp >
 class allocator;
 
-template < typename _Tp > 
+template < typename _Tp >
 struct __is_pod {};
 
-template < typename _Val, 
-           typename _Compare, 
+template < typename _Val,
+           typename _Compare,
            typename _Alloc = allocator < _Val > >
 class _Rb_tree {
   template < typename _Key_compare,

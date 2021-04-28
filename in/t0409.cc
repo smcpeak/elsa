@@ -7,11 +7,11 @@ struct S {
   void operator=(S&);
 };
 
-extern "C" 
+extern "C"
 void foo()
-{        
+{
   S<int> s;
-  
+
   int *p;
   s = p;
 

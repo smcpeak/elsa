@@ -19,7 +19,7 @@ template<bool t, int i> struct D {} ;
 
 template<class C, class tr = S<C> >
 struct B {
-  struct Rep {               
+  struct Rep {
     // sm: 2005-05-06: I added the following.  I do not know
     // why gcc and icc do not want it, since "(*p)[pos]" does
     // not seem to be dependent.

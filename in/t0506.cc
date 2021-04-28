@@ -1,10 +1,10 @@
 // t0506.cc
 // ordinary template function returning DQT
 
-template <class T> 
+template <class T>
 struct A {
   typedef int INT;
-          
+
   template <class U>
   struct B {
     typedef float FLOAT;

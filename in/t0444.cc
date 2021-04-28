@@ -4,7 +4,7 @@
 template <int N>
 struct A {
   struct B {};
-  
+
   B *f();
 };
 

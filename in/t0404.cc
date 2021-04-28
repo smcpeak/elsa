@@ -2,7 +2,7 @@
 // lookup of mem-initializer-id
 
 
-struct A {  
+struct A {
   typedef A AA;     // alias for 'A', within scope of 'A'
 
   A(int x);

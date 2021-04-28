@@ -12,7 +12,7 @@ void foo()
 
   float f;
   a(f, 0.5f);
-  
+
   long double ld;
   a(ld, 0.5l);
 }

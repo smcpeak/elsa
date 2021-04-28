@@ -66,7 +66,7 @@ VariantResult Minimizer::runTest()
     XCtrlC x;
     THROW(x);
   }
-  
+
   if (code == 0) {
     cout << "p";
     flush(cout);
@@ -236,7 +236,7 @@ bool Minimizer::minimizeChildren(Node *sub)
   if (sub->left) {
     ret = minimizeChildren(sub->left) || ret;
   }
-  
+
   return ret;
 }
 
@@ -245,7 +245,7 @@ void entry(int argc, char *argv[])
 {
   xBase::logExceptions = false;
   string progName = argv[0];
-  
+
   TRACE_ARGS();
 
   bool checktree = tracingSys("checktree");

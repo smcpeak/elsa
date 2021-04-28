@@ -9,7 +9,7 @@ struct FurtherDerived : Derived {};
 
 int foo(Base b);        // line 10
 int foo(Derived d);     // line 11
-   
+
 //void __testOverload(int,int);
 
 void bar()

@@ -24,7 +24,7 @@ class Bar
 
       const_pointer
       address( const_reference r ) const;
-      
+
       void addr(int &r) const;
       void addr(int const &r) const;
 };

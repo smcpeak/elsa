@@ -11,7 +11,7 @@ struct Geometry {
 
 void Geometry::f() {
   const char *geometry;
-  
+
   // this line used to cause a segfault; now it properly
   // causes an error message
   //ERROR(2): *this = std::string (geometry);

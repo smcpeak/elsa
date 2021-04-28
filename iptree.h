@@ -177,7 +177,7 @@ public:      // funcs
   // # of bytes written
   int write(rostring fname, GrowArray<char> const &source,
             VariantCursor &cursor) const;
-                                 
+
   // what is the largest endpoint, other than INT_MAX?
   int getLargestFiniteEndpoint();
 

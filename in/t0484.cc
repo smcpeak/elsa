@@ -4,7 +4,7 @@
 struct A {
   template <class T>
   A& operator<<(T t);
-  
+
   // hmm.. I can't make a unary operator like this because it would
   // have no arguments with which to perform deduction, and there is
   // no way to explicitly specify template args for operator

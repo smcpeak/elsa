@@ -54,7 +54,7 @@ public:
   // report an error or warning
   void error(SourceLoc loc, char const *msg);
   void warning(SourceLoc loc, char const *msg);
-  
+
   // depending on 'b', accept, accept with warning, or reject
   void diagnose3(Bool3 b, SourceLoc loc, char const *msg);
 };

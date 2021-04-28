@@ -50,7 +50,7 @@ struct A {
 
   // illegal
   //friend enum E ::k();
-  
+
   friend class N::Foo;
 };
 

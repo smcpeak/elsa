@@ -57,7 +57,7 @@ add the following:
     return true;       // visit my children too
   }
 </pre>
-          
+
 <p>
 This declares class <tt>CastCounter</tt>, which inherits from
 <tt>ASTVisitor</tt>.  <tt>ASTVisitor</tt> contains a bunch of virtual
@@ -72,7 +72,7 @@ of how many casts are found.  We also override
 encounters an <tt>Expression</tt> AST node.  The implementation of
 this method simply increments <tt>count</tt> whenever the expression
 is an <tt>E_cast</tt>.  (The rest of the AST is defined in
-<a href="../cc.ast">cc.ast</a> and documented in 
+<a href="../cc.ast">cc.ast</a> and documented in
 <a href="cc.ast.html">cc.ast.html</a>.)
 
 <p>Now, go to the bottom of the <tt>doit()</tt> function, and just
@@ -91,7 +91,7 @@ Rebuild <tt>ccparse</tt> with these changes:
 <pre>
   elsa$ make
 </pre>
-     
+
 <p>
 Now, run it on some input:
 <pre>
@@ -116,13 +116,13 @@ Here are some other files to try:
 </ul>
 
 <p>
-One interesting aspect of 
+One interesting aspect of
 <a href="../in/t0014.cc"><tt>in/t0014.cc</tt></a> is that the "cast" on
 line 11 is actually parsed as an <tt>E_constructor</tt> (constructor
 call), but because the type it constructs is not a class, the
 type checker <em>replaces</em> it with an <tt>E_cast</tt>.  This
 makes the meaning of the code more obvious to an analysis: there is
-no function call there, despite the syntax suggesting it.  
+no function call there, despite the syntax suggesting it.
 
 <p>
 If you want, you can verify the absence of the <tt>E_cast</tt> by
@@ -132,7 +132,7 @@ checking phases in <tt>doit()</tt>.
 <h1>5. Print the casts</h1>
 
 <p>
-Let's try something a little more ambitious: instead of just 
+Let's try something a little more ambitious: instead of just
 counting the casts, we will print for each cast its source location,
 the source expression, the destination type, and which C++ cast
 keyword it uses (if any).
@@ -183,9 +183,9 @@ suffice.  The <tt>locOfType</tt> function goes and gets it.
 <p>
 The printing code uses the <tt>toString(SourceLoc)</tt> function,
 the <tt>toString(CastKeyword)</tt> function,
-the <tt>Expression::exprToString()</tt> method, and 
+the <tt>Expression::exprToString()</tt> method, and
 the <tt>Type::toString</tt> method to print the AST components.
-Most things in Elsa can be printed with such routines.  
+Most things in Elsa can be printed with such routines.
 
 <p>
 Since keyword casts are their own AST node, there are two conditional
@@ -221,7 +221,7 @@ Build and run this program:
 <p>
 One annoyance with the output above is the leading space that
 gets printed before the expressions.  That comes from the
-pretty printer module, <tt>cc_print</tt> 
+pretty printer module, <tt>cc_print</tt>
 (<a href="../cc_print.ast">cc_print.ast</a>,
 <a href="../cc_print.h">cc_print.h</a> and
 <a href="../cc_print.cc">cc_print.cc</a>), because it is trying
@@ -241,7 +241,7 @@ A frequent programmer's task is to find all uses of some variable or
 function.  People often use the Unix <tt>grep</tt> utility for this task, but
 <tt>grep</tt> is easily confused by entities that have the same name
 (but are declared in different scopes).  Using Elsa, we can write a
-tool that will report all uses of a given variable.  
+tool that will report all uses of a given variable.
 
 <p>
 Rather than have you type in the code for the grepper, it is a
@@ -299,7 +299,7 @@ One problem with this grepper is that <tt>Variable</tt> only has
 one location, but a variable can be declared in multiple places,
 and it's not always obvious which location will be stored there
 (look in <a href="../variable.h"><tt>variable.h</tt></a> for details).
-A better grepper would use one traversal to robustly find the 
+A better grepper would use one traversal to robustly find the
 <tt>Variable</tt> of interest using any of a variety of identification
 criteria, and then another traversal to identify uses.  I leave
 this as an exercise for the interested reader.

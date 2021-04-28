@@ -162,7 +162,7 @@ NODE *resolveImplIntAmbig(Env &env, NODE *node)
       } else {
         // we keep the implicit-int interpretation
         s0->ambiguity = NULL;
-        
+
         // there is no point to doing this here, since
         // TS_simple::itcheck has to do it also
         //simpSpec->id = ST_INT /*NOTE: was ST_IMPLINT*/;

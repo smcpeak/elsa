@@ -2,7 +2,7 @@
 // some erroroneous code, related to t0197.cc
 
 template <class T> class A;
-            
+
 // parameter type mismatch
 //ERROR(1): template <int T> class A {};
 

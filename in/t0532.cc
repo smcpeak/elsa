@@ -56,11 +56,11 @@ namespace N4 {
   namespace M {
     struct A {
     };
-    
+
     // GCC rejects, ICC accepts; I guess I will reject
     //ERROR(2): int f;
-  }       
-  
+  }
+
   int f(M::A *);
 
   int foo(M::A *a)

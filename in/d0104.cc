@@ -22,7 +22,7 @@ void f(D &d)
   d.f();
 }
 
-               
+
 // sm: add a variant that has the bases in the opposite order
 struct D2: B, C {};
 

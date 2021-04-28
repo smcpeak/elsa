@@ -3,7 +3,7 @@
 
 namespace std
 {
-  template < typename _Alloc > 
+  template < typename _Alloc >
   class allocator;
 
   template < class _CharT >
@@ -20,7 +20,7 @@ typedef unsigned size_t;
 
 struct __false_type {} ;
 
-template < class _Tp > 
+template < class _Tp >
 struct _Is_integer {
   typedef __false_type _Integral;
 };
@@ -41,12 +41,12 @@ namespace std
     typedef _Category iterator_category;
   };
 
-  template < typename _Iterator > 
+  template < typename _Iterator >
   struct iterator_traits {
     typedef typename _Iterator::iterator_category iterator_category;
   };
 
-  template < typename _Tp > 
+  template < typename _Tp >
   struct iterator_traits <_Tp * > {
     typedef random_access_iterator_tag iterator_category;
     typedef _Tp value_type;
@@ -61,46 +61,46 @@ namespace __gnu_cxx
   using std::iterator_traits;
   using std::iterator;
 
-  template < typename _Iterator, 
-             typename _Container > 
-  class __normal_iterator 
+  template < typename _Iterator,
+             typename _Container >
+  class __normal_iterator
     : public iterator < typename iterator_traits < _Iterator >:: iterator_category,
                         typename iterator_traits < _Iterator >:: value_type,
                         typename iterator_traits < _Iterator >:: difference_type,
-                        typename iterator_traits < _Iterator >::pointer, 
+                        typename iterator_traits < _Iterator >::pointer,
                         typename iterator_traits < _Iterator >::reference >
   { };
 }
 
 namespace std
 {
-  template < int __inst > 
+  template < int __inst >
   class __default_alloc_template {
   };
 
-  template < typename _Tp > 
+  template < typename _Tp >
   class allocator {
   public:
     typedef size_t size_type;
     typedef _Tp * pointer;
   };
 
-  template < typename _T1, 
-             typename _T2 > 
+  template < typename _T1,
+             typename _T2 >
   bool operator== (allocator < _T1 >, allocator < _T2 >)
   { }
 }
 
 namespace std
 {
-  template < class _Arg2, 
-             class _Result > 
+  template < class _Arg2,
+             class _Result >
   struct binary_function {
   };
 
-  template < typename _CharT, 
-             typename _Traits, 
-             typename _Alloc > 
+  template < typename _CharT,
+             typename _Traits,
+             typename _Alloc >
   class basic_string {
     typedef typename _Alloc::size_type size_type;
     typedef typename _Alloc::pointer pointer;

@@ -1,7 +1,7 @@
 // t0094.cc
 // nasty excerpt from gcc-2.95.3's iomanip.h
 
-// ouch, not sure what to do.  the line marked "/* !!! */" 
+// ouch, not sure what to do.  the line marked "/* !!! */"
 // has some angle brackets which the Standard grammar does
 // not allow.  I'm not entirely sure what the goal of the
 // author was.  for now I'm just going to comment-out the
@@ -87,7 +87,7 @@ template <class TP> class imanip {
     TP _a;
 public:
     imanip(istream& (*f)(istream&, TP), TP a) : _f(f), _a(a) {}
-     
+
     friend
       istream& operator>> <>(istream& i, const imanip<TP>& m);
 };
@@ -96,17 +96,17 @@ template <class TP>
 inline istream& operator>>(istream& i, const imanip<TP>& m)
 { return (*m._f)( i, m._a); }
 
- 
- 
- 
- 
-template<class TP> class omanip; 
+
+
+
+
+template<class TP> class omanip;
 
 template<class TP> class oapp {
     ostream& (*_f)(ostream&, TP);
-public: 
+public:
     oapp(ostream& (*f)(ostream&,TP)) : _f(f) {}
-     
+
     omanip<TP> operator()(TP a)
       { return omanip<TP>(_f, a); }
 };
@@ -119,7 +119,7 @@ template <class TP> class omanip {
     TP _a;
 public:
     omanip(ostream& (*f)(ostream&, TP), TP a) : _f(f), _a(a) {}
-     
+
     friend
       ostream& operator<< <>(ostream& o, const omanip<TP>& m);
 };

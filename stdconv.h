@@ -61,7 +61,7 @@ enum StandardConversion {
 };
 
 // for '&', one of the arguments should always be a mask
-ENUM_BITWISE_AND(StandardConversion)                    
+ENUM_BITWISE_AND(StandardConversion)
 
 // for '|', some care should be taken to ensure you're not
 // ORing together nonzero elements from the same group
@@ -100,7 +100,7 @@ StandardConversion getStandardConversion(
   SpecialExpr special, // properties of the source expression
   Type const *src,     // source type
   Type const *dest,    // destination type
-  
+
   // when the dest type is a method receiver ('this') parameter,
   // it's allowable to bind an rvalue to a non-const reference
   // (13.3.1 para 5 bullet 3)
@@ -146,5 +146,5 @@ int referenceCompatibility(Type *t1, Type *t2);
 inline bool isReferenceCompatibleWith(Type *t1, Type *t2)
   { return referenceCompatibility(t1, t2) != 0; }
 
-  
+
 #endif // STDCONV_H

@@ -24,7 +24,7 @@ My analysis is independent, however.
 ----------------------------------------------------
 Notions of syntactic context
 
-There are two notions of syntactic context for a lookup.  
+There are two notions of syntactic context for a lookup.
 
 Global syntactic context:
 
@@ -179,7 +179,7 @@ This function is responsible for doing lookup in the "current" scope,
 i.e., the set of scopes visible where the name appears.  The sequence
 of scopes to be searched is maintained in Env::scopes, and is updated
 as the recursive tcheck traversal enters/exits syntactic constructs
-that contain scopes (functions, blocks, namespaces, etc.).  
+that contain scopes (functions, blocks, namespaces, etc.).
 
 This function is responsible for interpreting the contents of
 Env::scope.  At least at the moment, it contains scopes arising from
@@ -192,7 +192,7 @@ useful when a name is about to be added to the innermost scope, and we
 need to check if the name has already been declared.
 
 Otherwise, the scopes in Env::scope are searched in turn, stopping
-when the name is found.  
+when the name is found.
 
 As a wrinkle, the current design allows for certain Scopes to be
 searched in an order different from their physical ordering in
@@ -256,7 +256,7 @@ E_funCall::inner2_tcheck.  This split is for performance reasons, and
 forces a certain partition of the work (see comments in
 Expression::tcheck for more details).
 
-inner1's main job is to map the 'name' to an initial set of Variable 
+inner1's main job is to map the 'name' to an initial set of Variable
 object pointers.  The set includes all overloaded instances from all
 relevant namespaces (i.e., those found via 'using' directives).
 
@@ -275,7 +275,7 @@ remaining information in the E_funCall to pick exactly the right
 Variable for the function call site, doing template instantiation and
 overload resolution as necessary.  It does these steps:
 
-  * It regards the set computed by inner1 (and stored in 'candidates') 
+  * It regards the set computed by inner1 (and stored in 'candidates')
     as denoting an initial candidate set (possibly empty).
 
   * If no receiver object and no qualifiers are present, augment the
@@ -304,7 +304,7 @@ E_fieldAcc: Lookup of a field name after '.' or '->'
 Sections discussed here:
   - 3.4.5: Lookup rules for field names.
   - 5.2.4, 5.2.5: Meaning of expressions with '.' and '->'.
-  
+
 Other relevant sections:
   - 13.3: Overloaded function name used in a function call.
   - 13.4: Overloaded function name used in other contexts.
@@ -330,7 +330,7 @@ with components:
   ICC, "initial colon-colon": A leading "::".  Optional.
   QUAL, "qualifiers": Qualifiers before FIELD.  Optional.
   FIELD: The field being accessed.  There are six possibilities.
-  
+
 Note that the presence of ICC implies that either QUAL is also
 present, or that FIELD is case 1, 3 or 5.
 
@@ -397,11 +397,11 @@ an E_fieldAcc is:
          same type as the LHS (5.2.4).
 
      2b. If QUAL is not present, lookup the identifier in the current
-         scope, and check that it is the same type as the LHS 
+         scope, and check that it is the same type as the LHS
          (3.4.5p2,3).
 
-     Stop.  
-     
+     Stop.
+
   The remaining procedure is for class-typed LHSs.  Call the class C.
 
   3. If ICC is present (3.4.5p5), let N be the global scope.  Go to
@@ -417,7 +417,7 @@ an E_fieldAcc is:
      4b. Lookup Q in C.  If found, this must be a class.
      4c. If lookups 4a and 4b both succeed, they must name the same
          class N.  If only one succeeds, call its result N.  If neither
-         succeeds, report error.       
+         succeeds, report error.
 
   5. Given the computed initial scope N above, divide the RHS:
 

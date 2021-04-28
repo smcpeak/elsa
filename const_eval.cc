@@ -258,7 +258,7 @@ void CValue::addOffset(int offset)
 void CValue::applyBinary(BinaryOp op, CValue other)
 {
   if (isSticky()) { return; }
-  
+
   if (other.isSticky()) {
     *this = other;
     return;
@@ -266,7 +266,7 @@ void CValue::applyBinary(BinaryOp op, CValue other)
 
   switch (op) {
     default:
-      setError(stringc << "cannot const-eval binary operator `" 
+      setError(stringc << "cannot const-eval binary operator `"
                        << toString(op) << "'");
       return;
 
@@ -654,7 +654,7 @@ CValue Expression::iconstEval(ConstEval &env) const
 
     ASTNEXTC(E_cast, c)
       return constEvalCast(env, c->ctype, c->expr);
-      
+
     ASTNEXTC(E_keywordCast, c)
       if (c->key == CK_DYNAMIC) {
         return CValue("cannot const-eval a keyword_cast");

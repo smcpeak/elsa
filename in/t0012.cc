@@ -5,7 +5,7 @@ class Foo {
 public:
   static int x;
   int y;
-  
+
   int func();
   int func2();
   int func3() const;

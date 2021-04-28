@@ -6,7 +6,7 @@
 
 // ERR-MATCH: address of non-lvalue `char
 
-void f1(int *);     
+void f1(int *);
 void g1(int [5]);
 void f2(int (*)[5]);
 
@@ -41,7 +41,7 @@ int main()
   f(&a);
   f("blah");
   f(&"blah");
-  
+
   g(a);
   g("blah");
 }

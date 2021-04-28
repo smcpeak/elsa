@@ -29,7 +29,7 @@ void f()
   // dsw: this failure is OFF: ERROR(2): int localArr[0];
   // dsw: might as well test the negative version though
   //ERROR(2): int localArr[-1];
-  
+
   // yes
   int okLocalArr[1];
 }

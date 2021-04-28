@@ -50,7 +50,7 @@ At the end of this tutorial I will give pointers for more exploration.
 <h1>2. Building Elsa</h1>
 
 <p>
-If you have not already, download and 
+If you have not already, download and
 <span style="border-bottom: thin dashed blue"
       title="To unpack, say 'tar xvfz elsa-XXXX.XX.XX.tar.gz'.">unpack</span>
 the Elsa distribution tarball, available from the
@@ -71,7 +71,7 @@ Inside the Elsa distribution you will find a directory structure like this:
        |
        +- include             Elsa's compiler-specific headers
 </pre>
-          
+
 <h2>2.1 Configure</h2>
 
 <p>
@@ -176,10 +176,10 @@ Buried in amongst all that noise is the pretty-printed input file:
 </pre>
 
 <p>
-Obviously, <tt>in/t0001.cc</tt> is a fairly trivial input file.  
+Obviously, <tt>in/t0001.cc</tt> is a fairly trivial input file.
 You're free to experiment with other files in the <tt>in/</tt>
 directory, or even with your own input files.  <b>Note:</b> You
-must preprocess with the input files with <tt>cpp</tt> first!  
+must preprocess with the input files with <tt>cpp</tt> first!
 Elsa does not include a preprocessor.
 
 <h2>3.3 Printing the Abstract Syntax Tree</h2>
@@ -228,7 +228,7 @@ It also has a single </tt>Declarator</tt>, with a <tt>D_name</tt> containing
 
 <p>
 Besides the structural information, the printout includes source locations,
-such as "<tt>in/t0001.cc:3:1</tt>".  This means line 3, column 1 of the 
+such as "<tt>in/t0001.cc:3:1</tt>".  This means line 3, column 1 of the
 file <tt>in/t0001.cc</tt>.
 
 <h3>3.3.1 <tt>in/t0008.cc</tt> (ambiguous)</h3>
@@ -250,9 +250,9 @@ parser sometimes produces an ambiguous AST.  A simple example is in
         f = Function:
           receiver: NULL
           retVal: NULL
-          dflags = 
+          dflags =
           retspec = TS_simple:
-            cv = 
+            cv =
             loc = in/t0008.cc:4:1
             id = int
           nameAndParams = Declarator:
@@ -265,7 +265,7 @@ parser sometimes produces an ambiguous AST.  A simple example is in
                   loc = in/t0008.cc:4:5
                   name = main
               params:
-              cv = 
+              cv =
               exnSpec is null
             init is null
             ctorStatement is null
@@ -279,9 +279,9 @@ parser sometimes produces an ambiguous AST.  A simple example is in
                 succ={ }
                 loc = in/t0008.cc:6:3
                 decl = Declaration:
-                  dflags = 
+                  dflags =
                   spec = TS_simple:
-                    cv = 
+                    cv =
                     loc = in/t0008.cc:6:3
                     id = int
                   decllist:
@@ -299,9 +299,9 @@ parser sometimes produces an ambiguous AST.  A simple example is in
                 succ={ }
                 loc = in/t0008.cc:7:3
                 decl = Declaration:
-                  dflags = 
+                  dflags =
                   spec = TS_simple:
-                    cv = 
+                    cv =
                     loc = in/t0008.cc:7:3
                     id = int
                   decllist:
@@ -338,7 +338,7 @@ parser sometimes produces an ambiguous AST.  A simple example is in
                     tree = E_cast:
                       ctype = ASTTypeId:
                         spec = TS_name:
-                          cv = 
+                          cv =
                           loc = in/t0008.cc:9:4
                           name = PQ_name:
                             loc = in/t0008.cc:9:4
@@ -393,9 +393,9 @@ runs:
           funcType: int ()()
           receiver: NULL
           retVal: NULL
-          dflags = 
+          dflags =
           retspec = TS_simple:
-            cv = 
+            cv =
             loc = in/t0008.cc:4:1
             id = int
           nameAndParams = Declarator:
@@ -409,7 +409,7 @@ runs:
                   loc = in/t0008.cc:4:5
                   name = main
               params:
-              cv = 
+              cv =
               exnSpec is null
             init is null
             ctorStatement is null
@@ -423,9 +423,9 @@ runs:
                 succ={ 7:3 }
                 loc = in/t0008.cc:6:3
                 decl = Declaration:
-                  dflags = 
+                  dflags =
                   spec = TS_simple:
-                    cv = 
+                    cv =
                     loc = in/t0008.cc:6:3
                     id = int
                   decllist:
@@ -444,9 +444,9 @@ runs:
                 succ={ 9:3 }
                 loc = in/t0008.cc:7:3
                 decl = Declaration:
-                  dflags = 
+                  dflags =
                   spec = TS_simple:
-                    cv = 
+                    cv =
                     loc = in/t0008.cc:7:3
                     id = int
                   decllist:
@@ -499,7 +499,7 @@ to being unambiguous, the post-tcheck AST also has been annotated
 with information about the types of expressions, and the variables
 to which names refer.  This information is very useful to analyses
 that come after the type checker.
-                 
+
 <p>
 If you want, take some time to experiment with <tt>ccparse</tt> and
 the trees it can print.  Find some nasty C++ and see what Elsa

@@ -6,7 +6,7 @@ struct A {
 };
 
 typedef A B;
-  
+
 namespace N {
   struct C {
     ~C();
@@ -21,7 +21,7 @@ void foo(A *a, N::C *c)
   a->~B();         // use the typedef
 
   a->A::~A();      // qualified
-  
+
   // this this legal?  both icc and gcc accept it, but I do not know
   // why; as far as I can tell, ~B should be looked up in the scope of
   // A, which won't find anything

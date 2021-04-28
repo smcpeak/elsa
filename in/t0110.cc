@@ -8,7 +8,7 @@ class Foo {
 public:
   T x;
   A d;    // should be double
-  
+
   Foo<T> *fooptr;
   Foo *fooptr2;
 };

@@ -27,7 +27,7 @@ public:      // funcs
   virtual void instantiateBinary(Env &env, OverloadResolver &resolver,
     OverloadableOp op, ArgumentInfo &lhsInfo, ArgumentInfo &rhsInfo)=0;
 };
-   
+
 
 // describes a set using polymorphism
 class PolymorphicCandidateSet : public CandidateSet {
@@ -143,7 +143,7 @@ private:    // types
   class TypePair {
   public:
     Type *lhsType, *rhsType;    // types for instantiation
-    
+
   public:
     TypePair(Type *L, Type *R)
       : lhsType(L),
@@ -153,7 +153,7 @@ private:    // types
       : DMEMB(lhsType),
         DMEMB(rhsType)
     {}
-    
+
     string asString() const;
     unsigned hashValue() const;
   };
@@ -181,7 +181,7 @@ private:    // types
 
 private:    // data
   OwnerKHashTable<Inst, TypePair> instantiations;
-  
+
   unsigned generation;
 
 private:    // funcs

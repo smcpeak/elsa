@@ -1,6 +1,6 @@
 // t0138.cc
 // testing cppstd 13.6 para 17
-  
+
 void dummy();            // line 4
 
 // unfortunately, what's here isn't a very good test because
@@ -14,7 +14,7 @@ struct A {
 struct B {
   operator float ();
 };
-  
+
 struct C {
   operator short ();
   operator int ();

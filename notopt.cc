@@ -37,7 +37,7 @@ STemplateArgument *Env::makeDefaultTemplateArgument
   if (param->hasFlag(DF_TYPEDEF) &&
       param->defaultParamType) {
     // use 'param->defaultParamType', but push it through the map
-    // so it can refer to previous arguments 
+    // so it can refer to previous arguments
     try {
       Type *t = applyArgumentMapToType(map, param->defaultParamType);
       return new STemplateArgument(t);
@@ -45,12 +45,12 @@ STemplateArgument *Env::makeDefaultTemplateArgument
     catch (XTypeDeduction &x) {
       HANDLER();
       error(stringc << "could not evaluate default argument `"
-                    << param->defaultParamType->toString() 
+                    << param->defaultParamType->toString()
                     << "': " << x.why());
       return NULL;
     }
   }
-  
+
   // non-type parameter?
   else if (!param->hasFlag(DF_TYPEDEF) &&
            param->value) {
@@ -62,7 +62,7 @@ STemplateArgument *Env::makeDefaultTemplateArgument
     catch (XTypeDeduction &x) {
       HANDLER();
       error(stringc << "could not evaluate default argument `"
-                    << param->value->exprToString() 
+                    << param->value->exprToString()
                     << "': " << x.why());
       return NULL;
     }

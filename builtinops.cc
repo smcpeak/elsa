@@ -60,7 +60,7 @@ PredicateCandidateSet::~PredicateCandidateSet()
 
 // get the set of types that 'info.type' can be converted to via a
 // user-defined conversion operator, or by the identity conversion
-void getConversionOperatorResults(Env &env, SObjList<Type> &dest, 
+void getConversionOperatorResults(Env &env, SObjList<Type> &dest,
                                   ArgumentInfo &info)
 {
   if (info.overloadSet.isNotEmpty()) {
@@ -97,7 +97,7 @@ void getConversionOperatorResults(Env &env, SObjList<Type> &dest,
 }
 
 void PredicateCandidateSet::instantiateBinary(Env &env,
-  OverloadResolver &resolver, OverloadableOp op, 
+  OverloadResolver &resolver, OverloadableOp op,
   ArgumentInfo &lhsInfo, ArgumentInfo &rhsInfo)
 {
   // for this to overflow, I'd have to do 2^31 instantiations in a
@@ -260,7 +260,7 @@ AssignmentCandidateSet::AssignmentCandidateSet(SimpleTypeId retId, PreFilter r, 
 
 
 void AssignmentCandidateSet::instantiateBinary(Env &env,
-  OverloadResolver &resolver, OverloadableOp op, 
+  OverloadResolver &resolver, OverloadableOp op,
   ArgumentInfo &lhsInfo, ArgumentInfo &/*rhsInfo*/)
 {
   generation++;
@@ -443,9 +443,9 @@ void ArrowStarCandidateSet::instantiateCandidate(Env &env,
 
   else {
     // CV12 T& operator->* (CV1 C1*, CV2 T C2::*);
-    // 
+    //
     // This is the only implementation of ST_PRET_PTM, but we don't need
-    // the code to say what to do; I leave that code in existence, however, 
+    // the code to say what to do; I leave that code in existence, however,
     // for uniformity.
     Type *retType = rhsType->getAtType();                         // CV2 T
     retType = env.tfac.applyCVToType(SL_UNKNOWN, lhsType->getAtType()->getCVFlags(),
@@ -578,7 +578,7 @@ bool pointerToAny(Type *t)
 }
 
 bool anyType(Type *)
-{                  
+{
   return true;
 }
 

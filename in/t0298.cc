@@ -27,6 +27,6 @@ void foo()
   X *ptr;
   (ptr->*pmf)(7);      // call a function member of *ptr
                        // with the argument 7
-                       
+
   //ERROR(1): (obj->*pmf)(7);      // wrong, LHS of ->* must be pointer
 }

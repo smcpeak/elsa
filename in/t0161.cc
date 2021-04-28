@@ -3,7 +3,7 @@
 
 struct B {
   int f();
-};    
+};
 
 struct D : B {
   using B::f;

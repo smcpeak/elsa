@@ -5,7 +5,7 @@
 // ------------------
 // in this section, the correct interpretation has 1 arg
 template <class S, class T>
-int a1(int d) 
+int a1(int d)
 { return d + sizeof(S) + sizeof(T); }
 
 typedef int b1;

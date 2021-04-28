@@ -43,7 +43,7 @@ enum MatchFlags {
   // by default such specifications are not compared because the
   // exception spec is not part of the "type" [8.3.5p4]
   MF_COMPARE_EXN_SPEC= 0x0020,
-  
+
   // allow the cv qualifications to differ up to the first type
   // constructor that is not a pointer or pointer-to-member; this
   // is cppstd 4.4 para 4 "similar"; implies MF_IGNORE_TOP_CV
@@ -114,8 +114,8 @@ enum MatchFlags {
     MF_UNASSOC_TPARAMS  |
     MF_MATCH            |
     MF_NO_NEW_BINDINGS  |
-    MF_ISOMORPHIC       
-    
+    MF_ISOMORPHIC
+
     // Note: MF_COMPARE_EXN_SPEC is *not* propagated.  It is used only
     // when the compared types are FunctionTypes, to compare those
     // toplevel exn specs, but any FunctionTypes appearing underneath

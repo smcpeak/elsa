@@ -21,9 +21,9 @@ S1 operator >? (const S1& x, const S1& y) {
 int main()
 {
   S1 a,b;
-  
+
   a <? b;
   a >? b;
-  
+
   return 0;
 }

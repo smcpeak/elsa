@@ -34,10 +34,10 @@ int main()
   Foo<int> h;
   h.x;
   //ERROR(4): h.y;   // no field
-  
+
   Foo<int*> g;
   *( g.x );        // will complain that 'typename T' isn't a pointer..
-  
+
 }
 
 

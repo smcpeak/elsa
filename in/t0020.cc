@@ -47,7 +47,7 @@ Foo operator/ (Foo &f1, Foo &f2) {}
 Foo operator+ (Foo &f1, Foo &f2);
 
 Bar operator+ (Bar &f1, Bar &f2);
-  
+
 // these can never be nonmembers
 //operator int (Foo &f);
 
@@ -57,9 +57,9 @@ int main()
   Foo x, y;
   x + y;    // 2
   x - y;
-  
+
   int q;
   q = x;    // could use "operator int (Foo &)"
-  
+
   x.f(9);
 }

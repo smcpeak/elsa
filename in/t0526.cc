@@ -10,7 +10,7 @@ void foo()
   // seeing the same problem with this one
   static char const pfunc[] = "blah";
   f(pfunc);
-  
+
   // apparently supposed to work same way as pointers
   char const *ptr = 0;
   f(ptr);

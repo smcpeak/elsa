@@ -40,13 +40,13 @@ private:     // types
   class ActiveEdgeRecord {
   public:
     Scope *source, *target;     // edge exists from source to target
-    
+
   public:
     ActiveEdgeRecord()
       : source(NULL), target(NULL) {}
     ActiveEdgeRecord(Scope *s, Scope *t)
       : source(s), target(t) {}
-      
+
     ActiveEdgeRecord& operator= (ActiveEdgeRecord const &obj)
       { source=obj.source; target=obj.target; return *this; }
   };
@@ -68,7 +68,7 @@ private:     // data
 
   // per-scope change count
   int changeCount;
-  
+
   // true if the scope is currently on the scope stack, meaning
   // lookups can find it; this is used to ensure that no scope is
   // ever on the scope stack twice
@@ -97,7 +97,7 @@ public:      // data
   // if this is a namespace, this points to the variable used to
   // find the namespace during lookups
   Variable *namespaceVar;
-                                      
+
   // If this is a template (SK_TEMPLATE_PARAMS) scope, these are the
   // template parameters.  We will attach them to functions and
   // classes contained in this scope, as those functions and classes
@@ -258,7 +258,7 @@ public:      // funcs
   Variable *lookupVariable(StringRef name, Env &env, LookupFlags f=LF_NONE);
   CompoundType const *lookupCompoundC(StringRef name, Env &env, LookupFlags f=LF_NONE) const;
   EnumType const *lookupEnumC(StringRef name, Env &env, LookupFlags f=LF_NONE) const;
-  
+
   // compounds/enums
   Variable *lookupTypeTag(StringRef name, Env &env, LookupFlags f=LF_NONE) const;
 
@@ -295,7 +295,7 @@ public:      // funcs
   // true if this scope encloses (has as a nested scope) 's'; this
   // is proper enclosure: it is not the case that s->encloses(s)
   bool encloses(Scope const *s) const;
-  
+
   // non-proper enclosure
   bool enclosesOrEq(Scope const *s) const;
 
@@ -322,7 +322,7 @@ public:      // funcs
   // dsw: I made your way the only way; that is, I just inlined mangle
   // as set to false
   string fullyQualifiedName();
-  
+
   // more C-like notation for a fully qualified name
   string fullyQualifiedCName() {
     // dsw: see the note above; these functions are now identical.

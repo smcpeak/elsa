@@ -1,6 +1,6 @@
 #!/bin/sh
 # run elsa, gcc, icc
-# 
+#
 # each is run with multitest
 
 if [ "$1" = "" ]; then

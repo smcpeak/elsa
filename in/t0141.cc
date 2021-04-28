@@ -14,7 +14,7 @@ void f1()
 {
   E1 e1;
   E2 e2;
-  
+
   __testOverload(~e1, 11);
   __testOverload(~e2, 0);
 }
@@ -23,7 +23,7 @@ void f1()
 struct A {
   void operator~ ();     // line 24
 };
-  
+
 struct B {
   operator int ();       // line 28
 };
@@ -32,7 +32,7 @@ void f2()
 {
   A a;
   B b;
-  
+
   __testOverload(~a, 24);
   __testOverload(~b, 0);
 }
@@ -53,11 +53,11 @@ void f3()
 {
   C c;
   D d;
-                         
+
   // operator~ wins, because the conversion to char and then
   // to int requires a promotion
-  __testOverload(~c, 43);       
-  
+  __testOverload(~c, 43);
+
   // operator~ still wins; operator int() is considered a conversion,
   // whereas use of operator~ doesn't require any conversions
   __testOverload(~d, 48);

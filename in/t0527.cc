@@ -1,9 +1,9 @@
 // t0527.cc
 // use an enumerator to hide a type
-      
+
 // well-known: use a variable
 struct A {};
-int A;                       
+int A;
 
 // news to me: use an enumerator
 struct B {

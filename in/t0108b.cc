@@ -38,6 +38,6 @@ int main()
   Foo<3> f;
   f.f();
   f.x;
-  
+
   return f.g();
 }

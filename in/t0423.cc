@@ -51,6 +51,6 @@ void foo()
   __testOverload( c.f(asi), 12);
   __testOverload( c.f(a4),  12);
   __testOverload( c.f(a11), 13);
-  
+
   //ERROR(1): C<-6,int> c2;    // lines 12,13 are same type then
 }

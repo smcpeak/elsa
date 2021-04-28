@@ -6,7 +6,7 @@ struct A {
   int f(int);
   int g(int);
 };
-  
+
 
 // the standard requires this, but gcc does not
 //template <>

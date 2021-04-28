@@ -7,7 +7,7 @@ namespace N {
   {
     return 2;
   }
-  
+
   void g()
   {
     int *x;

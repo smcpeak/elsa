@@ -21,7 +21,7 @@ struct C {
     };
 
   typedef __default_alloc_template<true,0> __alloc;
-  
+
   void foo()
   {
     __alloc::deallocate(0,0);

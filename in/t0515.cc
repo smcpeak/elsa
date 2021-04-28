@@ -13,12 +13,12 @@
 // Actually, re-reading the relevant sections, I see:
 //   - 14.8.3p1: function templates lead to candidates iff template
 //               argument deduction succeeds
-//   - 14.8.2p1: template argument deduction can fail when 
+//   - 14.8.2p1: template argument deduction can fail when
 //               substitution of arguments for parameters causes
 //               an invalid type to be generated, such as referencing
 //               a non-existent member
 
-template < typename, bool > 
+template < typename, bool >
 struct __enable_if {
   typedef int _M_type;
 };

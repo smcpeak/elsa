@@ -1,6 +1,6 @@
 // t0171.cc
 // test from Rob van Behren: Expression nonterm is ambiguous
-             
+
 
 template <class _T1, class _T2>
 struct pair {

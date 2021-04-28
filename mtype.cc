@@ -55,7 +55,7 @@ bool IMType::Binding::operator== (Binding const &obj) const
   if (sarg.kind != obj.sarg.kind) {
     return false;
   }
-  
+
   if (sarg.isType()) {
     // somewhat complicated case: we need to make sure the types are
     // the same, *ignoring* their cv-flags, and that the cv-flags in
@@ -137,12 +137,12 @@ bool IMType::imatchAtomicType(AtomicType const *conc, AtomicType const *pat, Mat
         conc->asCompoundTypeC()->typedefVar->templateInfo()->isCompleteSpecOrInstantiation()) {
       TemplateInfo *concTI = conc->asCompoundTypeC()->typedefVar->templateInfo();
       PseudoInstantiation const *patPI = pat->asPseudoInstantiationC();
-      
+
       // these must be instantiations of the same primary
       if (concTI->getPrimary() != patPI->primary->templateInfo()->getPrimary()) {
         return false;
       }
-      
+
       // compare arguments; use the args to the primary, not the args to
       // the partial spec (if any)
       return imatchSTemplateArguments(concTI->getArgumentsToPrimary(),
@@ -230,7 +230,7 @@ bool IMType::imatchSTemplateArgument(STemplateArgument const *conc,
   }
 
   switch (conc->kind) {
-    default: 
+    default:
       xfailure("bad or unimplemented STemplateArgument kind");
 
     case STemplateArgument::STA_TYPE: {
@@ -246,7 +246,7 @@ bool IMType::imatchSTemplateArgument(STemplateArgument const *conc,
 
     case STemplateArgument::STA_INT:
       return conc->getInt() == pat->getInt();
-      
+
     case STemplateArgument::STA_ENUMERATOR:
       return conc->getEnumerator() == pat->getEnumerator();
 
@@ -335,7 +335,7 @@ bool IMType::addBinding(StringRef name, Binding * /*owner*/ value, MatchFlags fl
 
 bool IMType::imatchDependentQType(DependentQType const *conc,
                                   DependentQType const *pat, MatchFlags flags)
-{ 
+{
   // compare first components
   if (!imatchAtomicType(conc->first, pat->first, flags)) {
     return false;
@@ -729,7 +729,7 @@ bool IMType::imatchAtomicTypeWithVariable(AtomicType const *conc,
       return imatchAtomicType(conc, binding->sarg.getAtomicType(), flags & ~MF_MATCH);
     }
     else {              // gcov-ignore: cannot be triggered, the error is
-      return false;     // gcov-ignore: diagnosed before mtype is entered 
+      return false;     // gcov-ignore: diagnosed before mtype is entered
     }
   }
   else {
@@ -756,7 +756,7 @@ bool IMType::imatchCVAtomicType(CVAtomicType const *conc, CVAtomicType const *pa
          imatchAtomicType(conc->atomic, pat->atomic, flags & MF_PROP);
 }
 
-  
+
 bool IMType::imatchCVFlags(CVFlags conc, CVFlags pat, MatchFlags flags)
 {
   if (flags & MF_OK_DIFFERENT_CV) {
@@ -922,7 +922,7 @@ bool IMType::imatchExceptionSpecs(FunctionType const *conc, FunctionType const *
   // concrete types on both sides.  But, since I only see 'pat' as
   // the pattern + substitutions, it would still be hard to figure
   // out the correct correspondence for the set semantics.
-  
+
   // this will at least ensure I do not derive any bindings from
   // the attempt to compare exception specs
   flags |= MF_NO_NEW_BINDINGS;
@@ -1128,7 +1128,7 @@ bool MType::commonMatchType(Type const *conc, Type const *pat, MatchFlags flags)
          << "' flags={" << toString(flags)
          << "}; match=" << (result? "true" : "false")
          ;
-         
+
       if (failedDueToDQT) {
         os << " (failedDueToDQT)";
       }
@@ -1273,7 +1273,7 @@ STemplateArgument MType::getBoundValue(StringRef name, TypeFactory &tfac) const
 void MType::setBoundValue(StringRef name, STemplateArgument const &value)
 {
   xassert(value.hasValue());
-  
+
   Binding *b = new Binding;
   b->sarg = value;
   if (value.isType()) {

@@ -54,7 +54,7 @@ namespace Whatever {
   // the new mtype module.
   template <class T>
   typename T::INT f(T*, typename T::INT);
-         
+
   struct C {
     typedef int INT;
   };

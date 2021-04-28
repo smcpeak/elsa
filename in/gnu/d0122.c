@@ -6,7 +6,7 @@ const char __module_parm_desc_aic7xxx[] __attribute__((section(".modinfo"))) =
 	extended		Enable extended geometry on all controllers
 	periodic_otag		Send an ordered tagged transaction periodically
 				to prevent tag starvation.  This may be
-				required by some older disk drives/RAID arrays. 
+				required by some older disk drives/RAID arrays.
 	reverse_scan		Sort PCI devices highest Bus/Slot to lowest
 	tag_info:<tag_str>	Set per-target tag depth
 	seltime:<int>		Selection Timeout(0/256ms,1/128ms,2/64ms,3/32ms)

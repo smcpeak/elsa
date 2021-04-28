@@ -1,6 +1,6 @@
 // t0097.cc
 // mismatch provoked by confusing qualification?
-        
+
 class nsFrameUtil {
   //struct Node;
   struct Tag;

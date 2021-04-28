@@ -7,7 +7,7 @@ namespace N {
     T *p;
   };
 };
-  
+
 using N::C;
 
 // I should now be able to say C<int>, etc.  It's not clear exactly

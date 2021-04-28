@@ -329,7 +329,7 @@ Visible A::B::C::E::g5(Visible) {}
 
     // *not* legal ANSI C++, because definition does not appear in
     // a scope enclosing the declaration; rejected outright by ICC
-    
+
     // but if we use GNU semantics:
     //   lookup order of ret: Q, global
     //   lookup order of param: D, C, B, A, global
@@ -337,7 +337,7 @@ Visible A::B::C::E::g5(Visible) {}
     G_     A::B::C::D::f2( C_QBAG) {}
     G_     A::B::C::D::f3(  B_QAG) {}
     G_     A::B::C::D::f4(   A_QG) {}
-    
+
     // GCC looks up in G, and not in Q
     //G_     A::B::C::D::f5(    G_Q) {}
 
@@ -347,7 +347,7 @@ Visible A::B::C::E::g5(Visible) {}
     G_     A::B::C::D::f5(    G_) {}
 
     // what is visible inside the function?
-    G_     A::B::C::D::f6(    G_) 
+    G_     A::B::C::D::f6(    G_)
     {
       G_ g;
       //Q_ q;   // not visible to GCC
@@ -358,7 +358,7 @@ Visible A::B::C::E::g5(Visible) {}
     //ERROR(2): B_     A::B::C::D::f9(     G_) {}
     //ERROR(3): C_     A::B::C::D::f9(     G_) {}
     //ERROR(4): D_     A::B::C::D::f9(     G_) {}
-    
+
     // Elsa will probably allow this one, even though GCC does not
     // indeed.
     //nerfed(5): G_     A::B::C::D::f9(     Q_) {}

@@ -15,7 +15,7 @@ typedef int ft2(int) throw();
 void foo()
 {
   int (*f)(int);
-  
+
   f = f1;
   f = f2;
   f = f3;

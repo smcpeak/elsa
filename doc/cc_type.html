@@ -68,13 +68,13 @@ do not have any constructors, so cannot be further "deconstructed"
 They consist of built-in types like "int", enums, structs, classes and
 unions.  I regard the aggregation of structs/classes/unions to form
 an atomic wrapper around their members, in part because two (e.g.) struct
-types are equal only if they arise from the exact same declaration; there 
+types are equal only if they arise from the exact same declaration; there
 is no structural equality for structs.  Each kind of atomic type
 is explained in Section 2.
 
 <p>
 Constructed types, by constrast, are whatever is built on top of
-atomic types by applying type constructors such as "*".  
+atomic types by applying type constructors such as "*".
 These types <em>can</em> be deconstructed by template unification
 <pre>
   template &lt;class T&gt;
@@ -92,7 +92,7 @@ Each type constructor is explained in Section 3.
 If you're really bothered by the apparent contradiction that
 CompoundType is an AtomicType, think of the "struct { ... }"
 syntax as wrapping the members in an opaque container, thus
-forming an indivisble unit (i.e. an "atom").  This is of 
+forming an indivisble unit (i.e. an "atom").  This is of
 course exactly what happens from the compiler's point of
 view, and the basis for the terminology.  Quoting from
 Dennis Ritchie's
@@ -160,7 +160,7 @@ For example, <a href="../in/std/3.4.5.cc">in/std/3.4.5.cc</a> yields
 
 <p>
 <b>EnumType</b> represents an enum.  It has a list of enumerator
-values, which are also added to the Env 
+values, which are also added to the Env
 (<a href="../cc_env.h">cc_env.h</a>) during type checking.
 
 
@@ -190,7 +190,7 @@ no qualifiers.  Note that in the original design, PointerType
 was used for <em>both</em> pointers and references, so you
 might find the occasional comment incorrectly referring to
 that state of affairs.  However, you can still treat pointers
-and references uniformly if you want, by using 
+and references uniformly if you want, by using
 <tt>isPtrOrRef()</tt>, <tt>getCVFlags()</tt>, and
 <tt>getAtType()</tt>.
 
@@ -254,7 +254,7 @@ Variable, rather than just having a StringRef name...
 
 <p>
 <b>TemplateParams</b> is a list of template parameters.  I
-pulled this out into its own class for reasons I now don't 
+pulled this out into its own class for reasons I now don't
 remember...
 
 <p>
@@ -263,9 +263,9 @@ template instantiations.  It's not used right now.
 
 
 <h2>5. TypeFactory</h2>
-    
+
 <p>
-When the type checker 
+When the type checker
 (<a href="../cc_tcheck.cc">cc_tcheck.cc</a>)
 constructs types, it actually does so via the
 <b>TypeFactory</b> interface.  This is to make it possible for someone

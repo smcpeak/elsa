@@ -9,7 +9,7 @@ wchar_t const *t = L"hello";
 
 char c = 'c';
 wchar_t d = L'c';
-                      
+
 char c_oct = '\033';
 char c_hex = '\xAB';
 

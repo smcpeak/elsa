@@ -31,7 +31,7 @@ void g()
     e2s = sizeof(e2),             // 4
     e3s = sizeof(e3),             // 1
     e4s = sizeof(e4),             // ? EDG goes to 8!
-    
+
     one = 1
   };
 

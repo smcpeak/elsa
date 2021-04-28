@@ -3,7 +3,7 @@
 // related to d0078.cc
 
 void f()
-{   
+{
   int *a;
   a[
     (

@@ -29,7 +29,7 @@ struct D : C {};
 struct F {};
 struct G {};
 struct H : F, G {};
-struct I : F, G {};   
+struct I : F, G {};
 struct J : H, I {};
 
 enum Enum1 {};
@@ -72,7 +72,7 @@ void f()
   __computeLUB((int const C::* B::*)0,
                (int volatile A::* B::*)0,
                0, BAD);
-               
+
   // this should actually yield 'int E::*', but I don't implement
   // it properly
   __computeLUB((int B::*)0, (int C::*)0, 0, BAD);
@@ -99,12 +99,12 @@ void f()
   // across disconnected hierarchies
   __computeLUB((F*)0, (A*)0, (void*)0, OK);
   __computeLUB((H const *)0, (D volatile *)0, (void const volatile *)0, OK);
-  
+
   // with enums
   __computeLUB((Enum1)0, (Enum1)0, (Enum1)0, OK);
   __computeLUB((Enum2)0, (Enum1)0, 0, BAD);
   __computeLUB((void*)0, (Enum1)0, 0, BAD);
-  
+
   // according to my spec for computeLUB, it's only relevant that
   // this does *not* yield Enum1; if at some point it changes to
   // yield int, that's ok (just change the test to match)

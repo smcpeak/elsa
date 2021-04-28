@@ -42,7 +42,7 @@ string toString(LookupFlags f)
 
   return bitmapString(f, lookupFlagNames, NUM_LOOKUPFLAGS, " ");
 }
-                                 
+
 // this exists in case gdb's overload resolution is broken (?)
 string toString_LF(LookupFlags f)
 {
@@ -79,7 +79,7 @@ Variable *vfilter(Variable *v, LookupFlags flags)
     // the selfname is not visible b/c LF_SELFNAME not specified
     return NULL;
   }
-                                                        
+
   if ((flags & LF_TEMPL_PARAM) &&
       !v->isTemplateParam()) {
     return NULL;
@@ -179,7 +179,7 @@ void LookupSet::removeNonTemplates()
       mut.adv();     // keep it
       continue;
     }
-    
+
     // 2005-04-17: in/t0055.cc:  The context is a lookup that has
     // template arguments.  It might be that we found a selfname in
     // the scope of a template class instantiation; but if template

@@ -15,7 +15,7 @@ class StringSObjDict {
     return remove (s);                 // recursive call
   }
 };
-                       
+
 class A {};
 
 void foo()

@@ -13,7 +13,7 @@ void f(B<T> &dst, const B<T> &src, int count);
 void foo()
 {
   B<int> elems;
-  
+
   // this causes us to try to match concrete type
   //   B<int, A<int>>
   // with pattern type

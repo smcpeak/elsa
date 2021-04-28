@@ -34,7 +34,7 @@ ArrayStack<int> openParens;
 // line-starts of open-braces that are now closed and so should
 // get a partition at the next end-of-line
 ArrayStack<int> pendingBracePair;
-                                
+
 // saved values of 'boundary' from outer levels of parentheses
 ArrayStack<int> savedBoundaries;
 
@@ -128,7 +128,7 @@ NOTNL         .
   finishBoundaries();
   if (pendingBracePair.isNotEmpty()) {
     // just let this open-brace cancel one of the close-braces
-    // on the same line 
+    // on the same line
     int prev = pendingBracePair.pop();
     openBraceLines.push(prev);
     openBraces.push(prev /*approximate; will be fine*/);
@@ -362,7 +362,7 @@ void stringLit()
     // mark the chars between begin and end, inclusive
     emit(loc + (begin-yytext), loc + (end-yytext), "string lit contents - 1");
   }
-  
+
   updLoc();
 }
 

@@ -85,12 +85,12 @@ void f(int x, int y)
       __elsa_checkType(y? toInt : i, (int)0);
       //(elsa doesn't detect this..) ERROR(3): (y? toInt : i) = 3;
       break;
-      
+
     case 7:
       // can't tell which direction to convert
       //ERROR(4): (y? both : i);
       break;
-      
+
     case 8:
       // can't convert in either direction
       //ERROR(5): (y? b : i);
@@ -114,7 +114,7 @@ void f(int x, int y)
       __elsa_checkType(y? i : k, (long)0);
       //(elsa doesn't detect) ERROR(7): (y? i : k) = 11;
       break;
-      
+
     case 12:
       // ambiguous th->el or el->th conversion
       (y? charShort : 'a'/*char*/);

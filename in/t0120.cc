@@ -59,7 +59,7 @@ int x4c = __testOverload(f4(3.5f), 51);
 class Src { public: Src(int); };
 struct Dest {
   Dest(Src const &);                      // line 61
-  Dest(E1);                               // line 62 
+  Dest(E1);                               // line 62
 };
 
 int f5(int);                              // line 65

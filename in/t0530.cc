@@ -3,7 +3,7 @@
 
 struct A {
   operator float *();
-  
+
   // Elsa was getting messed up by the 'const' on 'i', which should
   // not participate in overload resolution
   float operator [] (const int i) const;

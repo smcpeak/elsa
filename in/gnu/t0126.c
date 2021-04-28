@@ -81,8 +81,8 @@ struct i387_fxsave_struct {
 	long	fos;
 	long	mxcsr;
 	long	reserved;
-	long	st_space[32];	 
-	long	xmm_space[32];	 
+	long	st_space[32];
+	long	xmm_space[32];
 	long	padding[56];
 } __attribute__ ((aligned (16)));
 extern void  __switch_to(struct task_struct *prev, struct task_struct *next)  __attribute__((regparm(3))) ;
@@ -114,19 +114,19 @@ extern   void ext2_panic (struct super_block *, const char *,
 				   const char *, ...)
 	__attribute__ ((noreturn,  format (printf, 3, 4)));
   __attribute__((regparm(0)))  long sys_open(const char *, int, int);
-  __attribute__((regparm(0)))  long sys_close(unsigned int);	 
+  __attribute__((regparm(0)))  long sys_close(unsigned int);
   __attribute__((regparm(0)))  long sys_personality(unsigned long personality);
 struct local_apic {
  	struct { unsigned int  __reserved[4]; } __reserved_01;
  	struct { unsigned int  __reserved[4]; } __reserved_02;
- 	struct {  
+ 	struct {
 		unsigned int    __reserved_1	: 24,
 			phys_apic_id	:  4,
 			__reserved_2	:  4;
 		unsigned int  __reserved[3];
 	} id;
  	const
-	struct {  
+	struct {
 		unsigned int    version		:  8,
 			__reserved_1	:  8,
 			max_lvt		:  8,
@@ -137,58 +137,58 @@ struct local_apic {
  	struct { unsigned int  __reserved[4]; } __reserved_04;
  	struct { unsigned int  __reserved[4]; } __reserved_05;
  	struct { unsigned int  __reserved[4]; } __reserved_06;
- 	struct {  
+ 	struct {
 		unsigned int    priority	:  8,
 			__reserved_1	: 24;
 		unsigned int  __reserved_2[3];
 	} tpr;
  	const
-	struct {  
+	struct {
 		unsigned int    priority	:  8,
 			__reserved_1	: 24;
 		unsigned int  __reserved_2[3];
 	} apr;
  	const
-	struct {  
+	struct {
 		unsigned int    priority	:  8,
 			__reserved_1	: 24;
 		unsigned int  __reserved_2[3];
 	} ppr;
- 	struct {  
+ 	struct {
 		unsigned int    eoi;
 		unsigned int  __reserved[3];
 	} eoi;
  	struct { unsigned int  __reserved[4]; } __reserved_07;
- 	struct {  
+ 	struct {
 		unsigned int    __reserved_1	: 24,
 			logical_dest	:  8;
 		unsigned int  __reserved_2[3];
 	} ldr;
- 	struct {  
+ 	struct {
 		unsigned int    __reserved_1	: 28,
 			model		:  4;
 		unsigned int  __reserved_2[3];
 	} dfr;
- 	struct {  
+ 	struct {
 		unsigned int 	spurious_vector	:  8,
 			apic_enabled	:  1,
 			focus_cpu	:  1,
 			__reserved_2	: 22;
 		unsigned int  __reserved_3[3];
 	} svr;
- 	struct {  
+ 	struct {
  		unsigned int  bitfield;
 		unsigned int  __reserved[3];
 	} isr [8];
- 	struct {  
+ 	struct {
  		unsigned int  bitfield;
 		unsigned int  __reserved[3];
 	} tmr [8];
- 	struct {  
+ 	struct {
  		unsigned int  bitfield;
 		unsigned int  __reserved[3];
 	} irr [8];
- 	union {  
+ 	union {
 		struct {
 			unsigned int    send_cs_error			:  1,
 				receive_cs_error		:  1,
@@ -213,7 +213,7 @@ struct local_apic {
  	struct { unsigned int  __reserved[4]; } __reserved_12;
  	struct { unsigned int  __reserved[4]; } __reserved_13;
  	struct { unsigned int  __reserved[4]; } __reserved_14;
- 	struct {  
+ 	struct {
 		unsigned int    vector			:  8,
 			delivery_mode		:  3,
 			destination_mode	:  1,
@@ -226,7 +226,7 @@ struct local_apic {
 			__reserved_3		:  12;
 		unsigned int  __reserved_4[3];
 	} icr1;
- 	struct {  
+ 	struct {
 		union {
 			unsigned int    __reserved_1	: 24,
 				phys_dest	:  4,
@@ -236,7 +236,7 @@ struct local_apic {
 		} dest;
 		unsigned int  __reserved_4[3];
 	} icr2;
- 	struct {  
+ 	struct {
 		unsigned int    vector		:  8,
 			__reserved_1	:  4,
 			delivery_status	:  1,
@@ -247,7 +247,7 @@ struct local_apic {
 		unsigned int  __reserved_4[3];
 	} lvt_timer;
  	struct { unsigned int  __reserved[4]; } __reserved_15;
- 	struct {  
+ 	struct {
 		unsigned int    vector		:  8,
 			delivery_mode	:  3,
 			__reserved_1	:  1,
@@ -257,7 +257,7 @@ struct local_apic {
 			__reserved_3	: 15;
 		unsigned int  __reserved_4[3];
 	} lvt_pc;
- 	struct {  
+ 	struct {
 		unsigned int    vector		:  8,
 			delivery_mode	:  3,
 			__reserved_1	:  1,
@@ -269,7 +269,7 @@ struct local_apic {
 			__reserved_2	: 15;
 		unsigned int  __reserved_3[3];
 	} lvt_lint0;
- 	struct {  
+ 	struct {
 		unsigned int    vector		:  8,
 			delivery_mode	:  3,
 			__reserved_1	:  1,
@@ -281,7 +281,7 @@ struct local_apic {
 			__reserved_2	: 15;
 		unsigned int  __reserved_3[3];
 	} lvt_lint1;
- 	struct {  
+ 	struct {
 		unsigned int    vector		:  8,
 			__reserved_1	:  4,
 			delivery_status	:  1,
@@ -290,12 +290,12 @@ struct local_apic {
 			__reserved_3	: 15;
 		unsigned int  __reserved_4[3];
 	} lvt_error;
- 	struct {  
+ 	struct {
 		unsigned int    initial_count;
 		unsigned int  __reserved_2[3];
 	} timer_icr;
  	const
-	struct {  
+	struct {
 		unsigned int    curr_count;
 		unsigned int  __reserved_2[3];
 	} timer_ccr;
@@ -303,7 +303,7 @@ struct local_apic {
  	struct { unsigned int  __reserved[4]; } __reserved_17;
  	struct { unsigned int  __reserved[4]; } __reserved_18;
  	struct { unsigned int  __reserved[4]; } __reserved_19;
- 	struct {  
+ 	struct {
 		unsigned int    divisor		:  4,
 			__reserved_1	: 28;
 		unsigned int  __reserved_2[3];

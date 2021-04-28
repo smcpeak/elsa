@@ -5,4 +5,4 @@ struct C {
   template <class T>
   C(T t);
 };
-    
+

@@ -106,12 +106,12 @@ public:    // funcs
   TemplateParams() {}
   TemplateParams(TemplateParams const &obj);
   ~TemplateParams();
-  
+
   // queries on parameters
   string paramsToCString() const;
   string paramsToMLString() const;
   bool anyParamCtorSatisfies(TypePred &pred) const;
-  
+
   // print the parameters like arguments, e.g. "<S, T>"
   // instead of "template <class S, class T>"
   string paramsLikeArgsToString() const;
@@ -146,16 +146,16 @@ enum TemplateThingKind {
   // template primary, the main template from which instantiations
   // are generated
   TTK_PRIMARY,
-  
+
   // explicit specialization, a user-provided definition for a
   // specific set of arguments (or argument patterns)
   TTK_SPECIALIZATION,
-  
+
   // instantiation, an object created by the compiler by taking
   // a primary or a partial specialization and filling in the
   // template parameters with concrete arguments
   TTK_INSTANTIATION,
-  
+
   NUM_TTKINDS
 };
 
@@ -248,7 +248,7 @@ public:    // data
   // true if we have seen syntax that demands an instantiation
   // of the body, not just the declaration
   bool instantiateBody;
-  
+
   // if this is true, the user has requested that this template
   // function not be instantiated, even if there is code that would
   // otherwise require it; this is to support the GNU "extern
@@ -258,7 +258,7 @@ public:    // data
   // for a template function, number of default arguments that have
   // not yet been instantiated
   int uninstantiatedDefaultArgs;
-  
+
   // for a template class, this is a list of the base classes that
   // were dependent, and as a consequence not added to its normal
   // base class list; this info is maintained to provide more
@@ -267,7 +267,7 @@ public:    // data
 
 private:     // funcs
   // can modify the 'const' fields, for updates
-  void addToList(Variable *elt, SObjList<Variable> &children, 
+  void addToList(Variable *elt, SObjList<Variable> &children,
                  Variable * const &parentPtr);
 
 public:      // funcs
@@ -302,7 +302,7 @@ public:      // funcs
   void addInstantiation(Variable *inst);
   void addSpecialization(Variable *spec);
   void addPartialInstantiation(Variable *pinst);
-  
+
   // change this TemplateInfo, which currently represents an implicit
   // instantiation, into an explicit specialization
   void changeToExplicitSpec();
@@ -369,10 +369,10 @@ public:      // funcs
   // debugging/error messages: print the fully qualified name,
   // plus arguments/parameters, to identify this template thing
   string templateName() const;
-                                           
+
   // visit the template arguments with 'vis'
   void traverseArguments(TypeVisitor &vis);
-                                                             
+
   // see comments at implementation
   bool matchesPI(CompoundType *primary,
                  ObjList<STemplateArgument> const &args);
@@ -572,7 +572,7 @@ public:      // data
 
   // instantiation location stack
   ArrayStack<SourceLoc> instLocStack;
-  
+
   // most proximal location from which the instantiation was
   // requested; additional context is in the loc stack
   SourceLoc loc;

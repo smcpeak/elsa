@@ -12,6 +12,6 @@ namespace std {
 void foo()
 {
   int i;
-  
+
   typeid(i).name();
 }

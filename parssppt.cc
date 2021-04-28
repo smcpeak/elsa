@@ -121,7 +121,7 @@ char *processArgs(int argc, char **argv, char const *additionalInfo) {
       symOfInterestName = argv[2];
       argc -= 2;
       argv += 2;
-    }   
+    }
 #endif // 0
     else {
       break;     // didn't find any more options
@@ -149,7 +149,7 @@ char *processArgs(int argc, char **argv, char const *additionalInfo) {
   return argv[1];
 }
 
-void maybeUseTrivialActions(ParseTreeAndTokens &ptree) 
+void maybeUseTrivialActions(ParseTreeAndTokens &ptree)
 {
   if (tracingSys("trivialActions")) {
     // replace current actions with trivial actions

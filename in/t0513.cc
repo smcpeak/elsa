@@ -20,7 +20,7 @@ int arr2[sizeof(S2)==8? +1 : -1];
 
 
 
-// this is from a header file somewhere, it shows up in quite a 
+// this is from a header file somewhere, it shows up in quite a
 // few of the Debian build failures
 //
 // actually, it's gcc's implementation of __real__, and then a

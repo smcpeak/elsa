@@ -109,7 +109,7 @@ class Expression {
   public string asString() const { return exprToString(); };
 }
 
-verbatim {                               
+verbatim {
   // for debugging
   char *expr_toString(Expression const *e);
   int expr_debugPrint(Expression const *e);

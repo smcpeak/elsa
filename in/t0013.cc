@@ -10,7 +10,7 @@ public:
   }
 
   //ERROR(3): int func();
-  
+
   //ERROR(4): int func() { return 5; }
 
   int bar();

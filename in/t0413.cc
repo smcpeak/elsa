@@ -17,7 +17,7 @@ void foo()
   //ERROR(1): enum S s2;      // S is a struct, not an enum
 
   int x = e;      // 'e' *does* come along
-  
+
   g(3);
 }
 

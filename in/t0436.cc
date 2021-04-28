@@ -9,7 +9,7 @@ struct B {
 
 int func();
 
-struct A {        
+struct A {
   // interloper!  If I do the lookups of the names preceding
   // "::*" in the scope of A, I will find this one, instead of
   // ::B, which is the right one

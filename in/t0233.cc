@@ -23,7 +23,7 @@ void f()
   // implementation currently instantiates both, which is wrong
   //
   // actually, right now, it always just instantiates the first,
-  // regardless of args, so that's two flaws this demonstrates 
+  // regardless of args, so that's two flaws this demonstrates
   a.foo(x);
 }
 

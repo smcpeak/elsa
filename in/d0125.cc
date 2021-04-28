@@ -22,7 +22,7 @@ int main()
 {
   char *s = "";
   char buf[100];
-  s = xgetenv("HOME");                               
+  s = xgetenv("HOME");
   xsprintf(buf, "%s", s);
   xprintf(buf);
 }

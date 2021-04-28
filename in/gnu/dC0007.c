@@ -6,7 +6,7 @@ static int sstfb_decode_var()
     case 0 ... 16 :
       break;
 
-    // gcc-2 allows this      
+    // gcc-2 allows this
     case 17 ... 31 :
       /* nothing */
   }

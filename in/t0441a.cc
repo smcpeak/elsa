@@ -1,7 +1,7 @@
 // t0441a.cc
 // simplified version of t0441.cc
 
-struct Outer { 
+struct Outer {
   template <class T>
   struct A;
 };

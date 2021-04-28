@@ -51,7 +51,7 @@ void g()
   A a;
   B b;
 
-  // candidate operator-(Parent*,Parent*):                              
+  // candidate operator-(Parent*,Parent*):
   //   arg0: A -> Parent* is better than A -> Child* by 13.3.3 para 1
   //         final bullet(SC_IDENTITY)
   //   arg1: B -> Child* which can be converted to Parent* (SC_PTR_CONV)
@@ -79,7 +79,7 @@ void g()
 
 
 
-        
+
 
 
 
@@ -203,7 +203,7 @@ struct I {
 };
 
 struct J {
-  operator int volatile ** ();  // line 206  
+  operator int volatile ** ();  // line 206
 };
 
 void k()

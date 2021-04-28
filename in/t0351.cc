@@ -24,7 +24,7 @@ void f()
   // have to get 'Bar const *' as parameter type, which means not
   // ignoring the 'const' in the template argument
   a.foo(p);
-  
+
   // not allowed
   //ERROR(1): bar(p);
 }

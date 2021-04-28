@@ -26,7 +26,7 @@ public:      // types
   public:
     Node() : data((T)0), zero(NULL), one(NULL) {}
     ~Node();
-    
+
     // get a successor, creating it if necessary
     Node *getZero();
     Node *getOne();
@@ -42,7 +42,7 @@ private:     // data
 public:      // funcs
   BitStrMap() : top(NULL) {}
   ~BitStrMap();
-  
+
   // get or create
   Node *getTop();
 };

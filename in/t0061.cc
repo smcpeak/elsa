@@ -8,7 +8,7 @@ typedef __gnuc_va_list va_list;
 int myprintf(char const *format, ...)
 {
   va_list ap;
-  
+
   // sm: nerfed this and moved into in/gnu/g0006.cc
   // since it is gnu-specific
   //

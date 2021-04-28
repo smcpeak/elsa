@@ -8,7 +8,7 @@ template <class T>
 struct B {
   operator A<T>* ()
     { return 0; }
-    
+
   // and a variable with dependent type ..
   A<T> &foo;
 };

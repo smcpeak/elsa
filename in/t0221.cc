@@ -4,7 +4,7 @@
 template <class S>
 class A {
   typedef S *someType;
-  
+
   enum E { someValue=4 };
 };
 

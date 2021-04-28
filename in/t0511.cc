@@ -43,7 +43,7 @@ enum MatchFlags {
   // by default such specifications are not compared because the
   // exception spec is not part of the "type" [8.3.5p4]
   MF_COMPARE_EXN_SPEC= 0x0020,
-  
+
   // allow the cv qualifications to differ up to the first type
   // constructor that is not a pointer or pointer-to-member; this
   // is cppstd 4.4 para 4 "similar"; implies MF_IGNORE_TOP_CV
@@ -114,8 +114,8 @@ enum MatchFlags {
     MF_UNASSOC_TPARAMS  |
     MF_MATCH            |
     MF_NO_NEW_BINDINGS  |
-    MF_ISOMORPHIC       
-    
+    MF_ISOMORPHIC
+
     // Note: MF_COMPARE_EXN_SPEC is *not* propagated.  It is used only
     // when the compared types are FunctionTypes, to compare those
     // toplevel exn specs, but any FunctionTypes appearing underneath
@@ -134,10 +134,10 @@ enum MatchFlags {
 
 struct B {
   int x;
-  
+
   static int f_stat();
   int f_nonstat();
-  
+
   typedef int INT;
   typedef int const INTC;
 };
@@ -168,7 +168,7 @@ struct Pair2 {
 
 template <int m>
 struct Num {};
-             
+
 
 int const global_const1 = 1;
 int const global_const2 = 2;
@@ -190,7 +190,7 @@ struct TakesIntRef {};
 
 template <class T, int *intptr>
 struct TakesIntPtr {};
-                   
+
 
 template <class T, int B::*ptm>
 struct TakesPTM {};
@@ -209,11 +209,11 @@ struct D {
   // explicit full spec
   template <>
   struct E<float*> {};
-  
+
   struct F {
     typedef int INT;
   };
-  
+
   typedef int INT;
 };
 
@@ -382,14 +382,14 @@ struct A {
 
     // attempt to compare different kinds of atomics
     __test_mtype((B*)0, (int*)0, MF_NONE, false);
-    
+
     // Mix different binding kinds together.
     //
     // These are currently triggering match failures in mtype.cc, as
     // intended (to improve coverage), but it is possible that a
     // future change to the tcheck code might diagnose them as syntax
     // errors.  If that happens, these can just be commented out I
-    // suppose.  
+    // suppose.
     __test_mtype((Pair<int, Num<3> >*)0,
                  (Pair<T,   Num<T> >*)0, MF_MATCH, false);
 
@@ -417,7 +417,7 @@ struct A {
     // DQTs with mismatching leading atomics
     __test_mtype((typename C<T>::Foo*)0,
                  (typename Pair<T,T>::Foo*)0, MF_NONE, false);
-                 
+
     // and mismatching PQName kinds
     __test_mtype((typename C<T>::template Foo<3>*)0,
                  (typename C<T>::Foo*)0, MF_NONE, false);
@@ -434,18 +434,18 @@ struct A {
     // different Type kinds
     __test_mtype((int)0,
                  (int*)0, MF_NONE, false);
-                 
+
     // cv-flags in the pattern aren't present in concrete
     __test_mtype((int const)0,
                  (T volatile)0, MF_MATCH, false);
     __test_mtype((int const)0,
                  (T const)0, MF_MATCH,
                  "T", (int)0);
-                 
+
     // FunctionType with differing return type
     __test_mtype((int (*)())0,
                  (float (*)())0, MF_NONE, false);
-                 
+
     // static vs. non-static
     __test_mtype(B::f_stat,
                  B::f_nonstat, MF_NONE, false);
@@ -456,14 +456,14 @@ struct A {
 
     // vararg vs. non-vararg
     __test_mtype(f_vararg, f_nonvararg, MF_NONE, false);
-    
+
     // throw vs. non-throw
     __test_mtype(f_nonvararg, f_throws_int, MF_COMPARE_EXN_SPEC, false);
 
     // differing exception specs
     __test_mtype(f_throws_float, f_throws_int, MF_COMPARE_EXN_SPEC, false);
     __test_mtype(f_throws_int, f_throws_int, MF_COMPARE_EXN_SPEC);
-    
+
     // ArrayTypes and MF_IGNORE_ELT_CV
     //
     // I am abusing the cast syntax here because MF_IGNORE_ELT_CV does
@@ -476,7 +476,7 @@ struct A {
                  (int       [2])0, MF_IGNORE_ELT_CV);
     __test_mtype((int const [2][3])0,
                  (int       [2][3])0, MF_IGNORE_ELT_CV);
-                 
+
     // expression comparison
     __test_mtype((Num<n+3>*)0,
                  (Num<n+3>*)0, MF_NONE);
@@ -521,7 +521,7 @@ struct A {
                  (Num< n? 1 : 2 >*)0, MF_NONE);
     __test_mtype((Num< n? 1 : 2 >*)0,
                  (Num< n? 1 : 3 >*)0, MF_NONE, false);
-                 
+
     __test_mtype((TakesIntRef<T, global_n>*)0,
                  (TakesIntRef<T, global_n>*)0, MF_NONE);
 
@@ -596,7 +596,7 @@ struct A {
     //__test_mtype((void (*)(D *, int                             , int))0,
     //             (void (*)(T *, typename T::template E<int>::INT, int))0, MF_MATCH,
     //             "T", (D)0);
-    
+
     // from t0487b.cc
     __test_mtype((void (*)(B *, int const *       , int))0,
                  (void (*)(T *, typename T::INTC *, int))0, MF_MATCH,
@@ -609,17 +609,17 @@ struct A {
     __test_mtype((void (*)(B *, int const *       , int))0,
                  (void (*)(T *, typename T::INT  *, int))0, MF_MATCH,
                  false);
-                 
+
     // from in/t0315.cc
     __test_mtype((int     *)0,
                  (T const *)0, MF_MATCH|MF_DEDUCTION,
                  "T", (int)0);
-                 
+
     // from in/t0462.cc; the 'const' is *not* deduced for T
     __test_mtype((int const)0,
                  (T        )0, MF_MATCH|MF_DEDUCTION,
                  "T", (int)0);
-                 
+
     // from in/t0486.cc
     __test_mtype((typename T::INT (*)(typename T::INT))0,
                  (S               (*)(S              ))0, MF_MATCH,

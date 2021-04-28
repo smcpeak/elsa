@@ -4,12 +4,12 @@
 void f()
 {
   int x;
-  
-lab:       
+
+lab:
   if (x == 3) {
     goto lab;
   }
-  
+
   if (x == 4) {
     goto lab;
   }

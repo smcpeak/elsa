@@ -6,7 +6,7 @@ class string {
   string (char const *src);
 };
 
-template < class T > 
+template < class T >
 class StringSObjDict {
   void remove (char const *key);        // line 11
   void remove (string const &key)       // line 12

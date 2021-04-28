@@ -5,11 +5,11 @@
 // never defined
 template<class T>
 void f(T x, T y = ydef(T()), T z = zdef(T()));
-                
+
 // defined below use
 template<class T>
 void g(T x, T y = ydef(T()), T z = zdef(T()));
-                    
+
 // defined here
 template<class T>
 void h(T x, T y = ydef(T()), T z = zdef(T())) {}
@@ -18,7 +18,7 @@ class  A { };
 
 A zdef(A);
 
-void foo(A a, A b, A c) 
+void foo(A a, A b, A c)
 {
   f(a, b, c);             // no default argument instantiation
   f(a, b);                // default argument z = zdef(T()) instantiated

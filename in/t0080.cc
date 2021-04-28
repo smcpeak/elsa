@@ -8,7 +8,7 @@ int func(int param)
 {
   // unambiguous
   //int y(f(param));
-  
+
   // ambiguous
   int x(f(g(param)));
 }
@@ -20,4 +20,4 @@ typedef int y;
 typedef int z;
 
 int h(int /*anon*/(x /*anon*/(y /*anon*/)));
-    
+

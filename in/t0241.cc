@@ -14,19 +14,19 @@ public:
 
 
 template <class T>
-class Derived {            
+class Derived {
   // this is just for looking at selfname for a primary in the debug trace
   Derived *whatever();
 };
 
 template <>
 class Derived<int> : public Base {
-public:          
+public:
   // use selfname with args
   Derived(Derived<int> const &obj)
     : Base(obj.ptrField)
   {}
-                           
+
   // use selfname without args
   Derived(Derived const &obj, int foo)
     : Base(obj.ptrField)

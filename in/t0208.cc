@@ -12,9 +12,9 @@ int f()
 {
   // default argument ought to be 'int*'
   C<int> x;
-  
+
   int arr[ sizeof(x.t_inst) ];
-  
+
   return 6;
 }
 

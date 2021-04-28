@@ -2,7 +2,7 @@
 // problem with scope of 'if' substatements?
 
 void f()
-{       
+{
   // are all three different decls, and therefore allowed?
   // yes: cppstd 6.4 para 1
 
@@ -27,14 +27,14 @@ void g()
 void h()
 {
   while (false)
-    int x;      
+    int x;
 
   do
     int x;
   while (false);
-  
+
   for ( ; false; )
     int x;
-    
+
   int x;
 }

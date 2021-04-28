@@ -1,6 +1,6 @@
 # 1 "t0539.cc"
 # 1 "<built-in>"
-# 1 "<command line>"
+# 1 "<command-line>"
 # 1 "t0539.cc"
 // t0539.cc
 // scope search order test

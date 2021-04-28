@@ -4,7 +4,7 @@
 template <class T>
 struct A {
   struct B {};
-  
+
   static B *array[2];
 };
 

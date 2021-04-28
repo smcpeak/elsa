@@ -35,7 +35,7 @@ void f1()
   C c;
   D d;
   E e;
-  
+
   *a;
   *b;
   //ERROR(1): *c;     // no built-in derefs void*
@@ -58,7 +58,7 @@ void f2()
 {
   F f;
   G g;
-  
+
   __testOverload(*f, 49);
   __testOverload(*g, 55);
 }

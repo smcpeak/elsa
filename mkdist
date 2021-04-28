@@ -1,6 +1,6 @@
 #!/bin/sh
 # make a tarball for distribution
-      
+
 # bail on error
 set -e
 

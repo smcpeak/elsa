@@ -73,7 +73,7 @@ protected:  // funcs
 public:     // funcs
   // make a lexer to scan the given file
   BaseLexer(StringTable &strtable, char const *fname);
-  
+
   // make a lexer to scan an in-memory string; 'initLoc' is the
   // location that the first character should be regarded as being at;
   // the buffer must remain allocated as long as this BaseLexer is

@@ -51,19 +51,19 @@ void bar()
   u_int16_t ui16;
   u_int32_t ui32;
   u_int64_t ui64;
-  
+
   signed char sc;
   unsigned char uc;
-  
+
   signed short ss;
   unsigned short us;
-  
+
   signed int si;
   unsigned int ui;
-  
+
   signed long long sll;
   unsigned long long ull;
-  
+
   equalTypes(i8,  sc);
   equalTypes(i16, ss);
   equalTypes(i32, si);

@@ -20,7 +20,7 @@ int main()
 
   // E_new
   p = new int;
-  
+
   // E_new of an array with non-const size
   p = new int[x];
 
@@ -40,7 +40,7 @@ int main()
 
   // E_typeidExpr
   typeid(x);
-  
+
   // E_typeidType
   typeid(y);
 }

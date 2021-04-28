@@ -4,7 +4,7 @@
 // Though both GCC and ICC accept this, I don't know why.
 
 // I think it should be illegal because:
-//   - 6.7p4 says declarations of same entity must use 
+//   - 6.7p4 says declarations of same entity must use
 //     compatible types
 //   - 6.7.5.3p15 says compatible function types require
 //     compatible return types

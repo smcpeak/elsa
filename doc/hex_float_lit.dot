@@ -8,7 +8,7 @@ digraph "Hex Floating Literals" {
 
   node [ shape = doublecircle ]; i j;
 
-  node [ 
+  node [
 //    label = ""
     shape = circle
   ];
@@ -18,19 +18,19 @@ digraph "Hex Floating Literals" {
   b -> c  [ label = "[xX]" ];
 
   c -> d  [ label = "HEX" ];
-  c -> "e'" [ label = "\".\"" 
-              //constraint = false 
+  c -> "e'" [ label = "\".\""
+              //constraint = false
               ];
 
   d -> d  [ label = "HEX" ];
 
   d -> e  [ label = "\".\"" ];
-  d -> g  [ label = "[pP]" 
-            constraint = false 
+  d -> g  [ label = "[pP]"
+            constraint = false
           ];
 
   e -> f  [ label = "HEX" ];
-  e -> g  [ label = "[pP]" 
+  e -> g  [ label = "[pP]"
             constraint = false ];
 
   "e'" -> f [ label = "HEX"

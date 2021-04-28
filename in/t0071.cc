@@ -5,6 +5,6 @@ class Foo {
 public:
   typedef int x;
   typedef int x;
-  
+
   typedef enum E { a,b,c } E;
 };

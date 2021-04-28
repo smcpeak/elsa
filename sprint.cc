@@ -74,7 +74,7 @@ bool StructurePrinter::visitStatement(Statement *s)
     ASTDEFAULT
       // those not listed above have their children automatically traversed
       return true;
-      
+
     ASTENDCASE
   }
 

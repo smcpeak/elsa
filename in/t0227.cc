@@ -12,7 +12,7 @@ namespace N {
     inline int g();
   };
 
-  // has DF_INLINE but the definition is actually out of line  
+  // has DF_INLINE but the definition is actually out of line
   template <class T>
   int C<T>::g()
   {

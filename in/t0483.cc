@@ -16,7 +16,7 @@ struct C : virtual A {};
 struct D : B, C {};
 
 void foo(D &d)
-{            
+{
   d && true;
 }
 

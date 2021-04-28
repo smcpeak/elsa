@@ -4,7 +4,7 @@
 
 template <class Y>
 class test {
-  template <class T> 
+  template <class T>
   friend class test;
 };
 

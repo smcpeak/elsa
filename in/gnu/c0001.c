@@ -78,12 +78,12 @@ MC *mail_new_cache_elt (unsigned long msgno)
                  break;
              }
              __s;
-           }) 
+           })
          )     :
-       (__builtin_constant_p ( 0 ) && ( 0 ) == '\0' ? 
-         ({ void *__s = ( fs_get (sizeof (MC)) ); 
-            __builtin_memset ( __s , '\0',    sizeof (MC)  ) ; 
-            __s; })   : 
+       (__builtin_constant_p ( 0 ) && ( 0 ) == '\0' ?
+         ({ void *__s = ( fs_get (sizeof (MC)) );
+            __builtin_memset ( __s , '\0',    sizeof (MC)  ) ;
+            __s; })   :
          memset ( fs_get (sizeof (MC)) , 0 ,  sizeof (MC) )
        )
      )

@@ -7,7 +7,7 @@ void f(float);
 void foo()
 {
   // optional parts:         HEX1 "." HEX2 sign suffix
-  
+
   // everything
   f(0x1aE.2bFp+312f);   //    *    *   *    *     *
 

@@ -7,7 +7,7 @@ struct A {
 
 // GCC and ICC reject this
 //ERROR(1): class A::INT x;
-  
+
 
 template <class T>
 struct B {

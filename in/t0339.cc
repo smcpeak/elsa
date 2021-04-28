@@ -17,7 +17,7 @@ void bar()
   foo(&g);       // pass third 'g'
   foo2(g);       // pass second 'g'
   foo3(&g);      // pass first 'g'
-  
+
   foo( ((((&((((g)))))))) );     // third 'g'
 }
 

@@ -47,7 +47,7 @@ class Function {
 }
 
 
-class PQName {  
+class PQName {
   // denote an existing Variable; avoids having to create syntax
   -> PQ_variable(Variable *var);
 }

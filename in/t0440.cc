@@ -8,7 +8,7 @@ struct A {};
 template <>
 struct A</*int*/> {      // !!
   int x;
-  
+
   A *f1();
   A<> *f2();
   A<int> *f3();
@@ -24,7 +24,7 @@ A<int> *A<>::f2()
   return this;
 }
 
-A<int> *A<int>::f3() 
+A<int> *A<int>::f3()
 {
   return this;
 }

@@ -6,7 +6,7 @@
 #define INTEGRITY_H
 
 #include "astvisit.h"        // ASTVisitorEx
-                    
+
 // integrity checks:
 //   - The AST must be unambiguous.
 //   - No dependent types appear in concrete code.
