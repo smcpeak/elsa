@@ -12,6 +12,8 @@
 #include "strtable.h"     // StringRef
 #include "srcloc.h"       // SourceLoc
 
+#include <stdint.h>       // intptr_t
+
 // can't just #include cc.ast.gen.h b/c that #includes this file
 class Statement;
 class S_break;
@@ -34,17 +36,14 @@ class TranslationUnit;
 // a 'next' pointer in the CFG, i.e. a pointer to a Statement
 class NextPtr {
 private:     // data
-  // encoding is a Statement*, OR'd with 1 if it's a "continue" edge;
-  // hopefully the compiler will be smart about representation and
-  // calling convention, as both will be semantically equivalent to
-  // how an ordinary 'long' is treated
-  long p;
+  // encoding is a Statement*, OR'd with 1 if it's a "continue" edge
+  intptr_t p;
 
 public:
   // construction, assignment
   NextPtr() : p(0) {}
   NextPtr(Statement *next, bool isContinue)
-    : p((long)next | !!isContinue) {}
+    : p((intptr_t)next | !!isContinue) {}
   NextPtr(NextPtr const &obj) : p(obj.p) {}
   NextPtr& operator= (NextPtr const &obj) { p = obj.p; return *this; }
 
@@ -53,7 +52,7 @@ public:
   bool operator!= (NextPtr const &obj) const { return p != obj.p; }
 
   // selection
-  Statement *stmt() { return (Statement*)(p & ~1L); }
+  Statement *stmt() { return (Statement*)(p & ~((intptr_t)1)); }
   bool cont() const { return (bool)(p & 1); }
 
   // like next()->kindLocString(), with a "(c)" appended if it's the
