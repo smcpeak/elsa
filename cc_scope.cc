@@ -57,6 +57,8 @@ Scope::Scope(XmlReader&)
 
 Scope::~Scope()
 {
+  GENERIC_CATCH_BEGIN
+
   // 8/14/04: I got all of our test suite to go through without
   // running into what is now the xfailure below, so I think I've got
   // most of this straightened out.  But this isn't such a big deal if
@@ -75,9 +77,7 @@ Scope::~Scope()
   // if we were delegated, break the delegation
   if (isDelegated()) {
     CompoundType *ct = parameterizedEntity->type->asCompoundType();
-    if (!unwinding()) {
-      xassert(ct->parameterizingScope == this);
-    }
+    xassert(ct->parameterizingScope == this);
 
     TRACE("templateParams", desc() << " removing delegation to " << ct->desc());
 
@@ -85,9 +85,9 @@ Scope::~Scope()
     parameterizedEntity = NULL;     // irrelevant but harmless
   }
 
-  if (!unwinding()) {         // if not already raising an exception,
-    xassert(!onScopeStack);   // check that we are not pointed-to
-  }
+  xassert(!onScopeStack);   // check that we are not pointed-to
+
+  GENERIC_CATCH_END
 }
 
 
