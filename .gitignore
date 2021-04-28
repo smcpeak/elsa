@@ -1,27 +1,32 @@
-Makefile
-*.o
+# .gitignore
+# Should be maintained in sorted order: "env LANG=C sort".
+
 *.d
 *.exe
 *.gen.cc
 *.gen.h
+*.gen.lex
 *.gen.out
 *.gen.tokens
-*.gen.lex
 *.gen.yy.cc
 *.log
-cc_tokens.ids
+*.o
+Makefile
 cc_tokens.cc
 cc_tokens.h
+cc_tokens.ids
+ccparse
 config.status
 config.summary
+in/*.error*.cc
+in/big/*.i
 lex.backup
 lexer.lex
 lexer.yy.cc
-testcout
-ccparse
-in/big/*.i
-in/*.error*.cc
 packedword_test
 quicktest
 semgrep
+testcout
 tlexer
+
+# EOF
