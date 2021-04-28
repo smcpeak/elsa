@@ -20,7 +20,6 @@ testcout
 ccparse
 in/big/*.i
 in/*.error*.cc
-outdir
 packedword_test
 quicktest
 semgrep

@@ -1,0 +1,10 @@
+# outdir/.gitignore
+# The presence of this file ensures git will create 'outdir'.
+
+# All files in here should be ignored.
+*
+
+# Except this one.
+!.gitignore
+
+# EOF
