@@ -21,8 +21,11 @@ LIBELKHOUND := $(ELKHOUND)/libelkhound.a
 
 # external tools
 PERL := @PERL@
-MYFLEX := $(PERL) $(SMBASE)/run-flex.pl -nobackup -copies
 DEP := $(PERL) $(SMBASE)/depend.pl
+
+FLEXDIR := ../flex
+RUNFLEX := $(FLEXDIR)/flex -b
+FLEXINC := $(FLEXDIR)
 
 # list of files to clean in 'clean' (etc.) targets
 # (these get added to below)
@@ -98,7 +101,7 @@ endif
 CXX := g++
 
 # flags for the C++ compiler (and preprocessor)
-CCFLAGS := @CCFLAGS@ -Woverloaded-virtual -I$(SMBASE) -I$(AST) -I$(ELKHOUND)
+CCFLAGS := @CCFLAGS@ -Woverloaded-virtual -I$(SMBASE) -I$(FLEXINC) -I$(AST) -I$(ELKHOUND)
 
 # how to enable coverage
 GCOV_OPTS := -fprofile-arcs -ftest-coverage
@@ -191,9 +194,13 @@ xml_lex.gen.lex: xml_lex_0top.lex xml_lex_1.gen.lex xml_lex_2bot.lex
 	chmod a-w $@
 
 # run flex on the lexer description for ast xml parser
+#
+# This specifies "-PxmlBase" so that the generated base class is called
+# "xmlBaseFlexLexer" instead of "yyFlexLexer" since the latter would
+# conflict with the base class used by lexer.lex for lexing C/C++.
 TOCLEAN += xml_lex.gen.yy.cc
 xml_lex.gen.yy.cc: xml_lex.gen.lex xml_lexer.h
-	$(MYFLEX) -o$@ xml_lex.gen.lex
+	$(RUNFLEX) -o$@ -PxmlBase xml_lex.gen.lex
 
 # when building the ast xml lexer, delete the methods that would
 # otherwise conflict with methods in lexer.yy.cc; they have identical
@@ -244,7 +251,7 @@ lexer.lex: $(LEXER_MODS) merge-lexer-exts.pl
 # run flex on the lexer description
 TOCLEAN += lexer.yy.cc
 lexer.yy.cc: lexer.lex lexer.h
-	$(MYFLEX) -o$@ lexer.lex
+	$(RUNFLEX) -o$@ lexer.lex
 
 
 # generate token lists
@@ -371,7 +378,7 @@ smin: $(SMIN_OBJS) $(LIBSMBASE)
 # --------------------- cipart --------------------
 TOCLEAN += cipart.yy.cc
 cipart.yy.cc: cipart.lex
-	flex -o$@ cipart.lex
+	$(FLEXDIR)/flex -o$@ cipart.lex
 
 -include cipart.yy.d
 
