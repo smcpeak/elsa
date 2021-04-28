@@ -112,9 +112,15 @@ for my $name(@names) {
 
         run_command "$cpp $name", "$outname.0cppout.cc";
         run_command "$parser $flags $outname.0cppout.cc", "$outname.1rawout.cc";
-        run_only "cpp < $outname.1rawout.cc | perl ./chop_out", "$outname.2out.cc";
+
+        # smcpeak: I use 'cat file | cpp' rather than 'cpp < file'
+        # because the latter produces a spurious warning, "is shorter
+        # than expected", from GCC cpp on Windows when the input file
+        # contains CRLF line endings.
+        run_only "cat $outname.1rawout.cc | $cpp | perl ./chop_out", "$outname.2out.cc";
+
         run_command "$parser $flags $outname.2out.cc", "$outname.3rawout.cc";
-        run_only "$cpp < $outname.3rawout.cc | perl ./chop_out", "$outname.4out.cc";
+        run_only "cat $outname.3rawout.cc | $cpp | perl ./chop_out", "$outname.4out.cc";
     };
     if ($@) {
         dump_outfiles();
