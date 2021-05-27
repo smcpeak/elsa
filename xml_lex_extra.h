@@ -1,5 +1,5 @@
-#ifndef FLEX_SCANNER
-# error "This file should only be included in the flex-generated scanner"
+#ifndef SMFLEX_SCANNER
+# error "This file should only be included in the smflex-generated scanner"
 #endif
 
 #include <assert.h>
@@ -21,6 +21,13 @@
 // Returns 1 on success (or recoverable error); returns 0 on error.
 bool XmlLexer::read_xml_string()
 {
+  // The code below (inside #if 0) does a lot of nasty things directly
+  // with the flex read buffer.  I think this could all be redone using
+  // yym_read_character(), but I want to first see if I need it.
+  assert(!"unimplemented");
+  return false;
+
+#if 0    // old code
   // action should have read 1 char
   assert(yy_c_buf_p == yytext + 1);
 
@@ -203,6 +210,7 @@ bool XmlLexer::read_xml_string()
     }
   }
   // not reached
+#endif // 0
 }
 
 // Underflow function to read_xml_string() based on yyinput() but optimized
@@ -219,7 +227,12 @@ bool XmlLexer::read_xml_string()
 // after input.  Also do not support yywrap().  If we reach end of buffer,
 // die.
 
-inline int XmlLexer::yyunderflow() {
+inline int XmlLexer::yyunderflow()
+{
+  assert(!"unimplemented");
+  return -1;
+
+#if 0     // unimplemented
   assert(*yy_c_buf_p != '\0');
   if (*yy_c_buf_p == YY_END_OF_BUFFER_CHAR) {
     if ( (yy_c_buf_p) < &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[(yy_n_chars)] ) {
@@ -262,4 +275,5 @@ inline int XmlLexer::yyunderflow() {
     }
   }
   return 0;
+#endif // 0
 }

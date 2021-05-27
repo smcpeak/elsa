@@ -30,7 +30,7 @@ static char const * const tokenNames[] = {
 };
 
 int XmlLexer::getToken() {
-  int token = this->yylex();
+  int token = this->yym_lex();
   if (token==0) {
     sawEof = true;
   }

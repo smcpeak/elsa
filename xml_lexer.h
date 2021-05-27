@@ -8,15 +8,8 @@
 
 #include "str.h"                // string
 #include "xml_enum.h"           // XTOK_*
+#include "xml_lex.gen.yy.h"     // xmlBaseFlexLexer
 
-// Get the definition of 'xmlBaseFlexLexer' by #including FlexLexer.h
-// with a customized definition of 'yyFlexLexer'.
-#ifndef XML_BASE_LEXER_DEFINED
-#define XML_BASE_LEXER_DEFINED
-#undef yyFlexLexer
-#define yyFlexLexer xmlBaseFlexLexer
-#include "FlexLexer.h"          // xmlBaseFlexLexer
-#endif // XML_BASE_LEXER_DEFINED
 
 class XmlLexer : private xmlBaseFlexLexer {
 private:
@@ -40,10 +33,10 @@ public:
   bool haveSeenEof() { return sawEof; }
 
   // This is yytext.  Strings are already dequoted+unescaped.
-  char const *currentText() { return this->YYText(); }
+  char const *currentText() { return this->yym_text(); }
 
   // this is yyrestart.  For starting and restarting.
-  void restart(istream *in) { this->yyrestart(in); sawEof = false; }
+  void restart(istream *in) { this->yym_restart(in); sawEof = false; }
 
   int tok(XmlToken kind);
   int svalTok(XmlToken t);
@@ -53,7 +46,7 @@ public:
   string tokenKindDescV(int kind) const;
 
   // Generated lexer implementation.
-  virtual int yylex();
+  int yym_lex();
 };
 
 #endif // XML_LEXER_H

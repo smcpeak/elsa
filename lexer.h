@@ -52,12 +52,13 @@ protected:  // funcs
   int alternateKeyword_tok(TokenType t);
 
   // handle a #line directive
-  void parseHashLine(char *directive, int len);
+  void parseHashLine(char const *directive, int len);
 
   // report an error in a preprocessing task
   void pp_err(char const *msg);
 
-  FLEX_OUTPUT_METHOD_DECLS
+  // The core scanner method.
+  int yym_lex();
 
 public:     // funcs
   // make a lexer to scan the given file

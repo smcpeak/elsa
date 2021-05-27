@@ -103,9 +103,12 @@ BaseLexer::~BaseLexer()
 }
 
 
-StringRef BaseLexer::addString(char *str, int len)
+StringRef BaseLexer::addString(char const *str_, int len)
 {
   // (copied from gramlex.cc, GrammarBaseLexer::addString)
+
+  // I promise to restore the value after modifying it.
+  char *str = const_cast<char*>(str_);
 
   // write a null terminator temporarily
   char wasThere = str[len];
@@ -126,7 +129,8 @@ void BaseLexer::whitespace()
   updLoc();
 
   // scan for newlines
-  char *p = yytext, *endp = yytext+yyleng;
+  char const *p = yym_text();
+  char const *endp = yym_text()+yym_leng();
   for (; p < endp; p++) {
     if (*p == '\n') {
       curLine++;
@@ -163,7 +167,7 @@ STATICDEF void BaseLexer::tokenFunc(LexerInterface *lex)
 
   // call into the flex lexer; this updates 'loc' and sets
   // 'sval' as appropriate
-  ths->type = ths->yylex();
+  ths->type = ths->yym_lex();
 }
 
 

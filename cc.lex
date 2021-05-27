@@ -2,6 +2,8 @@
  * flex description of scanner for C and C++ souce
  */
 
+%smflex 100
+
 /* ----------------------- C definitions ---------------------- */
 %{
 
@@ -15,14 +17,8 @@
 
 
 /* -------------------- flex options ------------------ */
-/* no wrapping is needed; setting this means we don't have to link with libfl.a */
-%option noyywrap
-
 /* don't use the default-echo rules */
 %option nodefault
-
-/* I don't call unput */
-%option nounput
 
 /* generate a c++ lexer */
 %option c++
@@ -33,17 +29,8 @@
 /* utilize character equivalence classes */
 %option ecs
 
-/* the scanner is never interactive */
-%option never-interactive
-
-/* and I will define the class (lexer.h) */
+/* I will define the class (lexer.h) */
 %option yyclass="Lexer"
-
-/* output file name */
-  /* dsw: Arg!  Don't do this, since it is not overrideable from the
-     command line with -o, which I consider to be a flex bug. */
-  /* sm: fair enough; agreed */
-  /* %option outfile="lexer.yy.cc" */
 
 /* start conditions */
 %x BUGGY_STRING_LIT
@@ -262,7 +249,7 @@ PPCHAR        ([^\\\n]|{BACKSL}{NOTNL})
   /* this rule is to avoid backing up in the lexer
    * when there are two dots but not three */
 ".." {
-  yyless(1);     /* put back all but 1; this is inexpensive */
+  YY_LESS_TEXT(1);     /* put back all but 1; this is inexpensive */
   return tok(TOK_DOT);
 }
 
@@ -316,7 +303,7 @@ PPCHAR        ([^\\\n]|{BACKSL}{NOTNL})
     warning("string literal contains (unescaped) newline character; "
             "this is allowed for gcc-2 bug compatibility only "
             "(maybe the final `\"' is missing?)");
-    BEGIN(BUGGY_STRING_LIT);
+    YY_SET_START_CONDITION(BUGGY_STRING_LIT);
     return svalTok(TOK_STRING_LITERAL);
   }
   else {
@@ -332,7 +319,7 @@ PPCHAR        ([^\\\n]|{BACKSL}{NOTNL})
    * and there is no newline before the EOF */
 "L"?{QUOTE}({STRCHAR}|{ESCAPE})*{BACKSL}? {
   err("unterminated string literal");
-  yyterminate();
+  YY_TERMINATE();
 }
 
 
@@ -344,7 +331,7 @@ PPCHAR        ([^\\\n]|{BACKSL}{NOTNL})
 <BUGGY_STRING_LIT>{
   ({STRCHAR}|{ESCAPE})*{QUOTE} {
     // found the end
-    BEGIN(INITIAL);
+    YY_SET_START_CONDITION(INITIAL);
     return svalTok(TOK_STRING_LITERAL);
   }
   ({STRCHAR}|{ESCAPE})*{EOL} {
@@ -357,7 +344,7 @@ PPCHAR        ([^\\\n]|{BACKSL}{NOTNL})
     err("at EOF, unterminated string literal; support for newlines in string "
         "literals is presently turned on, maybe the missing quote should have "
         "been much earlier in the file?");
-    yyterminate();
+    YY_TERMINATE();
   }
 }
 
@@ -376,7 +363,7 @@ PPCHAR        ([^\\\n]|{BACKSL}{NOTNL})
   /* unterminated character literal */
 "L"?{TICK}({CCCHAR}|{ESCAPE})*{BACKSL}?  {
   err("unterminated character literal");
-  yyterminate();
+  YY_TERMINATE();
 }
 
 
@@ -394,7 +381,7 @@ PPCHAR        ([^\\\n]|{BACKSL}{NOTNL})
    * then we accept the rest of the line; 'parseHashLine' will finish
    * parsing the directive */
 "#"("line"?){SPTAB}.*{NL} {
-  parseHashLine(yytext, yyleng);
+  parseHashLine(YY_TEXT, YY_LENG);
   whitespace();       // don't increment line count until after parseHashLine()
 }
 
@@ -431,19 +418,19 @@ PPCHAR        ([^\\\n]|{BACKSL}{NOTNL})
   /* unterminated C comment */
 "/""*"([^*]|"*"*[^*/])*"*"*        {
   err("unterminated /""*...*""/ comment");
-  yyterminate();
+  YY_TERMINATE();
 }
 
 
   /* illegal */
 .  {
   updLoc();
-  err(stringc << "illegal character: `" << yytext[0] << "'");
+  err(stringc << "illegal character: `" << YY_TEXT[0] << "'");
 }
 
 <<EOF>> {
   srcFile->doneAdding();
-  yyterminate();
+  YY_TERMINATE();
 }
 
 
@@ -465,14 +452,14 @@ PPCHAR        ([^\\\n]|{BACKSL}{NOTNL})
   /* C comment; dsw: one that actually works! */
 "/""*" {
   yymore();
-  BEGIN IN_C_COMMENT;
+  YY_SET_START_CONDITION(IN_C_COMMENT);
 }
 <IN_C_COMMENT>[^*]+ {
   yymore();
 }
 <IN_C_COMMENT>"*"+"/" {
   whitespace();
-  BEGIN INITIAL;
+  YY_SET_START_CONDITION(INITIAL);
 }
 <IN_C_COMMENT>"*"+ {
   /* NOTE: this rule must come after the above rule */
@@ -484,6 +471,6 @@ PPCHAR        ([^\\\n]|{BACKSL}{NOTNL})
   whitespace();
   /* dsw: TODO: I think I just have to replicate this here or we could factor it out */
   srcFile->doneAdding();
-  yyterminate();
+  YY_TERMINATE();
 }
 #endif // 0

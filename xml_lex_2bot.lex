@@ -35,12 +35,12 @@
   /* illegal */
 .  {
   /* updLoc(); */
-  err(stringc << "illegal character: `" << yytext[0] << "'");
+  err(stringc << "illegal character: `" << YY_TEXT[0] << "'");
 }
 
 <<EOF>> {
   /*    srcFile->doneAdding(); */
-  yyterminate();
+  YY_TERMINATE();
 }
 
 

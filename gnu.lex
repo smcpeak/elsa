@@ -39,7 +39,7 @@
 "__FUNCTION__"|"__PRETTY_FUNCTION__" {
   if (lang.gccFuncBehavior == CCLang::GFB_string) {
     // yield with special token codes
-    return tok(yytext[2]=='F'? TOK___FUNCTION__ : TOK___PRETTY_FUNCTION__);
+    return tok(YY_TEXT[2]=='F'? TOK___FUNCTION__ : TOK___PRETTY_FUNCTION__);
   }
   else {
     // ordinary identifier, possibly predefined (but that's not the

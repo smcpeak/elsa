@@ -4,6 +4,8 @@
 
 /* This file is the top part of the generated .lex file. */
 
+%smflex 100
+
 /* ----------------------- C definitions ---------------------- */
 %{
 
@@ -27,14 +29,8 @@
 
 
 /* -------------------- flex options ------------------ */
-/* no wrapping is needed; setting this means we don't have to link with libfl.a */
-%option noyywrap
-
 /* don't use the default-echo rules */
 %option nodefault
-
-/* I don't call unput */
-%option nounput
 
 /* generate a c++ lexer */
 %option c++
@@ -44,9 +40,6 @@
 
 /* utilize character equivalence classes */
 %option ecs
-
-/* the scanner is never interactive */
-%option never-interactive
 
 /* I want to give good error messages and flex is way faster than a
    parser so I think this is a good tradeoff; UPDATE: arg, Scott's

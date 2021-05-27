@@ -25,9 +25,8 @@ DEP    := $(PERL) $(SMBASE)/depend.pl
 AR     := ar
 RANLIB := ranlib
 
-FLEXDIR := ../flex
-RUNFLEX := $(FLEXDIR)/flex -b
-FLEXINC := $(FLEXDIR)
+SMFLEXDIR := ../smflex
+SMFLEX    := $(SMFLEXDIR)/smflex -b
 
 # list of files to clean in 'clean' (etc.) targets
 # (these get added to below)
@@ -103,7 +102,7 @@ endif
 CXX := g++
 
 # flags for the C++ compiler (and preprocessor)
-CCFLAGS := @CCFLAGS@ -Woverloaded-virtual -I$(SMBASE) -I$(FLEXINC) -I$(AST) -I$(ELKHOUND)
+CCFLAGS := @CCFLAGS@ -Woverloaded-virtual -I$(SMBASE) -I$(AST) -I$(ELKHOUND)
 
 # how to enable coverage
 GCOV_OPTS := -fprofile-arcs -ftest-coverage
@@ -202,7 +201,7 @@ xml_lex.gen.lex: xml_lex_0top.lex xml_lex_1.gen.lex xml_lex_2bot.lex
 # conflict with the base class used by lexer.lex for lexing C/C++.
 TOCLEAN += xml_lex.gen.yy.cc
 xml_lex.gen.yy.cc: xml_lex.gen.lex xml_lexer.h
-	$(RUNFLEX) -o$@ -PxmlBase xml_lex.gen.lex
+	$(SMFLEX) -o$@ -PxmlBase xml_lex.gen.lex
 
 # when building the ast xml lexer, delete the methods that would
 # otherwise conflict with methods in lexer.yy.cc; they have identical
@@ -251,9 +250,17 @@ lexer.lex: $(LEXER_MODS) merge-lexer-exts.pl
 
 
 # run flex on the lexer description
-TOCLEAN += lexer.yy.cc
-lexer.yy.cc: lexer.lex lexer.h
-	$(RUNFLEX) -o$@ lexer.lex
+TOCLEAN += lexer.yy.cc lexer.yy.h
+lexer.yy.cc: lexer.lex
+	$(SMFLEX) -o$@ lexer.lex
+
+# Tell 'make' that to make the .h file, it has to make the .cc file.
+lexer.yy.h: lexer.yy.cc
+	@# nothing
+
+
+# Dependencies on generated code.
+tlexer.o: lexer.yy.h
 
 
 # generate token lists
@@ -368,7 +375,7 @@ iptparse: iptparse.cc iptree.o iptparse.yy.o $(LIBSMBASE)
 # lexer for interval partition tree specs
 TOCLEAN += iptparse.yy.cc
 iptparse.yy.cc: iptparse.lex
-	flex -o$@ iptparse.lex
+	$(SMFLEXDIR)/smflex -o$@ iptparse.lex
 
 iptparse.yy.o: iptparse.h
 
@@ -387,7 +394,7 @@ smin: $(SMIN_OBJS) $(LIBSMBASE)
 # --------------------- cipart --------------------
 TOCLEAN += cipart.yy.cc
 cipart.yy.cc: cipart.lex
-	$(FLEXDIR)/flex -o$@ cipart.lex
+	$(SMFLEXDIR)/smflex -o$@ cipart.lex
 
 -include cipart.yy.d
 

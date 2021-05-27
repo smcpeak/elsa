@@ -10,7 +10,7 @@
 #ifndef BASELEXER_H
 #define BASELEXER_H
 
-#include "sm_flexlexer.h"   // yyFlexLexer
+#include "lexer.yy.h"       // yyFlexLexer
 
 #include "sm-iostream.h"    // istream
 #include "lexerint.h"       // LexerInterface
@@ -38,15 +38,14 @@ protected:  // funcs
   // advance source location
   void updLoc() {
     loc = nextLoc;                 // location of *this* token
-    nextLoc = advText(nextLoc, yytext, yyleng);
+    nextLoc = advText(nextLoc, yym_text(), yym_leng());
   }
 
-  // adds a string with only the specified # of chars; writes (but
-  // then restores) a null terminator if necessary, so 'str' isn't const
-  StringRef addString(char *str, int len);
+  // adds a string with only the specified # of chars
+  StringRef addString(char const *str, int len);
 
   // updLoc(), then for every newline found in
-  // [yytext,yytext+yyleng-1], increment 'curLine'
+  // [yym_text(),yym_text()+yym_leng()-1], increment 'curLine'
   void whitespace();
 
   // return the given token code, after updLoc'ing and setting
@@ -63,12 +62,9 @@ protected:  // funcs
   istream *openString(char const *buf, int len);
 
   // read the next token and return its code; returns 0 for end of file;
-  // this function is defined in flex's output source code
-  //virtual int yylex();
-  //
-  // since Flex outputs yylex as being a member function of the
-  // final lexer class, the declaration of 'yylex' must be put into
-  // that class, not this one
+  // this function is defined by the derived class, in flex's output
+  // source code
+  virtual int yym_lex() = 0;
 
 public:     // funcs
   // make a lexer to scan the given file
@@ -87,14 +83,6 @@ public:     // funcs
   // LexerInterface funcs
   virtual NextTokenFunc getTokenFunc() const;
 };
-
-
-// this macro declares the methods that flex's output implements
-#define FLEX_OUTPUT_METHOD_DECLS               \
-  virtual int yylex();                         \
-  yy_state_type yy_get_previous_state();       \
-  yy_state_type yy_try_NUL_trans( yy_state_type current_state );
-
 
 
 #endif // BASELEXER_H

@@ -129,7 +129,7 @@ int Lexer::svalTok(TokenType t)
 {
   checkForNonsep(t);
   updLoc();
-  sval = (SemanticValue)addString(yytext, yyleng);
+  sval = (SemanticValue)addString(yym_text(), yym_leng());
   return t;
 }
 
@@ -151,9 +151,9 @@ int Lexer::alternateKeyword_tok(TokenType t)
 //   # 4 "foo.cc"           // "line" can be omitted
 //   # 4 "foo.cc" 1         // extra stuff is ignored
 //   # 4                    // omitted filename means "same as previous"
-void Lexer::parseHashLine(char *directive, int len)
+void Lexer::parseHashLine(char const *directive, int len)
 {
-  char *endp = directive+len;
+  char const *endp = directive+len;
 
   directive++;        // skip "#"
   if (*directive == 'l') {
@@ -193,7 +193,7 @@ void Lexer::parseHashLine(char *directive, int len)
   directive++;
 
   // look for trailing quote
-  char *q = directive;
+  char *q = const_cast<char*>(directive);  // I promise to undo my change.
   while (q<endp && *q != '\"') {
     q++;
   }
@@ -233,7 +233,7 @@ STATICDEF void Lexer::tokenFunc(LexerInterface *lex)
 
   // call into the flex lexer; this updates 'loc' and sets
   // 'sval' as appropriate
-  ths->type = ths->yylex();
+  ths->type = ths->yym_lex();
 }
 
 
@@ -241,7 +241,7 @@ STATICDEF void Lexer::c_tokenFunc(LexerInterface *lex)
 {
   // as above
   Lexer *ths = static_cast<Lexer*>(lex);
-  ths->type = ths->yylex();
+  ths->type = ths->yym_lex();
 
   // map C++ keywords into identifiers
   TokenType tt = (TokenType)(ths->type);

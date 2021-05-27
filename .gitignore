@@ -10,6 +10,7 @@
 *.gen.out
 *.gen.tokens
 *.gen.yy.cc
+*.gen.yy.h
 *.log
 *.o
 Makefile
@@ -25,6 +26,7 @@ iptparse.yy.cc
 lex.backup
 lexer.lex
 lexer.yy.cc
+lexer.yy.h
 packedword_test
 quicktest
 semgrep
