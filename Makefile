@@ -189,7 +189,7 @@ xml_lex.gen.lex: xml_lex_0top.lex xml_lex_1.gen.lex xml_lex_2bot.lex
 # This specifies "-PxmlBase" so that the generated base class is called
 # "xmlBaseFlexLexer" instead of "yyFlexLexer" since the latter would
 # conflict with the base class used by lexer.lex for lexing C/C++.
-TOCLEAN += xml_lex.gen.yy.cc
+TOCLEAN += xml_lex.gen.yy.cc xml_lex.gen.yy.h
 xml_lex.gen.yy.cc: xml_lex.gen.lex xml_lexer.h
 	$(SMFLEX) -o$@ -PxmlBase xml_lex.gen.lex
 
@@ -240,7 +240,7 @@ lexer.lex: $(LEXER_MODS) merge-lexer-exts.pl
 
 
 # run flex on the lexer description
-TOCLEAN += lexer.yy.cc lexer.yy.h
+TOCLEAN += lexer.yy.cc lexer.yy.h lex.backup
 lexer.yy.cc: lexer.lex
 	$(SMFLEX) -o$@ lexer.lex
 
