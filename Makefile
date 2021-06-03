@@ -69,11 +69,12 @@ LIBS = $(LIBELKHOUND) $(LIBAST) $(LIBSMBASE)
 LDFLAGS =
 
 # Some other tools.
-PERL   = perl
-AR     = ar
-RANLIB = ranlib
-DEP    = $(PERL) depend.pl
-SMFLEX = $(SMFLEXDIR)/smflex -b
+PERL    = perl
+PYTHON3 = python3
+AR      = ar
+RANLIB  = ranlib
+DEP     = $(PERL) depend.pl
+SMFLEX  = $(SMFLEXDIR)/smflex -b
 
 
 # ---- Options within this Makefile ----
@@ -142,16 +143,34 @@ notopt.o: notopt.cc
 # Remove 'config.mk' with 'distclean'.
 TODISTCLEAN += config.mk
 
-# dependencies upon automatically-generated files
-#
-# TODO: This is broken right now.
-extradep.mk:
-	$(PERL) $(ELKHOUND)/find-extra-deps *.d >$@
-
--include extradep.mk
-
 # Clean files related to coverage analysis.
 TOCLEAN += *.bb *.bbg *.da
+
+
+# ----------------- extra dependencies -----------------
+# These dependencies ensure that automatically-generated code is
+# created in time to be used by other build processes which need it.
+
+# Arguments to find-extra-deps.py.
+EXTRADEPS_ARGS := *.d
+
+.PHONY: remake-extradep
+remake-extradep:
+	$(PYTHON3) $(SMBASE)/find-extra-deps.py $(EXTRADEPS_ARGS) >extradep.mk
+
+include extradep.mk
+
+check: validate-extradep
+
+.PHONY: validate-extradep
+validate-extradep: all
+	$(PYTHON3) $(SMBASE)/find-extra-deps.py $(EXTRADEPS_ARGS) >extradep.tmp
+	@echo diff extradep.mk extradep.tmp
+	@if diff extradep.mk extradep.tmp; then true; else \
+	  echo "extradep.mk needs updating; run 'make remake-extradep'"; \
+	  exit 2; \
+	fi
+	rm extradep.tmp
 
 
 # --------------------- extension modules ----------------------
@@ -319,13 +338,6 @@ lexer.lex: $(LEXER_MODS) merge-lexer-exts.pl
 	$(PERL) merge-lexer-exts.pl $(LEXER_MODS) >$@
 	chmod a-w $@
 
-
-# Dependencies on generated code.
-#
-# TODO: Rehability find-extra-deps, which will obviate this.
-tlexer.o: lexer.yy.h
-main.o: xml_enum_1.gen.h
-main.o: xml_lex.gen.yy.h
 
 # generate token lists
 #
