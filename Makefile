@@ -4,7 +4,7 @@
 #temporary: iptree iptparse cipart smin
 
 # main target: a C++ parser
-all: cc.ast.gen.h tlexer ccparse packedword_test semgrep
+all: cc.ast.gen.h tlexer packedword_test semgrep ccparse
 
 # work in progress..
 #iptree smin cipart
