@@ -325,12 +325,11 @@ string Variable::toString() const
 
 string Variable::toCString() const
 {
-  // as an experiment, I'm saying public(field) in the .ast file
-  // in a place where the Variable* might be NULL, so I will
-  // tolerate a NULL 'this'
-  if (this == NULL) {
-    return "NULL";
-  }
+  // Previously, I had some code that would check for a NULL receiver
+  // and do something different.  That has undefined behavior, though,
+  // and GCC is unhappy about it.  I can't find where this might have
+  // come from, so I'll just assert if it happens.
+  xassert(this != NULL);
 
   // The purpose of this method is to print the name and type
   // of this Variable object, in a debugging context.  It is
@@ -682,8 +681,7 @@ bool Variable::sameTemplateParameter(Variable const *other) const
 
 Variable const *Variable::skipAliasC() const
 {
-  // tolerate NULL 'this' so I don't have to conditionalize usage
-  if (this && getUsingAlias()) {
+  if (getUsingAlias()) {
     return getUsingAlias()->skipAliasC();
   }
   else {
@@ -695,8 +693,8 @@ Variable const *Variable::skipAliasC() const
 // this isn't right if either is a set of overloaded functions...
 bool sameEntity(Variable const *v1, Variable const *v2)
 {
-  v1 = v1->skipAliasC();
-  v2 = v2->skipAliasC();
+  v1 = v1? v1->skipAliasC() : v1;
+  v2 = v2? v2->skipAliasC() : v2;
 
   if (v1 == v2) {
     return true;
