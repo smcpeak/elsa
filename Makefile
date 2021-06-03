@@ -225,12 +225,12 @@ TOCLEAN += *.yy.cc *.yy.h lex.backup
 
 
 # ------------------------ tlexer -------------------
-LEXER_OBJS := \
-  cc_lang.o \
-  baselexer.o \
-  lexer.o \
-  lexer.yy.o \
-  cc_tokens.o
+LEXER_OBJS :=
+LEXER_OBJS += cc_lang.o
+LEXER_OBJS += baselexer.o
+LEXER_OBJS += lexer.o
+LEXER_OBJS += lexer.yy.o
+LEXER_OBJS += cc_tokens.o
 -include $(LEXER_OBJS:.o=.d)
 -include tlexer.d
 
@@ -364,44 +364,42 @@ TOCLEAN += cc.gr.gen.h cc.gr.gen.cc cc.gr.gen.out
 # list of modules needed for the parser; ideally they're in an order
 # that finds serious compilation problems earliest (it's ok to
 # rearrange as different parts of the code are in flux)
-#
-# TODO: Reformat as a series of += assignments.
-CCPARSE_OBJS := \
-  mtype.o \
-  integrity.o \
-  astvisit.o \
-  template.o \
-  notopt.o \
-  cc_env.o \
-  cc_tcheck.o \
-  const_eval.o \
-  implint.o \
-  serialno.o \
-  cc_scope.o \
-  cc_elaborate.o \
-  ast_build.o \
-  $(LEXER_OBJS) \
-  $(XML_OBJS) \
-  $(EXT_OBJS) \
-  builtinops.o \
-  cfg.o \
-  sprint.o \
-  mangle.o \
-  cc_err.o \
-  cc_type.o \
-  stdconv.o \
-  implconv.o \
-  overload.o \
-  typelistiter.o \
-  cc.ast.gen.o \
-  cc.gr.gen.o \
-  parssppt.o \
-  cc_flags.o \
-  cc_print.o \
-  cc_ast_aux.o \
-  variable.o \
-  lookupset.o \
-  ccparse.o
+CCPARSE_OBJS :=
+CCPARSE_OBJS += mtype.o
+CCPARSE_OBJS += integrity.o
+CCPARSE_OBJS += astvisit.o
+CCPARSE_OBJS += template.o
+CCPARSE_OBJS += notopt.o
+CCPARSE_OBJS += cc_env.o
+CCPARSE_OBJS += cc_tcheck.o
+CCPARSE_OBJS += const_eval.o
+CCPARSE_OBJS += implint.o
+CCPARSE_OBJS += serialno.o
+CCPARSE_OBJS += cc_scope.o
+CCPARSE_OBJS += cc_elaborate.o
+CCPARSE_OBJS += ast_build.o
+CCPARSE_OBJS += $(LEXER_OBJS)
+CCPARSE_OBJS += $(XML_OBJS)
+CCPARSE_OBJS += $(EXT_OBJS)
+CCPARSE_OBJS += builtinops.o
+CCPARSE_OBJS += cfg.o
+CCPARSE_OBJS += sprint.o
+CCPARSE_OBJS += mangle.o
+CCPARSE_OBJS += cc_err.o
+CCPARSE_OBJS += cc_type.o
+CCPARSE_OBJS += stdconv.o
+CCPARSE_OBJS += implconv.o
+CCPARSE_OBJS += overload.o
+CCPARSE_OBJS += typelistiter.o
+CCPARSE_OBJS += cc.ast.gen.o
+CCPARSE_OBJS += cc.gr.gen.o
+CCPARSE_OBJS += parssppt.o
+CCPARSE_OBJS += cc_flags.o
+CCPARSE_OBJS += cc_print.o
+CCPARSE_OBJS += cc_ast_aux.o
+CCPARSE_OBJS += variable.o
+CCPARSE_OBJS += lookupset.o
+CCPARSE_OBJS += ccparse.o
 -include $(CCPARSE_OBJS:.o=.d) main.d
 
 # Parser as a library.
@@ -442,12 +440,11 @@ iptparse: iptparse.cc iptree.o iptparse.yy.o $(LIBS)
 # currently build this code.
 iptparse.yy.o: iptparse.h
 
-# TODO: Use += assignments.
-SMIN_OBJS := \
-  iptparse.o \
-  iptparse.yy.o \
-  iptree.o \
-  smin.o
+SMIN_OBJS :=
+SMIN_OBJS += iptparse.o
+SMIN_OBJS += iptparse.yy.o
+SMIN_OBJS += iptree.o
+SMIN_OBJS += smin.o
 -include $(SMIN_OBJS:.o=.d)
 
 TOCLEAN += smin
