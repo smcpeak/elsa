@@ -1,0 +1,3 @@
+This file exists solely so that 'make' can see it as an element of a
+pattern matching rule.  Its contents do not matter, only its name and
+presence does.
