@@ -126,6 +126,8 @@ void CValue::setFloat(SimpleTypeId t, float v)
 void CValue::setError(rostring w)
 {
   type = ST_ERROR;
+
+  // TOOD: This is leaked!
   why = new string(w);
 }
 
@@ -193,6 +195,12 @@ void CValue::convertToType(SimpleTypeId newType)
     // do no truncation
   }
   else {
+    // 2021-06-03: I do not understand the code below.  Normally when
+    // we truncate, we do modular reduction, but this code is taking
+    // the maximum value.  I also don't understand how either case works
+    // to do that; in the signed case we use the largest *unsigned*
+    // value, and in the unsigned case, what is the point of the cast?
+
     int maxValue = (1 << 8*reprSize) - 1;
     switch (kind()) {
       case K_SIGNED:     if (si > maxValue) { si=maxValue; }  break;
