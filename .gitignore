@@ -30,7 +30,6 @@ lexer.yy.h
 packedword_test
 quicktest
 semgrep
-testcout
 tlexer
 
 # EOF

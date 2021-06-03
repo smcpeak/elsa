@@ -39,7 +39,7 @@ config.mk: config.mk.in config.status
 	./config.status
 
 # reconfigure if the configure script has changed
-config.status: configure.pl sm_config.pm
+config.status: configure.pl
 	./config.status -reconfigure
 
 # dependencies upon automatically-generated files
