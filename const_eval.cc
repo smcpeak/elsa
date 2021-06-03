@@ -7,6 +7,18 @@
 #include "stdconv.h"        // applyIntegralPromotions, etc.
 
 
+enum {
+  // The value of CHAR_BIT that Elsa provides as a C++ implementation.
+  //
+  // This is not necessarily the same as the value provided by the C++
+  // compiler used to compile Elsa.
+  //
+  // There are many places that just use 8 directly, but I want to start
+  // factoring that.
+  ELSA_CHAR_BIT = 8,
+};
+
+
 // ----------------------- CValue ------------------------
 bool CValue::operator== (CValue const &obj) const
 {
@@ -395,12 +407,72 @@ void CValue::applyBinary(BinaryOp op, CValue other)
         case K_UNSIGNED:   shamt = other.ui;    break;
       }
 
+      if (shamt < 0) {
+        // C++14 5.8/1
+        setError(stringb("Shifting by a negative value (" << shamt <<
+                         ") is undefined"));
+        return;
+      }
+
+      int leftOperandBits = simpleTypeReprSize(type) * ELSA_CHAR_BIT;
+      if (shamt >= leftOperandBits) {
+        // C++14 5.8/1
+        setError(stringb(
+          "Shifting by a value (" << shamt << ") greater than or equal "
+          "to the length in bits of the promoted left operand (" <<
+          leftOperandBits << ") is undefined."));
+        return;
+      }
+
       // apply it
       if (op == BIN_LSHIFT) {
         switch (kind()) {
           default: // silence warning
-          case K_SIGNED:     si <<= shamt;    break;
-          case K_UNSIGNED:   ui <<= shamt;    break;
+          case K_SIGNED: {
+            if (si < 0) {
+              // C++14 5.8/2
+              setError(stringb(
+                "Left-shifting a negative left operand value (" <<
+                si << ") is undefined."));
+              return;
+            }
+
+            long orig_si = si;
+            si <<= shamt;
+
+            // The result of the shift might be outside the range of
+            // what 'type' can represent.
+            //
+            // TODO: This is all quite sketchy because I am relying on
+            // the host compiler's 'long' to be big enough to perform
+            // the calculations, which it often will not be.
+            long maxSignedValue = (long)((1 << (leftOperandBits - 1UL)) - 1);
+            if (si > maxSignedValue) {
+              unsigned long maxUnsignedValue = (maxSignedValue << 1UL) + 1;
+              if ((unsigned long)si <= maxUnsignedValue) {
+                // The result is implementation-defined per C++14 4.7/3.
+                // GCC does modular reduction, so I will too.
+                si = si - maxUnsignedValue - 1;
+              }
+              else {
+                // C++14 5.8/2
+                setError(stringb(
+                  "Left-shifting " << orig_si << " by " << shamt <<
+                  "bits yields " << si << ", which is too large to "
+                  "represent as the unsigned type corresponding to '" <<
+                  simpleTypeName(type) << "', hence undefined."));
+                return;
+              }
+            }
+
+            break;
+          }
+
+          case K_UNSIGNED:
+            // TODO: There are a number of cases to consider here, just
+            // like the K_SIGNED case.
+            ui <<= shamt;
+            break;
         }
       }
       else {
@@ -410,6 +482,7 @@ void CValue::applyBinary(BinaryOp op, CValue other)
           case K_UNSIGNED:   ui >>= shamt;    break;
         }
       }
+
       break;
     }
 

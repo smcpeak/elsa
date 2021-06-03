@@ -868,6 +868,9 @@ testparse t0586.cc
 failparse t0587.cc "conversion of static method of template to func ptr"
 testparse t0588.cc
 
+# Tests with somewhat more meaningful names.
+testparse t-const-lshift1.cc
+
 # another set of tests, generally isolated by Daniel
 testparse d0001.cc
 testparse d0002.cc
@@ -1011,10 +1014,12 @@ testparse k0006.cc #"error: E_alignofType is not constEval'able"
 testparse k0007.cc
 # renamed k0008.cc to gnu/g0022.cc because it is a GNU feature
 testparse k0009.cc #"clash between function and instantiated template parameter member"
-failparse k0010.cc "problem on line 79" # requires that certain types have certain sizes
-# smcpeak: This does not fail on x86_64 because the test does
-# not run, so disabling it altogether.
-#failparse k0010a.cc "compile-time type value checking - long long"
+testparse k0010.cc # requires that certain types have certain sizes
+
+# This test currently passes for me on linux64, although I'm not sure it
+# is passing for the right reasons.  I'm enabling it to get more data.
+testparse k0010a.cc #"compile-time type value checking - long long"
+
 testparse k0011.cc
 testparse k0012.cc
 testparse k0013.cc #"cannot convert argument type `float (*)[4]' to parameter 1 type `float const (*)[4]'"
