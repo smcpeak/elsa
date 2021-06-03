@@ -131,8 +131,11 @@ protected:   // funcs
   bool imatchExpression(Expression const *conc, Expression const *pat, MatchFlags flags);
 
 private:     // funcs
-  // the only allowed subclass is MType; this justifies a
-  // static_cast in mtype.cc
+  // The only allowed subclass is MType.  This is enforced with a
+  // private constructor to disallow other subclasses, and a 'friend'
+  // declaration to allow the one.  Consequently, when
+  // IMType::imatchTypeWithResolvedType does its 'static_cast', we know
+  // that the IMType instance must be an MType instance.
   friend class MType;
   IMType();
   ~IMType();
@@ -141,6 +144,10 @@ private:     // funcs
 
 // the public interface
 class MType : protected IMType {
+  // Allow IMType::imatchTypeWithResolvedType to perform a 'static_cast'
+  // from IMType& to MType&.
+  friend class IMType;
+
 private:     // funcs
   // This flag is true if the client is using the non-const interface.
   //
