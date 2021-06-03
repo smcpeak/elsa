@@ -130,6 +130,9 @@ TOCLEAN += *.o *.d
 %.o: %.cc
 	$(CXX) -c -o $@ $(if $(findstring $*,$(GCOV_MODS)),$(GCOV_OPTS) )$(GENDEPS_FLAGS) $(CXXFLAGS) $<
 
+# Pull in any dependency files we have.
+-include *.d
+
 # compile a special module; -O0 will override any earlier setting
 #
 # TODO: Why did I need this?
@@ -223,8 +226,6 @@ LEXER_OBJS += baselexer.o
 LEXER_OBJS += lexer.o
 LEXER_OBJS += lexer.yy.o
 LEXER_OBJS += cc_tokens.o
--include $(LEXER_OBJS:.o=.d)
--include tlexer.d
 
 # program to test the lexer alone
 TOCLEAN += tlexer
@@ -280,11 +281,6 @@ xml_lex.gen.lex: xml_lex_0top.lex xml_lex_1.gen.lex xml_lex_2bot.lex
 # TODO: Do I still need NO_YYFLEXLEXER_METHODS?
 xml_lexer.yy.o: xml_lex.gen.yy.cc
 	$(CXX) -c -o $@ -DNO_YYFLEXLEXER_METHODS $(GENDEPS_FLAGS) $(CXXFLAGS) $<
-# We do not need this now but we will if we end up re-arranging the
-# build process like I had to in oink so I put it here as a reminder.
-# -include xml_lexer.yy.d
-#
-# TODO: Why is it not needed?
 
 
 #### CC client code
@@ -306,11 +302,6 @@ XML_OBJS += xml_ast_reader.o
 XML_OBJS += id_obj_dict.o
 # final client
 XML_OBJS += xml_do_read.o
-
-# I don't think I need this line:
-# -include $(CCPARSE_OBJS:.o=.d) main.d
-# because of this line:
-# -include $(XML_OBJS:.o=.d)
 
 
 # ------------------------- ccparse ---------------------
@@ -396,7 +387,6 @@ CCPARSE_OBJS += cc_ast_aux.o
 CCPARSE_OBJS += variable.o
 CCPARSE_OBJS += lookupset.o
 CCPARSE_OBJS += ccparse.o
--include $(CCPARSE_OBJS:.o=.d) main.d
 
 # Parser as a library.
 TOCLEAN += libelsa.a
@@ -439,7 +429,6 @@ SMIN_OBJS += iptparse.o
 SMIN_OBJS += iptparse.yy.o
 SMIN_OBJS += iptree.o
 SMIN_OBJS += smin.o
--include $(SMIN_OBJS:.o=.d)
 
 TOCLEAN += smin
 smin: $(SMIN_OBJS) $(LIBS)
@@ -447,8 +436,6 @@ smin: $(SMIN_OBJS) $(LIBS)
 
 
 # --------------------- cipart --------------------
--include cipart.yy.d
-
 TOCLEAN += cipart
 cipart: cipart.yy.o $(LIBS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^
