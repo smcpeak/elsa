@@ -1,0 +1,27 @@
+# elsa/config.mk.in
+# Template for automatic configuration results.
+
+# directories of other software
+SMBASE   = @SMBASE@
+AST      = @AST@
+ELKHOUND = @ELKHOUND@
+
+# external tools
+PERL     = @PERL@
+
+# modules to compile with coverage info; I do not build them
+# all with coverage info because it takes about 25% longer to
+# compile for each module with coverage info
+GCOV_MODS = @GCOV_MODS@
+
+# Active language extensions.
+USE_GNU = @USE_GNU@
+USE_KANDR = @USE_KANDR@
+
+# flags for the C++ compiler (and preprocessor)
+CCFLAGS = @CCFLAGS@ -Woverloaded-virtual -I$(SMBASE) -I$(AST) -I$(ELKHOUND)
+
+# flags for the linker
+LDFLAGS = @LDFLAGS@ $(libraries)
+
+# EOF

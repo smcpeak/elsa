@@ -1,5 +1,5 @@
-# Makefile.in
-# this is the Makefile for Elsa, the Elkhound-based C++ Parser
+# Makefile
+# Makefile for Elsa, the Elkhound-based C++ Parser.
 
 #temporary: iptree iptparse cipart smin
 
@@ -9,18 +9,17 @@ all: cc.ast.gen.h tlexer ccparse quicktest packedword_test
 # work in progress..
 #iptree smin cipart
 
-# directories of other software
-SMBASE   := @SMBASE@
-AST      := @AST@
-ELKHOUND := @ELKHOUND@
+ifeq ($(wildcard config.mk),)
+  $(error The file 'config.mk' does not exist.  Run './configure' before 'make'.)
+endif
+include config.mk
 
-# stuff inside those other directories
+# stuff inside other directories
 LIBSMBASE   := $(SMBASE)/libsmbase.a
 LIBAST      := $(AST)/libast.a
 LIBELKHOUND := $(ELKHOUND)/libelkhound.a
 
 # external tools
-PERL   := @PERL@
 DEP    := $(PERL) depend.pl
 AR     := ar
 RANLIB := ranlib
@@ -34,9 +33,9 @@ TOCLEAN =
 TOTOOLCLEAN =
 TODISTCLEAN =
 
-# re-create the Makefile if Makefile.in has changed
-TODISTCLEAN += Makefile
-Makefile: Makefile.in config.status
+# re-create config.mk if config.mk.in has changed
+TODISTCLEAN += config.mk
+config.mk: config.mk.in config.status
 	./config.status
 
 # reconfigure if the configure script has changed
@@ -49,10 +48,7 @@ extradep.mk:
 
 -include extradep.mk
 
-# modules to compile with coverage info; I do not build them
-# all with coverage info because it takes about 25% longer to
-# compile for each module with coverage info
-GCOV_MODS := @GCOV_MODS@
+# Clean files related to coverage analysis.
 TOCLEAN += *.bb *.bbg *.da
 
 
@@ -78,7 +74,6 @@ CC_AST_MODS += cc_elaborate.ast
 
 
 # optional: GNU language extension
-USE_GNU := @USE_GNU@
 ifeq ($(USE_GNU),1)
   LEXER_MODS  += gnu.lex
   TOK_MODS    += gnu_ext.tok
@@ -89,7 +84,6 @@ endif
 
 
 # optional: K&R language extension
-USE_KANDR := @USE_KANDR@
 ifeq ($(USE_KANDR),1)
   CC_AST_MODS += kandr.ast
   CC_GR_MODS  += kandr.gr
@@ -101,15 +95,11 @@ endif
 # C++ preprocessor, compiler and linker
 CXX := g++
 
-# flags for the C++ compiler (and preprocessor)
-CCFLAGS := @CCFLAGS@ -Woverloaded-virtual -I$(SMBASE) -I$(AST) -I$(ELKHOUND)
-
 # how to enable coverage
 GCOV_OPTS := -fprofile-arcs -ftest-coverage
 
 # flags for the linker
 libraries := $(LIBELKHOUND) $(LIBAST) $(LIBSMBASE)
-LDFLAGS := @LDFLAGS@ $(libraries)
 
 
 # compile .cc in this directory to a .o
@@ -489,7 +479,7 @@ doc: gendoc gendoc/configure.txt gendoc/dependencies.png gendoc/3.4.5.png
 
 #TOCLEAN += TAGS
 #TAGS:
-#	@ETAGS@ *.cc *.h
+#	$(ETAGS) *.cc *.h
 
 
 # -------------------- count source lines -------------------

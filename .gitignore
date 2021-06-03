@@ -13,11 +13,11 @@
 *.gen.yy.h
 *.log
 *.o
-Makefile
 cc_tokens.cc
 cc_tokens.h
 cc_tokens.ids
 ccparse
+config.mk
 config.status
 config.summary
 in/*.error*.cc
