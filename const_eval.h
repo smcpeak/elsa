@@ -54,6 +54,10 @@ public:      // funcs
   CValue& operator= (CValue const &obj)
     { dup(obj); return *this; }
 
+  bool operator== (CValue const &obj) const;
+  bool operator!= (CValue const &obj) const
+    { return !operator==(obj); }
+
   // map SimpleTypeId to CValue::Kind
   static Kind classify(SimpleTypeId t);
 

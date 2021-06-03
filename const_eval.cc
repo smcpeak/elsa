@@ -8,6 +8,21 @@
 
 
 // ----------------------- CValue ------------------------
+bool CValue::operator== (CValue const &obj) const
+{
+  if (EMEMB(type)) {
+    switch (classify(type)) {
+      case K_SIGNED:         return EMEMB(si);
+      case K_UNSIGNED:       return EMEMB(ui);
+      case K_FLOAT:          return EMEMB(f);
+      case K_ERROR:          return *(this->why) == *(obj.why);
+      case K_DEPENDENT:      return true;
+    }
+  }
+  return false;
+}
+
+
 STATICDEF CValue::Kind CValue::classify(SimpleTypeId t)
 {
   switch (t) {

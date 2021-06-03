@@ -170,6 +170,7 @@ public:      // data
   StringRef string_main;
 
   StringRef special_checkType;
+  StringRef special_constEval;
   StringRef special_getStandardConversion;
   StringRef special_getImplicitConversion;
   StringRef special_testOverload;

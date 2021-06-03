@@ -6641,6 +6641,24 @@ static Type *internalTestingHooks
     }
   }
 
+  if (funcName == env.special_constEval) {
+    if (args->count() == 2) {
+      ConstEval cenv(env.dependentVar);
+      CValue v1 = args->nth(0)->constEval(cenv);
+      CValue v2 = args->nth(1)->constEval(cenv);
+      if (v1 == v2) {
+        // ok
+      }
+      else {
+        env.error(stringb(
+          "constEval: " << v1.asString() << " != " << v2.asString()));
+      }
+    }
+    else {
+      env.error("invalid call to __elsa_constEval");
+    }
+  }
+
   // test vector for 'getStandardConversion'
   if (funcName == env.special_getStandardConversion) {
     int expect;
