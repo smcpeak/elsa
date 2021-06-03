@@ -39,7 +39,11 @@ class IdSObjDict {
     Prefix prefix;
     IdNode *next;
 
-    IdNode() { memset(this, 0, sizeof(*this)); }
+    IdNode()
+      : object(NULL),
+        prefix(),
+        next(NULL)
+    {}
   };
 
   // mini memory pool
