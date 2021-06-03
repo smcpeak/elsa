@@ -193,6 +193,13 @@ ifeq ($(USE_KANDR),1)
 endif
 
 
+# ------------------- Running smflex ------------------
+# TODO: I would like to call these ".lex.gen.*".
+TOCLEAN += *.yy.cc *.yy.h lex.backup
+%.yy.h %.yy.cc: %.lex
+	$(SMFLEX) -o$*.yy.cc $*.lex
+
+
 # ------------------------ tlexer -------------------
 LEXER_OBJS := \
   cc_lang.o \
@@ -264,18 +271,6 @@ xml_lex.gen.lex: xml_lex_0top.lex xml_lex_1.gen.lex xml_lex_2bot.lex
 	cat $^ > $@
 	chmod a-w $@
 
-# run flex on the lexer description for ast xml parser
-#
-# This specifies "-PxmlBase" so that the generated base class is called
-# "xmlBaseFlexLexer" instead of "yyFlexLexer" since the latter would
-# conflict with the base class used by lexer.lex for lexing C/C++.
-#
-# TODO: Use a generic flex rule to fix the fact that this multi-target
-# non-pattern rule is unsafe.
-TOCLEAN += xml_lex.gen.yy.cc xml_lex.gen.yy.h
-xml_lex.gen.yy.h xml_lex.gen.yy.cc: xml_lex.gen.lex xml_lexer.h
-	$(SMFLEX) -oxml_lex.gen.yy.cc -PxmlBase xml_lex.gen.lex
-
 # when building the ast xml lexer, delete the methods that would
 # otherwise conflict with methods in lexer.yy.cc; they have identical
 # implementations
@@ -323,18 +318,6 @@ lexer.lex: $(LEXER_MODS) merge-lexer-exts.pl
 	rm -f $@
 	$(PERL) merge-lexer-exts.pl $(LEXER_MODS) >$@
 	chmod a-w $@
-
-
-# run flex on the lexer description
-TOCLEAN += lexer.yy.cc lexer.yy.h lex.backup
-lexer.yy.cc: lexer.lex
-	$(SMFLEX) -o$@ lexer.lex
-
-# Tell 'make' that to make the .h file, it has to make the .cc file.
-#
-# TODO: This is not quite right.
-lexer.yy.h: lexer.yy.cc
-	@# nothing
 
 
 # Dependencies on generated code.
@@ -461,13 +444,7 @@ iptparse: iptparse.cc iptree.o iptparse.yy.o $(LIBS)
 
 
 # ---------------------- smin ---------------------
-# lexer for interval partition tree specs
-#
-# TODO: Make a single rule for running smflex.
-TOCLEAN += iptparse.yy.cc iptparse.yy.h
-iptparse.yy.cc: iptparse.lex
-	$(SMFLEXDIR)/smflex -o$@ iptparse.lex
-
+# TODO: Replace this with find-extra-deps.
 iptparse.yy.o: iptparse.h
 
 # TODO: Use += assignments.
@@ -484,13 +461,9 @@ smin: $(SMIN_OBJS) $(LIBS)
 
 
 # --------------------- cipart --------------------
-# TODO: Make a single rule for running smflex.
-TOCLEAN += cipart.yy.cc cipart.yy.h
-cipart.yy.cc: cipart.lex
-	$(SMFLEXDIR)/smflex -o$@ cipart.lex
-
 -include cipart.yy.d
 
+TOCLEAN += cipart
 cipart: cipart.yy.o $(LIBS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^
 

@@ -50,6 +50,9 @@
 /* and I will define the class (lexer.h) */
 %option yyclass="XmlLexer"
 
+/* Prefix all externally-visible symbols with this instead of "yy". */
+%option prefix="xmlBase"
+
 /* ------------------- definitions -------------------- */
 /* newline */
 NL            "\n"
