@@ -19,7 +19,7 @@ for (my $i=0; $i < @ARGV; $i++) {
 
 # try to load the sm_config module
 eval {
-  push @INC, ($SMBASE);
+  push @INC, ($SMBASE, ".");
   require sm_config;
 };
 if ($@) {

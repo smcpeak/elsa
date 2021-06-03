@@ -21,7 +21,7 @@ LIBELKHOUND := $(ELKHOUND)/libelkhound.a
 
 # external tools
 PERL   := @PERL@
-DEP    := $(PERL) $(SMBASE)/depend.pl
+DEP    := $(PERL) depend.pl
 AR     := ar
 RANLIB := ranlib
 
@@ -40,7 +40,7 @@ Makefile: Makefile.in config.status
 	./config.status
 
 # reconfigure if the configure script has changed
-config.status: configure.pl $(SMBASE)/sm_config.pm
+config.status: configure.pl sm_config.pm
 	./config.status -reconfigure
 
 # dependencies upon automatically-generated files
@@ -182,9 +182,9 @@ XML_ASTGEN += xml_ast_reader_2ctrc.gen.cc
 XML_ASTGEN += xml_ast_reader_3regc.gen.cc
 
 TOCLEAN += $(XML_ASTGEN)
-$(XML_ASTGEN): $(CC_AST_MODS) $(AST)/astgen
+$(XML_ASTGEN): $(CC_AST_MODS) $(AST)/astgen.exe
 	rm -f $(XML_ASTGEN)
-	$(AST)/astgen -tr no_ast.gen,xmlParser $(CC_AST_MODS)
+	$(AST)/astgen.exe -tr no_ast.gen,xmlParser $(CC_AST_MODS)
 	chmod a-w $(XML_ASTGEN)
 
 # generate .lex file
@@ -275,18 +275,18 @@ $(TOK_FILES): $(TOK_MODS) make-token-files
 # run astgen to generate the AST implementation
 CC_AST_GEN_FILES := cc.ast.gen.h cc.ast.gen.cc
 TOCLEAN += $(CC_AST_GEN_FILES)
-$(CC_AST_GEN_FILES): $(CC_AST_MODS) $(AST)/astgen
+$(CC_AST_GEN_FILES): $(CC_AST_MODS) $(AST)/astgen.exe
 	rm -f $(CC_AST_GEN_FILES)
-	$(AST)/astgen -occ.ast.gen $(CC_AST_MODS)
+	$(AST)/astgen.exe -occ.ast.gen $(CC_AST_MODS)
 	chmod a-w $(CC_AST_GEN_FILES)
 
 
 # run elkhound to generate the parser
 CC_GR_GEN_FILES := cc.gr.gen.h cc.gr.gen.cc cc.gr.gen.out
 TOCLEAN += $(CC_GR_GEN_FILES)
-$(CC_GR_GEN_FILES): $(CC_GR_MODS) cc_tokens.ids $(ELKHOUND)/elkhound
+$(CC_GR_GEN_FILES): $(CC_GR_MODS) cc_tokens.ids $(ELKHOUND)/elkhound.exe
 	rm -f $(CC_GR_GEN_FILES)
-	$(ELKHOUND)/elkhound -v -tr lrtable -o cc.gr.gen $(CC_GR_MODS)
+	$(ELKHOUND)/elkhound.exe -v -tr lrtable -o cc.gr.gen $(CC_GR_MODS)
 	chmod a-w $(CC_GR_GEN_FILES)
 
 # list of modules needed for the parser; ideally they're in an order
