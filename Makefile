@@ -523,6 +523,9 @@ distclean: clean
 toolclean: clean
 	rm -f $(TOTOOLCLEAN)
 
+# Certain failing multi-tests leave behind error files.
+TOCLEAN += in/*.error*
+
 check: semgrep all
 	./packedword_test
 	MAKE=$(MAKE) ./regrtest
