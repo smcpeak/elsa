@@ -4,10 +4,11 @@
 #ifndef IPTPARSE_H
 #define IPTPARSE_H
 
-#include <stdio.h>    // FILE
-#include "str.h"      // rostring
+#include <stdio.h>                     // FILE
+#include "str.h"                       // rostring
+#include "iptparse.yy.h"               // yy_lexer_t
 
-class IPTree;         // iptree.h
+class IPTree;                          // iptree.h
 
 // the lexer stashes lexed integer codes here
 extern int lexerSval;
@@ -22,11 +23,8 @@ enum TokenType {
   NUM_TOKENTYPES
 };
 
-// call this to begin lexing (defined in iptparse.yy.cc)
-void yyrestart(FILE *input_file);
-
 // call this to get the next token (defined in iptparse.yy.cc)
-TokenType getNextToken();
+TokenType getNextToken(yy_lexer_t *lexer);
 
 // parse a file into a given tree
 IPTree *parseFile(rostring fname);

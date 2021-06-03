@@ -1,31 +1,20 @@
 /* iptparse.lex */
 /* lexer for iptree parser */
 
+%smflex 101
 
 /* ------------ C prelude ------------ */
 %{
 #include "iptparse.h"       // token definitions
 #include "exc.h"            // xfatal
 
-// this works around a problem with cygwin & fileno
-#define YY_NEVER_INTERACTIVE 1
-
 int lexerSval = 0;
 %}
 
 
 /* ------------ flex options ----------- */
-/* no wrapping is needed; setting this means we don't have to link with libfl.a */
-%option noyywrap
-
 /* don't use the default-echo rules */
 %option nodefault
-
-/* I don't call unput */
-%option nounput
-
-/* the scanner is never interactive */
-%option never-interactive
 
 
 /* -------------- token rules ------------ */
@@ -37,7 +26,7 @@ int lexerSval = 0;
 
   /* decimal integer literal */
 [0-9]+ {
-  lexerSval = atoi(yytext);
+  lexerSval = atoi(YY_TEXT);
   return TOK_INTLIT;
 }
 
@@ -50,20 +39,20 @@ int lexerSval = 0;
 }
 
 .  {
-  xfatal("illegal character: `" << yytext[0] << "'");
+  xfatal("illegal character: `" << YY_TEXT[0] << "'");
 }
 
 <<EOF>> {
-  yyterminate();
+  YY_TERMINATE();
 }
 
 
 %%
 /* ----------------- C epilogue --------------- */
 
-TokenType getNextToken()
+TokenType getNextToken(yy_lexer_t *lexer)
 {
-  int code = yylex();
+  int code = yy_lex(lexer);
   xassert(0 <= code && code < NUM_TOKENTYPES);
   return (TokenType)code;
 }

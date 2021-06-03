@@ -1,13 +1,10 @@
 # Makefile
 # Makefile for Elsa, the Elkhound-based C++ Parser.
 
-#temporary: iptree iptparse cipart smin
+#temporary: iptree iptparse cipart
 
 # main target: a C++ parser
-all: cc.ast.gen.h tlexer packedword_test semgrep ccparse
-
-# work in progress..
-#iptree smin cipart
+all: cc.ast.gen.h tlexer packedword_test semgrep smin ccparse
 
 
 # ------------------------- Configuration --------------------------
@@ -435,9 +432,7 @@ iptparse: iptparse.cc iptree.o iptparse.yy.o $(LIBS)
 
 
 # ---------------------- smin ---------------------
-# TODO: Replace this with find-extra-deps.  The 'all' target does not
-# currently build this code.
-iptparse.yy.o: iptparse.h
+# This is an experiment I never finished.
 
 SMIN_OBJS :=
 SMIN_OBJS += iptparse.o

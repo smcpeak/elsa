@@ -13,9 +13,9 @@ TokenType lookahead = TOK_EOF;
 
 
 // get the next token and stash it in 'lookahead'
-void getToken()
+void getToken(yy_lexer_t *lexer)
 {
-  lookahead = getNextToken();
+  lookahead = getNextToken(lexer);
 }
 
 
@@ -47,26 +47,26 @@ void parseError()
 
 
 // get token and expect it to be a specific kind
-void expect(TokenType t)
+void expect(yy_lexer_t *lexer, TokenType t)
 {
-  getToken();
+  getToken(lexer);
   if (lookahead != t) {
     parseError();
   }
 }
 
 
-void parseBracePair(ArrayStack<Interval> &pairs)
+void parseBracePair(yy_lexer_t *lexer, ArrayStack<Interval> &pairs)
 {
   xassert(lookahead == TOK_INTLIT);
   int lo = lexerSval;
 
-  expect(TOK_COMMA);
+  expect(lexer, TOK_COMMA);
 
-  expect(TOK_INTLIT);
+  expect(lexer, TOK_INTLIT);
   int hi = lexerSval;
 
-  expect(TOK_SEMICOLON);
+  expect(lexer, TOK_SEMICOLON);
 
   pairs.push(Interval(lo, hi));
 }
@@ -106,20 +106,23 @@ static int decSizeCompare(Interval const *a, Interval const *b)
 IPTree *parseFile(rostring fname)
 {
   AutoFILE fp(toCStr(fname), "r");
-  yyrestart(fp);
+
+  yy_lexer_t lexer;
+  yy_construct(&lexer);
+  yy_restart(&lexer, fp);
 
   ArrayStack<Interval> pairs;
 
   bool done = false;
   while (!done) {
-    getToken();
+    getToken(&lexer);
     switch (lookahead) {
       case TOK_EOF:
         done = true;
         break;
 
       case TOK_INTLIT:
-        parseBracePair(pairs);
+        parseBracePair(&lexer, pairs);
         break;
 
       default:
@@ -164,6 +167,8 @@ IPTree *parseFile(rostring fname)
   for (i=0; i < pairs.length(); i++) {
     tree->insert(pairs[i].lo, pairs[i].hi);
   }
+
+  yy_destroy(&lexer);
 
   return tree;
 }

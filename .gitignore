@@ -21,6 +21,7 @@ config.mk
 in/*.error*.cc
 in/big/*.i
 iptparse.yy.cc
+iptparse.yy.h
 lex.backup
 lexer.lex
 lexer.yy.cc
@@ -29,6 +30,7 @@ packedword_test
 personal.mk
 quicktest
 semgrep
+smin
 tlexer
 
 # EOF
