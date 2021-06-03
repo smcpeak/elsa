@@ -13,6 +13,7 @@
 *.gen.yy.h
 *.log
 *.o
+.gdbinit
 cc_tokens.cc
 cc_tokens.h
 cc_tokens.ids
