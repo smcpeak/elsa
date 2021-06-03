@@ -176,13 +176,8 @@ validate-extradep: all
 # --------------------- extension modules ----------------------
 # base modules
 LEXER_MODS  := cc.lex
-
-# For TOK_MODS, "cc_tokens.tok" is implicit.
-TOK_MODS    :=
-
-# For CC_AST_MODS, "cc.ast" is implicit.
-CC_AST_MODS :=
-
+TOK_MODS    := cc_tokens.tok
+CC_AST_MODS := cc.ast
 CC_GR_MODS  := cc.gr
 EXT_OBJS    :=
 
@@ -268,10 +263,10 @@ TOCLEAN += xml_enum_1.gen.h xml_lex_1.gen.lex xml_name_1.gen.cc
 # This is written as a pattern rule because multi-target non-pattern
 # rules are broken.  It is only to be used when "%" = "xml_ast".
 TOCLEAN += xml_ast.gen.tokens xml_ast_reader_0decl.gen.h xml_ast_reader_1defn.gen.cc xml_ast_reader_2ctrc.gen.cc xml_ast_reader_3regc.gen.cc
-%.gen.tokens %_reader_0decl.gen.h %_reader_1defn.gen.cc %_reader_2ctrc.gen.cc %_reader_3regc.gen.cc: %_dummy.txt cc.ast $(CC_AST_MODS) $(AST)/astgen.exe
+%.gen.tokens %_reader_0decl.gen.h %_reader_1defn.gen.cc %_reader_2ctrc.gen.cc %_reader_3regc.gen.cc: %_dummy.txt $(CC_AST_MODS) $(AST)/astgen.exe
 	test "x$*" = "xxml_ast"
 	rm -f $*.gen.tokens $*_reader_0decl.gen.h $*_reader_1defn.gen.cc $*_reader_2ctrc.gen.cc $*_reader_3regc.gen.cc
-	$(AST)/astgen.exe -tr no_ast.gen,xmlParser cc.ast $(CC_AST_MODS)
+	$(AST)/astgen.exe -tr no_ast.gen,xmlParser $(CC_AST_MODS)
 	chmod a-w $*.gen.tokens $*_reader_0decl.gen.h $*_reader_1defn.gen.cc $*_reader_2ctrc.gen.cc $*_reader_3regc.gen.cc
 
 # generate .lex file
@@ -335,19 +330,23 @@ lexer.lex: $(LEXER_MODS) merge-lexer-exts.pl
 # This is written as a pattern rule because multi-target non-pattern
 # rules are broken.  It is only to be used when "%" is "cc".
 TOCLEAN += cc_tokens.h cc_tokens.cc cc_tokens.ids
-%_tokens.h %_tokens.cc %_tokens.ids: %_tokens.tok $(TOK_MODS) make-token-files
+%_tokens.h %_tokens.cc %_tokens.ids: %_dummy.txt $(TOK_MODS) make-token-files
 	test "x$*" = "xcc"
 	rm -f cc_tokens.h cc_tokens.cc cc_tokens.ids
-	$(PERL) make-token-files cc_tokens.tok $(TOK_MODS)
+	$(PERL) make-token-files $(TOK_MODS)
 	chmod a-w cc_tokens.h cc_tokens.cc cc_tokens.ids
 
 
-# run astgen to generate the AST implementation
+# Run astgen to generate the AST implementation.
+#
+# This is written as a pattern rule because multi-target non-pattern
+# rules are broken.  It is only to be used when "%" is "cc".
 TOCLEAN += *.ast.gen.h *.ast.gen.cc
-%.ast.gen.h %.ast.gen.cc: %.ast $(CC_AST_MODS) $(AST)/astgen.exe
-	rm -f $*.ast.gen.h $*.ast.gen.cc
-	$(AST)/astgen.exe -o$*.ast.gen $*.ast $(CC_AST_MODS)
-	chmod a-w $*.ast.gen.h $*.ast.gen.cc
+%.ast.gen.h %.ast.gen.cc: %_dummy.txt $(CC_AST_MODS) $(AST)/astgen.exe
+	test "x$*" = "xcc"
+	rm -f cc.ast.gen.h cc.ast.gen.cc
+	$(AST)/astgen.exe -occ.ast.gen $(CC_AST_MODS)
+	chmod a-w cc.ast.gen.h cc.ast.gen.cc
 
 
 # run elkhound to generate the parser
