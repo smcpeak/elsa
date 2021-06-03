@@ -213,7 +213,6 @@ endif
 
 
 # ------------------- Running smflex ------------------
-# TODO: I would like to call these ".lex.gen.*".
 TOCLEAN += *.yy.cc *.yy.h lex.backup
 %.yy.h %.yy.cc: %.lex
 	$(SMFLEX) -o$*.yy.cc $*.lex
