@@ -4,7 +4,7 @@
 #temporary: iptree iptparse cipart smin
 
 # main target: a C++ parser
-all: cc.ast.gen.h tlexer ccparse quicktest packedword_test semgrep
+all: cc.ast.gen.h tlexer ccparse packedword_test semgrep
 
 # work in progress..
 #iptree smin cipart
@@ -416,16 +416,7 @@ libelsa.a: $(CCPARSE_OBJS)
 TOCLEAN += ccparse
 ccparse: main.o libelsa.a $(LIBS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^
-
-
-# run the binary; the 'quicktest' file is so we don't run it if
-# 'ccparse' hasn't recently changed
-#
-# TODO: Remove this.
-TOCLEAN += quicktest
-quicktest: ccparse
 	./ccparse in/t0001.cc
-	@touch quicktest
 
 
 # -------------------- semgrep --------------------
