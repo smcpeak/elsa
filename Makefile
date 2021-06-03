@@ -274,21 +274,13 @@ xml_lex.gen.lex: xml_lex_0top.lex xml_lex_1.gen.lex xml_lex_2bot.lex
 	cat $^ > $@
 	chmod a-w $@
 
-# when building the ast xml lexer, delete the methods that would
-# otherwise conflict with methods in lexer.yy.cc; they have identical
-# implementations
-#
-# TODO: Do I still need NO_YYFLEXLEXER_METHODS?
-xml_lexer.yy.o: xml_lex.gen.yy.cc
-	$(CXX) -c -o $@ -DNO_YYFLEXLEXER_METHODS $(GENDEPS_FLAGS) $(CXXFLAGS) $<
-
 
 #### CC client code
 
 # all the xml-related .o files
 XML_OBJS :=
 # lex
-XML_OBJS += xml_lexer.yy.o
+XML_OBJS += xml_lex.gen.yy.o
 XML_OBJS += xml_lexer.o
 # generic parse
 XML_OBJS += xml_reader.o

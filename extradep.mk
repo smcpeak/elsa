@@ -59,12 +59,10 @@ xml_do_read.o: xml_enum_1.gen.h
 xml_do_read.o: xml_lex.gen.yy.h
 xml_file_reader.o: xml_enum_1.gen.h
 xml_file_reader.o: xml_lex.gen.yy.h
+xml_lex.gen.yy.o: xml_enum_1.gen.h
 xml_lexer.o: xml_enum_1.gen.h
 xml_lexer.o: xml_lex.gen.yy.h
 xml_lexer.o: xml_name_1.gen.cc
-xml_lexer.yy.o: xml_enum_1.gen.h
-xml_lexer.yy.o: xml_lex.gen.yy.cc
-xml_lexer.yy.o: xml_lex.gen.yy.h
 xml_reader.o: xml_enum_1.gen.h
 xml_reader.o: xml_lex.gen.yy.h
 xml_type_reader.o: xml_enum_1.gen.h
