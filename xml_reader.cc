@@ -63,7 +63,7 @@ void XmlReaderManager::parseOneTagOrDatum() {
     break;
   case XTOK_NAME:
     // this is raw data in between tags
-    registerStringToken(parseStack.top().object, parseStack.top().kind, lexer.currentText());
+    registerStringToken(parseStack.top()->object, parseStack.top()->kind, lexer.currentText());
     return;
     break;
   case 0:                     // eof
@@ -112,11 +112,10 @@ void XmlReaderManager::parseOneTagOrDatum() {
     // parser is some sort of stack machine).
     xassert(topTemp);
     // fprintf(stderr, "## parseOneTagOrDatum: sawOpenTag count=%d, node=%p\n", count, topTemp);
-    ParseStackItem &psi = parseStack.pushAlt();
-    psi.object = topTemp;
-    psi.kind = tag;
+    ParseStackItem *psi = new ParseStackItem(topTemp, tag);
+    parseStack.push(psi);
     // ulinks must be new or had its contents moved to allUnsatLinks.
-    xassert(psi.ulinks.isEmpty());
+    xassert(psi->ulinks.isEmpty());
 
     // read the attributes
     bool sawContainerTag = readAttributes();
@@ -154,9 +153,9 @@ void XmlReaderManager::parseOneTagOrDatum() {
   if (parseStack.isEmpty()) {
     xmlUserFatalError("too many close tags");
   }
-  lastNode = parseStack.top().object;
-  lastKind = parseStack.top().kind;
-  ASTList<UnsatLink> &ulinks = parseStack.top().ulinks;
+  lastNode = parseStack.top()->object;
+  lastKind = parseStack.top()->kind;
+  ASTList<UnsatLink> &ulinks = parseStack.top()->ulinks;
   if (lastKind != closeTag) {
     xmlUserFatalError(stringc << "close tag " << lexer.tokenKindDescV(closeTag)
                       << " does not match open tag " << lexer.tokenKindDescV(lastKind));
@@ -168,8 +167,7 @@ void XmlReaderManager::parseOneTagOrDatum() {
   allUnsatLinks.concat(ulinks);
   xassert(ulinks.isEmpty());
 
-  // use popMany() instead of pop() to avoid the operator= call
-  parseStack.popMany(1);
+  parseStack.deleteTopSeveral(1);
 
   // state: read the '>' after a close tag
   int closeGreaterThan = lexer.getToken();
@@ -249,7 +247,7 @@ void XmlReaderManager::appendListItem() {
   if (!listNode) {
     xmlUserFatalError("a _List_Item tag not immediately under a List");
   }
-  int listKind = parseStack.top().kind;
+  int listKind = parseStack.top()->kind;
   KindCategory listKindCat = kind2kindCat(listKind);
 
   // quarl 2006-06-01
@@ -306,7 +304,7 @@ void XmlReaderManager::appendNameMapItem() {
   if (!mapNode) {
     xmlUserFatalError("a _NameMap_Item tag not immediately under a Map");
   }
-  int mapKind = parseStack.top().kind;
+  int mapKind = parseStack.top()->kind;
   KindCategory mapKindCat = kind2kindCat(mapKind);
   switch (mapKindCat) {
   default:
@@ -353,7 +351,7 @@ void XmlReaderManager::appendMapItem() {
   if (!mapNode) {
     xmlUserFatalError("a _NameMap_Item tag not immediately under a Map");
   }
-  int mapKind = parseStack.top().kind;
+  int mapKind = parseStack.top()->kind;
   KindCategory mapKindCat = kind2kindCat(mapKind);
 
   switch (mapKindCat) {
@@ -424,8 +422,8 @@ bool XmlReaderManager::readAttributes() {
       // quarl 2006-06-01
       //    Important: record the kind before we call satisfyUnsatLink,
       //    because it needs to know what kind to upcast to.
-      if (recordKind(parseStack.top().kind)) {
-        id2kind.add(id0, parseStack.top().kind);
+      if (recordKind(parseStack.top()->kind)) {
+        id2kind.add(id0, parseStack.top()->kind);
       }
 
 #if 1
@@ -444,16 +442,16 @@ bool XmlReaderManager::readAttributes() {
         {
           // quarl 2006-06-01 if this is the first attribute then we don't
           // need to copy anything; just delete the temporary.
-          void *obj = parseStack.top().object;
+          void *obj = parseStack.top()->object;
           xassert(obj);
           deleteObj(obj, ulink->kind);
         } else {
-          satisfyUnsatLink(ulink, parseStack.top().object);
+          satisfyUnsatLink(ulink, parseStack.top()->object);
         }
 
         if (ulink->embedded) {
           // now we point directly to the place we want to write to.
-          parseStack.top().object = ulink->ptr;
+          parseStack.top()->object = ulink->ptr;
         }
 
         // yay, got rid of a ulink!
@@ -464,48 +462,48 @@ bool XmlReaderManager::readAttributes() {
       if (id2obj.isMapped(id0)) {
         xmlUserFatalError(stringc << "this _id is taken: " << id0);
       }
-      id2obj.add(id0, parseStack.top().object);
+      id2obj.add(id0, parseStack.top()->object);
     }
     // special case the _List_Item node and its one attribute
-    else if (parseStack.top().kind == XTOK__List_Item) {
+    else if (parseStack.top()->kind == XTOK__List_Item) {
       switch(attr) {
       default:
         xmlUserFatalError("illegal attribute for _List_Item");
         break;
       case XTOK_item:
-        static_cast<ListItem*>(parseStack.top().object)->to =
+        static_cast<ListItem*>(parseStack.top()->object)->to =
           lexer.currentText();
         break;
       }
     }
     // special case the _NameMap_Item node and its one attribute
-    else if (parseStack.top().kind == XTOK__NameMap_Item) {
+    else if (parseStack.top()->kind == XTOK__NameMap_Item) {
       switch(attr) {
       default:
         xmlUserFatalError("illegal attribute for _NameMap_Item");
         break;
       case XTOK_name:
-        static_cast<NameMapItem*>(parseStack.top().object)->from =
+        static_cast<NameMapItem*>(parseStack.top()->object)->from =
           lexer.currentText();
         break;
       case XTOK_item:
-        static_cast<NameMapItem*>(parseStack.top().object)->to =
+        static_cast<NameMapItem*>(parseStack.top()->object)->to =
           lexer.currentText();
         break;
       }
     }
     // special case the _Map_Item node and its one attribute
-    else if (parseStack.top().kind == XTOK__Map_Item) {
+    else if (parseStack.top()->kind == XTOK__Map_Item) {
       switch(attr) {
       default:
         xmlUserFatalError("illegal attribute for _Map_Item");
         break;
       case XTOK_key:
-        static_cast<MapItem*>(parseStack.top().object)->from =
+        static_cast<MapItem*>(parseStack.top()->object)->from =
           lexer.currentText();
         break;
       case XTOK_item:
-        static_cast<MapItem*>(parseStack.top().object)->to =
+        static_cast<MapItem*>(parseStack.top()->object)->to =
           lexer.currentText();
         break;
       }
@@ -528,7 +526,7 @@ bool XmlReaderManager::readAttributes() {
 //      }
     // not a built-in attribute or tag
     else {
-      registerAttribute(parseStack.top().object, parseStack.top().kind, attr, lexer.currentText());
+      registerAttribute(parseStack.top()->object, parseStack.top()->kind, attr, lexer.currentText());
     }
   }
   if (!parseStack.isEmpty()) {
@@ -639,7 +637,7 @@ UnsatLink *XmlReaderManager::getUnsatLink(char const *id0)
   if (parseStack.length() <= 1)
     return NULL;
 
-  ASTList<UnsatLink> &parentUnsatLinks = parseStack.nth(1).ulinks;
+  ASTList<UnsatLink> &parentUnsatLinks = parseStack[1]->ulinks;
   for (ASTListMutator<UnsatLink> mut(parentUnsatLinks); !mut.isDone(); mut.adv()) {
     UnsatLink *ulink = mut.data();
     if (streq(ulink->id, id0)) {
@@ -656,7 +654,7 @@ void XmlReaderManager::addUnsatLink(UnsatLink *u)
   // I OWNZ U
   // fprintf(stderr, "## addUnsatLink: u=%p, u->id=%s, u->embedded=%d\n",
   //         u, u->id.c_str(), u->embedded);
-  parseStack.top().ulinks.append(u);
+  parseStack.top()->ulinks.append(u);
 }
 
 

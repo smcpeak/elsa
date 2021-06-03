@@ -9,7 +9,6 @@
 
 #include "id_obj_dict.h"        // IdSObjDict
 #include "strintdict.h"         // StringIntDict
-#include "bitwise_array.h"      // BitwiseArrayStack
 #include "astlist.h"            // ASTList
 #include "strtable.h"           // StringRef
 #include "strmap.h"             // StringRefMap
@@ -208,13 +207,13 @@ class XmlReaderManager {
   ASTList<XmlReader> readers;
 
   // **** Parsing
-  public:
+public:
   char const *inputFname;       // just for error messages
   XmlLexer &lexer;              // a lexer on a stream already opened from the file
   // TODO: partition StringTables as much as possible
   StringTable &strTable;        // for canonicalizing the StringRef's in the input file
 
-  private:
+private:
   // the node (and its kind) for the last closing tag we saw; useful
   // for extracting the top of the tree
   void *lastNode;
@@ -225,9 +224,16 @@ class XmlReaderManager {
     void *object;
     int kind;
     ASTList<UnsatLink> ulinks;
+
+  public:      // methods
+    ParseStackItem(void *o, int k)
+      : object(o),
+        kind(k),
+        ulinks()
+    {}
   };
 
-  BitwiseArrayStack<ParseStackItem> parseStack;
+  ObjArrayStack<ParseStackItem> parseStack;
 
   // **** Satisfying links
 
@@ -293,7 +299,7 @@ public:
   void addUnsatLink(UnsatLink *ulink);
 
 private:
-  void *getTopNode0() { return parseStack.isEmpty() ? NULL : parseStack.top().object; }
+  void *getTopNode0() { return parseStack.isEmpty() ? NULL : parseStack.topC()->object; }
 
   // try to find a link from topmost list of unsatLinks.
   UnsatLink *getUnsatLink(char const *id0);
@@ -322,8 +328,8 @@ private:
   void *getLastNode() {return lastNode;}
   int getLastKind() {return lastKind;}
   // peek at nth item (linear time)
-  void *getNthNode(int which) { return parseStack.nth(which).object; }
-  int getNthKind(int which) { return parseStack.nth(which).kind; }
+  void *getNthNode(int which) { return parseStack[which]->object; }
+  int getNthKind(int which) { return parseStack[which]->kind; }
 
   // peek, with assertion for kind
   void *getNthNode(int which, int kind)
