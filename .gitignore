@@ -18,8 +18,6 @@ cc_tokens.h
 cc_tokens.ids
 ccparse
 config.mk
-config.status
-config.summary
 in/*.error*.cc
 in/big/*.i
 iptparse.yy.cc
@@ -28,6 +26,7 @@ lexer.lex
 lexer.yy.cc
 lexer.yy.h
 packedword_test
+personal.mk
 quicktest
 semgrep
 tlexer

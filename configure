@@ -1,4 +1,14 @@
-#! /bin/sh
-# thunk
+#!/bin/sh
+# Create config.mk.
 
-exec perl -wS ./configure.pl ${1+"$@"}
+cat >config.mk <<EOF || exit
+# elsa/config.mk
+# Automatic configuration results.
+
+# There are no configuration parameters currently.  This is just a
+# placeholder.
+EOF
+
+echo "Created config.mk."
+
+# EOF

@@ -9,40 +9,142 @@ all: cc.ast.gen.h tlexer ccparse quicktest packedword_test
 # work in progress..
 #iptree smin cipart
 
+
+# ------------------------- Configuration --------------------------
+# ---- Running other programs ----
+# Directories of other software.
+SMBASE    = ../smbase
+SMFLEXDIR = ../smflex
+AST       = ../ast
+ELKHOUND  = ../elkhound
+
+# C++ preprocessor, compiler, and linker.
+CXX = g++
+
+# Flags to control generation of debug info.
+DEBUG_FLAGS = -g
+
+# Flags to enable dependency generation of .d files.
+GENDEPS_FLAGS = -MMD
+
+# Flags to control optimization.
+#
+# TODO: Things are broken when optimization is enabled.
+OPTIMIZATION_FLAGS =
+
+# Flags to control compiler warnings.
+WARNING_FLAGS = -Woverloaded-virtual
+
+# Flags for C or C++ standard to use.
+C_STD_FLAGS   = -std=c99
+CXX_STD_FLAGS = -std=c++11
+
+# -D flags to pass to preprocessor.
+DEFINES =
+
+# -I flags to pass to preprocessor.
+INCLUDES = -I$(SMBASE) -I$(AST) -I$(ELKHOUND)
+
+# Preprocessing flags.
+CPPFLAGS = $(INCLUDES) $(DEFINES)
+
+# Flags for the C and C++ compilers (and preprocessor).
+#
+# Note: $(GENDEPS_FLAGS) are not included because these flags are used
+# for linking too, and if that used $(GENDEPS_FLAGS) then the .d files
+# for .o files would be overwritten with info for .exe files.
+CXXFLAGS = $(DEBUG_FLAGS) $(OPTIMIZATION_FLAGS) $(WARNING_FLAGS) $(CXX_STD_FLAGS) $(CPPFLAGS)
+
+# How to enable coverage.
+GCOV_OPTS = -fprofile-arcs -ftest-coverage
+
+# Libraries to link with when creating executables.
+LIBSMBASE   = $(SMBASE)/libsmbase.a
+LIBAST      = $(AST)/libast.a
+LIBELKHOUND = $(ELKHOUND)/libelkhound.a
+LIBS = $(LIBELKHOUND) $(LIBAST) $(LIBSMBASE)
+
+# Flags to add to a link command *in addition* to either $(CFLAGS) or
+# $(CXXFLAGS), depending on whether C++ modules are included.
+LDFLAGS =
+
+# Some other tools.
+PERL   = perl
+AR     = ar
+RANLIB = ranlib
+DEP    = $(PERL) depend.pl
+SMFLEX = $(SMFLEXDIR)/smflex -b
+
+
+# ---- Options within this Makefile ----
+# Modules to compile with coverage info, for example 'cc_tcheck'.
+#
+# I do not build them all with coverage info because it takes about 25%
+# longer to compile for each module with coverage info.
+GCOV_MODS =
+
+# Active language extensions.
+USE_GNU   = 1
+USE_KANDR = 1
+
+
+# ---- Automatic Configuration ----
+# Pull in settings from ./configure.  They override the defaults above,
+# and are in turn overridden by personal.mk, below.
 ifeq ($(wildcard config.mk),)
   $(error The file 'config.mk' does not exist.  Run './configure' before 'make'.)
 endif
 include config.mk
 
-# stuff inside other directories
-LIBSMBASE   := $(SMBASE)/libsmbase.a
-LIBAST      := $(AST)/libast.a
-LIBELKHOUND := $(ELKHOUND)/libelkhound.a
 
-# external tools
-DEP    := $(PERL) depend.pl
-AR     := ar
-RANLIB := ranlib
+# ---- Customization ----
+# Allow customization of the above variables in a separate file.  Just
+# create personal.mk with desired settings.
+#
+# Common things to set during development:
+#
+#   WERROR = -Werror
+#   WARNING_FLAGS = -Wall $(WERROR)
+#   OPTIMIZATION_FLAGS =
+#
+-include personal.mk
 
-SMFLEXDIR := ../smflex
-SMFLEX    := $(SMFLEXDIR)/smflex -b
 
-# list of files to clean in 'clean' (etc.) targets
-# (these get added to below)
+# ----------------------------- Rules ------------------------------
+# Eliminate all implicit rules.
+.SUFFIXES:
+
+# Delete a target when its recipe fails.
+.DELETE_ON_ERROR:
+
+# Do not remove "intermediate" targets.
+.SECONDARY:
+
+
+# List of files to remove in 'clean' (etc.) targets.  They are added to
+# below, next to the rules that generate the files.
 TOCLEAN =
 TOTOOLCLEAN =
 TODISTCLEAN =
 
-# re-create config.mk if config.mk.in has changed
-TODISTCLEAN += config.mk
-config.mk: config.mk.in config.status
-	./config.status
+# Compile .cc to .o, also generating .d dependency files.
+TOCLEAN += *.o *.d
+%.o: %.cc
+	$(CXX) -c -o $@ $(if $(findstring $*,$(GCOV_MODS)),$(GCOV_OPTS) )$(GENDEPS_FLAGS) $(CXXFLAGS) $<
 
-# reconfigure if the configure script has changed
-config.status: configure.pl
-	./config.status -reconfigure
+# compile a special module; -O0 will override any earlier setting
+#
+# TODO: Why did I need this?
+notopt.o: notopt.cc
+	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(CXXFLAGS) -O0 $<
+
+
+# Remove 'config.mk' with 'distclean'.
+TODISTCLEAN += config.mk
 
 # dependencies upon automatically-generated files
+#
+# TODO: This is broken right now.
 extradep.mk:
 	$(PERL) $(ELKHOUND)/find-extra-deps *.d >$@
 
@@ -91,29 +193,6 @@ ifeq ($(USE_KANDR),1)
 endif
 
 
-# ----------------------- compiler configuration -------------------
-# C++ preprocessor, compiler and linker
-CXX := g++
-
-# how to enable coverage
-GCOV_OPTS := -fprofile-arcs -ftest-coverage
-
-# flags for the linker
-libraries := $(LIBELKHOUND) $(LIBAST) $(LIBSMBASE)
-
-
-# compile .cc in this directory to a .o
-TOCLEAN += *.o *.d
-%.o: %.cc
-	$(CXX) -c -o $@ $< $(if $(findstring $*,$(GCOV_MODS)),$(GCOV_OPTS) )$(CCFLAGS)
-	@$(DEP)   -o $@ $< $(if $(findstring $*,$(GCOV_MODS)),$(GCOV_OPTS) )$(CCFLAGS) >$*.d
-
-# compile a special module; -O0 will override any earlier setting
-notopt.o: notopt.cc
-	$(CXX) -c -o $@ $< $(CCFLAGS) -O0
-	@$(DEP)   -o $@ $< $(CCFLAGS) -O0 >$*.d
-
-
 # ------------------------ tlexer -------------------
 LEXER_OBJS := \
   cc_lang.o \
@@ -126,15 +205,15 @@ LEXER_OBJS := \
 
 # program to test the lexer alone
 TOCLEAN += tlexer
-tlexer: tlexer.o $(LEXER_OBJS) $(libraries)
-	$(CXX) -o $@ tlexer.o $(LEXER_OBJS) $(LDFLAGS)
+tlexer: tlexer.o $(LEXER_OBJS) $(LIBS)
+	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^
 
 
 # ------------------------ packedword_test -------------------
 # program to test packedword
 TOCLEAN += packedword_test
-packedword_test: packedword_test.o $(libraries)
-	$(CXX) -o $@ packedword_test.o $(LDFLAGS)
+packedword_test: packedword_test.o $(LIBS)
+	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^
 
 
 # ------------------------- xml serialization / de-serialization ---------------------
@@ -155,6 +234,7 @@ XML_TYPE_LEXER += xml_enum_1.gen.h
 XML_TYPE_LEXER += xml_lex_1.gen.lex
 XML_TYPE_LEXER += xml_name_1.gen.cc
 
+# TODO: This multi-target non-pattern rule is unsafe.
 TOCLEAN += $(XML_TYPE_LEXER)
 $(XML_TYPE_LEXER): $(TOKENS_FILES)
 	rm -f $@
@@ -189,19 +269,25 @@ xml_lex.gen.lex: xml_lex_0top.lex xml_lex_1.gen.lex xml_lex_2bot.lex
 # This specifies "-PxmlBase" so that the generated base class is called
 # "xmlBaseFlexLexer" instead of "yyFlexLexer" since the latter would
 # conflict with the base class used by lexer.lex for lexing C/C++.
+#
+# TODO: Use a generic flex rule to fix the fact that this multi-target
+# non-pattern rule is unsafe.
 TOCLEAN += xml_lex.gen.yy.cc xml_lex.gen.yy.h
-xml_lex.gen.yy.cc: xml_lex.gen.lex xml_lexer.h
-	$(SMFLEX) -o$@ -PxmlBase xml_lex.gen.lex
+xml_lex.gen.yy.h xml_lex.gen.yy.cc: xml_lex.gen.lex xml_lexer.h
+	$(SMFLEX) -oxml_lex.gen.yy.cc -PxmlBase xml_lex.gen.lex
 
 # when building the ast xml lexer, delete the methods that would
 # otherwise conflict with methods in lexer.yy.cc; they have identical
 # implementations
+#
+# TODO: Do I still need NO_YYFLEXLEXER_METHODS?
 xml_lexer.yy.o: xml_lex.gen.yy.cc
-	$(CXX) -c -o $@ $< -DNO_YYFLEXLEXER_METHODS $(CCFLAGS)
-	@$(DEP)   -o $@ $< -DNO_YYFLEXLEXER_METHODS $(CCFLAGS) >$*.d
+	$(CXX) -c -o $@ -DNO_YYFLEXLEXER_METHODS $(GENDEPS_FLAGS) $(CXXFLAGS) $<
 # We do not need this now but we will if we end up re-arranging the
 # build process like I had to in oink so I put it here as a reminder.
 # -include xml_lexer.yy.d
+#
+# TODO: Why is it not needed?
 
 
 #### CC client code
@@ -245,15 +331,22 @@ lexer.yy.cc: lexer.lex
 	$(SMFLEX) -o$@ lexer.lex
 
 # Tell 'make' that to make the .h file, it has to make the .cc file.
+#
+# TODO: This is not quite right.
 lexer.yy.h: lexer.yy.cc
 	@# nothing
 
 
 # Dependencies on generated code.
+#
+# TODO: Rehability find-extra-deps, which will obviate this.
 tlexer.o: lexer.yy.h
-
+main.o: xml_enum_1.gen.h
+main.o: xml_lex.gen.yy.h
 
 # generate token lists
+#
+# TODO: This multi-target non-pattern rule is unsafe.
 TOK_FILES := cc_tokens.h cc_tokens.cc cc_tokens.ids
 TOCLEAN += $(TOK_FILES)
 $(TOK_FILES): $(TOK_MODS) make-token-files
@@ -263,6 +356,8 @@ $(TOK_FILES): $(TOK_MODS) make-token-files
 
 
 # run astgen to generate the AST implementation
+#
+# TODO: This multi-target non-pattern rule is unsafe.
 CC_AST_GEN_FILES := cc.ast.gen.h cc.ast.gen.cc
 TOCLEAN += $(CC_AST_GEN_FILES)
 $(CC_AST_GEN_FILES): $(CC_AST_MODS) $(AST)/astgen.exe
@@ -272,6 +367,8 @@ $(CC_AST_GEN_FILES): $(CC_AST_MODS) $(AST)/astgen.exe
 
 
 # run elkhound to generate the parser
+#
+# TODO: This multi-target non-pattern rule is unsafe.
 CC_GR_GEN_FILES := cc.gr.gen.h cc.gr.gen.cc cc.gr.gen.out
 TOCLEAN += $(CC_GR_GEN_FILES)
 $(CC_GR_GEN_FILES): $(CC_GR_MODS) cc_tokens.ids $(ELKHOUND)/elkhound.exe
@@ -282,6 +379,8 @@ $(CC_GR_GEN_FILES): $(CC_GR_MODS) cc_tokens.ids $(ELKHOUND)/elkhound.exe
 # list of modules needed for the parser; ideally they're in an order
 # that finds serious compilation problems earliest (it's ok to
 # rearrange as different parts of the code are in flux)
+#
+# TODO: Reformat as a series of += assignments.
 CCPARSE_OBJS := \
   mtype.o \
   integrity.o \
@@ -330,8 +429,8 @@ libelsa.a: $(CCPARSE_OBJS)
 
 # parser binary
 TOCLEAN += ccparse
-ccparse: libelsa.a main.o $(libraries)
-	$(CXX) -o $@ main.o libelsa.a $(LDFLAGS)
+ccparse: main.o libelsa.a $(LIBS)
+	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^
 
 
 # run the binary; the 'quicktest' file is so we don't run it if
@@ -345,30 +444,33 @@ quicktest: ccparse
 
 # -------------------- semgrep --------------------
 TOCLEAN += semgrep
-semgrep: $(CCPARSE_OBJS) semgrep.o $(libraries) $(LIBSMBASE)
-	$(CXX) -o $@ $(CCPARSE_OBJS) semgrep.o $(LDFLAGS)
+semgrep: $(CCPARSE_OBJS) semgrep.o $(LIBS)
+	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^
 
 
 # --------------------- iptree --------------------
 TOCLEAN += iptree
-iptree: iptree.cc $(LIBSMBASE)
-	$(CXX) -o $@ $(CCFLAGS) -DTEST_IPTREE iptree.cc $(LDFLAGS)
+iptree: iptree.cc $(LIBS)
+	$(CXX) -o $@ $(CXXFLAGS) -DTEST_IPTREE $(LDFLAGS) $^
 
 
 # -------------------- iptparse -------------------
 TOCLEAN += iptparse
-iptparse: iptparse.cc iptree.o iptparse.yy.o $(LIBSMBASE)
-	$(CXX) -o $@ $(CCFLAGS) -DTEST_IPTPARSE iptparse.cc iptree.o iptparse.yy.o $(LDFLAGS)
+iptparse: iptparse.cc iptree.o iptparse.yy.o $(LIBS)
+	$(CXX) -o $@ $(CXXFLAGS) -DTEST_IPTPARSE $(LDFLAGS) $^
 
 
 # ---------------------- smin ---------------------
 # lexer for interval partition tree specs
-TOCLEAN += iptparse.yy.cc
+#
+# TODO: Make a single rule for running smflex.
+TOCLEAN += iptparse.yy.cc iptparse.yy.h
 iptparse.yy.cc: iptparse.lex
 	$(SMFLEXDIR)/smflex -o$@ iptparse.lex
 
 iptparse.yy.o: iptparse.h
 
+# TODO: Use += assignments.
 SMIN_OBJS := \
   iptparse.o \
   iptparse.yy.o \
@@ -377,19 +479,20 @@ SMIN_OBJS := \
 -include $(SMIN_OBJS:.o=.d)
 
 TOCLEAN += smin
-smin: $(SMIN_OBJS) $(LIBSMBASE)
-	$(CXX) -o $@ $(SMIN_OBJS) $(LDFLAGS)
+smin: $(SMIN_OBJS) $(LIBS)
+	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^
 
 
 # --------------------- cipart --------------------
-TOCLEAN += cipart.yy.cc
+# TODO: Make a single rule for running smflex.
+TOCLEAN += cipart.yy.cc cipart.yy.h
 cipart.yy.cc: cipart.lex
 	$(SMFLEXDIR)/smflex -o$@ cipart.lex
 
 -include cipart.yy.d
 
-cipart: cipart.yy.o $(LIBSMBASE)
-	$(CXX) -o $@ cipart.yy.o $(LDFLAGS)
+cipart: cipart.yy.o $(LIBS)
+	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^
 
 
 # ---------------------- misc ---------------------
@@ -517,7 +620,6 @@ clean:
 
 distclean: clean
 	rm -f $(TODISTCLEAN)
-	rm -f config.status config.summary
 	rm -rf gendoc
 
 toolclean: clean
