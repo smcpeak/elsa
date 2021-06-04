@@ -50,7 +50,6 @@ class Expression;              // cc.ast
 class Function;                // cc.ast
 class BasicTypeFactory;        // cc_type.h
 class TemplateInfo;            // cc_type.h
-class XmlReader;
 
 class Variable INHERIT_SERIAL_BASE {
 public:    // data
@@ -118,11 +117,6 @@ public:    // data
   static size_t numVariables;
 
 private:      // data
-
-  // so serialization/deserialization is possible
-  friend class XmlTypeWriter;
-  friend class XmlTypeReader;
-
   // The next two fields are used to store conceptually different
   // things in a single word in order to save space.  I am concerned
   // about the space used by Variable because they are ubiquitous.  I
@@ -152,7 +146,6 @@ private:      // data
 protected:    // funcs
   friend class BasicTypeFactory;
   Variable(SourceLoc L, StringRef n, Type *t, DeclFlags f);
-  Variable(XmlReader&);         // ctor for de-serialization
 
 public:
   virtual ~Variable();

@@ -59,8 +59,8 @@ class Statement {
 
   // case ranges
   -> S_rangeCase(Expression exprLo, Expression exprHi, Statement s) {
-       public(xml) int labelValLo = 0;
-       public(xml) int labelValHi = 0;
+       public int labelValLo = 0;
+       public int labelValHi = 0;
   }
 }
 
@@ -82,12 +82,12 @@ class Expression {
   // http://gcc.gnu.org/onlinedocs/gcc-3.1/gcc/Alignment.html
   -> E_alignofType(ASTTypeId atype) {
        public virtual CValue extConstEval(ConstEval &env) const;
-       public(xml) int alignment = 0; // set by tcheck
+       public int alignment = 0; // set by tcheck
      }
 
   -> E_alignofExpr(Expression expr) {
        public virtual CValue extConstEval(ConstEval &env) const;
-       public(xml) int alignment = 0;
+       public int alignment = 0;
      }
 
   // conditional with no middle operand
@@ -134,7 +134,7 @@ new class ASTTypeof {
 
   // dsw: I had to move this here to deal with the mid_tcheck design
   // pattern that is used to resolve ambiguities.
-  public(xml_TY) Type *type;
+  public Type *type;
 
   // dsw: I'm assuming that ASTTypeof should terminate the top of the
   // Expression tree, but I don't feel absolutely sure about it.
@@ -201,8 +201,8 @@ class Designator (SourceLoc loc) {
   -> SubscriptDesignator(Expression idx_expr, // taken from D_array
                          Expression /*nullable*/ idx_expr2)
   {
-    public(xml) int idx_computed  = INT_MIN; // index computed at compile time
-    public(xml) int idx_computed2 = INT_MIN; // index range end computed at compile time
+    public int idx_computed  = INT_MIN; // index computed at compile time
+    public int idx_computed2 = INT_MIN; // index range end computed at compile time
   }
 }
 

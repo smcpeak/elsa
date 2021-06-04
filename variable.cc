@@ -106,24 +106,6 @@ Variable::Variable(SourceLoc L, StringRef n, Type *t, DeclFlags f)
   ++numVariables;
 }
 
-// ctor for de-serialization
-Variable::Variable(XmlReader&)
-  : loc(SL_UNKNOWN),
-    name(NULL),
-    type(NULL),
-    flags(DF_NONE),
-    value(NULL),
-    defaultParamType(NULL),
-    funcDefn(NULL),
-    overload(NULL),
-    virtuallyOverride(NULL),
-    scope(NULL),
-    usingAlias_or_parameterizedEntity(NULL),
-    templInfo(NULL)
-{
-  ++numVariables;
-}
-
 Variable::~Variable()
 {}
 

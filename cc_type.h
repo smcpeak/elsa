@@ -53,7 +53,6 @@ class TypeVariable;       // template.h
 class PseudoInstantiation;// template.h
 class DependentQType;     // template.h
 class MType;              // mtype.h
-class XmlReader;
 
 // fwd in this file
 class AtomicType;
@@ -416,7 +415,6 @@ protected:   // funcs
   // experiment: force creation of these to go through the factory too
   CompoundType(Keyword keyword, StringRef name);
   friend class TypeFactory;
-  friend class XmlTypeReader;
 
   // override no-op implementation in Scope
   virtual void afterAddVariable(Variable *v);
@@ -846,7 +844,6 @@ public:     // data
 
 protected:
   friend class BasicTypeFactory;
-  friend class XmlTypeReader;
   CVAtomicType(AtomicType *a, CVFlags c)
     : atomic(a), cv(c) {}
 
@@ -878,7 +875,6 @@ public:     // data
 
 protected:  // funcs
   friend class BasicTypeFactory;
-  friend class XmlTypeReader;
   PointerType(CVFlags c, Type *a);
 
 public:
@@ -905,7 +901,6 @@ public:     // data
 
 protected:  // funcs
   friend class BasicTypeFactory;
-  friend class XmlTypeReader;
   ReferenceType(Type *a);
 
 public:
@@ -974,7 +969,6 @@ public:     // data
 
 protected:  // funcs
   friend class BasicTypeFactory;
-  friend class XmlTypeReader;
 
   FunctionType(Type *retType);
 
@@ -1066,11 +1060,8 @@ private:      // funcs
 
 protected:
   friend class BasicTypeFactory;
-  friend class XmlTypeReader;
   ArrayType(Type *e, int s = NO_SIZE)
     : eltType(e), size(s) { checkWellFormedness(); }
-  ArrayType(XmlReader&)           // a ctor for de-serialization
-    : eltType(NULL), size(NO_SIZE) {}
 
 public:
   int getSize() const { return size; }
@@ -1102,10 +1093,7 @@ public:
 
 protected:
   friend class BasicTypeFactory;
-  friend class XmlTypeReader;
   PointerToMemberType(NamedAtomicType *inClassNAT0, CVFlags c, Type *a);
-  PointerToMemberType(XmlReader&) // a ctor for de-serialization
-    : inClassNAT(NULL), cv(CV_NONE), atType(NULL) {}
 
 public:
   bool isConst() const { return !!(cv & CV_CONST); }

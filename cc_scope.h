@@ -28,7 +28,6 @@ class Function;           // cc.ast
 class TemplateParams;     // cc_type.h
 class PQName;             // cc.ast
 class TranslationUnit;    // cc.ast.gen.h
-class XmlReader;
 
 
 // information about a single scope: the names defined in it,
@@ -50,10 +49,6 @@ private:     // types
     ActiveEdgeRecord& operator= (ActiveEdgeRecord const &obj)
       { source=obj.source; target=obj.target; return *this; }
   };
-
-  // needed to allow serialization and de-serialization
-  friend class XmlTypeWriter;
-  friend class XmlTypeReader;
 
 private:     // data
   // variables: name -> Variable
@@ -181,7 +176,6 @@ protected:   // funcs
 
 public:      // funcs
   Scope(ScopeKind sk, int changeCount, SourceLoc initLoc);
-  Scope(XmlReader&);
   virtual ~Scope();     // virtual to silence warning; destructor is not part of virtualized interface
 
   int getChangeCount() const { return changeCount; }

@@ -643,10 +643,8 @@ void CompoundType::traverse(TypeVisitor &vis)
   // traverse the superclass
   Scope::traverse_internal(vis);
 
-  // 2005-07-28: Disabled because (1) I don't remember why I wanted
-  // it and it is a little weird (why not traverse the params too?),
-  // and (2) it would interfere with XML serialization.
-  //
+  // 2005-07-28: Disabled because I don't remember why I wanted
+  // it and it is a little weird (why not traverse the params too?).
   //if (isTemplate()) {
   //  templateInfo()->traverseArguments(vis);
   //}
@@ -1728,14 +1726,9 @@ void CVAtomicType::traverse(TypeVisitor &vis)
 PointerType::PointerType(CVFlags c, Type *a)
   : cv(c), atType(a)
 {
-  // dsw: I had to put the 'if' here because the xml deserialization
-  // code makes objects with NULL arguments and then fills them in
-  // later
-  if (a) {
-    // it makes no sense to stack reference operators underneath
-    // other indirections (i.e. no ptr-to-ref, nor ref-to-ref)
-    xassert(!a->isReference());
-  }
+  // it makes no sense to stack reference operators underneath
+  // other indirections (i.e. no ptr-to-ref, nor ref-to-ref)
+  xassert(!a->isReference());
 }
 
 
@@ -1833,14 +1826,9 @@ void PointerType::traverse(TypeVisitor &vis)
 ReferenceType::ReferenceType(Type *a)
   : atType(a)
 {
-  // dsw: I had to put the 'if' here because the xml deserialization
-  // code makes objects with NULL arguments and then fills them in
-  // later
-  if (a) {
-    // it makes no sense to stack reference operators underneath
-    // other indirections (i.e. no ptr-to-ref, nor ref-to-ref)
-    xassert(!a->isReference());
-  }
+  // it makes no sense to stack reference operators underneath
+  // other indirections (i.e. no ptr-to-ref, nor ref-to-ref)
+  xassert(!a->isReference());
 }
 
 
@@ -2255,11 +2243,6 @@ void FunctionType::traverse(TypeVisitor &vis)
   }
 
   // similarly, I don't want traversal into exception specs right now
-  //
-  // dsw: if you ever put them in, we have to take them out of the xml
-  // rendering or they will get rendered twice; in
-  // XmlTypeWriter::visitType() see this case statement
-  //   case Type::T_FUNCTION:
 
   vis.postvisitType(this);
 }

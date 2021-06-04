@@ -72,27 +72,6 @@ char const * const typeIntrNames[NUM_TYPEINTRS] = {
 
 MAKE_TOSTRING(TypeIntr, NUM_TYPEINTRS, typeIntrNames)
 
-static char const * const *typeIntrPrefixNames()
-{
-  static char const * const *names = 0;
-  if (!names) {
-    names = buildPrefixUppercaseMap("TI_", typeIntrNames, NUM_TYPEINTRS);
-  }
-  return names;
-}
-
-char const *toXml(TypeIntr id)
-{
-  xassert((unsigned)id < (unsigned)NUM_TYPEINTRS);
-  return typeIntrPrefixNames()[id];
-}
-
-void fromXml(TypeIntr &out, char const *str)
-{
-  out = (TypeIntr)findInMap(typeIntrPrefixNames(), NUM_TYPEINTRS,
-                            "TypeIntr", str);
-}
-
 
 // ---------------- CVFlags -------------
 char const * const cvFlagNames[NUM_CVFLAGS] = {
@@ -126,11 +105,6 @@ string bitmapString(int bitmap, char const * const *names, int numFlags,
 string toString(CVFlags cv)
 {
   return bitmapString(cv >> CV_SHIFT_AMOUNT, cvFlagNames, NUM_CVFLAGS, " ");
-}
-
-string toXml(CVFlags id)
-{
-  return bitmapString(id >> CV_SHIFT_AMOUNT, cvFlagNames, NUM_CVFLAGS, "|");
 }
 
 
@@ -176,12 +150,6 @@ int fromBitmapString(char const * const *names, int numFlags,
   return ret;
 }
 
-void fromXml(CVFlags &out, char const *str)
-{
-  int tmp = fromBitmapString(cvFlagNames, NUM_CVFLAGS, "CVFlag", str, '|');
-  out = (CVFlags)(tmp << CV_SHIFT_AMOUNT);
-}
-
 // ------------------- DeclFlags --------------
 char const * const declFlagNames[NUM_DECLFLAGS] = {
   "auto",           // 0
@@ -224,17 +192,6 @@ char const * const declFlagNames[NUM_DECLFLAGS] = {
 string toString(DeclFlags df)
 {
   return bitmapString(df, declFlagNames, NUM_DECLFLAGS, " ");
-}
-
-string toXml(DeclFlags id)
-{
-  return bitmapString(id, declFlagNames, NUM_DECLFLAGS, "|");
-}
-
-void fromXml(DeclFlags &out, char const *str)
-{
-  out = (DeclFlags)fromBitmapString(declFlagNames, NUM_DECLFLAGS,
-                                    "DeclFlag", str, '|');
 }
 
 
@@ -335,29 +292,6 @@ bool isComplexOrImaginary(SimpleTypeId id)
 }
 
 
-#define MAKE_USUAL_ENUM_TO_FROM_XML(TYPE, numElements)            \
-  char const *toXml(TYPE id)                                      \
-  {                                                               \
-    return toString(id);   /* overloaded */                       \
-  }                                                               \
-                                                                  \
-  void fromXml(TYPE &out, char const *str)                        \
-  {                                                               \
-    for (int id=0; id < numElements; id++) {                      \
-      TYPE typedId = (TYPE)id;                                    \
-      if (0==strcmp(toString(typedId), str)) {                    \
-        out = typedId;                                            \
-        return;                                                   \
-      }                                                           \
-    }                                                             \
-    xfailure(stringc << "bad " #TYPE ": '" << str << "'");        \
-  }
-
-// Some of the strings have angle brackets.  But, those cases should
-// not appear in the tree that gets serialized.
-MAKE_USUAL_ENUM_TO_FROM_XML(SimpleTypeId, NUM_SIMPLE_TYPES);
-
-
 // ------------------------ UnaryOp -----------------------------
 char const * const unaryOpNames[NUM_UNARYOPS] = {
   "+",
@@ -367,7 +301,6 @@ char const * const unaryOpNames[NUM_UNARYOPS] = {
 };
 
 MAKE_TOSTRING(UnaryOp, NUM_UNARYOPS, unaryOpNames)
-MAKE_USUAL_ENUM_TO_FROM_XML(UnaryOp, NUM_UNARYOPS);
 
 
 char const * const effectOpNames[NUM_EFFECTOPS] = {
@@ -378,7 +311,6 @@ char const * const effectOpNames[NUM_EFFECTOPS] = {
 };
 
 MAKE_TOSTRING(EffectOp, NUM_EFFECTOPS, effectOpNames)
-MAKE_USUAL_ENUM_TO_FROM_XML(EffectOp, NUM_EFFECTOPS);
 
 bool isPostfix(EffectOp op)
 {
@@ -424,7 +356,6 @@ char const * const binaryOpNames[NUM_BINARYOPS] = {
 };
 
 MAKE_TOSTRING(BinaryOp, NUM_BINARYOPS, binaryOpNames)
-MAKE_USUAL_ENUM_TO_FROM_XML(BinaryOp, NUM_BINARYOPS);
 
 bool isPredicateCombinator(BinaryOp op)
 {
@@ -457,7 +388,6 @@ char const * const accessKeywordNames[NUM_ACCESS_KEYWORDS] = {
 };
 
 MAKE_TOSTRING(AccessKeyword, NUM_ACCESS_KEYWORDS, accessKeywordNames)
-MAKE_USUAL_ENUM_TO_FROM_XML(AccessKeyword, NUM_ACCESS_KEYWORDS);
 
 
 // -------------------- CastKeyword --------------------
@@ -469,7 +399,6 @@ char const * const castKeywordNames[NUM_CAST_KEYWORDS] = {
 };
 
 MAKE_TOSTRING(CastKeyword, NUM_CAST_KEYWORDS, castKeywordNames)
-MAKE_USUAL_ENUM_TO_FROM_XML(CastKeyword, NUM_CAST_KEYWORDS);
 
 
 // -------------------- OverloadableOp --------------------
@@ -527,7 +456,6 @@ char const * const overloadableOpNames[NUM_OVERLOADABLE_OPS] = {
 };
 
 MAKE_TOSTRING(OverloadableOp, NUM_OVERLOADABLE_OPS, overloadableOpNames)
-MAKE_USUAL_ENUM_TO_FROM_XML(OverloadableOp, NUM_OVERLOADABLE_OPS);
 
 
 char const * const operatorFunctionNames[NUM_OVERLOADABLE_OPS] = {

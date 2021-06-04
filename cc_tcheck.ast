@@ -21,18 +21,6 @@ verbatim {
   class ArgumentInfo;        // overload.h
 }
 
-impl_verbatim {
-  // NOTE: do not include xml_type_id.h in the header, because it needs to
-  // include cc.gen.ast.h.
-  #include "xml_type_id.h"   // type system serialization identity
-}
-
-// this code goes into the xml serialization class
-xml_verbatim {
-  /* this is elsa/cc_tcheck.ast */
-  virtual bool shouldSerialize(Variable const *) { return true; }
-}
-
 custom ASTVisitor {
 public:      // custom data extensions
   // this is true when we are inside the body of a template function
@@ -43,7 +31,7 @@ custom ASTVisitor_ctor { inTemplate=false; }
 
 
 class TranslationUnit {
-  public(xml_TY) Scope *globalScope = NULL;
+  public Scope *globalScope = NULL;
 
   // This is the type checker entry point at the top level.  It
   // writes error messages (if any) into 'env' and annotations
@@ -71,14 +59,14 @@ class Function {
   // and therefore might have differently-named parameters, I'll add
   // another field specifically for a version of the FunctionType
   // which has the parameters for *this* definition
-  public(xml_TY) FunctionType *funcType = NULL;
+  public FunctionType *funcType = NULL;
 
   // since the body of the function (if a class member) may refer
   // to the receiver object, I need to write it down so client
   // analyses can find it
   //
   // 7/29/04: combined this with the old 'ctorReceiver'
-  public(xml_TY,xmlShouldSerialize) Variable *receiver = NULL;
+  public Variable *receiver = NULL;
 
   public void printExtras(ostream &os, int indent) const;
   custom debugPrint { printExtras(os, indent); }
@@ -124,15 +112,15 @@ class Function {
 
 class MemberInit {
   // if this is initializing a data member, tcheck will set this
-  public(xml_TY,xmlShouldSerialize) Variable *member = NULL;
+  public Variable *member = NULL;
 
   // if it's a base class ctor call, tcheck will set this instead
-  public(xml_TY) CompoundType *base = NULL;
+  public CompoundType *base = NULL;
 
   // the constructor used to initialize the member or subobject
   // (can't call it "ctor".. that's an astgen keyword.. doh),
   // or NULL for non-CompoundTypes
-  public(xml_TY,xmlShouldSerialize) Variable *ctorVar = NULL;
+  public Variable *ctorVar = NULL;
 
   public void printExtras(ostream &os, int indent) const;
   custom debugPrint { printExtras(os, indent); }
@@ -200,17 +188,17 @@ class PQName {
        // (without considering template arguments); this is only set
        // for the *first* PQ_qualifier in a PQName; it is needed for
        // applyArgumentMap, since it should not be doing lookup
-       public(xml_TY,xmlShouldSerialize) Variable *qualifierVar = NULL;
+       public Variable *qualifierVar = NULL;
        custom debugPrint {
          ind(os, indent) << "qualifierVar: " << refersTo(qualifierVar) << "\n";
        }
 
        // digested template arguments
-       public(xml_OL,xmlEmbed_List) ObjList<STemplateArgument> sargs;
+       public ObjList<STemplateArgument> sargs;
      }
 
   -> PQ_template {
-       public(xml_OL,xmlEmbed_List) ObjList<STemplateArgument> sargs;
+       public ObjList<STemplateArgument> sargs;
      }
 }
 
@@ -228,21 +216,21 @@ class TypeSpecifier {
 
   -> TS_name {
        // typedef Variable this name refers to
-       public(xml_TY,xmlShouldSerialize) Variable *var = NULL;
+       public Variable *var = NULL;
 
        // if the lookup is *not* dependent (and some other conditions
        // hold...), this will point to 'var' and be preserved when
        // the AST is cloned
-       public(xml_TY,xmlShouldSerialize) Variable *nondependentVar = NULL;
+       public Variable *nondependentVar = NULL;
        custom clone { ret->nondependentVar = nondependentVar; }
      }
 
   -> TS_elaborated {
-       public(xml_TY) NamedAtomicType *atype = NULL;
+       public NamedAtomicType *atype = NULL;
      }
 
   -> TS_classSpec {
-       public(xml_TY) CompoundType *ctype = NULL;
+       public CompoundType *ctype = NULL;
        public void tcheckIntoCompound(
          Env &env, DeclFlags dflags, CompoundType *ct);
        private void tcheckFunctionBodies(Env &env);
@@ -252,7 +240,7 @@ class TypeSpecifier {
      }
 
   -> TS_enumSpec {
-       public(xml_TY) EnumType *etype = NULL;
+       public EnumType *etype = NULL;
      }
 }
 
@@ -262,7 +250,7 @@ class BaseClassSpec {
   custom debugPrint { printExtras(os, indent); }
 
   // the type named by the 'name'
-  public(xml_TY) CompoundType *type = NULL;
+  public CompoundType *type = NULL;
 }
 
 
@@ -272,14 +260,14 @@ class Member {
 
 
 class Enumerator {
-  public(xml_TY,xmlShouldSerialize) Variable *var; // (serf) introduction record
+  public Variable *var; // (serf) introduction record
   ctor var=NULL;
 
   // when the enumerator values are computed, I store them here
   // so I can see them in the AST printout; I only print this
   // value if 'var' is non-NULL (i.e. the enumerator has been
   // tcheck'd so the value has been determined)
-  public(xml) int enumValue;
+  public int enumValue;
 
   public void printExtras(ostream &os, int indent) const;
   custom debugPrint { printExtras(os, indent); }
@@ -325,7 +313,7 @@ enum DeclaratorContext {
 
 class Declarator {
   // entity declared by this declarator
-  public(xml_TY,xmlShouldSerialize) Variable *var = NULL;// (serf) computed information: name, type, etc.
+  public Variable *var = NULL;// (serf) computed information: name, type, etc.
   custom clone {ret->var = var;}
 
   // This field need not be identical to 'var->type'; the 'type' here
@@ -334,10 +322,10 @@ class Declarator {
   // function), and hence 'var->type' might differ in details like
   // parameter names.  Otherwise, nominally, 'var->type' and 'type'
   // denote equivalent types.
-  public(xml_TY) Type *type = NULL;
+  public Type *type = NULL;
 
   // syntactic context; sometimes useful to visitors
-  public(xml) DeclaratorContext context = DC_UNKNOWN;
+  public DeclaratorContext context = DC_UNKNOWN;
   custom clone {ret->context = context;}
 
   public void printExtras(ostream &os, int indent) const;
@@ -439,19 +427,19 @@ class IDeclarator {
        // environment context since I get confused by pointers to
        // functions.. so I set this to true in MR_decl::tcheck and
        // MR_func::tcheck
-       public(xml) bool isMember = false;
+       public bool isMember = false;
      }
 
   -> D_array {
        // client analyses find it difficult to know whether this
        // D_array means "array" or "new[] size", so I'm going to
        // write down in cc_tcheck which one this is
-       public(xml) bool isNewSize = false;
+       public bool isNewSize = false;
      }
 
   -> D_bitfield {
        // type checker stashes the bitfield size in bits here
-       public(xml) int numBits = 0;
+       public int numBits = 0;
      }
 }
 
@@ -476,7 +464,7 @@ class Statement {
 
   -> S_case {
        // the case label must be an integer; this its value
-       public(xml) int labelVal = 0;
+       public int labelVal = 0;
      }
 }
 
@@ -515,7 +503,7 @@ class Expression {
   // type computed for this expression; might be a SimpleType for
   // ST_ERROR, in which case a subsequent attempt to typecheck the
   // same expression should stop and look for an ambiguous alt.
-  public(xml_TY) Type *type = NULL;
+  public Type *type = NULL;
 
   // this is a violation of the cloning invariant, but it gets fixed
   // with CloneExprTypesVisitor after the AST has been fully cloned
@@ -562,21 +550,21 @@ class Expression {
   custom debugPrint { printExtras(os, indent); }
 
   // interpretations of literals
-  -> E_intLit      { public(xml) unsigned long i = 0; }
-  -> E_floatLit    { public(xml) double d = 0; }
+  -> E_intLit      { public unsigned long i = 0; }
+  -> E_floatLit    { public double d = 0; }
   -> E_stringLit   { /* TODO: put a DataBlock here */ }
-  -> E_charLit     { public(xml) unsigned int c = 0; }
+  -> E_charLit     { public unsigned int c = 0; }
 
   -> E_this {
        // the receiver parameter to which this 'this' refers; NOTE
        // that 'receiver' is a *reference* whereas E_this is a
        // *pointer* (it's like taking the address of 'receiver')
-       public(xml_TY,xmlShouldSerialize) Variable *receiver = NULL;
+       public Variable *receiver = NULL;
        custom clone { ret->receiver = receiver; }
      }
 
   -> E_variable {
-       public(xml_TY,xmlShouldSerialize) Variable *var = NULL; // (serf) binding introduction of this name
+       public Variable *var = NULL; // (serf) binding introduction of this name
        public Type *itcheck_var(Env &env, Expression *&replacement, LookupFlags flags);
        custom clone { ret->var = var; }
 
@@ -585,7 +573,7 @@ class Expression {
                                     LookupFlags flags, LookupSet &set);
 
        // similar to TS_name::nondependentVar
-       public(xml_TY,xmlShouldSerialize) Variable *nondependentVar = NULL;
+       public Variable *nondependentVar = NULL;
        custom clone { ret->nondependentVar = nondependentVar; }
      }
 
@@ -606,12 +594,12 @@ class Expression {
        // assignment implementable with a memcpy.  (This is a
        // generalization of the Standard's notion of "trivial"; see
        // cppstd 12.1p5,6.)
-       public(xml_TY,xmlShouldSerialize) Variable *ctorVar = NULL;
+       public Variable *ctorVar = NULL;
        custom clone { ret->ctorVar = ctorVar; }
      }
 
   -> E_fieldAcc {
-       public(xml_TY,xmlShouldSerialize) Variable *field = NULL;
+       public Variable *field = NULL;
        public Type *itcheck_fieldAcc(Env &env, LookupFlags flags);
        public Type *itcheck_fieldAcc_set(Env &env, LookupFlags flags,
                                          LookupSet &candidates);
@@ -620,23 +608,23 @@ class Expression {
      }
 
   -> E_sizeof {
-       public(xml) int size = -1; // size of the type of expr
+       public int size = -1; // size of the type of expr
        custom clone { ret->size = size; }
      }
 
   -> E_cast {
        // idempotency for type definitions in casts
-       public(xml) bool tcheckedType = false;
+       public bool tcheckedType = false;
      }
 
   -> E_sizeofType {
-       public(xml) int size = -1; // size of the type
+       public int size = -1; // size of the type
        custom clone { ret->size = size; }
 
        // This flag is used in some circumstances in C mode to ensure
        // a given type expression is only tchecked one time, despite
        // possible ambiguities.  (See the tcheck method.)
-       public(xml) bool tchecked = false;
+       public bool tchecked = false;
      }
 
   // Q: should I manually clone all the annotation fields?  Do I
@@ -648,10 +636,10 @@ class Expression {
        //
        // 2005-08-07: Don't traverse this!  It is a non-tree pointer.
        // That is why it says "serf".
-       public(xml_AST) Expression /*nullable serf*/ *arraySize = NULL;
+       public Expression /*nullable serf*/ *arraySize = NULL;
 
        // constructor being called to initialize the storage
-       public(xml_TY,xmlShouldSerialize) Variable *ctorVar = NULL;
+       public Variable *ctorVar = NULL;
        custom debugPrint { ind(os,indent) << "ctorVar: " << refersTo(ctorVar) << "\n"; }
        custom clone { ret->ctorVar = ctorVar; }
      }
@@ -717,11 +705,11 @@ class Initializer {
 
   -> IN_ctor() {
        // constructor function being called
-       public(xml_TY,xmlShouldSerialize) Variable *ctorVar = NULL;
+       public Variable *ctorVar = NULL;
 
        // true if this was originally an IN_expr that the type
        // checker rewrote as IN_ctor; needed to implement 8.5p14
-       public(xml,field) bool was_IN_expr = false;
+       public(field) bool was_IN_expr = false;
 
        custom clone {
          ret->ctorVar = ctorVar;
@@ -766,7 +754,7 @@ class TemplateParameter {
   pure_virtual void itcheck(Env &env, int &dummy);
 
   // parameter Variable
-  public(xml_TY,xmlShouldSerialize) Variable *var = NULL;
+  public Variable *var = NULL;
 }
 
 

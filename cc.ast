@@ -49,10 +49,6 @@ verbatim {
 option visitor ASTVisitor;
 option dvisitor DelegatorASTVisitor;
 
-// these turn on the xml serialization and de-serialization code
-option xmlVisitor XmlAstWriter_AstVisitor;
-option xmlParser xml;
-
 option identityManager IdentityManager;
 
 // emit gdb() methods for debugging
@@ -263,7 +259,7 @@ class PQName(SourceLoc loc) {
 // with type constructors when the name was defined, but a
 // TypeSpecifier refers only to the name)
 class TypeSpecifier(SourceLoc loc) {
-  public(field,xml) CVFlags cv = CV_NONE;
+  public(field) CVFlags cv = CV_NONE;
   custom clone { ret->cv = cv; }
 
   public void printExtras(ostream &os, int indent) const;

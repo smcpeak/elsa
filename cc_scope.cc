@@ -33,28 +33,6 @@ Scope::Scope(ScopeKind sk, int cc, SourceLoc initLoc)
   xassert(sk != SK_UNKNOWN);
 }
 
-// a ctor for de-serialization
-Scope::Scope(XmlReader&)
-  : variables(),
-    typeTags(),
-    changeCount(0),
-    onScopeStack(false),
-    canAcceptNames(true),
-    parentScope(),
-    scopeKind(SK_UNKNOWN),
-    namespaceVar(NULL),
-    templateParams(),
-    parameterizedEntity(NULL),
-    usingEdges(0),
-    usingEdgesRefct(0),
-    activeUsingEdges(0),
-    outstandingActiveEdges(0),
-    curCompound(NULL),
-    curAccess(AK_PUBLIC),
-    curFunction(NULL),
-    curLoc(SL_UNKNOWN)
-{}
-
 Scope::~Scope()
 {
   GENERIC_CATCH_BEGIN

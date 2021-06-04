@@ -1332,10 +1332,6 @@ void RealVarAndTypeASTVisitor::visitType(Type *type) {
 
 // **** visit methods
 
-// class BaseClassSpec {
-//   public(xml_TY) CompoundType *type = NULL;
-// }
-
 bool RealVarAndTypeASTVisitor::visitTranslationUnit(TranslationUnit *obj) {
   typeVisitor->visitScope(obj->globalScope);
   return true;
@@ -1392,7 +1388,6 @@ bool RealVarAndTypeASTVisitor::visitExpression(Expression *obj) {
 bool RealVarAndTypeASTVisitor::visitMemberInit(MemberInit *obj) {
   visitVariable(obj->member);
   visitVariable(obj->ctorVar);
-//   public(xml_TY) CompoundType *base = NULL;
   return true;
 }
 
@@ -1405,15 +1400,6 @@ bool RealVarAndTypeASTVisitor::visitTypeSpecifier(TypeSpecifier *obj) {
   if (obj->isTS_type()) {
     visitType(obj->asTS_type()->type);
   }
-//   -> TS_elaborated {
-//        public(xml_TY) NamedAtomicType *atype = NULL;
-//      }
-//   -> TS_classSpec {
-//        public(xml_TY) CompoundType *ctype = NULL;
-//      }
-//   -> TS_enumSpec {
-//        public(xml_TY) EnumType *etype = NULL;
-//      }
   return true;
 }
 

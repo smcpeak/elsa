@@ -30,20 +30,20 @@ class Function {
   // NOTE!: If this function is a ctor, then the semantics is as if we
   // have this line in the code before the MemberInit-s:
   //   this = &retVar;
-  public(xml_TY,xmlShouldSerialize) Variable *retVar = NULL;
+  public Variable *retVar = NULL;
   custom debugPrint { ind(os,indent) << "retVar: " << refersTo(retVar) << "\n"; }
 
   // to be called when the function exits; should only be non-NULL for
   // dtor Functions: it is the superclass and member dtors that are
   // implicitly called
-  public(field,xml_AST,owner) Statement *dtorStatement = NULL;
+  public(field,owner) Statement *dtorStatement = NULL;
 
   // is this function implicitly defined?  dsw: I need to know so that
   // the linker imitator doesn't think there is a double-definition
   // when the same class occurs in two different translation units
   //
   // sm: this is now redundant with Variable::isImplicitMemberFunc()
-  public(field,xml) bool implicitlyDefined = false;
+  public(field) bool implicitlyDefined = false;
 }
 
 
@@ -62,12 +62,12 @@ class TypeSpecifier {
 class MemberInit {
   // A single MemberInit seems very much like a single expression to
   // me, since it is a ctor call and an IN_ctor is also
-  private(xml_AST,owner) FullExpressionAnnot *annot = NULL;
+  private(owner) FullExpressionAnnot *annot = NULL;
   public bool hasAnnot();
   public FullExpressionAnnot *getAnnot();
 
   // a MemberInit calls a ctor
-  public(field,xml_AST,owner) Statement *ctorStatement = NULL;
+  public(field,owner) Statement *ctorStatement = NULL;
 }
 
 
@@ -76,8 +76,8 @@ class Declarator {
   // initialization, and a destruction statement, that calls any
   // needed destructors; the latter is to be evaluated when this
   // declarator goes out of scope
-  public(field,xml_AST,owner) Statement *ctorStatement = NULL;
-  public(field,xml_AST,owner) Statement *dtorStatement = NULL;
+  public(field,owner) Statement *ctorStatement = NULL;
+  public(field,owner) Statement *dtorStatement = NULL;
 
   // the 'dflags' are the syntactic declaration flags attached
   // to the declaration in which this declarator appears
@@ -98,7 +98,7 @@ class Statement {
     // This is for the copy ctor that is needed when you do a return
     // by value of a CompoundType.  It always will copy into the
     // *FunctionType::retVar for the function that it is in.
-    public(field,xml_AST,owner) Statement *ctorStatement = NULL;
+    public(field,owner) Statement *ctorStatement = NULL;
 
     // this function sets 'ctorStatement', and returns a visitor boolean
     public bool elaborate(ElabVisitor &env);
@@ -110,26 +110,26 @@ class Handler {
     // the global that the throw argument is copy-ctored into, if
     // thrown by value; this should be linked to the globalVar in
     // E_throw by a backend
-    public(xml_TY,xmlShouldSerialize) Variable *globalVar = NULL;
+    public Variable *globalVar = NULL;
     custom debugPrint { ind(os,indent) << "globalVar: " << refersTo(globalVar) << "\n"; }
     // we need this so that the temporary that is made when an
     // exception is caught by value has some place to go; that is, a
     // Handler has to have all the necessary components of an
     // E_funCall, as that's how it behaves
-    private(xml_AST,owner) FullExpressionAnnot *annot = NULL;
+    private(owner) FullExpressionAnnot *annot = NULL;
     public bool hasAnnot();
     public FullExpressionAnnot *getAnnot();
     // local temporary and ctor for it if we catch by value
-    public(field,xml_AST,owner) Expression *localArg=NULL;
+    public(field,owner) Expression *localArg=NULL;
     // dtor for the globalVar if it is a CompoundType or ref to one
-    public(field,xml_AST,owner) Statement *globalDtorStatement = NULL;
+    public(field,owner) Statement *globalDtorStatement = NULL;
 
     public void elaborate(ElabVisitor &env);
 }
 
 
 class FullExpression {
-  private(xml_AST,owner) FullExpressionAnnot *annot = NULL;
+  private(owner) FullExpressionAnnot *annot = NULL;
   public bool hasAnnot();
   public FullExpressionAnnot *getAnnot();
 }
@@ -145,15 +145,15 @@ class Expression {
     // is another function parameter, the 'return object'.  At the call site,
     // we specify an object (reference) that will be bound to that parameter,
     // and the function implementation is expected to write to that object.
-    public(field,xml_AST,owner) Expression *retObj = NULL;
+    public(field,owner) Expression *retObj = NULL;
   }
 
   -> E_constructor {
     // did we manufacture it? needed during elaboration
-    public(field,xml) bool artificial = false;
+    public(field) bool artificial = false;
 
     // similar to E_funCall; object being constructed
-    public(field,xml_AST,owner) Expression *retObj = NULL;
+    public(field,owner) Expression *retObj = NULL;
   }
 
   -> E_new {
@@ -161,12 +161,12 @@ class Expression {
     // primitive concepts like allocation and calling the constructor;
     // after elaboration, and analysis can just ignore the E_new and
     // look at the 'ctorStatement' instead
-    public(field,xml_AST,owner) Statement *ctorStatement = NULL;
+    public(field,owner) Statement *ctorStatement = NULL;
 
     // I need a place to put the variable being ctored because
     // E_constructor needs to point at a variable.  Note that this var
     // is really on the heap.
-    public(xml_TY,xmlShouldSerialize) Variable *heapVar = NULL;
+    public Variable *heapVar = NULL;
     custom debugPrint { ind(os,indent) << "heapVar: " << refersTo(heapVar) << "\n"; }
 
     public bool elaborate(ElabVisitor &env);
@@ -177,7 +177,7 @@ class Expression {
     // already an expression and so will already be inside a
     // FullExpression; to make it a dtorStatement adds an extra layer
     // of FullExpression; we do it anyway
-    public(field,xml_AST,owner) Statement *dtorStatement = NULL;
+    public(field,owner) Statement *dtorStatement = NULL;
 
     public bool elaborate(ElabVisitor &env);
   }
@@ -185,10 +185,10 @@ class Expression {
   -> E_throw {
     // the global that the throw argument is copy-ctored into, if
     // thrown by value
-    public(xml_TY,xmlShouldSerialize) Variable *globalVar = NULL;
+    public Variable *globalVar = NULL;
     custom debugPrint { ind(os,indent) << "globalVar: " << refersTo(globalVar) << "\n"; }
 
-    public(field,xml_AST,owner) Statement *globalCtorStatement=NULL;
+    public(field,owner) Statement *globalCtorStatement=NULL;
 
     public bool elaborate(ElabVisitor &env);
   }
@@ -235,7 +235,7 @@ class Initializer {
   //
   // But I'll leave it for now.
 
-  private(xml_AST,owner) FullExpressionAnnot *annot = NULL;
+  private(owner) FullExpressionAnnot *annot = NULL;
   public bool hasAnnot();
   public FullExpressionAnnot *getAnnot();
 }

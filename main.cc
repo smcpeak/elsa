@@ -24,10 +24,6 @@
 #include "smregexp.h"     // regexpMatch
 #include "cc_elaborate.h" // ElabVisitor
 #include "integrity.h"    // IntegrityVisitor
-#include "xml_file_writer.h" // XmlFileWriter
-#include "xml_reader.h"   // xmlDanglingPointersAllowed
-#include "xml_do_read.h"  // xmlDoRead()
-#include "xml_type_writer.h" // XmlTypeWriter
 
 // little check: is it true that only global declarators
 // ever have Declarator::type != Declarator::var->type?
@@ -234,7 +230,6 @@ void doit(int argc, char **argv)
      "    printTypedAST      print AST with type info\n"
      "    printElabAST       print AST after semantic elaboration\n"
      "    prettyPrint        echo input as pretty-printed C++\n"
-     "    xmlPrintAST        print AST as XML\n"
      "\n"
      "  debugging output:\n"
      "    malloc_stats       print malloc stats every so often\n"
@@ -319,7 +314,6 @@ void doit(int argc, char **argv)
     traceAddSys("templateParams");
     traceAddSys("templateXfer");
     traceAddSys("prettyPrint");
-    traceAddSys("xmlPrintAST");
     traceAddSys("topform");
   }
 
@@ -345,14 +339,7 @@ void doit(int argc, char **argv)
 
   int parseWarnings = 0;
   long parseTime = 0;
-  if (tracingSys("parseXml")) {
-    if (tracingSys("parseXml-no-danglingPointers")) {
-      xmlDanglingPointersAllowed = false;
-    }
-    unit = xmlDoRead(strTable, inputFname);
-    if (!unit) return;
-  }
-  else {
+  {
     SectionTimer timer(parseTime);
     SemanticValue treeTop;
     ParseTreeAndTokens tree(lang, treeTop, strTable, inputFname);
@@ -605,12 +592,7 @@ void doit(int argc, char **argv)
     }
 
     // if we are going to pretty print, then we need to retain defunct children
-    if (tracingSys("prettyPrint")
-        // dsw: I don't know if this is right, but printing the xml
-        // AST kind of resembles pretty-printing the AST; fix this if
-        // it is wrong
-        || tracingSys("xmlPrintAST")
-        ) {
+    if (tracingSys("prettyPrint")) {
       vis.cloneDefunctChildren = true;
     }
 
@@ -627,8 +609,7 @@ void doit(int argc, char **argv)
   }
 
   // mark "real" (non-template) variables as such
-  if (!tracingSys("parseXml")) {
-    // mark "real" (non-template) variables as such
+  {
     MarkRealVars markReal;
     visitVarsF(builtinVars, markReal);
     visitRealVarsF(unit, markReal);
@@ -663,46 +644,6 @@ void doit(int argc, char **argv)
     codeOut.finish();
     cout << "---- STOP ----" << endl;
     traceProgress() << "dsw pretty print... done\n";
-  }
-
-  // dsw: xml printing of the raw ast
-  if (tracingSys("xmlPrintAST")) {
-    traceProgress() << "dsw xml print...\n";
-    bool indent = tracingSys("xmlPrintAST-indent");
-    int depth = 0;              // shared depth counter between printers
-    cout << "---- START ----" << endl;
-
-    // serialize Files
-    IdentityManager idmgr;
-    XmlFileWriter fileXmlWriter(idmgr, &cout, depth, indent, NULL);
-    fileXmlWriter.toXml(sourceLocManager->serializationOnly_get_files());
-
-    // serialize AST and maybe Types
-    if (tracingSys("xmlPrintAST-types")) {
-      IdentityManager idmgr;
-      XmlTypeWriter xmlTypeVis( idmgr, (ASTVisitor*)NULL, &cout, depth, indent, NULL );
-      XmlTypeWriter_AstVisitor xmlVis_Types(xmlTypeVis, cout, depth, indent);
-      xmlTypeVis.astVisitor = &xmlVis_Types;
-      ASTVisitor *vis = &xmlVis_Types;
-      LoweredASTVisitor loweredXmlVis(&xmlVis_Types); // might not be used
-      if (tracingSys("xmlPrintAST-lowered")) {
-        vis = &loweredXmlVis;
-      }
-      unit->traverse(*vis);
-    } else {
-      IdentityManager idmgr;
-      XmlAstWriter_AstVisitor xmlVis(cout, idmgr, depth, indent);
-      ASTVisitor *vis = &xmlVis;
-      LoweredASTVisitor loweredXmlVis(&xmlVis); // might not be used
-      if (tracingSys("xmlPrintAST-lowered")) {
-        vis = &loweredXmlVis;
-      }
-      unit->traverse(*vis);
-    }
-
-    cout << endl;
-    cout << "---- STOP ----" << endl;
-    traceProgress() << "dsw xml print... done\n";
   }
 
   // test AST cloning

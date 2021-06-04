@@ -873,10 +873,6 @@ void STemplateArgument::traverse(TypeVisitor &vis)
     return;
   }
 
-  // dsw: WARNING: This partial implementation is a problem.  The
-  // cases that are not handled here are handled manually in
-  // cc_type_xml.cc.  If you add cases here you have to take them out
-  // there.
   switch (kind) {
     case STA_TYPE:
       value.t->traverse(vis);
