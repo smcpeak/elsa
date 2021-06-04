@@ -1020,6 +1020,7 @@ private:
 public:
   DisambiguateOnlyTemp(Env &e, bool disOnly)
     : env(e),
+      prev(false),
       active(disOnly) {
     if (active) {
       prev = e.setDisambiguateOnly(true);
