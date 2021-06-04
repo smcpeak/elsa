@@ -5961,6 +5961,7 @@ int compareArgsToParams(Env &env, FunctionType *ft, FakeList<ArgExpression> *arg
   }
 
   SObjListIterNC<Variable> paramIter(ft->params);
+  int numNonReceiverParams = ft->params.count();
   int paramIndex = 1;
   FakeList<ArgExpression> *argIter = args;
 
@@ -5969,6 +5970,7 @@ int compareArgsToParams(Env &env, FunctionType *ft, FakeList<ArgExpression> *arg
   // TODO (elaboration, admission): consider the receiver object as well
   if (ft->isMethod()) {
     paramIter.adv();
+    numNonReceiverParams--;
   }
 
   // iterate over both lists
@@ -6086,7 +6088,9 @@ int compareArgsToParams(Env &env, FunctionType *ft, FakeList<ArgExpression> *arg
     }
   }
   else if (paramIter.isDone() && !ft->acceptsVarargs()) {
-    env.error("too many arguments supplied");
+    env.error(stringb(
+      "There are " << args->count() << " arguments, but only " <<
+      numNonReceiverParams << " parameters."));
   }
 
   return defaultArgsUsed;
