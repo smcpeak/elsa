@@ -21,5 +21,9 @@ class IDeclarator {
   // retrieve the innermost D_func constructor
   pure_virtual D_func *getD_func();
 
+  // This extends the usual function declarator with an optional list
+  // of parameter names that appear within the parentheses, while the
+  // normal 'params' is used to record the declarations that appear
+  // after the close-paren.
   -> D_func(FakeList<PQ_name> *kAndR_params = NULL); // params if a K&R function
 }
