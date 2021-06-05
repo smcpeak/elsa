@@ -29,7 +29,6 @@ main.o: cc_tokens.h
 main.o: lexer.yy.h
 mangle.o: cc.ast.gen.h
 mtype.o: cc.ast.gen.h
-notopt.o: cc.ast.gen.h
 overload.o: cc.ast.gen.h
 parssppt.o: cc_tokens.h
 parssppt.o: lexer.yy.h

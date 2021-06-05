@@ -3029,7 +3029,46 @@ bool Env::supplyDefaultTemplateArguments
 }
 
 
-// moved Env::makeDefaultTemplateArgument into notopt.cc
+STemplateArgument *Env::makeDefaultTemplateArgument
+  (Variable const *param, MType &map)
+{
+  // type parameter?
+  if (param->hasFlag(DF_TYPEDEF) &&
+      param->defaultParamType) {
+    // use 'param->defaultParamType', but push it through the map
+    // so it can refer to previous arguments
+    try {
+      Type *t = applyArgumentMapToType(map, param->defaultParamType);
+      return new STemplateArgument(t);
+    }
+    catch (XTypeDeduction &x) {
+      HANDLER();
+      error(stringc << "could not evaluate default argument `"
+                    << param->defaultParamType->toString()
+                    << "': " << x.why());
+      return NULL;
+    }
+  }
+
+  // non-type parameter?
+  else if (!param->hasFlag(DF_TYPEDEF) &&
+           param->value) {
+    try {
+      STemplateArgument *ret = new STemplateArgument;
+      *ret = applyArgumentMapToExpression(map, param->value);
+      return ret;
+    }
+    catch (XTypeDeduction &x) {
+      HANDLER();
+      error(stringc << "could not evaluate default argument `"
+                    << param->value->exprToString()
+                    << "': " << x.why());
+      return NULL;
+    }
+  }
+
+  return NULL;
+}
 
 
 void Env::setSTemplArgFromExpr(STemplateArgument &sarg, Expression *expr)
@@ -4366,6 +4405,19 @@ Type *Env::applyArgumentMapToQualifiedType
     // recursively continue deconstructing 'name'
     return applyArgumentMapToQualifiedType(map, qualVar->type->asCompoundType(),
                                            name->asPQ_qualifier()->rest);
+  }
+}
+
+
+Type *Env::applyArgumentMapToType_helper(MType &map, Type *origSrc)
+{
+  try {
+    return applyArgumentMapToType(map, origSrc);
+  }
+  catch (XTypeDeduction &x) {
+    HANDLER();
+    TRACE("template", "failure to instantiate: " << x.why());
+    return NULL;
   }
 }
 // ------------ END: applyArgumentMap -------------

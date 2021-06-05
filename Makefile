@@ -131,12 +131,6 @@ TOCLEAN += *.o *.d
 # Pull in any dependency files we have.
 -include *.d
 
-# compile a special module; -O0 will override any earlier setting
-#
-# TODO: Why did I need this?
-notopt.o: notopt.cc
-	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(CXXFLAGS) -O0 $<
-
 
 # Remove 'config.mk' with 'distclean'.
 TODISTCLEAN += config.mk

@@ -972,8 +972,6 @@ public:      // template funcs
   void applyArgumentMap_ensureComplete(CompoundType *ct);
   Type *applyArgumentMapToQualifiedType
     (MType &map, CompoundType *ct, PQName *name);
-
-  // defined in notopt.cc
   Type *applyArgumentMapToType_helper(MType &map, Type *origSrc);
 
   // specialization support
