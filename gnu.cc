@@ -1372,7 +1372,7 @@ void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
         if (s->attr->isAT_func()) {
           AT_func *f = s->attr->asAT_func();
           if (0==strcmp(f->f, "__mode__") && f->args) {
-            Expression *e = f->args->first()->expr;
+            Expression *e = fl_first(f->args)->expr;
             if (e->isE_variable()) {
               StringRef mode = e->asE_variable()->name->getName();
               if (0==strcmp(mode, "__QI__")) {
@@ -1441,11 +1441,11 @@ StringRef D_attribute::tcheck_getAlias(Env *penv) const
             xassert(penv);
             penv->error(loc, "more than one attribute alias");
           }
-          if (f->args->count() != 1) {
+          if (fl_count(f->args) != 1) {
             xassert(penv);
             penv->error(loc, "too many arguments to attribute alias");
           }
-          Expression *&expr = f->args->first()->expr;
+          Expression *&expr = fl_first(f->args)->expr;
           if (!expr->isE_stringLit()) {
             xassert(penv);
             penv->error(loc, "illegal argument to attribute alias");

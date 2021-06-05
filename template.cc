@@ -2217,7 +2217,7 @@ void syncDefaultArgsWithDefinition(Variable *instV, TemplateInfo *instTI)
 
   int skipped = 0;
   for (; syntactic && !semantic.isDone();
-       syntactic = syntactic->butFirst(), semantic.adv()) {
+       syntactic = fl_butFirst(syntactic), semantic.adv()) {
     Variable *sem = semantic.data();
     if (!sem->value) {
       continue;
@@ -2228,7 +2228,7 @@ void syncDefaultArgsWithDefinition(Variable *instV, TemplateInfo *instTI)
       continue;
     }
 
-    Declarator *d = syntactic->first()->decl;
+    Declarator *d = fl_first(syntactic)->decl;
     if (d->init) {
       continue;       // already transferred
     }
@@ -2248,9 +2248,9 @@ void syncDefaultArgsWithDefinition(Variable *instV, TemplateInfo *instTI)
   //
   // could also be ST_ELLIPSIS (in/t0559.cc)
   if (syntactic &&
-      (syntactic->first()->getType()->isVoid() ||
-       syntactic->first()->getType()->isSimple(ST_ELLIPSIS))) {
-    syntactic = syntactic->butFirst();
+      (fl_first(syntactic)->getType()->isVoid() ||
+       fl_first(syntactic)->getType()->isSimple(ST_ELLIPSIS))) {
+    syntactic = fl_butFirst(syntactic);
   }
   xassert(!syntactic && semantic.isDone());
 
@@ -3240,11 +3240,11 @@ void Env::transferTemplateMemberInfo
       FakeList<Declarator> *srcDeclarators = srcDecl->decllist;
       FakeList<Declarator> *destDeclarators = destDecl->decllist;
 
-      for (; srcDeclarators->isNotEmpty() && destDeclarators->isNotEmpty();
-             srcDeclarators = srcDeclarators->butFirst(),
-             destDeclarators = destDeclarators->butFirst()) {
-        Variable *srcVar = srcDeclarators->first()->var;
-        Variable *destVar = destDeclarators->first()->var;
+      for (; fl_isNotEmpty(srcDeclarators) && fl_isNotEmpty(destDeclarators);
+             srcDeclarators = fl_butFirst(srcDeclarators),
+             destDeclarators = fl_butFirst(destDeclarators)) {
+        Variable *srcVar = fl_first(srcDeclarators)->var;
+        Variable *destVar = fl_first(destDeclarators)->var;
 
         // transfer info for member functions and static data
         //
@@ -3263,7 +3263,7 @@ void Env::transferTemplateMemberInfo
           }
         }
       }
-      xassert(srcDeclarators->isEmpty() && destDeclarators->isEmpty());
+      xassert(fl_isEmpty(srcDeclarators) && fl_isEmpty(destDeclarators));
     }
 
     else if (srcIter.data()->isMR_func()) {
@@ -3331,8 +3331,8 @@ void Env::transferTemplateMemberInfo
         }
         else {
           // old TD_proto behavior
-          Variable *srcVar = srcTDecl->asTD_decl()->d->decllist->first()->var;
-          Variable *destVar = destTDecl->asTD_decl()->d->decllist->first()->var;
+          Variable *srcVar = fl_first(srcTDecl->asTD_decl()->d->decllist)->var;
+          Variable *destVar = fl_first(destTDecl->asTD_decl()->d->decllist)->var;
 
           transferTemplateMemberInfo_membert(instLoc, srcVar, destVar, sargs);
         }

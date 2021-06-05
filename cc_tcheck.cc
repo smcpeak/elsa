@@ -277,7 +277,7 @@ void TF_explicitInst::itcheck(Env &env)
   d->tcheck(env, DC_TF_EXPLICITINST);
 
   // class instantiation?
-  if (d->decllist->isEmpty()) {
+  if (fl_isEmpty(d->decllist)) {
     if (d->spec->isTS_elaborated()) {
       NamedAtomicType *nat = d->spec->asTS_elaborated()->atype;
       if (!nat) return;    // error recovery
@@ -298,7 +298,7 @@ void TF_explicitInst::itcheck(Env &env)
   }
 
   // function instantiation?
-  else if (d->decllist->count() == 1) {
+  else if (fl_count(d->decllist) == 1) {
     // instantiation is handled by declarator::mid_tcheck
   }
 
@@ -776,7 +776,7 @@ void MemberInit::tcheck(Env &env, CompoundType *enclosing)
   // place where we might bail due to dependent base class type, so
   // they will always be disambiguated.  This now invalidates dsw's
   // comments so we'll see if it causes problems.
-  ArgumentInfoArray argInfo(args->count() + 1);
+  ArgumentInfoArray argInfo(fl_count(args) + 1);
   args = tcheckArgExprList(args, env, argInfo);
 
   // check for a member variable, since they have precedence over
@@ -935,7 +935,7 @@ void Declaration::tcheck(Env &env, DeclaratorContext context)
 {
   // if there are no declarators, the type specifier's tchecker
   // needs to know this (for e.g. 3.3.1 para 5)
-  if (decllist->isEmpty() &&
+  if (fl_isEmpty(decllist) &&
       spec->isTS_elaborated() &&
       context != DC_TF_EXPLICITINST) {     // in/t0557.cc
     dflags |= DF_FORWARD;
@@ -945,7 +945,7 @@ void Declaration::tcheck(Env &env, DeclaratorContext context)
   // some declarators, then give the type a name; we don't
   // give names to anonymous types with no declarators as
   // a special exception to allow anonymous unions
-  if (decllist->isNotEmpty()) {
+  if (fl_isNotEmpty(decllist)) {
     if (spec->isTS_classSpec()) {
       TS_classSpec *cs = spec->asTS_classSpec();
       if (cs->name == NULL) {
@@ -966,8 +966,8 @@ void Declaration::tcheck(Env &env, DeclaratorContext context)
 
         char const *relName = NULL;
 
-        if ((dflags & DF_TYPEDEF) && decllist->count() == 1) {
-          IDeclarator *decl = decllist->first()->decl;
+        if ((dflags & DF_TYPEDEF) && fl_count(decllist) == 1) {
+          IDeclarator *decl = fl_first(decllist)->decl;
           relName = decl->getDeclaratorId()->getName();
         }
 
@@ -982,8 +982,8 @@ void Declaration::tcheck(Env &env, DeclaratorContext context)
 
         char const *relName = NULL;
 
-        if ((dflags & DF_TYPEDEF) && decllist->count() == 1) {
-          IDeclarator *decl = decllist->first()->decl;
+        if ((dflags & DF_TYPEDEF) && fl_count(decllist) == 1) {
+          IDeclarator *decl = fl_first(decllist)->decl;
           relName = decl->getDeclaratorId()->getName();
         }
         es->name = env.getAnonName(TI_ENUM, relName);
@@ -993,7 +993,7 @@ void Declaration::tcheck(Env &env, DeclaratorContext context)
 
   // give warning for anonymous struct
   //    TODO: this seems to be dead code since cs->name is assigned above if NULL
-  if (decllist->isEmpty() &&
+  if (fl_isEmpty(decllist) &&
       spec->isTS_classSpec() &&
       spec->asTS_classSpec()->name == NULL &&
       spec->asTS_classSpec()->keyword != TI_UNION) {
@@ -1018,10 +1018,10 @@ void Declaration::tcheck(Env &env, DeclaratorContext context)
   if (decllist) {
     // check first declarator
     Declarator::Tcheck dt1(specType, dflags, context);
-    decllist = FakeList<Declarator>::makeList(decllist->first()->tcheck(env, dt1));
+    decllist = FakeList<Declarator>::makeList(fl_first(decllist)->tcheck(env, dt1));
 
     // check subsequent declarators
-    Declarator *prev = decllist->first();
+    Declarator *prev = fl_first(decllist);
     while (prev->next) {
       // some analyses don't want the type re-used, so let
       // the factory clone it if it wants to
@@ -3779,15 +3779,15 @@ void Declarator::mid_tcheck(Env &env, Tcheck &dt)
              isPrimitiveObjectType(var->type) &&
              init->isIN_ctor()) {
       IN_ctor *inc = init->asIN_ctor();
-      if (inc->args->count() != 1) {
+      if (fl_count(inc->args) != 1) {
         env.error(getLoc(), stringc
           << "expected constructor-style initializer of `"
           << var->type->toString() << "' to have 1 argument, not "
-          << inc->args->count());
+          << fl_count(inc->args));
       }
       else {
         // substitute IN_expr
-        init = new IN_expr(getLoc(), inc->args->first()->expr);
+        init = new IN_expr(getLoc(), fl_first(inc->args)->expr);
 
         // Above, I dispose of the replaced initializer, but that is
         // only valid if I am sure that no other AST node is pointing
@@ -4020,11 +4020,11 @@ FakeList<ASTTypeId> *tcheckFakeASTTypeIdList(
 
   // check first ASTTypeId
   FakeList<ASTTypeId> *ret
-    = FakeList<ASTTypeId>::makeList(list->first()->tcheck(env, tc));
+    = FakeList<ASTTypeId>::makeList(fl_first(list)->tcheck(env, tc));
 
   // check subsequent expressions, using a pointer that always
   // points to the node just before the one we're checking
-  ASTTypeId *prev = ret->first();
+  ASTTypeId *prev = fl_first(ret);
   while (prev->next) {
     prev->next = prev->next->tcheck(env, tc);
 
@@ -4244,7 +4244,7 @@ void D_func::tcheck(Env &env, Declarator::Tcheck &dt)
 
   // dsw: in K&R C, an empty parameter list means that the number of
   // arguments is not specified
-  if (env.lang.emptyParamsMeansNoInfo && params->isEmpty()) {
+  if (env.lang.emptyParamsMeansNoInfo && fl_isEmpty(params)) {
     ft->flags |= FF_NO_PARAM_INFO;
   }
 
@@ -5860,7 +5860,7 @@ FakeList<ArgExpression> *tcheckArgExprList(FakeList<ArgExpression> *list, Env &e
 
   // work through list, with an extra level of indirection so I can
   // modify the list links
-  ArgExpression *first = list->first();
+  ArgExpression *first = fl_first(list);
   ArgExpression **cur = &first;
   int i = 1;
   for (; *cur; cur = &((*cur)->next), i++) {
@@ -5944,9 +5944,9 @@ int compareArgsToParams(Env &env, FunctionType *ft, FakeList<ArgExpression> *arg
     // to function pointers.
 
     for (FakeList<ArgExpression> *argIter = args;
-         !argIter->isEmpty();
-         argIter = argIter->butFirst()) {
-      ArgExpression *arg = argIter->first();
+         !fl_isEmpty(argIter);
+         argIter = fl_butFirst(argIter)) {
+      ArgExpression *arg = fl_first(argIter);
 
       if (arg->expr->type->isFunctionType()) {
         // add implicit &
@@ -5974,10 +5974,10 @@ int compareArgsToParams(Env &env, FunctionType *ft, FakeList<ArgExpression> *arg
   }
 
   // iterate over both lists
-  for (; !paramIter.isDone() && !argIter->isEmpty();
-       paramIter.adv(), paramIndex++, argIter = argIter->butFirst()) {
+  for (; !paramIter.isDone() && !fl_isEmpty(argIter);
+       paramIter.adv(), paramIndex++, argIter = fl_butFirst(argIter)) {
     Variable *param = paramIter.data();
-    ArgExpression *arg = argIter->first();
+    ArgExpression *arg = fl_first(argIter);
 
     // Normalize arguments passed to transparent unions.
     // http://gcc.gnu.org/onlinedocs/gcc-3.2/gcc/Type-Attributes.html
@@ -6072,7 +6072,7 @@ int compareArgsToParams(Env &env, FunctionType *ft, FakeList<ArgExpression> *arg
     return defaultArgsUsed;
   }
 
-  if (argIter->isEmpty()) {
+  if (fl_isEmpty(argIter)) {
     // check that all remaining parameters have default arguments
     for (; !paramIter.isDone(); paramIter.adv(), paramIndex++) {
       if (!paramIter.data()->value) {
@@ -6089,7 +6089,7 @@ int compareArgsToParams(Env &env, FunctionType *ft, FakeList<ArgExpression> *arg
   }
   else if (paramIter.isDone() && !ft->acceptsVarargs()) {
     env.error(stringb(
-      "There are " << args->count() << " arguments, but only " <<
+      "There are " << fl_count(args) << " arguments, but only " <<
       numNonReceiverParams << " parameters."));
   }
 
@@ -6181,7 +6181,7 @@ Type *E_funCall::itcheck_x(Env &env, Expression *&replacement)
     E_fieldAcc *fa = func->asE_fieldAcc();
     if (fa->fieldName->getName()[0] == '~' &&
         hasNoopDtor(fa->obj->type->asRval())) {
-      if (args->isNotEmpty()) {
+      if (fl_isNotEmpty(args)) {
         env.error("call to dtor must have no arguments");
       }
       ASTTypeId *voidId =
@@ -6276,7 +6276,7 @@ Type *E_funCall::inner2_itcheck(Env &env, LookupSet &candidates)
   Type *receiverType = feacc? feacc->obj->type : env.implicitReceiverType();
 
   // check the argument list
-  ArgumentInfoArray argInfo(args->count() + 1);
+  ArgumentInfoArray argInfo(fl_count(args) + 1);
   args = tcheckArgExprList(args, env, argInfo, receiverType);
 
   // for internal testing
@@ -6344,7 +6344,7 @@ Type *E_funCall::inner2_itcheck(Env &env, LookupSet &candidates)
         (fevar->type->isSimple(ST_NOTFOUND) ||  // orig lookup failed
          !fevar->var->isMember())) {            //   or found a nonmember
       // get additional candidates from associated scopes
-      ArrayStack<Type*> argTypes(args->count());
+      ArrayStack<Type*> argTypes(fl_count(args));
       FAKELIST_FOREACH(ArgExpression, args, iter) {
         argTypes.push(iter->getType());
       }
@@ -6629,9 +6629,9 @@ static Type *internalTestingHooks
 {
   // check the type of an expression
   if (funcName == env.special_checkType) {
-    if (args->count() == 2) {
-      Type *t1 = args->nth(0)->getType();
-      Type *t2 = args->nth(1)->getType();
+    if (fl_count(args) == 2) {
+      Type *t1 = fl_nth(args, 0)->getType();
+      Type *t2 = fl_nth(args, 1)->getType();
       if (t1->equals(t2)) {
         // ok
       }
@@ -6646,10 +6646,10 @@ static Type *internalTestingHooks
   }
 
   if (funcName == env.special_constEval) {
-    if (args->count() == 2) {
+    if (fl_count(args) == 2) {
       ConstEval cenv(env.dependentVar);
-      CValue v1 = args->nth(0)->constEval(cenv);
-      CValue v2 = args->nth(1)->constEval(cenv);
+      CValue v1 = fl_nth(args, 0)->constEval(cenv);
+      CValue v2 = fl_nth(args, 1)->constEval(cenv);
       if (v1 == v2) {
         // ok
       }
@@ -6666,13 +6666,13 @@ static Type *internalTestingHooks
   // test vector for 'getStandardConversion'
   if (funcName == env.special_getStandardConversion) {
     int expect;
-    if (args->count() == 3 &&
-        args->nth(2)->constEval(env, expect)) {
+    if (fl_count(args) == 3 &&
+        fl_nth(args, 2)->constEval(env, expect)) {
       test_getStandardConversion
         (env,
-         args->nth(0)->getSpecial(env.lang),     // is it special?
-         args->nth(0)->getType(),                // source type
-         args->nth(1)->getType(),                // dest type
+         fl_nth(args, 0)->getSpecial(env.lang),     // is it special?
+         fl_nth(args, 0)->getType(),                // source type
+         fl_nth(args, 1)->getType(),                // dest type
          expect);                                // expected result
     }
     else {
@@ -6686,16 +6686,16 @@ static Type *internalTestingHooks
     int expectSCS;
     int expectUserLine;
     int expectSCS2;
-    if (args->count() == 6 &&
-        args->nth(2)->constEval(env, expectKind) &&
-        args->nth(3)->constEval(env, expectSCS) &&
-        args->nth(4)->constEval(env, expectUserLine) &&
-        args->nth(5)->constEval(env, expectSCS2)) {
+    if (fl_count(args) == 6 &&
+        fl_nth(args, 2)->constEval(env, expectKind) &&
+        fl_nth(args, 3)->constEval(env, expectSCS) &&
+        fl_nth(args, 4)->constEval(env, expectUserLine) &&
+        fl_nth(args, 5)->constEval(env, expectSCS2)) {
       test_getImplicitConversion
         (env,
-         args->nth(0)->getSpecial(env.lang),     // is it special?
-         args->nth(0)->getType(),                // source type
-         args->nth(1)->getType(),                // dest type
+         fl_nth(args, 0)->getSpecial(env.lang),     // is it special?
+         fl_nth(args, 0)->getType(),                // source type
+         fl_nth(args, 1)->getType(),                // dest type
          expectKind, expectSCS, expectUserLine, expectSCS2);   // expected result
     }
     else {
@@ -6706,13 +6706,13 @@ static Type *internalTestingHooks
   // test overload resolution
   if (funcName == env.special_testOverload) {
     int expectLine;
-    if (args->count() == 2 &&
-        args->nth(1)->constEval(env, expectLine)) {
+    if (fl_count(args) == 2 &&
+        fl_nth(args, 1)->constEval(env, expectLine)) {
 
-      if (args->first()->expr->isE_funCall() &&
-          hasNamedFunction(args->first()->expr->asE_funCall()->func)) {
+      if (fl_first(args)->expr->isE_funCall() &&
+          hasNamedFunction(fl_first(args)->expr->asE_funCall()->func)) {
         // resolution yielded a function call
-        Variable *chosen = getNamedFunction(args->first()->expr->asE_funCall()->func);
+        Variable *chosen = getNamedFunction(fl_first(args)->expr->asE_funCall()->func);
         int actualLine = sourceLocManager->getLine(chosen->loc);
         if (expectLine != actualLine) {
           env.error(stringc
@@ -6728,7 +6728,7 @@ static Type *internalTestingHooks
       }
 
       // propagate return type
-      return args->first()->getType();
+      return fl_first(args)->getType();
     }
     else {
       env.error("invalid call to __testOverload");
@@ -6738,13 +6738,13 @@ static Type *internalTestingHooks
   // test vector for 'computeLUB'
   if (funcName == env.special_computeLUB) {
     int expect;
-    if (args->count() == 4 &&
-        args->nth(3)->constEval(env, expect)) {
+    if (fl_count(args) == 4 &&
+        fl_nth(args, 3)->constEval(env, expect)) {
       test_computeLUB
         (env,
-         args->nth(0)->getType(),        // T1
-         args->nth(1)->getType(),        // T2
-         args->nth(2)->getType(),        // LUB
+         fl_nth(args, 0)->getType(),        // T1
+         fl_nth(args, 1)->getType(),        // T2
+         fl_nth(args, 2)->getType(),        // LUB
          expect);                        // expected result
     }
     else {
@@ -6756,13 +6756,13 @@ static Type *internalTestingHooks
   // (a) defined, and (b) defined at a particular line
   if (funcName == env.special_checkCalleeDefnLine) {
     int expectLine;
-    if (args->count() == 2 &&
-        args->nth(1)->constEval(env, expectLine)) {
+    if (fl_count(args) == 2 &&
+        fl_nth(args, 1)->constEval(env, expectLine)) {
 
-      if (args->first()->expr->isE_funCall() &&
-          hasNamedFunction(args->first()->expr->asE_funCall()->func)) {
+      if (fl_first(args)->expr->isE_funCall() &&
+          hasNamedFunction(fl_first(args)->expr->asE_funCall()->func)) {
         // resolution yielded a function call
-        Variable *chosen = getNamedFunction(args->first()->expr->asE_funCall()->func);
+        Variable *chosen = getNamedFunction(fl_first(args)->expr->asE_funCall()->func);
         if (!chosen->funcDefn) {
           env.error("expected to be calling a defined function");
         }
@@ -6782,7 +6782,7 @@ static Type *internalTestingHooks
       }
 
       // propagate return type
-      return args->first()->getType();
+      return fl_first(args)->getType();
     }
     else {
       env.error("invalid call to __checkCalleeDefnLine");
@@ -6809,15 +6809,15 @@ static Type *internalTestingHooks
   //   __test_mtype((C)0, (P)0, FLAGS, false);     // four args total
   //
   if (funcName == env.special_test_mtype) {
-    int nArgs = args->count();
+    int nArgs = fl_count(args);
     if (nArgs < 3) {
       return env.error("__test_mtype requires at least three arguments");
     }
 
-    Type *conc = args->nth(0)->getType();
-    Type *pat = args->nth(1)->getType();
+    Type *conc = fl_nth(args, 0)->getType();
+    Type *pat = fl_nth(args, 1)->getType();
     int flags;
-    if (!args->nth(2)->constEval(env, flags)) {
+    if (!fl_nth(args, 2)->constEval(env, flags)) {
       return env.error("third argument to __test_mtype must be a constant expression");
     }
     if (flags & ~MF_ALL) {
@@ -6834,8 +6834,8 @@ static Type *internalTestingHooks
         // successed as expected; check the bindings
         int i;
         for (i=0; (i+1)*2+1 < nArgs; i++) {
-          Expression *name = args->nth((i+1)*2+1)->expr;
-          Expression *value = args->nth((i+1)*2+2)->expr;
+          Expression *name = fl_nth(args, (i+1)*2+1)->expr;
+          Expression *value = fl_nth(args, (i+1)*2+2)->expr;
 
           // 'name' should be a string literal naming a variable in 'pat'
           if (!name->isE_stringLit()) {
@@ -6943,7 +6943,7 @@ Type *E_constructor::inner2_itcheck(Env &env, Expression *&replacement)
   }
 
   // check arguments
-  ArgumentInfoArray argInfo(args->count() + 1);
+  ArgumentInfoArray argInfo(fl_count(args) + 1);
   args = tcheckArgExprList(args, env, argInfo);
 
   if (!env.ensureCompleteType("construct", type)) {
@@ -6969,11 +6969,11 @@ Type *E_constructor::inner2_itcheck(Env &env, Expression *&replacement)
     // yielding an integer with indeterminate value
     //
     // 2005-05-28: (in/t0495.cc) count the args *after* tchecking them
-    if (args->count() > 1) {
+    if (fl_count(args) > 1) {
       return env.error(stringc
         << "function-style cast to `" << type->toString()
         << "' must have zere or one argument (not "
-        << args->count() << ")");
+        << fl_count(args) << ")");
     }
 
     // change it into a cast; this code used to do some 'buildASTTypeId'
@@ -6982,9 +6982,9 @@ Type *E_constructor::inner2_itcheck(Env &env, Expression *&replacement)
     // all we need to do is add an empty declarator
     ASTTypeId *typeSyntax = new ASTTypeId(this->spec,
       new Declarator(new D_name(this->spec->loc, NULL /*name*/), NULL /*init*/));
-    if (args->count() == 1) {
+    if (fl_count(args) == 1) {
       replacement =
-        new E_cast(typeSyntax, args->first()->expr);
+        new E_cast(typeSyntax, fl_first(args)->expr);
     }
     else {   /* zero args */
       // The correct semantics (e.g. from a verification point of
@@ -8722,7 +8722,7 @@ Type *E_new::itcheck_x(Env &env, Expression *&replacement)
 {
   // check the placement args
   {
-    ArgumentInfoArray argInfo(placementArgs->count() + 1);
+    ArgumentInfoArray argInfo(fl_count(placementArgs) + 1);
     placementArgs = tcheckArgExprList(placementArgs, env, argInfo);
 
     // TODO: check the environment for declaration of an operator 'new'
@@ -8754,7 +8754,7 @@ Type *E_new::itcheck_x(Env &env, Expression *&replacement)
   }
 
   if (ctorArgs) {
-    ArgumentInfoArray argInfo(ctorArgs->list->count() + 1);
+    ArgumentInfoArray argInfo(fl_count(ctorArgs->list) + 1);
     ctorArgs->list = tcheckArgExprList(ctorArgs->list, env, argInfo);
     Variable *ctor0 =
       outerResolveOverload_ctor(env, env.loc(), t, argInfo);
@@ -9186,7 +9186,7 @@ void IN_compound::tcheck(Env &env, Type *type)
 void IN_ctor::tcheck(Env &env, Type *destType)
 {
   // check argument expressions
-  ArgumentInfoArray argInfo(args->count() + 1);
+  ArgumentInfoArray argInfo(fl_count(args) + 1);
   args = tcheckArgExprList(args, env, argInfo);
 
   // 8.5p14: if this was originally a copy-initialization (IN_expr),
@@ -9194,7 +9194,7 @@ void IN_ctor::tcheck(Env &env, Type *destType)
   // of the destination type, then we first implicitly convert the
   // source to the dest
   if (was_IN_expr) {
-    Expression *src = args->first()->expr;
+    Expression *src = fl_first(args)->expr;
     Type *srcType = src->type;
     if (srcType->isCompoundType() &&
         destType->isCompoundType() &&
@@ -9361,7 +9361,7 @@ void TD_decl::itcheck(Env &env)
 
   // cppstd 14 para 3: there can be at most one declarator
   // in a template declaration
-  if (d->decllist->count() > 1) {
+  if (fl_count(d->decllist) > 1) {
     env.error("there can be at most one declarator in a template declaration");
   }
 

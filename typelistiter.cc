@@ -15,13 +15,13 @@ bool TypeListIter_FakeList::isDone() const
 void TypeListIter_FakeList::adv()
 {
   xassert(!isDone());
-  curFuncArgs = curFuncArgs->butFirst();
+  curFuncArgs = fl_butFirst(curFuncArgs);
 }
 
 Type *TypeListIter_FakeList::data() const
 {
   xassert(!isDone());
-  return curFuncArgs->first()->getType();
+  return fl_first(curFuncArgs)->getType();
 }
 
 

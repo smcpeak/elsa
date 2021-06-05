@@ -11,7 +11,7 @@ FakeList<ArgExpression> *makeExprList1(Expression *e)
 
 FakeList<ArgExpression> *makeExprList2(Expression *e1, Expression *e2)
 {
-  return makeExprList1(e2)->prepend(new ArgExpression(e1));
+  return fl_prepend(makeExprList1(e2), new ArgExpression(e1));
 }
 
 

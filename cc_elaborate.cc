@@ -163,9 +163,9 @@ Declarator *ElabVisitor::makeFuncDeclarator(SourceLoc loc, Variable *var, Declar
 
       ASTTypeId *typeId = new ASTTypeId(new TS_type(loc, param->type),
                                         makeDeclarator(loc, param, DC_D_FUNC));
-      params = params->prepend(typeId);
+      params = fl_prepend(params, typeId);
     }
-    params = params->reverse();     // fix prepend()-induced reversal
+    params = fl_reverse(params);     // fix prepend()-induced reversal
   }
 
   // build D_func
@@ -372,9 +372,9 @@ FakeList<ArgExpression> *ElabVisitor::cloneExprList(FakeList<ArgExpression> *arg
       // clone the AST node
       ArgExpression *argExpr0 = iter->clone();
       // use the clone
-      ret = ret->prepend(argExpr0);
+      ret = fl_prepend(ret, argExpr0);
     }
-    return ret->reverse();
+    return fl_reverse(ret);
   }
   else {
     // empty defunct list
@@ -911,7 +911,7 @@ void ElabVisitor::completeNoArgMemberInits(Function *ctor, CompoundType *ct)
   SFOREACH_OBJLIST_NC(MemberInit, newInits, iter) {
     MemberInit *mi = iter.data();
     mi->next = NULL;
-    ctor->inits = ctor->inits->prepend(mi);
+    ctor->inits = fl_prepend(ctor->inits, mi);
   }
 }
 
@@ -1030,7 +1030,7 @@ MR_func *ElabVisitor::makeCopyCtorBody(CompoundType *ct, Variable *ctor)
       if (!ct->hasVirtualBase(base->ct)) {
         MemberInit *mi =
           makeCopyCtorMemberInit(base->ct->typedefVar, srcParam, loc);
-        inits = inits->prepend(mi);
+        inits = fl_prepend(inits, mi);
       }
       else {
         //cerr << "Omitting a direct base that is also a virtual base" << endl;
@@ -1050,18 +1050,18 @@ MR_func *ElabVisitor::makeCopyCtorBody(CompoundType *ct, Variable *ctor)
   // // This must not mean what I think.
   // //     xassert(base->isVirtual);
   //      MemberInit *mi = makeCopyCtorMemberInit(base->ct->name, srcNameS, NULL, loc);
-  //      inits = inits->prepend(mi);
+  //      inits = fl_prepend(inits, mi);
   //    }
 
     SFOREACH_OBJLIST_NC(Variable, ct->dataMembers, iter) {
       Variable *var = iter.data();
       if (!wantsMemberInit(var)) continue;
       MemberInit *mi = makeCopyCtorMemberInit(var, srcParam, loc);
-      inits = inits->prepend(mi);
+      inits = fl_prepend(inits, mi);
     }
 
     //     inits:
-    inits = inits->reverse();
+    inits = fl_reverse(inits);
   }
 
   Function *f = makeFunction(loc, ctor, inits, body);
@@ -1610,7 +1610,7 @@ bool S_return::elaborate(ElabVisitor &env)
       Expression *subExpr = expr->expr;
       FakeList<ArgExpression> *args0 =
       FakeList<ArgExpression>::makeList(new ArgExpression(subExpr));
-      xassert(args0->count() == 1);      // makeList always returns a singleton list
+      xassert(fl_count(args0) == 1);      // makeList always returns a singleton list
 
       // make the constructor function
       env.push(expr->getAnnot());// e.g. in/d0049.cc breaks w/o this

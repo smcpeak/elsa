@@ -415,7 +415,7 @@ nonterm(FakeList<Designator>*) DesignatorList {
   -> d:Designator
     { return FakeList<Designator>::makeList(d); }
   -> d:Designator dl:DesignatorList
-    { d->setNext(dl->first());
+    { d->setNext(fl_first(dl));
     return FakeList<Designator>::makeList(d); }
 }
 
@@ -606,7 +606,7 @@ nonterm(UberModifiers) UberCVQualifier {
 // attribute after the "," in a sequence of declarators
 nonterm(FakeList<Declarator>*) InitDeclaratorList {
   -> d:InitDeclarator "," /*DROPPED*/AttributeSpecifierList list:InitDeclaratorList
-       { d->setNext(list->first());
+       { d->setNext(fl_first(list));
          return FakeList<Declarator>::makeList(d); }
 }
 

@@ -476,13 +476,13 @@ nonterm(CastKeyword) CastKeyword {
 // to share) is worth it
 nonterm(FakeList<ArgExpression>*) ExpressionList {
   // ambiguous; see t0182.cc
-  fun merge(L,R) { L->first()->addAmbiguity(R->first()); return L; }
+  fun merge(L,R) { fl_first(L)->addAmbiguity(fl_first(R)); return L; }
 
   -> a:AssignmentExpression
        { return FakeList<ArgExpression>::makeList(new ArgExpression(a)); }
   -> a:AssignmentExpression "," e:ExpressionList
        { ArgExpression *aa = new ArgExpression(a);
-         aa->setNext(e->first());
+         aa->setNext(fl_first(e));
          return FakeList<ArgExpression>::makeList(aa); }
 }
 
@@ -1317,7 +1317,7 @@ nonterm(FakeList<Enumerator>*) EnumeratorListOpt {
   -> def:EnumeratorDefinition
        { return FakeList<Enumerator>::makeList(def); }
   -> def:EnumeratorDefinition "," list:EnumeratorListOpt
-       { return list->prepend(def); }
+       { return fl_prepend(list, def); }
 }
 
 
@@ -1358,7 +1358,7 @@ nonterm(FakeList<Declarator>*) InitDeclaratorList {
   -> d:InitDeclarator
        { return FakeList<Declarator>::makeList(d); }
   -> d:InitDeclarator "," list:InitDeclaratorList
-       { d->setNext(list->first());
+       { d->setNext(fl_first(list));
          return FakeList<Declarator>::makeList(d); }
 }
 
@@ -1655,7 +1655,7 @@ nonterm(FakeList<ASTTypeId>*) ParameterDeclarationList {
   -> d:ParameterDeclaration "..."
        { FakeList<ASTTypeId> *list =
            FakeList<ASTTypeId>::makeList(ellipsisTypeId(loc));
-         d->setNext(list->first());
+         d->setNext(fl_first(list));
          return FakeList<ASTTypeId>::makeList(d); }
 
   // last arg is not "..."
@@ -1664,7 +1664,7 @@ nonterm(FakeList<ASTTypeId>*) ParameterDeclarationList {
 
   // argument then "," then arg or "..." or list
   -> d:ParameterDeclaration "," list:ParameterDeclarationList
-       { d->setNext(list->first());
+       { d->setNext(fl_first(list));
          return FakeList<ASTTypeId>::makeList(d); }
 }
 
@@ -1946,7 +1946,7 @@ nonterm(Member*) MemberDeclaration {
   // member fn decl, or data member
   -> spec:DeclSpecifier list:MemberDeclaratorList ";"
        { if (lang.isCplusplus &&        // 10/20/04: e.g. in/c/t0017.c
-             list->firstC()->decl->skipGroups()->isD_name() &&
+             fl_firstC(list)->decl->skipGroups()->isD_name() &&
              !(spec->dflags & (DF_TYPEDEF | DF_STATIC)) &&
              spec->spec->isTS_name()) {
            PQName const *n = spec->spec->asTS_nameC()->name;
@@ -2058,7 +2058,7 @@ nonterm(FakeList<Declarator>*) MemberDeclaratorList {
   -> d:MemberDeclarator
        { return FakeList<Declarator>::makeList(d); }
   -> d:MemberDeclarator "," list:MemberDeclaratorList
-       { d->setNext(list->first());
+       { d->setNext(fl_first(list));
          return FakeList<Declarator>::makeList(d); }
 }
 
@@ -2127,7 +2127,7 @@ nonterm(FakeList<BaseClassSpec>*) BaseSpecifierList {
   -> b:BaseSpecifier
        { return FakeList<BaseClassSpec>::makeList(b); }
   -> b:BaseSpecifier "," list:BaseSpecifierList
-       { return list->prepend(b); }
+       { return fl_prepend(list, b); }
 }
 
 
@@ -2195,7 +2195,7 @@ nonterm(FakeList<MemberInit>*) MemInitializerList {
   -> i:MemInitializer
        { return FakeList<MemberInit>::makeList(i); }
   -> i:MemInitializer "," list:MemInitializerList
-       { return list->prepend(i); }
+       { return fl_prepend(list, i); }
 }
 
 nonterm(MemberInit*) MemInitializer {
@@ -2516,7 +2516,7 @@ nonterm(S_try*) TryBlock {
 
 nonterm(FakeList<Handler>*) HandlerSeq {
   -> h:Handler                 { return FakeList<Handler>::makeList(h); }
-  -> h:Handler seq:HandlerSeq  { return seq->prepend(h); }
+  -> h:Handler seq:HandlerSeq  { return fl_prepend(seq, h); }
 }
 
 nonterm(Handler*) Handler {
@@ -2578,7 +2578,7 @@ nonterm(FakeList<ASTTypeId>*) TypeIdList {
   -> t:TypeId
        { return FakeList<ASTTypeId>::makeList(t); }
   -> t:TypeId "," list:TypeIdList
-       { t->setNext(list->first());
+       { t->setNext(fl_first(list));
          return FakeList<ASTTypeId>::makeList(t); }
 }
 
@@ -2635,8 +2635,8 @@ impl_verbatim {
   bool keepDeclaration(Declaration const *d)
   {
     if (endsWithIdentifier(d->spec) &&
-        d->decllist->isNotEmpty()) {
-      IDeclarator const *id = d->decllist->firstC()->decl;
+        fl_isNotEmpty(d->decllist)) {
+      IDeclarator const *id = fl_firstC(d->decllist)->decl;
       while (!id->isD_name()) {
         // skip past type constructors that come *after* the name;
         // if they come before, then they separate the :: from the

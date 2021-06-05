@@ -18,7 +18,7 @@ bool filterOutImplIntFirstParam
    FakeList<ASTTypeId> *&params) {
   // skip unless are we an anonymous function with at least one
   // parameter
-  if (! (base->isD_name() && !base->asD_name()->name && params && params->first())) {
+  if (! (base->isD_name() && !base->asD_name()->name && params && fl_first(params))) {
     return true;                // keep it
   }
 
@@ -37,9 +37,9 @@ bool filterOutImplIntFirstParam
 
   // count the ambiguities
   // NOTE: do NOT do this!  It is wrong: It counts the parameters.
-  //        int numAlt = params->count();
+  //        int numAlt = fl_count(params);
   int numAlt = 0;
-  for (ASTTypeId *atid = params->first(); atid; atid = atid->ambiguity) {
+  for (ASTTypeId *atid = fl_first(params); atid; atid = atid->ambiguity) {
     ++numAlt;
   }
 
@@ -48,7 +48,7 @@ bool filterOutImplIntFirstParam
 
   // put them in there
   int i = 0;
-  for (ASTTypeId *atid = params->first(); atid; atid = atid->ambiguity, ++i) {
+  for (ASTTypeId *atid = fl_first(params); atid; atid = atid->ambiguity, ++i) {
     tempList[i] = atid;
   }
 
@@ -80,7 +80,7 @@ bool filterOutImplIntFirstParam
   params = FakeList<ASTTypeId>::makeList(newList);
 
   // keep the D_func iff there are alternatives left for the first
-  // parameter; NOTE: Do NOT do 'return params->isNotEmpty()'; that
+  // parameter; NOTE: Do NOT do 'return fl_isNotEmpty(params)'; that
   // returns the number of parameters, not the number of surviving
   // ambiguous alternatives
   return newList;

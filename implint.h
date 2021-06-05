@@ -64,7 +64,7 @@ bool hasImplicitInt(ASTTypeId *a, Declarator *&declarator)
 bool hasImplicitInt(Declaration *d, Declarator *&declarator)
 {
   if (isImplicitInt(d->spec)) {
-    declarator = d->decllist->first();
+    declarator = fl_first(d->decllist);
     xassert(declarator);
     return true;
   }

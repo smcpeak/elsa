@@ -96,7 +96,7 @@ nonterm(FakeList<Declarator>*) KandRInitDeclaratorList {
   -> d:KandRInitDeclarator
        { return FakeList<Declarator>::makeList(d); }
   -> d:KandRInitDeclarator "," list:KandRInitDeclaratorList
-       { d->setNext(list->first());
+       { d->setNext(fl_first(list));
          return FakeList<Declarator>::makeList(d); }
 }
 
@@ -225,7 +225,7 @@ nonterm(FakeList<PQ_name>*) KandRIdentifierList {
   -> i:KandRIdentifier
        { return FakeList<PQ_name>::makeList(i); }
   -> i:KandRIdentifier "," e:KandRIdentifierList
-       { i->setNext(e->first());
+       { i->setNext(fl_first(e));
          return FakeList<PQ_name>::makeList(i); }
 }
 

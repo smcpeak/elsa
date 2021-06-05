@@ -5386,9 +5386,9 @@ PQName *Env::makeQualifiedName(Scope *s, PQName *name)
 
   // get the un-reversed version
   FakeList<TemplateArgument> *ret = FakeList<TemplateArgument>::makeList(targs);
-  ret = ret->reverse();
+  ret = fl_reverse(ret);
 
-  return ret->first();
+  return fl_first(ret);
 }
 
 

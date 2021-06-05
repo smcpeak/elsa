@@ -48,7 +48,7 @@ FakeList<ASTTypeId>* kAndR_makeParamList
   (FakeList<PQ_name> *kAndR_params, PtrMap<const char, ASTTypeId> &declsForParams)
 {
   if (!kAndR_params) return FakeList<ASTTypeId>::emptyList();
-  PQ_name *pqName = kAndR_params->first();
+  PQ_name *pqName = fl_first(kAndR_params);
   ASTTypeId *d = declsForParams.get(pqName->name);
   // if it has no declaration then it is an int
   if (!d) {
@@ -67,10 +67,10 @@ FakeList<ASTTypeId>* kAndR_makeParamList
     // is only to allow cqual/tests/oldstyle2.c to pass
     d->decl->decl->loc = pqName->loc;
   }
-  FakeList<ASTTypeId> *list = kAndR_makeParamList(kAndR_params->butFirst(), declsForParams);
+  FakeList<ASTTypeId> *list = kAndR_makeParamList(fl_butFirst(kAndR_params), declsForParams);
   // FIX: why doesn't this segfault??; ah, because you can call
   // methods on null pointers as long as they are not virtual
-  d->setNext(list->first());
+  d->setNext(fl_first(list));
   return FakeList<ASTTypeId>::makeList(d);
 }
 

@@ -706,7 +706,7 @@ CValue Expression::iconstEval(ConstEval &env) const
     ASTNEXTC(E_constructor, c)
       if (type->isIntegerType()) {
         // allow it; should only be 1 arg, and that will be value
-        return c->args->first()->constEval(env);
+        return fl_first(c->args)->constEval(env);
       }
       else {
         return CValue("can only const-eval E_constructors for integer types");
