@@ -4,6 +4,8 @@
 #temporary: iptree iptparse cipart
 
 # main target: a C++ parser
+#
+# TODO: Use explicit .exe extension.
 all: cc.ast.gen.h tlexer packedword_test semgrep smin ccparse
 
 
@@ -279,6 +281,7 @@ TOCLEAN += cc.gr.gen.h cc.gr.gen.cc cc.gr.gen.out
 # that finds serious compilation problems earliest (it's ok to
 # rearrange as different parts of the code are in flux)
 CCPARSE_OBJS :=
+CCPARSE_OBJS += interp.o
 CCPARSE_OBJS += mtype.o
 CCPARSE_OBJS += integrity.o
 CCPARSE_OBJS += astvisit.o
@@ -484,9 +487,11 @@ count-loc:
 
 
 # -------------------- clean, etc. -------------------
+# TODO: Fix how 'outdir' is cleaned.
 clean:
 	rm -f $(TOCLEAN) gmon.out
 	cd outdir && ls | grep -v CVS | xargs rm -f
+	make -C test clean
 
 distclean: clean
 	rm -f $(TODISTCLEAN)
@@ -497,6 +502,12 @@ toolclean: clean
 
 # Certain failing multi-tests leave behind error files.
 TOCLEAN += in/*.error*
+
+check: test-check
+
+# Run 'make check' in test/.
+test-check: all
+	$(MAKE) -C test check
 
 check: all
 	./packedword_test

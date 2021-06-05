@@ -1,6 +1,8 @@
 // main.cc            see license.txt for copyright and terms of use
 // entry-point module for a program that parses C++
 
+#include "interp.h"       // IEnv
+
 #include "sm-iostream.h"  // cout
 #include <stdlib.h>       // exit, getenv, abort
 #include "sm-fstream.h"   // ofstream
@@ -24,6 +26,11 @@
 #include "smregexp.h"     // regexpMatch
 #include "cc_elaborate.h" // ElabVisitor
 #include "integrity.h"    // IntegrityVisitor
+
+
+// When true, run the interpreter on the parsed AST.
+static bool option_interp = false;
+
 
 // little check: is it true that only global declarators
 // ever have Declarator::type != Declarator::var->type?
@@ -174,6 +181,11 @@ char *myProcessArgs(int argc, char **argv, char const *additionalInfo)
       argv++;
       argc--;
     }
+    else if (streq(argv[1], "--interp")) {
+      option_interp = true;
+      argv++;
+      argc--;
+    }
     else {
       break;     // didn't find any more options
     }
@@ -185,6 +197,7 @@ char *myProcessArgs(int argc, char **argv, char const *additionalInfo)
             "    -tr <flags>:       turn on given tracing flags (comma-separated)\n"
             "    -xc                parse input as C rather than C++\n"
             "    -w                 disable warnings\n"
+            "    --interp           run interpreter on parsed AST\n"
          << (additionalInfo? additionalInfo : "");
     exit(argc==1? 0 : 2);    // error if any args supplied
   }
@@ -193,13 +206,10 @@ char *myProcessArgs(int argc, char **argv, char const *additionalInfo)
 }
 
 
-void doit(int argc, char **argv)
+static int doit(int argc, char **argv)
 {
   // I think this is more noise than signal at this point
   xBase::logExceptions = false;
-
-  traceAddSys("progress");
-  //traceAddSys("parse-tree");
 
   if_malloc_stats();
 
@@ -241,6 +251,10 @@ void doit(int argc, char **argv)
      "\n"
      "  (grep in source for \"trace\" to find more obscure flags)\n"
      "");
+
+  if (!option_interp) {
+    traceAddSys("progress");
+  }
 
   if (tracingSys("printAsML")) {
     Type::printAsML = true;
@@ -387,7 +401,7 @@ void doit(int argc, char **argv)
       // tree and bail
       PTreeNode *ptn = (PTreeNode*)treeTop;
       ptn->printTree(cout, PTreeNode::PF_EXPAND);
-      return;
+      return 0;
     }
 
     // treeTop is a TranslationUnit pointer
@@ -411,7 +425,7 @@ void doit(int argc, char **argv)
   //}
 
   if (tracingSys("stopAfterParse")) {
-    return;
+    return 0;
   }
 
 
@@ -516,9 +530,11 @@ void doit(int argc, char **argv)
     // print errors and warnings
     env.errors.print(cout);
 
-    cout << "typechecking results:\n"
-         << "  errors:   " << numErrors << "\n"
-         << "  warnings: " << numWarnings << "\n";
+    if (!option_interp) {
+      cout << "typechecking results:\n"
+           << "  errors:   " << numErrors << "\n"
+           << "  warnings: " << numWarnings << "\n";
+    }
 
     if (numErrors != 0) {
       exit(4);
@@ -574,7 +590,7 @@ void doit(int argc, char **argv)
     }
 
     if (tracingSys("stopAfterTCheck")) {
-      return;
+      return 0;
     }
   }
 
@@ -606,7 +622,7 @@ void doit(int argc, char **argv)
       unit->debugPrint(cout, 0);
     }
     if (tracingSys("stopAfterElab")) {
-      return;
+      return 0;
     }
   }
 
@@ -688,12 +704,27 @@ void doit(int argc, char **argv)
     unit->debugPrint(devnull, 0);
   }
 
-  cout << "parse=" << parseTime << "ms"
-       << " tcheck=" << tcheckTime << "ms"
-       << " integ=" << integrityTime << "ms"
-       << " elab=" << elaborationTime << "ms"
-       << "\n"
-       ;
+  // -------------------- interpreter -------------------------
+  long interpretTime = 0;
+  int exitCode = 0;
+  if (option_interp) {
+    traceProgress() << "interpreting...\n";
+    SectionTimer timer(interpretTime);
+
+    IEnv ienv(strTable, unit);
+    exitCode = ienv.interpMain();
+  }
+
+
+  // -------------------- cleanup -------------------------
+  if (!option_interp) {
+    cout << "parse=" << parseTime << "ms"
+         << " tcheck=" << tcheckTime << "ms"
+         << " integ=" << integrityTime << "ms"
+         << " elab=" << elaborationTime << "ms"
+         << "\n"
+         ;
+  }
 
   //traceProgress() << "cleaning up...\n";
 
@@ -708,12 +739,14 @@ void doit(int argc, char **argv)
 
   //checkHeap();
   //malloc_stats();
+
+  return exitCode;
 }
 
 int main(int argc, char **argv)
 {
   try {
-    doit(argc, argv);
+    return doit(argc, argv);
   }
   catch (XUnimp &x) {
     HANDLER();
@@ -734,10 +767,6 @@ int main(int argc, char **argv)
   catch (xBase &x) {
     HANDLER();
     cout << x << endl;
-    abort();
+    return 4;
   }
-
-  //malloc_stats();
-
-  return 0;
 }
