@@ -487,10 +487,10 @@ count-loc:
 
 
 # -------------------- clean, etc. -------------------
-# TODO: Fix how 'outdir' is cleaned.
 clean:
 	rm -f $(TOCLEAN) gmon.out
-	cd outdir && ls | grep -v CVS | xargs rm -f
+#	'outdir' is used by 'idemcheck'
+	cd outdir && ls | xargs rm -f
 	make -C test clean
 
 distclean: clean
