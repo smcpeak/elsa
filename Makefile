@@ -25,9 +25,7 @@ DEBUG_FLAGS = -g
 GENDEPS_FLAGS = -MMD
 
 # Flags to control optimization.
-#
-# TODO: Things are broken when optimization is enabled.
-OPTIMIZATION_FLAGS =
+OPTIMIZATION_FLAGS = -O2
 
 # Flags to control compiler warnings.
 WARNING_FLAGS = -Woverloaded-virtual
