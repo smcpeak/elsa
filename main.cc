@@ -183,6 +183,8 @@ char *myProcessArgs(int argc, char **argv, char const *additionalInfo)
     cout << "usage: " << progName << " [options] input-file\n"
             "  options:\n"
             "    -tr <flags>:       turn on given tracing flags (comma-separated)\n"
+            "    -xc                parse input as C rather than C++\n"
+            "    -w                 disable warnings\n"
          << (additionalInfo? additionalInfo : "");
     exit(argc==1? 0 : 2);    // error if any args supplied
   }
