@@ -123,6 +123,13 @@ TOCLEAN =
 TOTOOLCLEAN =
 TODISTCLEAN =
 
+# Remove 'config.mk' with 'distclean'.
+TODISTCLEAN += config.mk
+
+# Clean files related to coverage analysis.
+TOCLEAN += *.bb *.bbg *.da
+
+
 # Compile .cc to .o, also generating .d dependency files.
 TOCLEAN += *.o *.d
 %.o: %.cc
@@ -130,13 +137,6 @@ TOCLEAN += *.o *.d
 
 # Pull in any dependency files we have.
 -include *.d
-
-
-# Remove 'config.mk' with 'distclean'.
-TODISTCLEAN += config.mk
-
-# Clean files related to coverage analysis.
-TOCLEAN += *.bb *.bbg *.da
 
 
 # ----------------- extra dependencies -----------------
@@ -283,7 +283,6 @@ CCPARSE_OBJS += mtype.o
 CCPARSE_OBJS += integrity.o
 CCPARSE_OBJS += astvisit.o
 CCPARSE_OBJS += template.o
-CCPARSE_OBJS += notopt.o
 CCPARSE_OBJS += cc_env.o
 CCPARSE_OBJS += cc_tcheck.o
 CCPARSE_OBJS += const_eval.o
