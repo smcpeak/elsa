@@ -154,7 +154,12 @@ remake-extradep:
 
 include extradep.mk
 
+# Ordinarily I want to validate extradep, but if I have just added a new
+# header then it spuriously considers it as "extra", so I need a way to
+# ignore that.
+ifneq ($(IGNORE_EXTRADEP),1)
 check: validate-extradep
+endif
 
 .PHONY: validate-extradep
 validate-extradep: all
