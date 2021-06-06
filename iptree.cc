@@ -224,7 +224,7 @@ int writeSegment(FILE *fp, GrowArray<char> const &source,
 {
   xassert(len >= 0);
   xassert(start >= 0);
-  xassert(start+len <= source.size());
+  xassert(start+len <= source.allocatedSize());
 
   fwrite(source.getArray()+start, 1, len, fp);
 
@@ -497,7 +497,7 @@ void readFile(rostring fname, GrowArray<char> &dest)
   }
 
   // trim the array
-  dest.setSize(curOffset);
+  dest.setAllocatedSize(curOffset);
 }
 
 

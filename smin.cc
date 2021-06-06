@@ -288,9 +288,9 @@ void entry(int argc, char *argv[])
   // check that its size does not exceed the source file
   {
     int endpt = m.tree->getLargestFiniteEndpoint();
-    if (endpt >= m.source.size()) {
+    if (endpt >= m.source.allocatedSize()) {
       xfatal("the interval tree ends at " << endpt <<
-             ", but the file size is only " << m.source.size());
+             ", but the file size is only " << m.source.allocatedSize());
     }
   }
 

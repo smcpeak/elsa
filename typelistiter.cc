@@ -29,7 +29,7 @@ Type *TypeListIter_FakeList::data() const
 
 bool TypeListIter_GrowArray::isDone() const
 {
-  return i == args.size();
+  return i == args.allocatedSize();
 }
 
 void TypeListIter_GrowArray::adv()

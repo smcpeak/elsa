@@ -29,7 +29,7 @@ Candidate::~Candidate()
 
 bool Candidate::hasAmbigConv() const
 {
-  for (int i=0; i < conversions.size(); i++) {
+  for (int i=0; i < conversions.allocatedSize(); i++) {
     if (conversions[i].isAmbiguous()) {
       return true;
     }
@@ -40,7 +40,7 @@ bool Candidate::hasAmbigConv() const
 
 void Candidate::conversionDescriptions() const
 {
-  for (int i=0; i < conversions.size(); i++) {
+  for (int i=0; i < conversions.allocatedSize(); i++) {
     OVERLOADTRACE(i << ": " << toString(conversions[i]));
   }
 }
@@ -211,7 +211,7 @@ OverloadResolver::OverloadResolver
   // 9/22/04: As demonstrated by t0293.cc, we also need to instantiate
   // classes mentioned by way of pointers (in addition to references),
   // to enable derived-to-base conversions.
-  for (int i=0; i < args.size(); i++) {
+  for (int i=0; i < args.allocatedSize(); i++) {
     Type *argType = a[i].type;
     if (!argType) continue;
 
@@ -272,7 +272,7 @@ string OverloadResolver::argInfoString()
 {
   stringBuilder sb;
   sb << "arguments:\n";
-  for (int i=0; i < args.size(); i++) {
+  for (int i=0; i < args.allocatedSize(); i++) {
     if (args[i].overloadSet.isEmpty() &&
         !args[i].type) {
       continue;      // don't print anything
@@ -826,7 +826,7 @@ Candidate * /*owner*/ OverloadResolver::makeCandidate
   (Variable *var, Variable *instFrom)
 {
   origCandidates.push(var);
-  Owner<Candidate> c(new Candidate(var, instFrom, args.size()));
+  Owner<Candidate> c(new Candidate(var, instFrom, args.allocatedSize()));
 
   FunctionType *ft = var->type->asFunctionType();
 
@@ -846,7 +846,7 @@ Candidate * /*owner*/ OverloadResolver::makeCandidate
     }
   }
 
-  for (; !paramIter.isDone() && argIndex < args.size();
+  for (; !paramIter.isDone() && argIndex < args.allocatedSize();
        paramIter.adv(), argIndex++) {
     // address of overloaded function?
     if (args[argIndex].overloadSet.isNotEmpty()) {
@@ -902,12 +902,12 @@ Candidate * /*owner*/ OverloadResolver::makeCandidate
   }
 
   // extra arguments?
-  if (argIndex < args.size()) {
+  if (argIndex < args.allocatedSize()) {
     if (ft->acceptsVarargs()) {
       // fill remaining with IC_ELLIPSIS
       ImplicitConversion ellipsis;
       ellipsis.addEllipsisConv();
-      while (argIndex < args.size()) {
+      while (argIndex < args.allocatedSize()) {
         c->conversions[argIndex] = ellipsis;
         argIndex++;
       }
@@ -1003,7 +1003,7 @@ int OverloadResolver::compareCandidates(Candidate const *left, Candidate const *
   }
 
   // walk through list of arguments, comparing the conversions
-  for (; i < args.size(); i++) {
+  for (; i < args.allocatedSize(); i++) {
     // get parameter types; they can be NULL if we walk off into the ellipsis
     // of a variable-argument function
     Type const *leftDest = NULL;

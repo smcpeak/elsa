@@ -1327,7 +1327,7 @@ bool Env::inferTemplArgsFromFuncArgs
   }
 
   // worklist for next iteration
-  ArrayStack<TypeParamPair> nextWorklist(worklist.size());
+  ArrayStack<TypeParamPair> nextWorklist(worklist.allocatedSize());
 
   // process it until fixpoint
   while (worklist.length() != nextWorklist.length()) {

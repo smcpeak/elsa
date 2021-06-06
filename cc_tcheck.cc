@@ -5744,7 +5744,7 @@ static Variable *outerResolveOverload_ctor
   (Env &env, SourceLoc loc, Type *type, ArgumentInfoArray &argInfo)
 {
   // skip overload resolution if any dependent args (in/t0412.cc)
-  for (int i=0; i<argInfo.size(); i++) {
+  for (int i=0; i<argInfo.allocatedSize(); i++) {
     Type *t = argInfo[i].type;
     if (t && t->containsGeneralizedDependent()) {
       return NULL;
@@ -5875,7 +5875,7 @@ FakeList<ArgExpression> *tcheckArgExprList(FakeList<ArgExpression> *list, Env &e
   // can be ambiguous (e.g., in/t0467.cc).  So, this code takes the
   // initial size as essentially a hint, but ensures when the expr
   // list is fully disambiguated, the size is set properly.
-  argInfo.setSize(i);
+  argInfo.setAllocatedSize(i);
 
   return FakeList<ArgExpression>::makeList(first);
 }
