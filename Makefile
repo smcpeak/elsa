@@ -287,6 +287,7 @@ TOCLEAN += cc.gr.gen.h cc.gr.gen.cc cc.gr.gen.out
 # rearrange as different parts of the code are in flux)
 CCPARSE_OBJS :=
 CCPARSE_OBJS += interp.o
+CCPARSE_OBJS += elsaparse.o
 CCPARSE_OBJS += mtype.o
 CCPARSE_OBJS += integrity.o
 CCPARSE_OBJS += astvisit.o

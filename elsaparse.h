@@ -27,6 +27,10 @@ public:      // data
   // Language options.
   CCLang &lang;
 
+  // If true, print the counts of errors and warnings at the end.  This
+  // is initially false.
+  bool printErrorCount;
+
   // The parsed TU.
   TranslationUnit *unit;
 

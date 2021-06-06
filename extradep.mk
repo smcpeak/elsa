@@ -14,6 +14,10 @@ cc_type.o: cc.ast.gen.h
 ccparse.o: cc.ast.gen.h
 cfg.o: cc.ast.gen.h
 const_eval.o: cc.ast.gen.h
+elsaparse.o: cc.ast.gen.h
+elsaparse.o: cc.gr.gen.h
+elsaparse.o: cc_tokens.h
+elsaparse.o: lexer.yy.h
 gnu.o: cc.ast.gen.h
 implconv.o: cc.ast.gen.h
 implint.o: cc.ast.gen.h
@@ -27,7 +31,6 @@ lexer.yy.o: cc_tokens.h
 main.o: cc.ast.gen.h
 main.o: cc.gr.gen.h
 main.o: cc_tokens.h
-main.o: lexer.yy.h
 mangle.o: cc.ast.gen.h
 mtype.o: cc.ast.gen.h
 overload.o: cc.ast.gen.h
