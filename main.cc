@@ -3,15 +3,8 @@
 
 #include "elsaparse.h"    // ElsaParse
 
-// elsa
-#include "interp.h"       // Interp
-
 // smbase
 #include "ckheap.h"       // malloc_stats
-
-
-// When true, run the interpreter on the parsed AST.
-static bool option_interp = false;
 
 
 void if_malloc_stats()
@@ -45,11 +38,6 @@ char *myProcessArgs(int argc, char **argv, char const *additionalInfo)
       argv++;
       argc--;
     }
-    else if (streq(argv[1], "--interp")) {
-      option_interp = true;
-      argv++;
-      argc--;
-    }
     else {
       break;     // didn't find any more options
     }
@@ -61,7 +49,6 @@ char *myProcessArgs(int argc, char **argv, char const *additionalInfo)
             "    -tr <flags>:       turn on given tracing flags (comma-separated)\n"
             "    -xc                parse input as C rather than C++\n"
             "    -w                 disable warnings\n"
-            "    --interp           run interpreter on parsed AST\n"
          << (additionalInfo? additionalInfo : "");
     exit(argc==1? 0 : 2);    // error if any args supplied
   }
@@ -116,9 +103,7 @@ static int doit(int argc, char **argv)
      "  (grep in source for \"trace\" to find more obscure flags)\n"
      "");
 
-  if (!option_interp) {
-    traceAddSys("progress");
-  }
+  traceAddSys("progress");
 
   if (tracingSys("printAsML")) {
     Type::printAsML = true;
@@ -211,30 +196,9 @@ static int doit(int argc, char **argv)
 
   // Run the parser.
   ElsaParse elsaParse(strTable, lang);
-  if (!option_interp) {
-    elsaParse.printErrorCount = true;
-  }
+  elsaParse.printErrorCount = true;
   elsaParse.parse(inputFname);
-
-  // -------------------- interpreter -------------------------
-  int exitCode = 0;
-  if (option_interp) {
-    traceProgress() << "interpreting...\n";
-
-    if (elsaParse.mainFunction) {
-      Interp ienv(strTable);
-      exitCode = ienv.interpMain(elsaParse.mainFunction);
-    }
-    else {
-      cerr << "Program has no 'main' function.\n";
-      exitCode = 22;
-    }
-  }
-
-  // -------------------- cleanup -------------------------
-  if (!option_interp) {
-    elsaParse.printTimes();
-  }
+  elsaParse.printTimes();
 
   //traceProgress() << "cleaning up...\n";
 
@@ -250,7 +214,7 @@ static int doit(int argc, char **argv)
   //checkHeap();
   //malloc_stats();
 
-  return exitCode;
+  return 0;
 }
 
 

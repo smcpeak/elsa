@@ -22,7 +22,6 @@ gnu.o: cc.ast.gen.h
 implconv.o: cc.ast.gen.h
 implint.o: cc.ast.gen.h
 integrity.o: cc.ast.gen.h
-interp.o: cc.ast.gen.h
 iptparse.o: iptparse.yy.h
 kandr.o: cc.ast.gen.h
 lexer.o: cc_tokens.h
