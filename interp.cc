@@ -38,7 +38,7 @@ int IEnv::interpMain(Function const *mainFunction)
   TRACE("interp", "start of interpMain");
 
   IFrame *frame = pushNewFrame();
-  mainFunction->interp(*this);
+  interpFunction(mainFunction);
 
   int ret = frame->m_returnValue;
   popFrame(frame);
@@ -74,31 +74,32 @@ StringRef IEnv::getStringRef(char const *name)
 
 
 // --------------------------- Function --------------------------------
-void Function::interp(IEnv &ienv) const
+void IEnv::interpFunction(Function const *function)
 {
+  Variable *funcVar = function->nameAndParams->var;
   TRACE("interp", "Beginning execution of '" <<
-    nameAndParams->var->toQualifiedString() << "' at " <<
-    toString(nameAndParams->var->loc) << ".");
+    funcVar->toQualifiedString() << "' at " <<
+    toString(funcVar->loc) << ".");
 
-  Statement const *curStatement = this->body;
+  Statement const *curStatement = function->body;
   while (curStatement) {
     // Interpret the statement and get the next one.
-    curStatement = curStatement->interp(ienv);
+    curStatement = interpStatement(curStatement);
   }
 
   TRACE("interp", "Finished execution of '" <<
-    nameAndParams->var->toQualifiedString() << "'.");
+    funcVar->toQualifiedString() << "'.");
 }
 
 
 // --------------------------- Statement -------------------------------
-Statement const *Statement::interp(IEnv &ienv) const
+Statement const *IEnv::interpStatement(Statement const *stmt)
 {
-  ASTSWITCHC(Statement, this) {
+  ASTSWITCHC(Statement, stmt) {
     ASTCASEC(S_return, r) {
       if (r->expr) {
-        int val = r->expr->interp(ienv);
-        ienv.topFrame()->m_returnValue = val;
+        int val = interpFullExpression(r->expr);
+        topFrame()->m_returnValue = val;
         TRACE("interp", "Return value is " << val << ".");
       }
       return NULL;
@@ -107,10 +108,10 @@ Statement const *Statement::interp(IEnv &ienv) const
       // Use generic handling.
     }
     ASTNEXTC(S_expr, s) {
-      s->expr->interp(ienv);
+      interpFullExpression(s->expr);
     }
     ASTDEFAULTC {
-      xunimp(stringb("Statement " << kindName()));
+      xunimp(stringb("Statement " << stmt->kindName()));
       return NULL;
     }
     ASTENDCASEC
@@ -119,7 +120,7 @@ Statement const *Statement::interp(IEnv &ienv) const
   // Generic successor handling uses the computed CFG, but requires that
   // the successor be unambiguous.
   NextPtrList successors;
-  this->getSuccessors(successors, false /*isContinue*/);
+  stmt->getSuccessors(successors, false /*isContinue*/);
   if (successors.isEmpty()) {
     return NULL;
   }
@@ -131,16 +132,16 @@ Statement const *Statement::interp(IEnv &ienv) const
 
 
 // ------------------------- FullExpression ----------------------------
-int FullExpression::interp(IEnv &ienv) const
+int IEnv::interpFullExpression(FullExpression const *fullExpr)
 {
-  return expr->interp(ienv);
+  return interpExpression(fullExpr->expr);
 }
 
 
 // ------------------------- ArgExpression -----------------------------
-int ArgExpression::interp(IEnv &ienv) const
+int IEnv::interpArgExpression(ArgExpression const *argExpr)
 {
-  return expr->interp(ienv);
+  return interpExpression(argExpr->expr);
 }
 
 
@@ -158,7 +159,7 @@ int callBuiltin_getchar(ObjList<int> const &args)
 
 // --------------------------- Expression ------------------------------
 // Evaluate 'expr', expecting it to name a variable.
-static Variable *evaluateToVariable(Expression *expr)
+static Variable *evaluateToVariable(Expression const *expr)
 {
   ASTSWITCHC(Expression, expr) {
     ASTCASEC(E_variable, ev) {
@@ -175,9 +176,9 @@ static Variable *evaluateToVariable(Expression *expr)
 }
 
 
-int Expression::interp(IEnv &ienv) const
+int IEnv::interpExpression(Expression const *expr)
 {
-  ASTSWITCHC(Expression, this) {
+  ASTSWITCHC(Expression, expr) {
     ASTCASEC(E_intLit, lit) {
       return lit->i;
     }
@@ -186,14 +187,14 @@ int Expression::interp(IEnv &ienv) const
       // Evaluate arguments.
       ObjList<int> arguments;
       FAKELIST_FOREACH(ArgExpression, fc->args, iter) {
-        int a = iter->interp(ienv);
+        int a = interpArgExpression(iter);
         arguments.append(new int(a));
       }
 
       // Evaluate callee.
       Variable *calleeVar = evaluateToVariable(fc->func);
       if (calleeVar->scope->isGlobalScope()) {
-        if (calleeVar->name == ienv.getStringRef("putchar")) {
+        if (calleeVar->name == getStringRef("putchar")) {
           return callBuiltin_getchar(arguments);
         }
       }
@@ -203,7 +204,7 @@ int Expression::interp(IEnv &ienv) const
     }
 
     ASTDEFAULTC {
-      xunimp(stringb("Expression " << kindName()));
+      xunimp(stringb("Expression " << expr->kindName()));
     }
     ASTENDCASEC
   }

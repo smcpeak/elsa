@@ -187,9 +187,6 @@ CC_AST_MODS += cfg.ast
 # elaboration pass
 CC_AST_MODS += cc_elaborate.ast
 
-# interpreter
-CC_AST_MODS += interp.ast
-
 
 # optional: GNU language extension
 ifeq ($(USE_GNU),1)
