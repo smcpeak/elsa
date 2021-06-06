@@ -1,6 +1,7 @@
 // main.cc            see license.txt for copyright and terms of use
 // entry-point module for a program that parses C++
 
+#include "elsaparse.h"    // ElsaParse, which is defined here
 #include "interp.h"       // Interp
 
 #include "sm-iostream.h"  // cout
@@ -345,16 +346,74 @@ static int doit(int argc, char **argv)
     cout << endl;
   }
 
-  // --------------- parse --------------
-  TranslationUnit *unit;
+  // Run the parser.
+  ElsaParse elsaParse(strTable, lang);
+  elsaParse.parse(inputFname);
 
+  // -------------------- interpreter -------------------------
+  long interpretTime = 0;
+  int exitCode = 0;
+  if (option_interp) {
+    traceProgress() << "interpreting...\n";
+    SectionTimer timer(interpretTime);
+
+    if (elsaParse.mainFunction) {
+      Interp ienv(strTable);
+      exitCode = ienv.interpMain(elsaParse.mainFunction);
+    }
+    else {
+      cerr << "Program has no 'main' function.\n";
+      exitCode = 22;
+    }
+  }
+
+  // -------------------- cleanup -------------------------
+  if (!option_interp) {
+    elsaParse.printTimes();
+  }
+
+  //traceProgress() << "cleaning up...\n";
+
+  //malloc_stats();
+
+  // delete the tree
+  // (currently this doesn't do very much because FakeLists are
+  // non-owning, so I won't pretend it does)
+  //delete unit;
+
+  strTable.clear();
+
+  //checkHeap();
+  //malloc_stats();
+
+  return exitCode;
+}
+
+
+ElsaParse::ElsaParse(StringTable &strTable_, CCLang &lang_)
+  : strTable(strTable_),
+    lang(lang_),
+    unit(NULL),
+    mainFunction(NULL),
+    parseTime(0),
+    tcheckTime(0),
+    integrityTime(0),
+    elaborationTime(0)
+{}
+
+
+ElsaParse::~ElsaParse()
+{}
+
+
+void ElsaParse::parse(char const *inputFname)
+{
   // dsw: I needed this to persist past typechecking, so I moved it
   // out here.  Feel free to refactor.
   ArrayStack<Variable*> madeUpVariables;
   ArrayStack<Variable*> builtinVars;
 
   int parseWarnings = 0;
-  long parseTime = 0;
   {
     SectionTimer timer(parseTime);
     SemanticValue treeTop;
@@ -401,7 +460,7 @@ static int doit(int argc, char **argv)
       // tree and bail
       PTreeNode *ptn = (PTreeNode*)treeTop;
       ptn->printTree(cout, PTreeNode::PF_EXPAND);
-      return 0;
+      return;
     }
 
     // treeTop is a TranslationUnit pointer
@@ -425,14 +484,12 @@ static int doit(int argc, char **argv)
   //}
 
   if (tracingSys("stopAfterParse")) {
-    return 0;
+    return;
   }
 
 
   // ---------------- typecheck -----------------
   BasicTypeFactory tfac;
-  long tcheckTime = 0;
-  Function const *mainFunction = NULL;       // 'main', if defined
   if (tracingSys("no-typecheck")) {
     cout << "no-typecheck" << endl;
   } else {
@@ -573,7 +630,6 @@ static int doit(int argc, char **argv)
   }
 
   // ---------------- integrity checking ----------------
-  long integrityTime = 0;
   {
     SectionTimer timer(integrityTime);
 
@@ -601,12 +657,11 @@ static int doit(int argc, char **argv)
     }
 
     if (tracingSys("stopAfterTCheck")) {
-      return 0;
+      return;
     }
   }
 
   // ----------------- elaboration ------------------
-  long elaborationTime = 0;
   if (tracingSys("no-elaborate")) {
     cout << "no-elaborate" << endl;
   }
@@ -633,7 +688,7 @@ static int doit(int argc, char **argv)
       unit->debugPrint(cout, 0);
     }
     if (tracingSys("stopAfterElab")) {
-      return 0;
+      return;
     }
   }
 
@@ -714,50 +769,19 @@ static int doit(int argc, char **argv)
     ofstream devnull("/dev/null");
     unit->debugPrint(devnull, 0);
   }
-
-  // -------------------- interpreter -------------------------
-  long interpretTime = 0;
-  int exitCode = 0;
-  if (option_interp) {
-    traceProgress() << "interpreting...\n";
-    SectionTimer timer(interpretTime);
-
-    if (mainFunction) {
-      Interp ienv(strTable);
-      exitCode = ienv.interpMain(mainFunction);
-    }
-    else {
-      cerr << "Program has no 'main' function.\n";
-      exitCode = 22;
-    }
-  }
-
-  // -------------------- cleanup -------------------------
-  if (!option_interp) {
-    cout << "parse=" << parseTime << "ms"
-         << " tcheck=" << tcheckTime << "ms"
-         << " integ=" << integrityTime << "ms"
-         << " elab=" << elaborationTime << "ms"
-         << "\n"
-         ;
-  }
-
-  //traceProgress() << "cleaning up...\n";
-
-  //malloc_stats();
-
-  // delete the tree
-  // (currently this doesn't do very much because FakeLists are
-  // non-owning, so I won't pretend it does)
-  //delete unit;
-
-  strTable.clear();
-
-  //checkHeap();
-  //malloc_stats();
-
-  return exitCode;
 }
+
+
+void ElsaParse::printTimes()
+{
+  cout << "parse=" << parseTime << "ms"
+       << " tcheck=" << tcheckTime << "ms"
+       << " integ=" << integrityTime << "ms"
+       << " elab=" << elaborationTime << "ms"
+       << "\n"
+       ;
+}
+
 
 int main(int argc, char **argv)
 {
