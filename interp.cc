@@ -18,10 +18,8 @@ IFrame::~IFrame()
 
 
 // ----------------------------- IEnv ----------------------------------
-IEnv::IEnv(StringTable &stringTable,
-           TranslationUnit const *translationUnit)
+IEnv::IEnv(StringTable &stringTable)
   : m_stringTable(stringTable),
-    m_translationUnit(translationUnit),
     m_callStack()
 {}
 
@@ -32,45 +30,12 @@ IEnv::~IEnv()
 }
 
 
-Function const *IEnv::findMain()
-{
-  // TODO: This should look in the static environment's global scope
-  // rather than iterating over all forms.
-  StringRef mainName = m_stringTable.add("main");
-  FOREACH_ASTLIST(TopForm, m_translationUnit->topForms, iter) {
-    TopForm const *tf = iter.data();
-
-    TF_func const *tfunc = tf->ifTF_funcC();
-    if (tfunc) {
-      PQName const *name = tfunc->f->nameAndParams->decl->getDeclaratorIdC();
-      if (name) {
-        // Here, we require that the name as declared be unqualified.
-        // I think in C++ it would be valid to define "::main", in which
-        // case this code would need to be generalized slightly.
-        PQ_name const *pqn = name->ifPQ_nameC();
-        if (pqn && pqn->name == mainName) {
-          return tfunc->f;
-        }
-      }
-    }
-  }
-
-  return NULL;
-}
-
-
-int IEnv::interpMain()
+int IEnv::interpMain(Function const *mainFunction)
 {
   TRACE("interp", "start of interpMain");
 
-  Function const *mainFunc = findMain();
-  if (!mainFunc) {
-    cerr << "Program has no 'main' function.\n";
-    return 22;
-  }
-
   IFrame *frame = pushNewFrame();
-  mainFunc->interp(*this);
+  mainFunction->interp(*this);
 
   int ret = frame->m_returnValue;
   popFrame(frame);

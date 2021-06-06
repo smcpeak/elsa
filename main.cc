@@ -432,6 +432,7 @@ static int doit(int argc, char **argv)
   // ---------------- typecheck -----------------
   BasicTypeFactory tfac;
   long tcheckTime = 0;
+  Function const *mainFunction = NULL;       // 'main', if defined
   if (tracingSys("no-typecheck")) {
     cout << "no-typecheck" << endl;
   } else {
@@ -557,6 +558,16 @@ static int doit(int argc, char **argv)
              << "  tcheck: " << nc.sb << "\n"
              ;
         exit(4);
+      }
+    }
+
+    // For the benefit of the interpreter, get 'main' if it exists.
+    {
+      StringRef mainName = strTable.add("main");
+      Variable *mainVar =
+        env.globalScope()->lookupVariable(mainName, env);
+      if (mainVar) {
+        mainFunction = mainVar->funcDefn;
       }
     }
   }
@@ -711,10 +722,15 @@ static int doit(int argc, char **argv)
     traceProgress() << "interpreting...\n";
     SectionTimer timer(interpretTime);
 
-    IEnv ienv(strTable, unit);
-    exitCode = ienv.interpMain();
+    if (mainFunction) {
+      IEnv ienv(strTable);
+      exitCode = ienv.interpMain(mainFunction);
+    }
+    else {
+      cerr << "Program has no 'main' function.\n";
+      exitCode = 22;
+    }
   }
-
 
   // -------------------- cleanup -------------------------
   if (!option_interp) {

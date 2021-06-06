@@ -35,24 +35,15 @@ private:     // data
   // names in the AST come from this table.
   StringTable &m_stringTable;
 
-  // For the moment, we can only interpret within a single TU.
-  TranslationUnit const *m_translationUnit;
-
   // Stack of frames.  The top frame is the currently active one.
   ObjStack<IFrame> m_callStack;
 
-private:     // methods
-  // Search for the 'main' function in 'm_translationUnit'.  Return NULL
-  // if none found.
-  Function const *findMain();
-
 public:      // methods
-  IEnv(StringTable &stringTable,
-       TranslationUnit const *translationUnit);
+  IEnv(StringTable &stringTable);
   ~IEnv();
 
   // Run the 'main' function and return its exit code.
-  int interpMain();
+  int interpMain(Function const *mainFunction);
 
   // Create a new frame and push it onto the call stack.
   IFrame *pushNewFrame();
