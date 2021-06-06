@@ -1,0 +1,39 @@
+// interp.ast
+// Extension for cc.ast providing declarations for interp.cc.
+
+verbatim {
+  class IEnv;                          // interp.h
+}
+
+class Function {
+  // Interpret this function's body.
+  //
+  // The caller is responsible for creating the activation record and
+  // populating it with argument values.  Then after 'interp' returns,
+  // the caller is responsible for extracting the return value from
+  // the activation record and deleting it.
+  public void interp(IEnv &ienv) const;
+}
+
+
+class Statement {
+  // Interpret this statement and return the successor statemet, or NULL
+  // if there is none (due to 'return' or executing the last statement
+  // in a function).
+  public Statement const *interp(IEnv &ienv) const;
+}
+
+
+class FullExpression {
+  // Delegate to the underlying Expression.
+  public int interp(IEnv &ienv) const;
+}
+
+
+class Expression {
+  // Evaluate this expression and return the resulting value.
+  public int interp(IEnv &ienv) const;
+}
+
+
+// EOF

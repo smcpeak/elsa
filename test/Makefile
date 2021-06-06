@@ -20,6 +20,8 @@ CCPARSE := ../ccparse
 # --------------------- interpreter tests ------------------------
 INTERP_TESTS :=
 INTERP_TESTS += interp/main0.cc
+INTERP_TESTS += interp/main1.cc
+INTERP_TESTS += interp/main9.cc
 
 check: $(patsubst interp/%,out/interp/%.ok,$(INTERP_TESTS))
 
