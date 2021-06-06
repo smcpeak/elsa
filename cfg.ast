@@ -20,7 +20,7 @@ class Statement {
   // node ('isContinue'), and put them into 'dest'; this can only
   // be called after 'computeCFG' has finished; if this returns an
   // empty set, it means that after the statement, the function returns
-  public void getSuccessors(NextPtrList &dest, bool isContinue);
+  public void getSuccessors(NextPtrList &dest, bool isContinue) const;
   public string successorsToString() const;
   custom debugPrint {
     ind(os, indent) << "succ=" << successorsToString() << endl;

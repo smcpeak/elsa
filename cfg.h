@@ -42,7 +42,7 @@ private:     // data
 public:
   // construction, assignment
   NextPtr() : p(0) {}
-  NextPtr(Statement *next, bool isContinue)
+  NextPtr(Statement const *next, bool isContinue)
     : p((intptr_t)next | !!isContinue) {}
   NextPtr(NextPtr const &obj) : p(obj.p) {}
   NextPtr& operator= (NextPtr const &obj) { p = obj.p; return *this; }
@@ -52,8 +52,10 @@ public:
   bool operator!= (NextPtr const &obj) const { return p != obj.p; }
 
   // selection
-  Statement *stmt() { return (Statement*)(p & ~((intptr_t)1)); }
-  bool cont() const { return (bool)(p & 1); }
+  Statement const *stmt()
+    { return (Statement const*)(p & ~((intptr_t)1)); }
+  bool cont() const
+    { return (bool)(p & 1); }
 
   // like next()->kindLocString(), with a "(c)" appended if it's the
   // cont()==true half

@@ -406,25 +406,25 @@ static void addNextPtrIf(NextPtrList &arr, NextPtr p)
 // this function interprets the 'next' field, plus any other control
 // flow intrinsic to the statement, to find out which statements might
 // receive control flow after this one
-void Statement::getSuccessors(NextPtrList &dest, bool isContinue)
+void Statement::getSuccessors(NextPtrList &dest, bool isContinue) const
 {
-  ASTSWITCH(Statement, this) {
-    ASTCASE(S_if, i)
+  ASTSWITCHC(Statement, this) {
+    ASTCASEC(S_if, i)
       // the 'next' field is ignored since it always points at
       // the 'then' branch anyway
       addNextPtr(dest, NextPtr(i->thenBranch, false));
       addNextPtr(dest, NextPtr(i->elseBranch, false));
 
-    ASTNEXT(S_switch, s)
-      SFOREACH_OBJLIST_NC(Statement, s->cases, iter) {
+    ASTNEXTC(S_switch, s)
+      SFOREACH_OBJLIST(Statement, s->cases, iter) {
         addNextPtr(dest, NextPtr(iter.data(), false));
       }
 
-    ASTNEXT(S_while, w)
+    ASTNEXTC(S_while, w)
       addNextPtrIf(dest, next);
       addNextPtr(dest, NextPtr(w->body, false));
 
-    ASTNEXT(S_doWhile, d)
+    ASTNEXTC(S_doWhile, d)
       if (isContinue) {
         // continue jumps to conditional, so it could exit the loop
         addNextPtrIf(dest, next);
@@ -432,18 +432,18 @@ void Statement::getSuccessors(NextPtrList &dest, bool isContinue)
       // either way, doing the body is an option
       addNextPtr(dest, NextPtr(d->body, false));
 
-    ASTNEXT(S_for, f)
+    ASTNEXTC(S_for, f)
       // though the semantics of choosing which expressions get
       // evaluated are different depending on 'isContinue', the
       // statement-level control flow options are the same
       addNextPtrIf(dest, next);
       addNextPtr(dest, NextPtr(f->body, false));
 
-    ASTDEFAULT
+    ASTDEFAULTC
       // for most statements, there is only one control flow option
       addNextPtrIf(dest, next);
 
-    ASTENDCASE
+    ASTENDCASEC
   }
 }
 
@@ -500,7 +500,8 @@ string Statement::successorsToString() const
 // continue==true halves of the nodes
 static
 void rp_dfs(NextPtrList &order, NextPtr node,
-            SObjSet<Statement*> &seen, SObjSet<Statement*> &seenCont)
+            SObjSet<Statement const *> &seen,
+            SObjSet<Statement const *> &seenCont)
 {
   // we're now considering 'node'; did we arrive via continue?
   (node.cont()? seenCont : seen).add(node.stmt());     // C++ generalized lvalue!
@@ -534,7 +535,7 @@ void reversePostorder(NextPtrList &order, Function *func)
 
   // DFS from the function start, computing the spanning tree implicitly,
   // and the postorder explicitly
-  SObjSet<Statement*> seen, seenCont;
+  SObjSet<Statement const *> seen, seenCont;
   rp_dfs(order, NextPtr(func->body, false /*isContinue*/), seen, seenCont);
 
   // reverse the list
