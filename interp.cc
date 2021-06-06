@@ -6,6 +6,9 @@
 // smbase
 #include "trace.h"                     // TRACE
 
+// libc
+#include <stdio.h>                     // putchar
+
 
 // ---------------------------- IFrame ---------------------------------
 IFrame::IFrame()
@@ -64,6 +67,12 @@ IFrame *IEnv::topFrame()
 }
 
 
+StringRef IEnv::getStringRef(char const *name)
+{
+  return m_stringTable.add(name);
+}
+
+
 // --------------------------- Function --------------------------------
 void Function::interp(IEnv &ienv) const
 {
@@ -97,6 +106,9 @@ Statement const *Statement::interp(IEnv &ienv) const
     ASTNEXTC1(S_compound) {
       // Use generic handling.
     }
+    ASTNEXTC(S_expr, s) {
+      s->expr->interp(ienv);
+    }
     ASTDEFAULTC {
       xunimp(stringb("Statement " << kindName()));
       return NULL;
@@ -125,13 +137,71 @@ int FullExpression::interp(IEnv &ienv) const
 }
 
 
+// ------------------------- ArgExpression -----------------------------
+int ArgExpression::interp(IEnv &ienv) const
+{
+  return expr->interp(ienv);
+}
+
+
+// --------------------------- built-ins -------------------------------
+int callBuiltin_getchar(ObjList<int> const &args)
+{
+  if (args.count() != 1) {
+    xfatal("'getchar' requires exactly one argument.");
+  }
+  int ch = *(args.nthC(0));
+
+  return putchar(ch);
+}
+
+
 // --------------------------- Expression ------------------------------
+// Evaluate 'expr', expecting it to name a variable.
+static Variable *evaluateToVariable(Expression *expr)
+{
+  ASTSWITCHC(Expression, expr) {
+    ASTCASEC(E_variable, ev) {
+      xassert(ev->var);
+      return ev->var;
+    }
+    ASTDEFAULTC {
+      xunimp(stringb("Expression " << expr->kindName()));
+    }
+    ASTENDCASEC
+  }
+
+  return NULL;     // Not reached.
+}
+
+
 int Expression::interp(IEnv &ienv) const
 {
   ASTSWITCHC(Expression, this) {
     ASTCASEC(E_intLit, lit) {
       return lit->i;
     }
+
+    ASTNEXTC(E_funCall, fc) {
+      // Evaluate arguments.
+      ObjList<int> arguments;
+      FAKELIST_FOREACH(ArgExpression, fc->args, iter) {
+        int a = iter->interp(ienv);
+        arguments.append(new int(a));
+      }
+
+      // Evaluate callee.
+      Variable *calleeVar = evaluateToVariable(fc->func);
+      if (calleeVar->scope->isGlobalScope()) {
+        if (calleeVar->name == ienv.getStringRef("putchar")) {
+          return callBuiltin_getchar(arguments);
+        }
+      }
+
+      xfatal("Call to non-builtin function '" <<
+             calleeVar->toString() << "'.");
+    }
+
     ASTDEFAULTC {
       xunimp(stringb("Expression " << kindName()));
     }

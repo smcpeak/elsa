@@ -30,6 +30,12 @@ class FullExpression {
 }
 
 
+class ArgExpression {
+  // Delegate to the underlying Expression.
+  public int interp(IEnv &ienv) const;
+}
+
+
 class Expression {
   // Evaluate this expression and return the resulting value.
   public int interp(IEnv &ienv) const;

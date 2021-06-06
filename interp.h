@@ -53,6 +53,9 @@ public:      // methods
 
   // Get currently active frame.
   IFrame *topFrame();
+
+  // Get a 'StringRef' for 'name'.
+  StringRef getStringRef(char const *name);
 };
 
 
