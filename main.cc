@@ -1,7 +1,7 @@
 // main.cc            see license.txt for copyright and terms of use
 // entry-point module for a program that parses C++
 
-#include "interp.h"       // IEnv
+#include "interp.h"       // Interp
 
 #include "sm-iostream.h"  // cout
 #include <stdlib.h>       // exit, getenv, abort
@@ -723,7 +723,7 @@ static int doit(int argc, char **argv)
     SectionTimer timer(interpretTime);
 
     if (mainFunction) {
-      IEnv ienv(strTable);
+      Interp ienv(strTable);
       exitCode = ienv.interpMain(mainFunction);
     }
     else {

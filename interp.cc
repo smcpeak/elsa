@@ -20,20 +20,20 @@ IFrame::~IFrame()
 {}
 
 
-// ----------------------------- IEnv ----------------------------------
-IEnv::IEnv(StringTable &stringTable)
+// ---------------------------- Interp ---------------------------------
+Interp::Interp(StringTable &stringTable)
   : m_stringTable(stringTable),
     m_callStack()
 {}
 
 
-IEnv::~IEnv()
+Interp::~Interp()
 {
   m_callStack.clear();
 }
 
 
-int IEnv::interpMain(Function const *mainFunction)
+int Interp::interpMain(Function const *mainFunction)
 {
   TRACE("interp", "start of interpMain");
 
@@ -47,34 +47,34 @@ int IEnv::interpMain(Function const *mainFunction)
 }
 
 
-IFrame *IEnv::pushNewFrame()
+IFrame *Interp::pushNewFrame()
 {
   m_callStack.push(new IFrame);
   return m_callStack.top();
 }
 
 
-void IEnv::popFrame(IFrame *top)
+void Interp::popFrame(IFrame *top)
 {
   xassert(m_callStack.top() == top);
   delete m_callStack.pop();
 }
 
 
-IFrame *IEnv::topFrame()
+IFrame *Interp::topFrame()
 {
   return m_callStack.top();
 }
 
 
-StringRef IEnv::getStringRef(char const *name)
+StringRef Interp::getStringRef(char const *name)
 {
   return m_stringTable.add(name);
 }
 
 
 // --------------------------- Function --------------------------------
-void IEnv::interpFunction(Function const *function)
+void Interp::interpFunction(Function const *function)
 {
   Variable *funcVar = function->nameAndParams->var;
   TRACE("interp", "Beginning execution of '" <<
@@ -93,7 +93,7 @@ void IEnv::interpFunction(Function const *function)
 
 
 // --------------------------- Statement -------------------------------
-Statement const *IEnv::interpStatement(Statement const *stmt)
+Statement const *Interp::interpStatement(Statement const *stmt)
 {
   ASTSWITCHC(Statement, stmt) {
     ASTCASEC(S_return, r) {
@@ -132,14 +132,14 @@ Statement const *IEnv::interpStatement(Statement const *stmt)
 
 
 // ------------------------- FullExpression ----------------------------
-int IEnv::interpFullExpression(FullExpression const *fullExpr)
+int Interp::interpFullExpression(FullExpression const *fullExpr)
 {
   return interpExpression(fullExpr->expr);
 }
 
 
 // ------------------------- ArgExpression -----------------------------
-int IEnv::interpArgExpression(ArgExpression const *argExpr)
+int Interp::interpArgExpression(ArgExpression const *argExpr)
 {
   return interpExpression(argExpr->expr);
 }
@@ -176,7 +176,7 @@ static Variable *evaluateToVariable(Expression const *expr)
 }
 
 
-int IEnv::interpExpression(Expression const *expr)
+int Interp::interpExpression(Expression const *expr)
 {
   ASTSWITCHC(Expression, expr) {
     ASTCASEC(E_intLit, lit) {

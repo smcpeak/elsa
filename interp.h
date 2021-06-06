@@ -24,13 +24,11 @@ public:      // methods
 };
 
 
-// Interpreter environment.  This holds the run-time state of that
-// program as it executes, including all of its memory and call stack
-// frames.
-//
-// TODO: Rename to Interp.
-class IEnv {
-  NO_OBJECT_COPIES(IEnv);
+// Interpreter context and environment.  This holds the run-time state
+// of that program as it executes, including all of its memory and call
+// stack frames.
+class Interp {
+  NO_OBJECT_COPIES(Interp);
 
 private:     // data
   // String table, shared with the type checking phase so all of the
@@ -62,8 +60,8 @@ protected:   // methods
   int interpExpression(Expression const *expr);
 
 public:      // methods
-  IEnv(StringTable &stringTable);
-  ~IEnv();
+  Interp(StringTable &stringTable);
+  ~Interp();
 
   // Run the 'main' function and return its exit code.
   int interpMain(Function const *mainFunction);
