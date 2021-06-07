@@ -11,10 +11,14 @@
 // the initial verbatims from the base, but before any
 // of the classes from the base
 verbatim {
+  // elsa
   #include "variable.h"      // Variable
   #include "cc_type.h"       // Type, FunctonType, CompoundType
   #include "template.h"      // STemplateArgument
   #include "const_eval.h"    // ConstEval
+
+  // smbase
+  #include "datablok.h"      // DataBlock
   #include "macros.h"        // Restorer
 
   class Env;                 // cc_env.h
@@ -552,7 +556,7 @@ class Expression {
   // interpretations of literals
   -> E_intLit      { public unsigned long i = 0; }
   -> E_floatLit    { public double d = 0; }
-  -> E_stringLit   { /* TODO: put a DataBlock here */ }
+  -> E_stringLit   { public DataBlock m_stringData; }
   -> E_charLit     { public unsigned int c = 0; }
 
   -> E_this {

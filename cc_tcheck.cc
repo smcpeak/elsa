@@ -5310,6 +5310,48 @@ Type *E_floatLit::itcheck_x(Env &env, Expression *&replacement)
 }
 
 
+static bool isOctDigit(unsigned char c)
+{
+  return ('0' <= c && c <= '7');
+}
+
+static unsigned octToInt(unsigned char c)
+{
+  if ('0' <= c && c <= '7') {
+    return c - '0';
+  }
+  else {
+    xfailure("invalid octal digit");
+    return 0;      // Not reached.
+  }
+}
+
+
+static bool isHexDigit(unsigned char c)
+{
+  return ('0' <= c && c <= '9') ||
+         ('a' <= c && c <= 'f') ||
+         ('A' <= c && c <= 'F');
+}
+
+static unsigned hexToInt(unsigned char c)
+{
+  if ('0' <= c && c <= '9') {
+    return c - '0';
+  }
+  else if ('a' <= c && c <= 'f') {
+    return c - 'a' + 10;
+  }
+  else if ('A' <= c && c <= 'F') {
+    return c - 'A' + 10;
+  }
+  else {
+    xfailure("invalid hex digit");
+    return 0;      // Not reached.
+  }
+}
+
+
 Type *E_stringLit::itcheck_x(Env &env, Expression *&replacement)
 {
   // cppstd 2.13.4 para 1
@@ -5317,24 +5359,153 @@ Type *E_stringLit::itcheck_x(Env &env, Expression *&replacement)
   // wide character?
   SimpleTypeId id = text[0]=='L'? ST_WCHAR_T : ST_CHAR;
 
-  // TODO: this is wrong because I'm not properly tracking the string
-  // size if it has escape sequences
-  int len = 0;
-  E_stringLit *p = this;
-  while (p) {
-    len += strlen(p->text) - 2;   // don't include surrounding quotes
-    if (p->text[0]=='L') len--;   // don't count 'L' if present
-    p = p->continuation;
+
+  // Array of decoded string data.
+  ArrayStack<unsigned char> data;
+
+  // Iterate over the elements of the possibly-continued string literal.
+  for (E_stringLit *litElement = this;
+       litElement != NULL;
+       litElement = litElement->continuation) {
+    // Examine the source characters in the literal.
+    unsigned char const *s = (unsigned char const*)litElement->text;
+
+    if (*s == 'L') {
+      // Skip wide-string marker.
+      //
+      // We don't do anything different for wide strings.  A compiler
+      // or interpreter would be required to notice the type of the
+      // string literal and expand 'stringData' values accordingly.
+      s++;
+    }
+
+    if (*s == '"') {
+      // Usual case: skip the leading quote.
+      s++;
+    }
+    else {
+      // Multi-line string literals have continuations that do not start
+      // with a quote.  The parser should not do that, but it does.
+    }
+
+    // Loop over characters in the literal.
+    //
+    // We expect the string to end with a quote, but in certain cases,
+    // for compiler compatibility, the parser allows unterminated string
+    // literals, so we tolerate them here too.
+    for (; *s != '"' && *s != 0; s++) {
+      if (*s == '\\') {
+        s++;
+
+        // Decode escape sequence.
+        unsigned char decoded = 0;
+        switch (*s) {
+          // Letters that map to other things.
+          case 'n':     decoded = 10; break;
+          case 't':     decoded =  9; break;
+          case 'v':     decoded = 11; break;
+          case 'b':     decoded =  8; break;
+          case 'r':     decoded = 13; break;
+          case 'f':     decoded = 12; break;
+          case 'a':     decoded =  7; break;
+
+          // Characters that map to themselves.
+          case '\\':
+          case '?':
+          case '\'':
+          case '"':
+            decoded = *s;
+            break;
+
+          // Octal number.
+          case '0':
+          case '1':
+          case '2':
+          case '3':
+          case '4':
+          case '5':
+          case '6':
+          case '7': {
+            // The overflow detection logic assumes that 'val' can
+            // represent numbers larger than 255.
+            STATIC_ASSERT(sizeof(unsigned) > 1);
+
+            unsigned val = octToInt(s[0]);
+            bool tooLarge = false;
+            for (; isOctDigit(s[1]); s++) {
+              val = val*8 + octToInt(s[1]);
+              if (val > 255) {
+                tooLarge = true;
+              }
+            }
+            if (tooLarge) {
+              env.warning(
+                "Octal escape sequence denotes value that is larger than 255.");
+            }
+            decoded = (unsigned char)val;
+            break;
+          }
+
+          // Hexadecimal number.
+          case 'x': {
+            unsigned val = 0;
+            if (!isHexDigit(s[1])) {
+              env.error(stringb(
+                "Hexadecimal escape sequence must start with a hex digit, not '" <<
+                s[1] << "'."));
+            }
+            bool tooLarge = false;
+            for (; isHexDigit(s[1]); s++) {
+              val = val*16 + hexToInt(s[1]);
+              if (val > 255) {
+                tooLarge = true;
+              }
+            }
+            if (tooLarge) {
+              env.warning(
+                "Hexadecimal escape sequence denotes value that is larger than 255.");
+            }
+            decoded = (unsigned char)val;
+            break;
+          }
+
+          default:
+            env.warning(stringb(
+              "Escape sequence '\\" << *s << "' is implementation-defined.  "
+              "It is being treated like '" << *s << "'."));
+            decoded = *s;
+            break;
+        }
+
+        data.push(decoded);
+      }
+      else {
+        data.push(*s);
+      }
+    } // 'for' loop over characters
+  } // 'for' loop over continuations
+
+  // Final implicit NUL, which *is* included in the literal's size.
+  data.push(0);
+
+  // Save 'data' as a DataBlock in the E_stringLit.
+  m_stringData.setFromBlock(data.getArray(), data.length());
+
+  // For testing optionally print the decoded literal.
+  static bool printLiterals = tracingSys("printStringLiterals");
+  if (printLiterals) {
+    m_stringData.print("decoded literal");
   }
 
+  // TODO: Remove this.
   {
     // quarl 2006-07-13
     //    Build the dequoted full text.
     //
     //    TODO: could just clobber text+continuations with fullText.  Or just
     //    do this in parsing...
-    stringBuilder sb(len);
-    p = this;
+    stringBuilder sb;
+    E_stringLit *p = this;
     do {
       char const *s = p->text;
       if (*s == 'L') ++s;
@@ -5355,13 +5526,13 @@ Type *E_stringLit::itcheck_x(Env &env, Expression *&replacement)
     stringLitCharCVFlags = CV_CONST;
   }
   Type *charConst = env.getSimpleType(id, stringLitCharCVFlags);
-  Type *arrayType = env.makeArrayType(charConst, len+1);    // +1 for implicit final NUL
+  Type *arrayType = env.makeArrayType(charConst, data.length());
 
   // C++ 5.1p2, C99 6.5.1p4: string literals are lvalues (in/k0036.cc)
   Type *ret = makeLvalType(env, arrayType);
 
   // apply the same type to the continuations, for visitors' benefit
-  for (p = continuation; p; p = p->continuation) {
+  for (E_stringLit *p = continuation; p; p = p->continuation) {
     p->type = ret;
   }
 
@@ -5377,6 +5548,7 @@ void quotedUnescape(ArrayStack<char> &dest, char const *src,
                 delim, allowNewlines);
 }
 
+// TODO: This should share logic with E_stringLit decoding.
 Type *E_charLit::itcheck_x(Env &env, Expression *&replacement)
 {
   // cppstd 2.13.2 paras 1 and 2

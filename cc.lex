@@ -327,7 +327,10 @@ PPCHAR        ([^\\\n]|{BACKSL}{NOTNL})
    * newlines, to support a gcc-2 bug.  The strategy is to emit a
    * sequence of TOK_STRING_LITERALs, as if the string had been
    * properly broken into multiple literals.  However, these literals
-   * aren't consistently surrounded by quotes... */
+   * aren't consistently surrounded by quotes...
+   *
+   * TODO: That creates ambiguities because a leading 'L' or quote on
+   * a continuation could mean multiple things. */
 <BUGGY_STRING_LIT>{
   ({STRCHAR}|{ESCAPE})*{QUOTE} {
     // found the end

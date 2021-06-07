@@ -496,6 +496,7 @@ clean:
 	rm -f $(TOCLEAN) gmon.out
 #	'outdir' is used by 'idemcheck'
 	cd outdir && ls | xargs rm -f
+	$(MAKE) -C test clean
 
 distclean: clean
 	rm -f $(TODISTCLEAN)
@@ -506,6 +507,12 @@ toolclean: clean
 
 # Certain failing multi-tests leave behind error files.
 TOCLEAN += in/*.error*
+
+check: test-check
+
+# Run 'make check' in test/.
+test-check: all
+	$(MAKE) -C test check
 
 check: all
 	./packedword_test

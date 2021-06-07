@@ -1,0 +1,21 @@
+---- stdout ----
+---- decoded literal, length = 6, crc32 = 0x6C6F6F0311B5A9CB ---- {
+  68 65 6C 6C 6F 00                                  hello.
+}
+---- decoded literal, length = 13, crc32 = 0x716F650284D1BEAD ---- {
+  68 65 6C 6C 6F 2C 20 77 6F 72 6C 64 00             hello, world.
+}
+---- decoded literal, length = 24, crc32 = 0x21524500DA6FE4AC ---- {
+  65 73 63 61 70 65 73 31 3A 20 0A 09 0B 08 0D 0C    escapes1: ......
+  07 5C 3F 27 22 53 45 00                            .\?'"SE.
+}
+---- decoded literal, length = 11, crc32 = 0x39217103957B5BDF ---- {
+  69 6D 70 6C 64 65 66 3A 20 71 00                   impldef: q.
+}
+---- decoded literal, length = 12, crc32 = 0x686E66024C33F5C3 ---- {
+  77 69 64 65 20 73 74 72 69 6E 67 00                wide string.
+}
+strlit/strlit1.cc:9:3: warning: Escape sequence '\q' is implementation-defined.  It is being treated like 'q'.
+---- stderr ----
+---- exit status ----
+Exit 0
