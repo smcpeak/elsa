@@ -1415,54 +1415,18 @@ void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
       }
     }
   }
-
-  tcheck_getAlias(&env);
 }
 
-StringRef D_attribute::getAlias() const
-{
-  return tcheck_getAlias(NULL);
-}
 
-// quarl 2006-07-13
-//    Type check attribute((alias("aliasTarget"))), and return alias target if
-//    any.  If penv==NULL, then we must have already typechecked.
-StringRef D_attribute::tcheck_getAlias(Env *penv) const
-{
-  StringRef foundAlias = NULL;
-
-  for (AttributeSpecifierList *l = alist; l; l = l->next) {
-    for (AttributeSpecifier *s = l->spec; s; s = s->next) {
-      if (s->attr->isAT_func()) {
-        AT_func *f = s->attr->asAT_func();
-
-        if (streq(f->f, "alias")) {
-          if (foundAlias) {
-            xassert(penv);
-            penv->error(loc, "more than one attribute alias");
-          }
-          if (fl_count(f->args) != 1) {
-            xassert(penv);
-            penv->error(loc, "too many arguments to attribute alias");
-          }
-          Expression *&expr = fl_first(f->args)->expr;
-          if (!expr->isE_stringLit()) {
-            xassert(penv);
-            penv->error(loc, "illegal argument to attribute alias");
-          }
-          if (penv) {
-            expr->tcheck(*penv, expr);
-          }
-          E_stringLit *str = expr->asE_stringLit();
-          xassert(str->text);
-          xassert(str->fullTextNQ);
-          foundAlias = str->fullTextNQ;
-        }
-      }
-    }
-  }
-  return foundAlias;
-}
+// smcpeak 2021-06-07: There used to be a method here called
+// 'tcheck_getAlias' that interpreted things like:
+//
+//   attribute((alias("aliasTarget")))
+//
+// I removed it because it was unused in Elsa.  Possibly it was used in
+// Oink, and if so, it can be resurrected at some point, using
+// E_stringLit::m_stringData instead of 'fullTextNQ' (which I am also
+// removing).
 
 
 // EOF

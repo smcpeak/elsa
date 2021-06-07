@@ -5497,30 +5497,6 @@ Type *E_stringLit::itcheck_x(Env &env, Expression *&replacement)
     m_stringData.print("decoded literal");
   }
 
-  // TODO: Remove this.
-  {
-    // quarl 2006-07-13
-    //    Build the dequoted full text.
-    //
-    //    TODO: could just clobber text+continuations with fullText.  Or just
-    //    do this in parsing...
-    stringBuilder sb;
-    E_stringLit *p = this;
-    do {
-      char const *s = p->text;
-      if (*s == 'L') ++s;
-      int l = strlen(s);
-      if (l >= 2 && s[0] == '\"' && s[l-1] == '\"') {
-        sb.append(s+1, l-2);
-      } else {
-        // see in/gnu/d0122.c for missing quotes
-        sb.append(s, l);
-      }
-      p = p->continuation;
-    } while(p);
-    fullTextNQ = env.str(sb);
-  }
-
   CVFlags stringLitCharCVFlags = CV_NONE;
   if (env.lang.stringLitCharsAreConst) {
     stringLitCharCVFlags = CV_CONST;

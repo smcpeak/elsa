@@ -579,7 +579,7 @@ class Expression {
   // by making a continuation list
   -> E_intLit(StringRef text);
   -> E_floatLit(StringRef text);
-  -> E_stringLit(StringRef text, E_stringLit continuation = NULL, StringRef fullTextNQ = NULL);
+  -> E_stringLit(StringRef text, E_stringLit continuation = NULL);
   -> E_charLit(StringRef text);
 
   // reference to 'this', the address of the receiver object

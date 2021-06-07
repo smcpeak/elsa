@@ -318,14 +318,6 @@ verbatim {
     virtual D_attribute *clone() const;
 
     virtual void tcheck(Env &env, Declarator::Tcheck &dt);
-
-    // Return the attribute(alias("name")) name, or NULL if none.  There
-    // mustn't be more than one.
-    virtual StringRef getAlias() const;
-
-  private:
-    // Return the attribute alias, and check for errors
-    StringRef tcheck_getAlias(Env *penv) const;
   };
 }
 // TODO: IDeclarator::isD_attribute(), asD_attribute(), ifD_attribute()
