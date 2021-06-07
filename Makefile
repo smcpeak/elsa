@@ -1,12 +1,8 @@
 # Makefile
 # Makefile for Elsa, the Elkhound-based C++ Parser.
 
-#temporary: iptree iptparse cipart
-
-# main target: a C++ parser
-#
-# TODO: Use explicit .exe extension.
-all: cc.ast.gen.h tlexer packedword_test semgrep smin ccparse
+# Default target.
+all: cc.ast.gen.h tlexer.exe packedword_test.exe semgrep.exe smin.exe ccparse.exe
 
 
 # ------------------------- Configuration --------------------------
@@ -133,7 +129,7 @@ TOCLEAN += *.bb *.bbg *.da
 
 
 # Compile .cc to .o, also generating .d dependency files.
-TOCLEAN += *.o *.d
+TOCLEAN += *.o *.d *.exe
 %.o: %.cc
 	$(CXX) -c -o $@ $(if $(findstring $*,$(GCOV_MODS)),$(GCOV_OPTS) )$(GENDEPS_FLAGS) $(CXXFLAGS) $<
 
@@ -226,15 +222,13 @@ LEXER_OBJS += lexer.yy.o
 LEXER_OBJS += cc_tokens.o
 
 # program to test the lexer alone
-TOCLEAN += tlexer
-tlexer: tlexer.o $(LEXER_OBJS) $(LIBS)
+tlexer.exe: tlexer.o $(LEXER_OBJS) $(LIBS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^
 
 
 # ------------------------ packedword_test -------------------
 # program to test packedword
-TOCLEAN += packedword_test
-packedword_test: packedword_test.o $(LIBS)
+packedword_test.exe: packedword_test.o $(LIBS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^
 
 
@@ -330,15 +324,13 @@ libelsa.a: $(CCPARSE_OBJS)
 
 
 # parser binary
-TOCLEAN += ccparse
-ccparse: main.o libelsa.a $(LIBS)
+ccparse.exe: main.o libelsa.a $(LIBS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^
-	./ccparse in/t0001.cc
+	./ccparse.exe in/t0001.cc
 
 
 # -------------------- semgrep --------------------
-TOCLEAN += semgrep
-semgrep: $(CCPARSE_OBJS) semgrep.o $(LIBS)
+semgrep.exe: $(CCPARSE_OBJS) semgrep.o $(LIBS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^
 
 
@@ -363,8 +355,7 @@ SMIN_OBJS += iptparse.yy.o
 SMIN_OBJS += iptree.o
 SMIN_OBJS += smin.o
 
-TOCLEAN += smin
-smin: $(SMIN_OBJS) $(LIBS)
+smin.exe: $(SMIN_OBJS) $(LIBS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^
 
 
@@ -419,8 +410,8 @@ gendoc/dependencies.dot:
 	  -Xgeneric_aux.h -Xcc_ast_aux.h -Xcc_lang.h=1 \
 	  main.cc cc_tcheck.cc >$@
 
-gendoc/3.4.5.dot: ccparse in/std/3.4.5.cc
-	./ccparse -tr printHierarchies in/std/3.4.5.cc | \
+gendoc/3.4.5.dot: ccparse.exe in/std/3.4.5.cc
+	./ccparse.exe -tr printHierarchies in/std/3.4.5.cc | \
 	$(PERL) chop_out "--- E ---" "--- F ---" >$@
 
 # because of the above dependency on ccparse, if someone does 'make doc'
@@ -515,7 +506,7 @@ test-check: all
 	$(MAKE) -C test check
 
 check: all
-	./packedword_test
+	./packedword_test.exe
 	MAKE=$(MAKE) ./regrtest
 	@echo ""
 	@echo "Regression tests passed."

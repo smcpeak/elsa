@@ -18,9 +18,7 @@ all: check
 
 
 # Name of parser binary.
-#
-# TODO: Have Elsa always create ccparse with the ".exe" extension.
-CCPARSE := $(wildcard ../ccparse.exe ../ccparse)
+CCPARSE := ../ccparse.exe
 
 # --------------------- interpreter tests ------------------------
 TESTS :=

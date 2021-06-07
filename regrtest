@@ -2,7 +2,7 @@
 # regression tests
 
 # This file contains a list of tests that should be run in Elsa (via
-# ./ccparse) before each commit.  With the exception of a few stored
+# ./ccparse.exe) before each commit.  With the exception of a few stored
 # in the elsa/in/big directory, they should be short tests that can be
 # parsed and typechecked quickly.  When a big test fails (either one
 # that is in elsa/in/big, or some other external package), the failing
@@ -222,7 +222,7 @@ grepBoth() {
 # or change to 'fail' status those tests that are not working at
 # some given time
 testparse() {
-  runTest perl ./multitest.pl ./ccparse in/$1
+  runTest perl ./multitest.pl ./ccparse.exe in/$1
 }
 testparse_strict() {
   # this is for tests that include things that should be diagnosed
@@ -238,12 +238,12 @@ testparse_strict() {
   # 2005-03-09: The flag that "strict" used to control is now on
   # by default, though it can be disabled with "-tr permissive".
   # I will leave "testparse_strict", but not use it anymore.
-  runTest perl ./multitest.pl ./ccparse -tr strict in/$1
+  runTest perl ./multitest.pl ./ccparse.exe -tr strict in/$1
 }
 
 # run the parser with some specific tracing flag(s) added
 testparse_special() {
-  runTest perl ./multitest.pl ./ccparse -tr $1 in/$2
+  runTest perl ./multitest.pl ./ccparse.exe -tr $1 in/$2
 }
 
 failparse() {
@@ -251,7 +251,7 @@ failparse() {
     echo "failparse $1: failparse takes two arguments"
     exit 4
   fi
-  failTest "$2" perl ./multitest.pl ./ccparse in/$1
+  failTest "$2" perl ./multitest.pl ./ccparse.exe in/$1
 }
 
 failparse_special() {
@@ -259,7 +259,7 @@ failparse_special() {
     echo "failparse_special $2: failparse_special takes three arguments"
     exit 4
   fi
-  failTest "$3" perl ./multitest.pl ./ccparse -tr $1 in/$2
+  failTest "$3" perl ./multitest.pl ./ccparse.exe -tr $1 in/$2
 }
 
 # ---- BEGIN: lots of tests ----
@@ -952,7 +952,7 @@ testparse d0080.cc # "inheriting from dependent qualified type"
 testparse d0084.cc
 
 # tests a rule enforced only in ANSI mode
-runTest perl ./multitest.pl ./ccparse -tr ansi in/d0087.cc
+runTest perl ./multitest.pl ./ccparse.exe -tr ansi in/d0087.cc
 
 testparse d0088.cc
 testparse d0089.cc
@@ -1197,11 +1197,11 @@ testparse t0539_11.cc
 #   (plus more from before I started maintaining this list ...)
 rm -f in/std/*.error*.cc
 for fn in in/std/*.cc; do
-  runTest perl ./multitest.pl ./ccparse -tr ansi "$fn"
+  runTest perl ./multitest.pl ./ccparse.exe -tr ansi "$fn"
 done
 
 # for the benefit of gcov
-runTest ./ccparse -tr printHierarchies,ansi in/std/3.4.5.cc
+runTest ./ccparse.exe -tr printHierarchies,ansi in/std/3.4.5.cc
 
 # more in another (private) repository, if present
 if [ -f ../cppstdex/regrtest_inner ]; then
@@ -1281,7 +1281,7 @@ if $use_gnu; then
 
   # test c99 extensions
   for fn in in/c99/*.c; do
-    runTest ./ccparse -tr c_lang "$fn"
+    runTest ./ccparse.exe -tr c_lang "$fn"
   done
 
   testparse gnu/k0001.cc #"({...}) cannot be empty"
@@ -1340,17 +1340,17 @@ runTest perl ./idemcheck -d outdir $list
 
 # test the parser in C mode
 testCparse() {
-  runTest perl ./multitest.pl ./ccparse -tr c_lang in/$1
+  runTest perl ./multitest.pl ./ccparse.exe -tr c_lang in/$1
 }
 testCparse_special() {
-  runTest perl ./multitest.pl ./ccparse -tr c_lang,$1 in/$2
+  runTest perl ./multitest.pl ./ccparse.exe -tr c_lang,$1 in/$2
 }
 failCparse() {
   if [ "$2" = "" ]; then
     echo "failparse $1: failparse takes two arguments"
     exit 4
   fi
-  failTest "$2" perl ./multitest.pl ./ccparse -tr c_lang in/$1
+  failTest "$2" perl ./multitest.pl ./ccparse.exe -tr c_lang in/$1
 }
 testCparse c/t0001.c
 testCparse c/t0002.c
@@ -1373,8 +1373,8 @@ testCparse c/t0018.c
 testCparse c/t0019.c
 
 # for gcov
-runTest perl ./multitest.pl ./ccparse -tr ansi_c99 in/c/t0020.c
-runTest perl ./multitest.pl ./ccparse -tr ansi_c,warnings in/c/t0021.c
+runTest perl ./multitest.pl ./ccparse.exe -tr ansi_c99 in/c/t0020.c
+runTest perl ./multitest.pl ./ccparse.exe -tr ansi_c,warnings in/c/t0021.c
 
 testCparse c/t0022.c
 failCparse c/t0023.c "unhandled KandRSimpleDeclaration ambiguity"
@@ -1453,7 +1453,7 @@ fi
 if $use_kandr; then
   # test the parser in C + K&R mode
   testKANDRparse() {
-    runTest perl ./multitest.pl ./ccparse -tr gnu_kandr_c_lang in/$1
+    runTest perl ./multitest.pl ./ccparse.exe -tr gnu_kandr_c_lang in/$1
   }
   testKANDRparse kandr/t0001.c
   testKANDRparse kandr/t0002.c
@@ -1513,10 +1513,10 @@ if $use_gnu; then
 
   # tests (primarily for __attribute__) from CIL
   testcil() {
-    runTest ./ccparse -tr c_lang in/gnu/cil/$1
+    runTest ./ccparse.exe -tr c_lang in/gnu/cil/$1
   }
   failcil() {
-    failTest "$2" ./ccparse -tr c_lang in/gnu/cil/$1
+    failTest "$2" ./ccparse.exe -tr c_lang in/gnu/cil/$1
   }
 
   # I deleted all the in/gnu/cil tests.  I don't know if that was
@@ -1558,7 +1558,7 @@ fi
 
 
 # msvc
-runTest ./ccparse -tr msvcBugs in/msvc/m0001.cc
+runTest ./ccparse.exe -tr msvcBugs in/msvc/m0001.cc
 
 
 # final parser checks against the big files, since they've now become
@@ -1566,10 +1566,10 @@ runTest ./ccparse -tr msvcBugs in/msvc/m0001.cc
 if $MAKE in/big; then
 
 testnsparse() {
-  runTest ./ccparse "$1"
+  runTest ./ccparse.exe "$1"
 }
 failnsparse() {
-  failTest "$2" ./ccparse "$1"
+  failTest "$2" ./ccparse.exe "$1"
 }
 
 if [ "$DISABLE_BIG_TESTS" = "" ]; then

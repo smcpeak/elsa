@@ -17,7 +17,6 @@
 cc_tokens.cc
 cc_tokens.h
 cc_tokens.ids
-ccparse
 config.mk
 in/*.error*.cc
 in/big/*.i
@@ -27,11 +26,7 @@ lex.backup
 lexer.lex
 lexer.yy.cc
 lexer.yy.h
-packedword_test
 personal.mk
 quicktest
-semgrep
-smin
-tlexer
 
 # EOF

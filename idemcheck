@@ -6,7 +6,7 @@ use strict;
 
 # Daniel S. Wilkerson dsw@cs.berkeley.edu
 
-my $parser = "./ccparse";
+my $parser = "./ccparse.exe";
 die "No executable file: $parser\n" unless -x $parser;
 my @names = ();
 my @outfiles = ();
