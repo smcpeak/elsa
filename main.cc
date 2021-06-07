@@ -15,6 +15,9 @@ void if_malloc_stats()
 }
 
 
+// When true, print the count of warnings and errors, and the phase times.
+static bool verboseOutput = true;
+
 // this is a dumb way to organize argument processing...
 char *myProcessArgs(int argc, char **argv, char const *additionalInfo)
 {
@@ -38,6 +41,11 @@ char *myProcessArgs(int argc, char **argv, char const *additionalInfo)
       argv++;
       argc--;
     }
+    else if (streq(argv[1], "--quiet")) {
+      verboseOutput = false;
+      argv++;
+      argc--;
+    }
     else {
       break;     // didn't find any more options
     }
@@ -49,6 +57,7 @@ char *myProcessArgs(int argc, char **argv, char const *additionalInfo)
             "    -tr <flags>:       turn on given tracing flags (comma-separated)\n"
             "    -xc                parse input as C rather than C++\n"
             "    -w                 disable warnings\n"
+            "    --quiet            do not print error/warn counts and times\n"
          << (additionalInfo? additionalInfo : "");
     exit(argc==1? 0 : 2);    // error if any args supplied
   }
@@ -196,9 +205,11 @@ static int doit(int argc, char **argv)
 
   // Run the parser.
   ElsaParse elsaParse(strTable, lang);
-  elsaParse.printErrorCount = true;
+  elsaParse.printErrorCount = verboseOutput;
   elsaParse.parse(inputFname);
-  elsaParse.printTimes();
+  if (verboseOutput) {
+    elsaParse.printTimes();
+  }
 
   //traceProgress() << "cleaning up...\n";
 
