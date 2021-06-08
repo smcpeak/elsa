@@ -400,9 +400,7 @@ string CTypePrinter::printLeft(CVAtomicType const *type, bool /*innerParen*/)
   s << print(type->atomic);
   s << cvToString(type->cv);
 
-  // this is the only mandatory space in the entire syntax
-  // for declarations; it separates the type specifier from
-  // the declarator(s)
+  // Separate the type specifier from the declarator(s).
   s << ' ';
 
   return s;
@@ -609,7 +607,6 @@ string CTypePrinter::printLeft(PointerToMemberType const *type, bool /*innerPare
 {
   stringBuilder s;
   s << printLeft(type->atType, false /*innerParen*/);
-  s << ' ';
   if (type->atType->isFunctionType() ||
       type->atType->isArrayType()) {
     s << '(';
@@ -982,7 +979,8 @@ void Declaration::print(PrintEnv &env)
       *env.out << toString(extras) << ' ';
     }
 
-    // TODO: this will not work if there is more than one declarator ...
+    // This ignores the possibility of multiple declarator because the
+    // parser normalizes them into multiple declarations.
 
     iter->print(env);
     *env.out << ';' << endl;
@@ -1005,7 +1003,7 @@ void printInitializerOpt(PrintEnv &env, Initializer /*nullable*/ *init)
         ctor->print(env);       // NOTE: You can NOT factor this line out of the if!
       }
     } else {
-      *env.out << '=';
+      *env.out << " = ";
       init->print(env);         // Don't pull this out!
     }
   }
@@ -1019,10 +1017,9 @@ void ASTTypeId::print(PrintEnv &env)
 
   env.typePrinter.print(*env.out, type0);
 
-  // sm: ASTTypeId declarators are always abstract, so I think
-  // this conditional never evaluates to true...
   if (decl->getDeclaratorId()) {
-    *env.out << ' ';
+    // One way we get here is when printing the parameter of a 'catch'.
+    *env.out << " ";
     decl->getDeclaratorId()->print(env);
   }
 

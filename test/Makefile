@@ -22,6 +22,7 @@ CCPARSE := ../ccparse.exe
 
 # --------------------- interpreter tests ------------------------
 TESTS :=
+TESTS += pprint/pp-decl.cc
 TESTS += pprint/pp-syntax.cc
 TESTS += pprint/vararg-promote.c
 TESTS += pprint/vararg-promote.cc
