@@ -22,6 +22,7 @@ CCPARSE := ../ccparse.exe
 
 # --------------------- interpreter tests ------------------------
 TESTS :=
+TESTS += pprint/vararg-promote.c
 TESTS += pprint/vararg-promote.cc
 TESTS += strlit/multiline.c
 TESTS += strlit/strlit1.cc
@@ -41,6 +42,16 @@ out/pprint/%.cc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
 	  --actual out/pprint/$*.cc.actual \
 	  --expect pprint/$*.cc.expect \
 	  $(CCPARSE) --quiet -tr prettyPrint $<
+	touch $@
+
+
+# Run a C pretty-print test.
+out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect $(CCPARSE)
+	@mkdir -p $(dir $@)
+	$(PYTHON3) ./run-compare-expect.py \
+	  --actual out/pprint/$*.c.actual \
+	  --expect pprint/$*.c.expect \
+	  $(CCPARSE) --quiet -xc -tr prettyPrint $<
 	touch $@
 
 

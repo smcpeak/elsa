@@ -1,0 +1,15 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+int f(int /*anon*/, ...);
+int f2(int /*anon*/, int /*anon*/);
+
+void g(char c) { 
+  ( (f) ( (1)));
+ ( (f) ( (1),  (2)));
+ ( (f) ( (1),  (c)));
+}
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0
