@@ -5401,22 +5401,6 @@ ASTTypeId *Env::buildASTTypeId(Type *type)
                                       NULL /*init*/));
 }
 
-// This function is called *after* the arguments have been type
-// checked and overload resolution performed (if necessary).  It must
-// compare the actual arguments to the parameters.  It also must
-// finish the job started above of resolving address-of overloaded
-// function names, by comparing to the parameter.
-//
-// One bad aspect of the current design is the need to pass both 'args'
-// and 'argInfo'.  Only by having both pieces of information can I do
-// resolution of overloaded address-of.  I'd like to consolidate that
-// at some point...
-//
-// Note that 'args' *never* includes the receiver object, whereas
-// 'argInfo' *always* includes the type of the receiver object (or
-// NULL) as its first element.
-//
-// It returns the # of default args used.
 
 // Elaboration: if 'ic' involves a user-defined conversion, then modify the
 // AST to make that explicit.
