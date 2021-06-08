@@ -1959,6 +1959,16 @@ void E_grouping::iprint(PrintEnv &env)
   expr->iprint(env);    // iprint means Expression won't put parens either
 }
 
+
+void E_implicitStandardConversion::iprint(PrintEnv &env)
+{
+  TreeWalkDebug treeDebug("E_implicitStandardConversion::iprint");
+
+  *env.out << "/*ISC:" << type->toString() << "*/";
+  expr->iprint(env);
+}
+
+
 // ----------------------- Initializer --------------------
 
 // this is under a declaration

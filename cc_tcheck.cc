@@ -6251,10 +6251,27 @@ int compareArgsToParams(Env &env, FunctionType *ft, FakeList<ArgExpression> *arg
       }
     }
   }
-  else if (paramIter.isDone() && !ft->acceptsVarargs()) {
-    env.error(stringb(
-      "There are " << fl_count(args) << " arguments, but only " <<
-      numNonReceiverParams << " parameters."));
+  else if (paramIter.isDone()) {
+    if (!ft->acceptsVarargs()) {
+      env.error(stringb(
+        "There are " << fl_count(args) << " arguments, but only " <<
+        numNonReceiverParams << " parameters."));
+    }
+    else {
+      // Add implicit conversions for the variable arguments.
+      for (; !fl_isEmpty(argIter); argIter = fl_butFirst(argIter)) {
+        ArgExpression *arg = fl_first(argIter);
+        if (env.elaborateImplicitConversionArgToVararg(arg->expr)) {
+          xassert(arg->ambiguity == NULL);
+        }
+        else {
+          env.error(arg->getType(), stringc
+                    << "cannot convert argument type '"
+                    << arg->getType()->toString()
+                    << "' to vararg (...) parameter type");
+        }
+      }
+    }
   }
 
   return defaultArgsUsed;
@@ -9017,6 +9034,16 @@ Type *E_grouping::itcheck_grouping_set(Env &env, Expression *&replacement,
   replacement = expr;
 
   return expr->type;
+}
+
+
+Type *E_implicitStandardConversion::itcheck_x(Env &env, Expression *&replacement)
+{
+  // I do not expect this to be called normally since the type checker
+  // inserts ISC after it has done its work.  But it should be harmless
+  // to call it.  When an ISC is created, it is already in its final
+  // form.
+  return type;
 }
 
 

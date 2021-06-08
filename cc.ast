@@ -41,6 +41,7 @@
 // emitted verbatim into generated header (cc.ast.gen.h)
 verbatim {
   #include "cc_flags.h"         // CVFlags, DeclFlags, etc. (r)
+  #include "stdconv.h"          // StandardConversion
 
   class CCLang;                 // cc_lang.h
 }
@@ -645,6 +646,11 @@ class Expression {
 
   // retained explicitly for possible operator overloading
   -> E_arrow(Expression obj, PQName fieldName);         // e.g. p->f
+
+  // This is inserted into the AST during type checking to explicitly
+  // record the existence of an implicit standard conversion.
+  -> E_implicitStandardConversion(StandardConversion conv,
+                                  Expression expr);
 }
 
 

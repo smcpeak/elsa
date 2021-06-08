@@ -21,6 +21,7 @@
 #include "cc_flags.h"  // SpecialExpr
 
 // fwd
+class AtomicType;      // cc_type.h
 class Type;            // cc_type.h
 class Env;             // cc_env.h
 class TypeFactory;     // cc_type.h
@@ -119,6 +120,7 @@ Type *usualArithmeticConversions(TypeFactory &tfac, Type *left, Type *right);
 SimpleTypeId usualArithmeticConversions(SimpleTypeId leftId, SimpleTypeId rightId);
 
 // cppstd 4.5
+bool isIntegerPromotion(AtomicType const *src, AtomicType const *dest);
 SimpleTypeId applyIntegralPromotions(Type *t);
 SimpleTypeId applyIntegralPromotions(SimpleTypeId id);
 

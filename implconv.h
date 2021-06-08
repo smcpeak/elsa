@@ -81,6 +81,12 @@ ImplicitConversion getImplicitConversion(
 );
 
 
+// Variation on 'getImplicitConversion' for the case of converting an
+// argument to something to pass to '...' (varargs).
+ImplicitConversion getImplicitConversionToVararg
+  (Env &env, SpecialExpr special, Type *src);
+
+
 // testing interface, for use by type checker
 void test_getImplicitConversion(
   Env &env, SpecialExpr special, Type *src, Type *dest,

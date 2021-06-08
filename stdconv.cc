@@ -142,8 +142,6 @@ SCRank getRank(StandardConversion scs)
 
 
 // --------------------- getStandardConversion --------------------
-bool isIntegerPromotion(AtomicType const *src, AtomicType const *dest);
-
 // int (including bitfield), bool, or enum
 bool isIntegerNumeric(Type const *t, SimpleType const *tSimple)
 {

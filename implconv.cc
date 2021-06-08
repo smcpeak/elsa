@@ -289,6 +289,44 @@ ImplicitConversion getImplicitConversion
 }
 
 
+// cppstd 5.2.2/7
+ImplicitConversion getImplicitConversionToVararg
+  (Env &env, SpecialExpr special, Type *src)
+{
+  xassert(src);
+  ImplicitConversion ret;
+
+  if (src->asRval()->isGeneralizedDependent()) {
+    ret.addStdConv(SC_IDENTITY);      // could be as good as this
+    return ret;
+  }
+
+  // TODO: lvalue-to-rvalue conversions
+  // TODO: array-to-pointer
+  // TODO: function-to-pointer
+  // TODO: nullptr_t to void*
+
+  // TODO: Check the argument has arithmetic, enumeration, pointer,
+  // pointer to member, or class type.
+
+  // Consider promotion to 'int'.
+  SimpleType &intType = SimpleType::fixed[ST_INT];
+  if (src->isCVAtomicType() &&
+      isIntegerPromotion(src->asCVAtomicType()->atomic,
+                         &intType))
+  {
+    ret.addStdConv(SC_INT_PROM);
+    return ret;
+  }
+
+  // TODO: Consider floating-point promotions.
+
+  // Since so much is not done, we'll just assume SC_IDENTITY works.
+  ret.addStdConv(SC_IDENTITY);
+  return ret;
+}
+
+
 StandardConversion tryCallCtor
   (Variable const *var, SpecialExpr special, Type const *src)
 {

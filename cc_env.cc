@@ -5413,32 +5413,47 @@ Expression *Env::makeConvertedArg(Expression * const arg,
   case ImplicitConversion::IC_NONE:
     // an error message is already printed above.
     break;
+
   case ImplicitConversion::IC_STANDARD:
-    if (ic.scs & SC_GROUP_1_MASK) {
-      switch (ic.scs & SC_GROUP_1_MASK) {
+    switch (ic.scs & SC_GROUP_1_MASK) {
+      default:
+        // No conversion here, ignore.
+        break;
+
       case SC_LVAL_TO_RVAL:
         // TODO
         break;
+
       case SC_ARRAY_TO_PTR:
         // TODO
         break;
+
       case SC_FUNC_TO_PTR:
-        newarg = makeAddr(env.tfac, env.loc(), arg);
+        newarg = makeAddr(env.tfac, env.loc(), newarg);
         break;
+    }
+
+    switch (ic.scs & SC_GROUP_2_MASK) {
       default:
-        // only 3 kinds in SC_GROUP_1_MASK
-        xfailure("shouldn't reach here");
+        // No conversion, or TODO: one I have not handled.
+        break;
+
+      case SC_INT_PROM: {
+        newarg = new E_implicitStandardConversion(SC_INT_PROM, newarg);
+        newarg->type = env.tfac.getSimpleType(ST_INT);
         break;
       }
-    } else {
-      // TODO
     }
+
+    // TODO: Group 3.
     break;
+
   case ImplicitConversion::IC_USER_DEFINED:
     // TODO
     break;
   case ImplicitConversion::IC_ELLIPSIS:
-    // TODO
+    // I don't think we ever get here.  I think IC_ELLIPSIS is only used
+    // during overload resolution, not actual argument conversion.
     break;
   case ImplicitConversion::IC_AMBIGUOUS:
     xfailure("IC_AMBIGUOUS -- what does this mean here? (25f0c1af-5aea-4528-b994-ccaac0b3a8f1)");
@@ -5485,6 +5500,27 @@ bool Env::elaborateImplicitConversionArgToParam(Type *paramType, Expression *&ar
   env.instantiateTemplatesInConversion(ic);
 
   return true;           // success
+}
+
+
+bool Env::elaborateImplicitConversionArgToVararg(Expression *&arg)
+{
+  // Compute the required conversion.
+  Type *src = arg->getType();
+  ImplicitConversion ic =
+    getImplicitConversionToVararg(env,
+                                  arg->getSpecial(env.lang),
+                                  src);
+  if (!ic) {
+    return false;
+  }
+
+  // Insert the implicit conversion.
+  //
+  // TODO: 'makeConvertedArg' does nothing with promotions.
+  arg = env.makeConvertedArg(arg, ic);
+  env.instantiateTemplatesInConversion(ic);
+  return true;
 }
 
 

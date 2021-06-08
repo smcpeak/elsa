@@ -738,6 +738,7 @@ public:      // funcs
                                ImplicitConversion const &ic);
 
   bool elaborateImplicitConversionArgToParam(Type *paramType, Expression *&arg);
+  bool elaborateImplicitConversionArgToVararg(Expression *&arg);
 
   // ------------ new lookup mechanism ---------------
 private:     // funcs
