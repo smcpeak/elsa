@@ -34,7 +34,7 @@ public:
     (((*(this)).m_y)=((__other).m_y));
     return (*(this));
   }
-  inline ~C(/*m: class C & */ )
+  inline ~C(/*m: class C & */)
   {}
 };
 
