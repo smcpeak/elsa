@@ -304,10 +304,10 @@ MAKE_TOSTRING(UnaryOp, NUM_UNARYOPS, unaryOpNames)
 
 
 char const * const effectOpNames[NUM_EFFECTOPS] = {
-  "++/*postfix*/",
-  "--/*postfix*/",
-  "++/*prefix*/",
-  "--/*prefix*/",
+  "++",
+  "--",
+  "++",
+  "--",
 };
 
 MAKE_TOSTRING(EffectOp, NUM_EFFECTOPS, effectOpNames)

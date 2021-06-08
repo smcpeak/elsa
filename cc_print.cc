@@ -129,7 +129,6 @@ PairDelim::PairDelim(CodeOutStream &out, rostring message, rostring open, char c
     : close(close0), out(out)
 {
   out << message;
-  out << ' ';
   out << open;
   if (strchr(toCStr(open), '{')) out.down();
 }
@@ -138,7 +137,6 @@ PairDelim::PairDelim(CodeOutStream &out, rostring message)
   : close(""), out(out)
 {
   out << message;
-  out << ' ';
 }
 
 PairDelim::~PairDelim() {
@@ -919,25 +917,37 @@ void Function::print(PrintEnv &env)
     return;
   }
 
+  *env.out << '\n';
+  if (handlers) {
+    *env.out << "try";
+    if (inits) {
+      // Newline before member inits.
+      *env.out << '\n';
+    }
+    else {
+      // Space before opening brace.
+      *env.out << ' ';
+    }
+  }
+
   if (inits) {
-    *env.out << ":";
+    *env.out << "  : ";
     bool first_time = true;
     FAKELIST_FOREACH_NC(MemberInit, inits, iter) {
       if (first_time) first_time = false;
-      else *env.out << ",";
+      else *env.out << ",\n    ";
       // NOTE: eventually will be able to figure out if we are
       // initializing a base class or a member variable.  There will
       // be a field added to class MemberInit that will say.
       PairDelim pair(*env.out, iter->name->toString(), "(", ")");
       printArgExprList(env, iter->args);
     }
+    *env.out << '\n';
   }
-
-  if (handlers) *env.out << "\ntry";
 
   if (body->stmts.isEmpty()) {
     // more concise
-    *env.out << " {}\n";
+    *env.out << "{}\n";
   }
   else {
     body->print(env);
@@ -947,6 +957,7 @@ void Function::print(PrintEnv &env)
     FAKELIST_FOREACH_NC(Handler, handlers, iter) {
       iter->print(env);
     }
+    *env.out << '\n';
   }
 }
 
@@ -1125,7 +1136,7 @@ void TS_classSpec::print(PrintEnv &env)
     else *env.out << ',' << ' ';
     iter->print(env);
   }
-  PairDelim pair(*env.out, "", "{\n", "}");
+  PairDelim pair(*env.out, " ", "{\n", "}");
   FOREACH_ASTLIST_NC(Member, members->list, iter2) {
     iter2.data()->print(env);
   }
@@ -1133,7 +1144,7 @@ void TS_classSpec::print(PrintEnv &env)
 
 void TS_enumSpec::print(PrintEnv &env)
 {
-  TreeWalkDebug treeDebug("TS_classSpec");
+  TreeWalkDebug treeDebug("TS_enumSpec");
   *env.out << toString(ql);          // see string toString(class dummyType*) above
   *env.out << toString(cv);
   *env.out << "enum ";
@@ -1356,7 +1367,7 @@ void S_continue::iprint(PrintEnv &env)
 void S_return::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_return::iprint");
-  *env.out << "return";
+  *env.out << "return ";
   if (expr) expr->print(env);
   *env.out << ';' << '\n';
 }
@@ -1424,7 +1435,7 @@ void Handler::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("Handler");
   {
-    PairDelim pair(*env.out, "catch", "(", ")");
+    PairDelim pair(*env.out, "catch ", "(", ") ");
     if (isEllipsis()) {
       *env.out << "...";
     }
