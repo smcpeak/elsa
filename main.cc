@@ -112,7 +112,9 @@ static int doit(int argc, char **argv)
      "  (grep in source for \"trace\" to find more obscure flags)\n"
      "");
 
-  traceAddSys("progress");
+  if (verboseOutput) {
+    traceAddSys("progress");
+  }
 
   if (tracingSys("printAsML")) {
     Type::printAsML = true;
