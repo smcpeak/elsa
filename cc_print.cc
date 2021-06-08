@@ -62,27 +62,14 @@ void CodeOutStream::printIndentation(int n) {
   }
 }
 
-void CodeOutStream::printWhileInsertingIndentation(int n, rostring message) {
-  int len = message.length();
-  for(int i=0; i<len; ++i) {
-    char c = message[i];
-    out << c;
-    if (c == '\n') printIndentation(n);
-  }
-}
-
 void CodeOutStream::finish()
 {
-  // NOTE: it is probably an error if depth is ever > 0 at this point.
-  //      printf("BUFFERED NEWLINES: %d\n", bufferedNewlines);
-  stringBuilder s;
-  for(;bufferedNewlines>1;bufferedNewlines--) s << "\n";
-  printWhileInsertingIndentation(depth,s);
-  xassert(bufferedNewlines == 1 || bufferedNewlines == 0);
-  if (bufferedNewlines) {
+  // Empty the buffered newlines.
+  while (bufferedNewlines > 0) {
+    out << '\n';
     bufferedNewlines--;
-    out << '\n';                // don't indent after last one
   }
+
   flush();
 }
 
@@ -91,35 +78,35 @@ CodeOutStream & CodeOutStream::operator << (ostream& (*manipfunc)(ostream& outs)
   // sm: just assume it's "endl"; the only better thing I could
   // imagine doing is pointer comparisons with some other well-known
   // omanips, since we certainly can't execute it...
-  if (bufferedNewlines) {
-    out << endl;
-    printIndentation(depth);
-  } else bufferedNewlines++;
+  this->operator<<("\n");
+
   out.flush();
   return *this;
 }
 
 CodeOutStream & CodeOutStream::operator << (char const *message)
 {
-  int len = strlen(message);
-  if (len<1) return *this;
-  string message1 = message;
+  for (; *message; message++) {
+    if (*message != '\n') {
+      // Non-newline: Empty the buffered newlines.
+      if (bufferedNewlines > 0) {
+        while (bufferedNewlines > 0) {
+          out << '\n';
+          bufferedNewlines--;
+        }
 
-  int pending_bufferedNewlines = 0;
-  if (message1[len-1] == '\n') {
-    message1[len-1] = '\0';    // whack it
-    pending_bufferedNewlines++;
+        // We are about to print a non-newline, so indent.
+        printIndentation(depth);
+      }
+
+      out << *message;
+    }
+    else {
+      // Newline: accumulate in buffer.
+      bufferedNewlines++;
+    }
   }
 
-  stringBuilder message2;
-  if (bufferedNewlines) {
-    message2 << '\n';
-    bufferedNewlines--;
-  }
-  message2 << message1;
-  bufferedNewlines += pending_bufferedNewlines;
-
-  printWhileInsertingIndentation(depth, message2);
   return *this;
 }
 
@@ -917,16 +904,16 @@ void Function::print(PrintEnv &env)
     return;
   }
 
-  *env.out << '\n';
+  *env.out << "\n";
   if (handlers) {
     *env.out << "try";
     if (inits) {
       // Newline before member inits.
-      *env.out << '\n';
+      *env.out << "\n";
     }
     else {
       // Space before opening brace.
-      *env.out << ' ';
+      *env.out << " ";
     }
   }
 
@@ -942,7 +929,7 @@ void Function::print(PrintEnv &env)
       PairDelim pair(*env.out, iter->name->toString(), "(", ")");
       printArgExprList(env, iter->args);
     }
-    *env.out << '\n';
+    *env.out << "\n";
   }
 
   if (body->stmts.isEmpty()) {
@@ -957,7 +944,7 @@ void Function::print(PrintEnv &env)
     FAKELIST_FOREACH_NC(Handler, handlers, iter) {
       iter->print(env);
     }
-    *env.out << '\n';
+    *env.out << "\n";
   }
 }
 
@@ -1152,7 +1139,7 @@ void TS_enumSpec::print(PrintEnv &env)
   PairDelim pair(*env.out, "", "{\n", "}");
   FAKELIST_FOREACH_NC(Enumerator, elts, iter) {
     iter->print(env);
-    *env.out << '\n';
+    *env.out << "\n";
   }
 }
 
@@ -1182,7 +1169,13 @@ void MR_func::print(PrintEnv &env)
 void MR_access::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("MR_access");
-  *env.out << toString(k) << ':' << '\n';
+
+  // Print access specifiers un-intended.
+  env.out->up();
+
+  *env.out << toString(k) << ":\n";
+
+  env.out->down();
 }
 
 void MR_usingDecl::print(PrintEnv &env)
@@ -1247,7 +1240,7 @@ void Statement::print(PrintEnv &env)
 void S_skip::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_skip::iprint");
-  *env.out << ';' << '\n';
+  *env.out << ";\n";
 }
 
 void S_label::iprint(PrintEnv &env)
@@ -1277,7 +1270,7 @@ void S_expr::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_expr::iprint");
   expr->print(env);
-  *env.out << ';' << '\n';
+  *env.out << ";\n";
 }
 
 void S_compound::iprint(PrintEnv &env)
@@ -1293,7 +1286,7 @@ void S_if::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_if::iprint");
   {
-    PairDelim pair(*env.out, "if", "(", ")");
+    PairDelim pair(*env.out, "if ", "(", ")");
     cond->print(env);
   }
   thenBranch->print(env);
@@ -1305,7 +1298,7 @@ void S_switch::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_switch::iprint");
   {
-    PairDelim pair(*env.out, "switch", "(", ")");
+    PairDelim pair(*env.out, "switch ", "(", ")");
     cond->print(env);
   }
   branches->print(env);
@@ -1315,7 +1308,7 @@ void S_while::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_while::iprint");
   {
-    PairDelim pair(*env.out, "while", "(", ")");
+    PairDelim pair(*env.out, "while ", "(", ")");
     cond->print(env);
   }
   body->print(env);
@@ -1329,17 +1322,17 @@ void S_doWhile::iprint(PrintEnv &env)
     body->print(env);
   }
   {
-    PairDelim pair(*env.out, "while", "(", ")");
+    PairDelim pair(*env.out, "while ", "(", ")");
     expr->print(env);
   }
-  *env.out << ';' << '\n';
+  *env.out << ";\n";
 }
 
 void S_for::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_for::iprint");
   {
-    PairDelim pair(*env.out, "for", "(", ")");
+    PairDelim pair(*env.out, "for ", "(", ")");
     init->print(env);
     // this one not needed as the declaration provides one
     //          *env.out << ";";
@@ -1353,23 +1346,24 @@ void S_for::iprint(PrintEnv &env)
 void S_break::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_break::iprint");
-  *env.out << "break";
-  *env.out << ';' << '\n';
+  *env.out << "break;\n";
 }
 
 void S_continue::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_continue::iprint");
-  *env.out << "continue";
-  *env.out << ';' << '\n';
+  *env.out << "continue;\n";
 }
 
 void S_return::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_return::iprint");
-  *env.out << "return ";
-  if (expr) expr->print(env);
-  *env.out << ';' << '\n';
+  *env.out << "return";
+  if (expr) {
+    *env.out << " ";
+    expr->print(env);
+  }
+  *env.out << ";\n";
 }
 
 void S_goto::iprint(PrintEnv &env)
@@ -1379,7 +1373,7 @@ void S_goto::iprint(PrintEnv &env)
   TreeWalkDebug treeDebug("S_goto::iprint");
   *env.out << "goto ";
   *env.out << target;
-  *env.out << ';' << '\n';
+  *env.out << ";\n";
 }
 
 void S_decl::iprint(PrintEnv &env)

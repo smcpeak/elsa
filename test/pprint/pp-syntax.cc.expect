@@ -19,23 +19,23 @@ catch (int z) {
 }
 
 class C {
-  public:
-int m_x;
+public:
+  int m_x;
   int m_y;
-  public:
-C(int x);
+public:
+  C(int x);
   inline C(class C const &__other)
-  : m_x(((__other).m_x)),
+    : m_x(((__other).m_x)),
       m_y(((__other).m_y))
-{}
+  {}
   inline class C &operator=(/*m: class C & */ class C const &__other)
-{
+  {
     (((*(this)).m_x)=((__other).m_x));
-(((*(this)).m_y)=((__other).m_y));
-return (*(this));
-}
+    (((*(this)).m_y)=((__other).m_y));
+    return (*(this));
+  }
   inline ~C(/*m: class C & */ )
-{}
+  {}
 };
 
 C::C(int x)

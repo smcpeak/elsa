@@ -128,7 +128,6 @@ class CodeOutStream : public OutStream {
 
   // indentation and formatting support
   void printIndentation(int n);
-  void printWhileInsertingIndentation(int n, rostring s);
   void finish();
 
   // OutStream methods
