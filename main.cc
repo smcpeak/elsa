@@ -16,7 +16,7 @@ void if_malloc_stats()
 
 
 // When true, print the count of warnings and errors, and the phase times.
-static bool verboseOutput = true;
+static bool verboseOutput = false;
 
 // this is a dumb way to organize argument processing...
 char *myProcessArgs(int argc, char **argv, char const *additionalInfo)
@@ -46,6 +46,11 @@ char *myProcessArgs(int argc, char **argv, char const *additionalInfo)
       argv++;
       argc--;
     }
+    else if (streq(argv[1], "--verbose")) {
+      verboseOutput = true;
+      argv++;
+      argc--;
+    }
     else {
       break;     // didn't find any more options
     }
@@ -57,7 +62,8 @@ char *myProcessArgs(int argc, char **argv, char const *additionalInfo)
             "    -tr <flags>:       turn on given tracing flags (comma-separated)\n"
             "    -xc                parse input as C rather than C++\n"
             "    -w                 disable warnings\n"
-            "    --quiet            do not print error/warn counts and times\n"
+            "    --verbose          print error/warn counts and times\n"
+            "    --quiet            opposite of --verbose (and the default)\n"
          << (additionalInfo? additionalInfo : "");
     exit(argc==1? 0 : 2);    // error if any args supplied
   }
