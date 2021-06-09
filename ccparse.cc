@@ -98,7 +98,7 @@ UberModifiers ParseEnv
   if (m1 & m2 & UM_LONG) {
     // were there already two 'long's?
     if ((m1 | m2) & UM_LONG_LONG) {
-      error(loc, "too many `long's");
+      error(loc, "too many 'long's");
     }
 
     // make it look like only m1 had 'long long' and neither had 'long'

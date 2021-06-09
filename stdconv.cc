@@ -251,8 +251,8 @@ StandardConversion Conversion::error(char const *why)
 
   if (errorMsg) {
     *errorMsg = stringc
-      << "cannot convert `" << src->toString()
-      << "' to `" << dest->toString()
+      << "cannot convert '" << src->toString()
+      << "' to '" << dest->toString()
       << "': " << why;
   }
   return ret = SC_ERROR;
@@ -1115,8 +1115,8 @@ void test_getStandardConversion(
     // no, explain the situation
     env.error(stringc
       << "getStandardConversion("
-      << toString(special) << ", `"
-      << src->toString() << "', `"
+      << toString(special) << ", '"
+      << src->toString() << "', '"
       << dest->toString() << "') yielded "
       << toString(actual) << ", but I expected "
       << toString((StandardConversion)expected));
@@ -1125,8 +1125,8 @@ void test_getStandardConversion(
     // make a warning to show what happened anyway
     env.warning(stringc
       << "getStandardConversion("
-      << toString(special) << ", `"
-      << src->toString() << "', `"
+      << toString(special) << ", '"
+      << src->toString() << "', '"
       << dest->toString() << "') yielded "
       << toString(actual));
   }

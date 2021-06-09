@@ -1123,8 +1123,8 @@ bool MType::commonMatchType(Type const *conc, Type const *pat, MatchFlags flags)
     static bool doTrace = tracingSys("mtype");
     if (doTrace) {
       ostream &os = trace("mtype");
-      os << "conc=`" << conc->toString()
-         << "' pat=`" << pat->toString()
+      os << "conc='" << conc->toString()
+         << "' pat='" << pat->toString()
          << "' flags={" << toString(flags)
          << "}; match=" << (result? "true" : "false")
          ;
@@ -1218,7 +1218,7 @@ string MType::bindingsToString() const
   stringBuilder sb;
   sb << "; bindings:";
   for (BindingMap::IterC iter(bindings); !iter.isDone(); iter.adv()) {
-    sb << " \"" << iter.key() << "\"=`" << iter.value()->asString() << "'";
+    sb << " \"" << iter.key() << "\"='" << iter.value()->asString() << "'";
   }
   return sb;
 }

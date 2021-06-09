@@ -1232,9 +1232,9 @@ bool Env::loadBindingsWithExplTemplArgs(Variable *var, ObjList<STemplateArgument
     if (existing.hasValue()) {
       if (!existing.equals(*arg)) {
         if (iflags & IA_REPORT_ERRORS) {
-          error(stringc << "for parameter `" << param->name
-                        << "', inferred argument `" << existing.toString()
-                        << "' does not match supplied argument `" << arg->toString()
+          error(stringc << "for parameter '" << param->name
+                        << "', inferred argument '" << existing.toString()
+                        << "' does not match supplied argument '" << arg->toString()
                         << "'");
         }
         return false;
@@ -1433,8 +1433,8 @@ bool Env::inferTemplArgsFromFuncArgs
             // overload resolution (where IA_REPORT_ERRORS is not set)
             // if resolution ultimately fails.
             error(stringc << "during function template argument deduction: "
-                  << "argument `" << argType->toString() << "'"
-                  << " is incompatible with parameter `"
+                  << "argument '" << argType->toString() << "'"
+                  << " is incompatible with parameter '"
                   << paramType->toString() << "'");
           }
           return false;
@@ -1515,7 +1515,7 @@ void Env::getFuncTemplArgs_oneParamList
 
     if (!sta.hasValue()) {
       if (iflags & IA_REPORT_ERRORS) {
-        error(stringc << "arguments do not bind template parameter `"
+        error(stringc << "arguments do not bind template parameter '"
                       << templPIter.data()->name << "'");
       }
       haveAllArgs = false;
@@ -1631,7 +1631,7 @@ void Env::insertTemplateArgBindings
 
   if (!argIter.isDone()) {
     error(stringc
-          << "too many template arguments to `" << baseV->name << "'", EF_STRONG);
+          << "too many template arguments to '" << baseV->name << "'", EF_STRONG);
   }
 }
 
@@ -1669,7 +1669,7 @@ bool Env::insertTemplateArgBindings_oneParamList
         (!sarg || sarg->isType())) {
       if (!sarg && !param->defaultParamType) {
         error(stringc
-          << "too few template arguments to `" << baseV->name << "'");
+          << "too few template arguments to '" << baseV->name << "'");
         return false;
       }
 
@@ -1686,7 +1686,7 @@ bool Env::insertTemplateArgBindings_oneParamList
              (!sarg || sarg->isObject())) {
       if (!sarg && !param->value) {
         error(stringc
-          << "too few template arguments to `" << baseV->name << "'");
+          << "too few template arguments to '" << baseV->name << "'");
         return false;
       }
 
@@ -1796,8 +1796,8 @@ bool Env::insertTemplateArgBindings_oneParamList
       // FIX: make a provision for template template parameters here
       char const *argKind = sarg->isType()? "type" : "non-type";
       error(stringc
-            << "`" << param->name << "' is a " << paramKind
-            << " parameter, but `" << sarg->toString() << "' is a "
+            << "'" << param->name << "' is a " << paramKind
+            << " parameter, but '" << sarg->toString() << "' is a "
             << argKind << " argument", EF_STRONG);
     }
 
@@ -1901,7 +1901,7 @@ void Env::mapPrimaryArgsToSpecArgs_oneParamList(
     STemplateArgument arg = match.getBoundValue(param->name, tfac);
     if (!arg.hasValue()) {
       error(stringc
-            << "during partial specialization parameter `" << param->name
+            << "during partial specialization parameter '" << param->name
             << "' not bound in inferred bindings", EF_STRONG);
       return;
     }
@@ -2848,8 +2848,8 @@ void Env::instantiateClassBody(Variable *inst)
   }
 
   if (!instCT->syntax) {
-    error(stringc << "attempt to instantiate `" << instTI->templateName()
-                  << "', but no definition has been provided for `"
+    error(stringc << "attempt to instantiate '" << instTI->templateName()
+                  << "', but no definition has been provided for '"
                   << specTI->templateName() << "'");
     return;
   }
@@ -2998,14 +2998,14 @@ bool Env::supplyDefaultTemplateArguments
     else {
       arg = makeDefaultTemplateArgument(paramIter.data(), map);
       if (arg) {
-        TRACE("template", "supplied default argument `" <<
-                          arg->toString() << "' for param `" <<
+        TRACE("template", "supplied default argument '" <<
+                          arg->toString() << "' for param '" <<
                           param->name << "'");
       }
     }
 
     if (!arg) {
-      error(stringc << "no argument supplied for template parameter `"
+      error(stringc << "no argument supplied for template parameter '"
                     << param->name << "'");
       return false;
     }
@@ -3020,7 +3020,7 @@ bool Env::supplyDefaultTemplateArguments
   }
 
   if (!argIter.isDone()) {
-    error(stringc << "too many arguments supplied to template `"
+    error(stringc << "too many arguments supplied to template '"
                   << primaryTI->templateName() << "'");
     return false;
   }
@@ -3043,7 +3043,7 @@ STemplateArgument *Env::makeDefaultTemplateArgument
     }
     catch (XTypeDeduction &x) {
       HANDLER();
-      error(stringc << "could not evaluate default argument `"
+      error(stringc << "could not evaluate default argument '"
                     << param->defaultParamType->toString()
                     << "': " << x.why());
       return NULL;
@@ -3060,7 +3060,7 @@ STemplateArgument *Env::makeDefaultTemplateArgument
     }
     catch (XTypeDeduction &x) {
       HANDLER();
-      error(stringc << "could not evaluate default argument `"
+      error(stringc << "could not evaluate default argument '"
                     << param->value->exprToString()
                     << "': " << x.why());
       return NULL;
@@ -3118,7 +3118,7 @@ void Env::setSTemplArgFromExpr(STemplateArgument &sarg, Expression *expr)
       }
       else {
         env.error(stringc
-          << "cannot evaluate `" << expr->exprToString()
+          << "cannot evaluate '" << expr->exprToString()
           << "' as a template integer argument: " << *val.getWhy());
         delete val.getWhy();
       }
@@ -3138,7 +3138,7 @@ void Env::setSTemplArgFromExpr(STemplateArgument &sarg, Expression *expr)
     }
     else {
       env.error(stringc
-        << "`" << expr->exprToString() << "' must be a simple variable "
+        << "'" << expr->exprToString() << "' must be a simple variable "
         << "for it to be a template reference argument");
     }
   }
@@ -3157,7 +3157,7 @@ void Env::setSTemplArgFromExpr(STemplateArgument &sarg, Expression *expr)
     else {
       // TODO: This is wrong; the '&' is optional for arrays.
       env.error(stringc
-        << "`" << expr->exprToString() << " must be the address of a "
+        << "'" << expr->exprToString() << " must be the address of a "
         << "simple variable for it to be a template pointer argument");
     }
   }
@@ -3171,7 +3171,7 @@ void Env::setSTemplArgFromExpr(STemplateArgument &sarg, Expression *expr)
     }
     else {
       env.error(stringc
-        << "`" << expr->exprToString() << " must be the name of a "
+        << "'" << expr->exprToString() << " must be the name of a "
         << "function for it to be a template pointer argument");
     }
   }
@@ -3185,14 +3185,14 @@ void Env::setSTemplArgFromExpr(STemplateArgument &sarg, Expression *expr)
     }
     else {
       env.error(stringc
-        << "`" << expr->exprToString() << " must be the address of a "
+        << "'" << expr->exprToString() << " must be the address of a "
         << "class member for it to be a template pointer argument");
     }
   }
 
   else {
     env.error(expr->type, stringc
-      << "`" << expr->exprToString() << "' has type `"
+      << "'" << expr->exprToString() << "' has type '"
       << expr->type->toString() << "' but that's not an allowable "
       << "type for a non-type template argument");
   }
@@ -3732,10 +3732,10 @@ bool Env::mergeParameterLists(Variable *prior,
       error(stringc
         << "prior declaration of " << prior->toString()
         << " at " << prior->loc
-        << " was templatized with parameter `"
-        << dest->name << "' of type `" << dest->type->toString()
-        << "' but this one has parameter `"
-        << src->name << "' of type `" << src->type->toString()
+        << " was templatized with parameter '"
+        << dest->name << "' of type '" << dest->type->toString()
+        << "' but this one has parameter '"
+        << src->name << "' of type '" << src->type->toString()
         << "', and these are not equivalent",
         EF_DISAMBIGUATES);
       return false;
@@ -3945,7 +3945,7 @@ Type *Env::applyArgumentMapToType(MType &map, Type *origSrc)
       else if (!retInClassNAT->isCompoundType()) {
         // 14.8.2p2b3.6
         xTypeDeduction(stringc
-          << "during construction of pointer-to-member, type `"
+          << "during construction of pointer-to-member, type '"
           << retInClassNAT->toString() << "' is not a class");
       }
       else {
@@ -3970,11 +3970,11 @@ Type *Env::applyArgumentMapToAtomicType
     if (!replacement.hasValue()) {
       // I can trigger these when there is a preceding error;
       // an example is in/t0517.cc error 1
-      xTypeDeduction(stringc << "the type name `"
+      xTypeDeduction(stringc << "the type name '"
                              << stv->name << "' is not bound");
     }
     else if (!replacement.isType()) {
-      xTypeDeduction(stringc << "the type name `"
+      xTypeDeduction(stringc << "the type name '"
                              << stv->name << "' is bound to a non-type argument");
     }
 
@@ -4011,8 +4011,8 @@ Type *Env::applyArgumentMapToAtomicType
     if (!retFirst->isCompoundType()) {
       // 14.8.2p2b3.3
       xTypeDeduction(stringc
-        << "attempt to extract member `" << sdqt->rest->toString()
-        << "' from non-class `" << retFirst->toString() << "'");
+        << "attempt to extract member '" << sdqt->rest->toString()
+        << "' from non-class '" << retFirst->toString() << "'");
     }
 
     // resolve 'first'::'rest'
@@ -4046,7 +4046,7 @@ Type *Env::applyArgumentMap_applyCV(CVFlags cv, Type *type)
     // functions, but applyCVToType also does not like
     // cv-qualification of arrays.  Who should push the
     // cv-qualification down?  I'm thinking it should be applyCV...
-    xTypeDeduction(stringc << "type `" << type->toString()
+    xTypeDeduction(stringc << "type '" << type->toString()
                            << "' cannot be cv-qualified");
   }
   else {
@@ -4130,7 +4130,7 @@ STemplateArgument Env::applyArgumentMapToExpression
 
   if (!ret.isObject()) {
     xTypeDeduction(stringc
-      << "the name `" << evar->name->toString()
+      << "the name '" << evar->name->toString()
       << "' should be bound to an object argument");
   }
 
@@ -4212,7 +4212,7 @@ STemplateArgument Env::applyArgumentMapToPQName
     LookupSet set;
     scope->lookup(set, name->getName(), NULL /*env*/, lflags);
     if (set.isEmpty()) {
-      xTypeDeduction(stringc << "failed to find `" << name->getName()
+      xTypeDeduction(stringc << "failed to find '" << name->getName()
                              << "' in " << scope->scopeName());
     }
     else if (set.count() != 1) {
@@ -4241,11 +4241,11 @@ STemplateArgument Env::applyArgumentMapToPQName
     lflags |= LF_TEMPL_PRIMARY;
     Variable *v = scope->lookup_one(templ->name, NULL /*env*/, lflags);
     if (!v) {
-      xTypeDeduction(stringc << "failed to find `" << templ->name
+      xTypeDeduction(stringc << "failed to find '" << templ->name
                              << "' in " << scope->scopeName());
     }
     if (!v->isTemplateClass(false /*considerInherited*/)) {
-      xTypeDeduction(stringc << "`" << templ->name << "' in "
+      xTypeDeduction(stringc << "'" << templ->name << "' in "
                              << scope->scopeName() << " is not a template class");
     }
 
@@ -4268,11 +4268,11 @@ STemplateArgument Env::applyArgumentMapToPQName
     lflags |= LF_TEMPL_PRIMARY | LF_TYPES_NAMESPACES;
     Variable *q = scope->lookup_one(qual->qualifier, NULL /*env*/, lflags);
     if (!q) {
-      xTypeDeduction(stringc << "failed to find `" << qual->qualifier
+      xTypeDeduction(stringc << "failed to find '" << qual->qualifier
                              << "' in " << scope->scopeName());
     }
     if (!q->type->isCompoundType()) {
-      xTypeDeduction(stringc << "`" << qual->qualifier << "' in "
+      xTypeDeduction(stringc << "'" << qual->qualifier << "' in "
                              << scope->scopeName() << " is not a class");
     }
 
@@ -4290,7 +4290,7 @@ STemplateArgument Env::applyArgumentMapToPQName
     }
     else {
       xTypeDeduction(stringc
-        << "mismatch between template-ness and argument application for `"
+        << "mismatch between template-ness and argument application for '"
         << qual->qualifier << "' in " << scope->scopeName());
       return STemplateArgument();    // silence warning
     }
@@ -4307,7 +4307,7 @@ void Env::applyArgumentMap_ensureComplete(CompoundType *ct)
   // in 14.8.2p2b3, even though it isn't explicitly among them
   if (ct->forward) {
     xTypeDeduction(stringc
-      << "attempt to access member of `" << ct->instName
+      << "attempt to access member of '" << ct->instName
       << "' but no definition has been seen");
   }
 }
@@ -4493,11 +4493,11 @@ void Env::bindParametersInMap(MType &map,
     Variable const *param = iter.data();
 
     if (map.getBoundValue(param->name, tfac).hasValue()) {
-      error(stringc << "template parameter `" << param->name <<
+      error(stringc << "template parameter '" << param->name <<
                        "' occurs more than once");
     }
     else if (argIter.isDone()) {
-      error(stringc << "no template argument supplied for parameter `" <<
+      error(stringc << "no template argument supplied for parameter '" <<
                        param->name << "'");
     }
     else {
@@ -4567,7 +4567,7 @@ Variable *Env::makeExplicitFunctionSpecialization
   LookupSet set;
   lookupPQ(set, name, LF_TEMPL_PRIMARY);
   if (set.isEmpty()) {
-    error(stringc << "cannot find primary `" << name->toString()
+    error(stringc << "cannot find primary '" << name->toString()
                   << "' to specialize");
     return NULL;
   }
@@ -4669,8 +4669,8 @@ Variable *Env::makeExplicitFunctionSpecialization
 
       // ok, found a suitable candidate
       if (best) {
-        error(stringc << "ambiguous specialization, could specialize `"
-                      << best->type->toString() << "' or `"
+        error(stringc << "ambiguous specialization, could specialize '"
+                      << best->type->toString() << "' or '"
                       << primary->type->toString()
                       << "'; use explicit template arguments to disambiguate",
                       EF_STRONG);
@@ -4863,7 +4863,7 @@ Variable *Env::explicitFunctionInstantiation(PQName *name, Type *type,
   LookupSet set;
   lookupPQ(set, name, LF_TEMPL_PRIMARY);
   if (set.isEmpty() || !set.first()->type->isFunctionType()) {
-    error(stringc << "no such function `" << *name << "'");
+    error(stringc << "no such function '" << *name << "'");
     return NULL;
   }
 
@@ -4931,8 +4931,8 @@ Variable *Env::explicitFunctionInstantiation(PQName *name, Type *type,
 
   // did we find any candidates?
   if (resolver.candidates.isEmpty()) {
-    error(stringc << "type `" << type->toString()
-                  << "' does not match any template function `" << *name << "'");
+    error(stringc << "type '" << type->toString()
+                  << "' does not match any template function '" << *name << "'");
     return NULL;
   }
 

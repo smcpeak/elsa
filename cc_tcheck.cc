@@ -381,7 +381,7 @@ void TF_namespaceDefn::itcheck(Env &env)
   // violation of 7.3.1 para 2?
   if (existing && !existing->hasFlag(DF_NAMESPACE)) {
     env.error(loc, stringc
-      << "attempt to redefine `" << name << "' as a namespace");
+      << "attempt to redefine '" << name << "' as a namespace");
 
     // recovery: pretend it didn't have a name
     existing = NULL;
@@ -547,7 +547,7 @@ void Function::tcheckBody(Env &env)
         }
         else {
           env.diagnose3(env.lang.allowDefinitionsInWrongScopes, env.loc(), stringc
-            << "function definition of `" << *(nameAndParams->getDeclaratorId())
+            << "function definition of '" << *(nameAndParams->getDeclaratorId())
             << "' must appear in a namespace that encloses the original declaration"
             << " (gcc bug allows it)");
         }
@@ -849,7 +849,7 @@ void MemberInit::tcheck(Env &env, CompoundType *enclosing)
   }
   else {
     // complain
-    env.error(stringc << "`" << *name << "' does not denote any class");
+    env.error(stringc << "'" << *name << "' does not denote any class");
     return;
   }
   CompoundType *baseClass = baseVar->type->asCompoundType();
@@ -880,7 +880,7 @@ void MemberInit::tcheck(Env &env, CompoundType *enclosing)
     // attempt to initialize a data member
     char const *norData = name->hasQualifiers()? "" : ", nor a data member,";
     env.error(stringc
-              << "`" << *name << "' is not a base class" << norData
+              << "'" << *name << "' is not a base class" << norData
               << " so it cannot be initialized here");
     return;
   }
@@ -888,7 +888,7 @@ void MemberInit::tcheck(Env &env, CompoundType *enclosing)
   // check for ambiguity [para 2]
   if (directBase && !directVirtual && indirectVirtual) {
     env.error(stringc
-              << "`" << *name << "' is both a direct non-virtual base, "
+              << "'" << *name << "' is both a direct non-virtual base, "
               << "and an indirect virtual base; therefore the initializer "
               << "is ambiguous (there's no quick fix--you have to change "
               << "your inheritance hierarchy or forego initialization)");
@@ -1423,7 +1423,7 @@ void maybeNondependent(Env &env, SourceLoc loc, Variable *&nondependentVar,
       !var->isMemberOfTemplate()) {           // will be in scope in instantiation
     TRACE("dependent", toString(loc) << ": " <<
                        (nondependentVar? "replacing" : "remembering") <<
-                       " non-dependent lookup of `" << var->name <<
+                       " non-dependent lookup of '" << var->name <<
                        "' found var at " << toString(var->loc));
     nondependentVar = var;
   }
@@ -1442,14 +1442,14 @@ Variable *maybeReuseNondependent(Env &env, SourceLoc loc, LookupFlags &lflags,
       // template argument, and LF_TEMPL_PARAM will find it (and skip any
       // other names).
       TRACE("dependent", toString(loc) <<
-                         ": previously-remembered non-dependent lookup for `" <<
+                         ": previously-remembered non-dependent lookup for '" <<
                          nondependentVar->name << "' was a template parameter");
       lflags |= LF_TEMPL_PARAM;
     }
     else {
       // use 'nondependentVar' directly
       TRACE("dependent", toString(loc) <<
-                         ": using previously-remembered non-dependent lookup for `" <<
+                         ": using previously-remembered non-dependent lookup for '" <<
                          nondependentVar->name << "': at " <<
                          toString(nondependentVar->loc));
       return nondependentVar;
@@ -1476,7 +1476,7 @@ Type *TypeSpecifier::tcheck(Env &env, DeclFlags dflags)
     }
     else {
       return env.error(t, stringc
-        << "cannot apply const/volatile to type `" << t->toString() << "'");
+        << "cannot apply const/volatile to type '" << t->toString() << "'");
     }
   }
   return ret;
@@ -1542,7 +1542,7 @@ Type *TS_name::itcheck(Env &env, DeclFlags dflags)
       // cppstd 14.6 para 5, excerpt:
       //   "The keyword typename shall only be applied to qualified
       //    names, but those names need not be dependent."
-      env.error("the `typename' keyword can only be used with a qualified name");
+      env.error("the 'typename' keyword can only be used with a qualified name");
     }
 
     lflags |= LF_TYPENAME;
@@ -1599,7 +1599,7 @@ do_lookup:
     // means we prefer to report the error as if the interpretation as
     // "variable" were the only one.
     return env.error(stringc
-      << "there is no type called `" << *name << "'", eflags);
+      << "there is no type called '" << *name << "'", eflags);
   }
 
   if (!v->hasFlag(DF_TYPEDEF)) {
@@ -1608,7 +1608,7 @@ do_lookup:
       if (env.lang.allowGcc2HeaderSyntax &&
           isBuggyGcc2HeaderDQT(env, name)) {
         env.diagnose3(env.lang.allowGcc2HeaderSyntax, name->loc,
-                      stringc << "dependent type name `" << *name
+                      stringc << "dependent type name '" << *name
                               << "' requires 'typename' keyword (gcc-2 bug allows it)");
         lflags |= LF_TYPENAME;
         goto do_lookup;
@@ -1616,13 +1616,13 @@ do_lookup:
       else {
         // more informative error message (in/d0111.cc, error 1)
         return env.error(stringc
-          << "dependent name `" << *name
+          << "dependent name '" << *name
           << "' used as a type, but the 'typename' keyword was not supplied", eflags);
       }
     }
     else {
       return env.error(stringc
-        << "variable name `" << *name << "' used as if it were a type", eflags);
+        << "variable name '" << *name << "' used as if it were a type", eflags);
     }
   }
 
@@ -1824,7 +1824,7 @@ CompoundType *checkClasskeyAndName(
           if (env.lang.isCplusplus && !tag->hasAnyFlags(DF_IMPLICIT | DF_SELFNAME)) {
             // found a user-introduced (not implicit) typedef, which
             // is illegal (3.4.4p2,3; 7.1.5.3p2)
-            env.error(stringc << "`" << *name << "' is a typedef-name, "
+            env.error(stringc << "'" << *name << "' is a typedef-name, "
                               << "so cannot be used after '"
                               << toString(keyword) << "'");
             return NULL;
@@ -1836,7 +1836,7 @@ CompoundType *checkClasskeyAndName(
         }
         else {
           env.error(tag->type, stringc
-            << "`" << *name << "' is not a struct/class/union");
+            << "'" << *name << "' is not a struct/class/union");
           return NULL;
         }
       }
@@ -1846,7 +1846,7 @@ CompoundType *checkClasskeyAndName(
     if (!ct &&
         (name->hasQualifiers() || templateArgs)) {
       env.error(stringc << "no such " << toString(keyword)
-                        << ": `" << *name << "'");
+                        << ": '" << *name << "'");
       return NULL;
     }
   }
@@ -2060,7 +2060,7 @@ Type *TS_elaborated::itcheck(Env &env, DeclFlags dflags)
     if (!tag) {
       if (!env.lang.allowIncompleteEnums ||
           name->hasQualifiers()) {
-        return env.error(stringc << "there is no enum called `" << *name << "'",
+        return env.error(stringc << "there is no enum called '" << *name << "'",
                          EF_DISAMBIGUATES);
       }
       else {
@@ -2072,12 +2072,12 @@ Type *TS_elaborated::itcheck(Env &env, DeclFlags dflags)
     xassert(tag->isType());      // ensured by LF_ONLY_TYPES
 
     if (!tag->type->isEnumType()) {
-      return env.error(stringc << "`" << *name << "' is not an enum");
+      return env.error(stringc << "'" << *name << "' is not an enum");
     }
     if (!tag->hasFlag(DF_IMPLICIT)) {
       // found a user-introduced (not implicit) typedef, which
       // is illegal (3.4.4p2,3)
-      return env.error(stringc << "`" << *name << "' is a typedef-name, "
+      return env.error(stringc << "'" << *name << "' is a typedef-name, "
                                << "so cannot be used after 'enum'");
     }
     EnumType *et = tag->type->asCVAtomicType()->atomic->asEnumType();
@@ -2227,7 +2227,7 @@ void TS_classSpec::tcheckIntoCompound(
       Variable *baseVar = env.lookupPQ_one(iter->name, LF_ONLY_TYPES);
       if (!baseVar) {
         env.error(stringc
-          << "no class called `" << *(iter->name) << "' was found",
+          << "no class called '" << *(iter->name) << "' was found",
           EF_NONE);
         continue;
       }
@@ -2249,7 +2249,7 @@ void TS_classSpec::tcheckIntoCompound(
       CompoundType *base = baseVar->type->ifCompoundType();
       if (!base) {
         env.error(stringc
-          << "`" << *(iter->name) << "' is not a class or "
+          << "'" << *(iter->name) << "' is not a class or "
           << "struct or union, so it cannot be used as a base class");
         continue;
       }
@@ -2386,7 +2386,7 @@ Type *TS_enumSpec::itcheck(Env &env, DeclFlags dflags)
       ret = env.makeType(et);
       if (!et->valueIndex.isEmpty()) {
         // if it has values, it's definitely been defined already
-        env.error(stringc << "multiply defined enum `" << name << "'");
+        env.error(stringc << "multiply defined enum '" << name << "'");
         return ret;      // ignore this defn
       }
     }
@@ -2416,8 +2416,8 @@ Type *TS_enumSpec::itcheck(Env &env, DeclFlags dflags)
 void checkMemberFlags(Env &env, DeclFlags flags)
 {
   if (flags & (DF_AUTO | DF_EXTERN | DF_REGISTER)) {
-    env.error("class members cannot be marked `auto', `extern', "
-              "or `register'");
+    env.error("class members cannot be marked 'auto', 'extern', "
+              "or 'register'");
   }
 }
 
@@ -2790,7 +2790,7 @@ void checkOperatorOverload(Env &env, Declarator::Tcheck &dt,
         env.error(loc, stringc
           << (isMember? "" : "second ")
           << "parameter of " << strname
-          << " must have type `int', not `"
+          << " must have type 'int', not '"
           << t->toString() << "', if it is present");
       }
     }
@@ -2991,7 +2991,7 @@ realStart:
     if (v && v->hasFlag(DF_TYPEDEF)) {
       TRACE("disamb", "discarding grouped param declarator of type name");
       env.error(stringc
-        << "`" << *name << "' is the name of a type, but was used as "
+        << "'" << *name << "' is the name of a type, but was used as "
         << "a grouped parameter declarator; ambiguity resolution should "
         << "pick a different interpretation, so if the end user ever "
         << "sees this message then there's a bug in my typechecker",
@@ -3060,7 +3060,7 @@ realStart:
     prior = scope->lookupVariable(unqualifiedName, env, LF_INNER_ONLY);
     if (!prior) {
       env.error(stringc
-        << "undeclared identifier `" << *name << "'");
+        << "undeclared identifier '" << *name << "'");
       goto makeDummyVar;
     }
 
@@ -3073,7 +3073,7 @@ realStart:
       // only functions can be overloaded
       if (!dt.type->isFunctionType()) {
         env.error(dt.type, stringc
-          << "the name `" << *name << "' is overloaded, but the type `"
+          << "the name '" << *name << "' is overloaded, but the type '"
           << dt.type->toString() << "' isn't even a function; it must "
           << "be a function and match one of the overloadings");
         goto makeDummyVar;
@@ -3088,7 +3088,7 @@ realStart:
       prior = env.findInOverloadSet(prior->overload, dtft, dt.funcSyntax->cv);
       if (!prior) {
         env.error(stringc
-          << "the name `" << *name << "' is overloaded, but the type `"
+          << "the name '" << *name << "' is overloaded, but the type '"
           << dtft->toString_withCV(dt.funcSyntax->cv)
           << "' doesn't match any of the "
           << howMany << " declared overloaded instances",
@@ -3103,7 +3103,7 @@ realStart:
       if (!prior->type->isFunctionType() &&
           !prior->hasFlag(DF_STATIC)) {
         env.error(stringc
-          << "cannot define nonstatic data member `" << *name << "'");
+          << "cannot define nonstatic data member '" << *name << "'");
         goto makeDummyVar;
       }
     }
@@ -3781,7 +3781,7 @@ void Declarator::mid_tcheck(Env &env, Tcheck &dt)
       IN_ctor *inc = init->asIN_ctor();
       if (fl_count(inc->args) != 1) {
         env.error(getLoc(), stringc
-          << "expected constructor-style initializer of `"
+          << "expected constructor-style initializer of '"
           << var->type->toString() << "' to have 1 argument, not "
           << fl_count(inc->args));
       }
@@ -3841,8 +3841,8 @@ void Declarator::mid_tcheck(Env &env, Tcheck &dt)
           // desired.
           #if 0
           env.warning(/*type,*/ stringc
-                      << "cannot convert initializer type `" << initexpr->e->getType()->toString()
-                      << "' to type `" << type->toString() << "'");
+                      << "cannot convert initializer type '" << initexpr->e->getType()->toString()
+                      << "' to type '" << type->toString() << "'");
           #endif // 0
         }
       }
@@ -4098,7 +4098,7 @@ void D_func::tcheck(Env &env, Declarator::Tcheck &dt)
         }
         else {
           env.diagnose3(env.lang.allowImplicitIntForOperators, name->loc,
-                        stringc << "cannot declare `" << name->toString()
+                        stringc << "cannot declare '" << name->toString()
                                 << "' with no return type (MSVC bug accepts it)");
           dt.type = env.getSimpleType(ST_INT);     // recovery
         }
@@ -4116,8 +4116,8 @@ void D_func::tcheck(Env &env, Declarator::Tcheck &dt)
           }
           else if (!streq(nameString+1, inClass->name)) {
             env.error(stringc
-              << "destructor name `" << nameString
-              << "' must match the class name `" << inClass->name << "'");
+              << "destructor name '" << nameString
+              << "' must match the class name '" << inClass->name << "'");
           }
 
           // return type is 'void'
@@ -4154,8 +4154,8 @@ void D_func::tcheck(Env &env, Declarator::Tcheck &dt)
             if (nameString != inClass->name) {
               // I'm not sure if this can occur...
               env.error(stringc
-                << "constructor name `" << nameString
-                << "' must match the class name `" << inClass->name << "'");
+                << "constructor name '" << nameString
+                << "' must match the class name '" << inClass->name << "'");
             }
 
             // return type is same as class type
@@ -4215,7 +4215,7 @@ void D_func::tcheck(Env &env, Declarator::Tcheck &dt)
         break;
       }
       // cppstd 8.3.5p2
-      env.error("cannot have parameter of type `void', unless it is "
+      env.error("cannot have parameter of type 'void', unless it is "
                 "the only parameter, has no parameter name, and has "
                 "no default value");
       continue;
@@ -4467,7 +4467,7 @@ void D_ptrToMember::tcheck(Env &env, Declarator::Tcheck &dt)
   }
 
   if (dt.type->isVoid()) {
-    env.error("you can't make a pointer-to-member refer to `void'");
+    env.error("you can't make a pointer-to-member refer to 'void'");
     return;
   }
 
@@ -4478,7 +4478,7 @@ void D_ptrToMember::tcheck(Env &env, Declarator::Tcheck &dt)
   Variable *ctVar = env.lookupPQ_one(nestedName, LF_ONLY_TYPES);
   if (!ctVar) {
     env.error(stringc
-      << "cannot find type `" << nestedName->toString()
+      << "cannot find type '" << nestedName->toString()
       << "' for pointer-to-member");
     return;
   }
@@ -4488,7 +4488,7 @@ void D_ptrToMember::tcheck(Env &env, Declarator::Tcheck &dt)
   NamedAtomicType *nat = ctVar->type->ifNamedAtomicType();
   if (!nat) {
     env.error(stringc
-      << "in ptr-to-member, `" << nestedName->toString()
+      << "in ptr-to-member, '" << nestedName->toString()
       << "' does not refer to a class nor is a type variable");
     return;
   }
@@ -5678,7 +5678,7 @@ Type *E_variable::itcheck_var_set(Env &env, Expression *&replacement,
 
     if (v && v->hasFlag(DF_TYPEDEF)) {
       return env.error(name->loc, stringc
-        << "`" << *name << "' used as a variable, but it's actually a type",
+        << "'" << *name << "' used as a variable, but it's actually a type",
         EF_DISAMBIGUATES);
     }
 
@@ -5689,7 +5689,7 @@ Type *E_variable::itcheck_var_set(Env &env, Expression *&replacement,
       if (!v || !v->namesTemplateFunction()) {
         // would disambiguate use of '<' as less-than
         env.error(name->loc, stringc
-          << "explicit template arguments were provided after `"
+          << "explicit template arguments were provided after '"
           << name->toString_noTemplArgs()
           << "', but that is not the name of a template function",
           EF_DISAMBIGUATES);
@@ -5706,7 +5706,7 @@ Type *E_variable::itcheck_var_set(Env &env, Expression *&replacement,
           (flags & LF_FUNCTION_NAME) &&
           name->isPQ_name()) {
         if (env.lang.allowImplicitFunctionDecls == B3_WARN) {
-          env.warning(name->loc, stringc << "implicit declaration of `" << *name << "'");
+          env.warning(name->loc, stringc << "implicit declaration of '" << *name << "'");
         }
 
         v = env.makeImplicitDeclFuncVar(name->asPQ_name()->name);
@@ -5726,7 +5726,7 @@ Type *E_variable::itcheck_var_set(Env &env, Expression *&replacement,
           // undeclared functions in a "dependent" context [cppstd 14.6
           // para 8].  See the note in TS_name::itcheck.
           return env.error(name->loc, stringc
-                           << "there is no variable called `" << *name << "'",
+                           << "there is no variable called '" << *name << "'",
                            EF_NONE);
         }
       }
@@ -5859,7 +5859,7 @@ static Variable *outerResolveOverload_explicitSet(
       }
     }
 
-    env.error(stringc << "cannot find conversion operator yielding `"
+    env.error(stringc << "cannot find conversion operator yielding '"
                       << namedType->toString() << "'");
     return NULL;
   }
@@ -6159,7 +6159,7 @@ int compareArgsToParams(Env &env, FunctionType *ft, FakeList<ArgExpression> *arg
           if (sc != SC_ERROR) {
             // success
             TRACE("transparent_union", env.locStr() <<
-              ": converted arg type `" << arg->expr->type->toString() <<
+              ": converted arg type '" << arg->expr->type->toString() <<
               "' to union member " << memb->name);
 
             // build a compound literal for it; this has a pointer
@@ -6225,9 +6225,9 @@ int compareArgsToParams(Env &env, FunctionType *ft, FakeList<ArgExpression> *arg
         xassert(arg->ambiguity == NULL);
       } else {
         env.error(arg->getType(), stringc
-                  << "cannot convert argument type `" << arg->getType()->toString()
+                  << "cannot convert argument type '" << arg->getType()->toString()
                   << "' to parameter " << paramIndex
-                  << " type `" << param->type->toString() << "'");
+                  << " type '" << param->type->toString() << "'");
       }
     }
 
@@ -6539,7 +6539,7 @@ Type *E_funCall::inner2_itcheck(Env &env, LookupSet &candidates)
     if (candidates.isEmpty()) {
       return fevar->type =
         env.error(pqname->loc,
-                  stringc << "there is no function called `"
+                  stringc << "there is no function called '"
                           << pqname->getName() << "'"
                           << env.unsearchedDependentBases(),
                   EF_NONE);
@@ -6679,7 +6679,7 @@ Type *E_funCall::inner2_itcheck(Env &env, LookupSet &candidates)
     }
     else {
       return env.error(stringc
-        << "object of type `" << t->toString() << "' used as a function, "
+        << "object of type '" << t->toString() << "' used as a function, "
         << "but it has no operator() declared");
     }
   }
@@ -6714,7 +6714,7 @@ Type *E_funCall::inner2_itcheck(Env &env, LookupSet &candidates)
 
   if (!t->isFunctionType()) {
     return env.error(t, stringc
-      << "you can't use an expression of type `" << t->toString()
+      << "you can't use an expression of type '" << t->toString()
       << "' as a function");
   }
 
@@ -6773,8 +6773,8 @@ Type *E_funCall::inner2_itcheck(Env &env, LookupSet &candidates)
              ft->getReceiver()->type,
              true /*destIsReceiver*/)) {
         env.error(stringc
-          << "cannot convert argument type `" << receiverType->toString()
-          << "' to receiver parameter type `" << ft->getReceiver()->type->toString()
+          << "cannot convert argument type '" << receiverType->toString()
+          << "' to receiver parameter type '" << ft->getReceiver()->type->toString()
           << "'");
       }
     }
@@ -6820,8 +6820,8 @@ static Type *internalTestingHooks
         // ok
       }
       else {
-        env.error(stringc << "checkType: `" << t1->toString()
-                          << "' != `" << t2->toString() << "'");
+        env.error(stringc << "checkType: '" << t1->toString()
+                          << "' != '" << t2->toString() << "'");
       }
     }
     else {
@@ -7045,8 +7045,8 @@ static Type *internalTestingHooks
               if (!binding.getType()->equals(value->getType())) {
                 return env.error(stringc << "__test_mtype: "
                   << "expected " << nameStr
-                  << " to be bound to `" << value->getType()->toString()
-                  << "' but it was actually bound to `"
+                  << " to be bound to '" << value->getType()->toString()
+                  << "' but it was actually bound to '"
                   << binding.getType()->toString() << "'");
               }
               break;
@@ -7155,7 +7155,7 @@ Type *E_constructor::inner2_itcheck(Env &env, Expression *&replacement)
     // 2005-05-28: (in/t0495.cc) count the args *after* tchecking them
     if (fl_count(args) > 1) {
       return env.error(stringc
-        << "function-style cast to `" << type->toString()
+        << "function-style cast to '" << type->toString()
         << "' must have zere or one argument (not "
         << fl_count(args) << ")");
     }
@@ -7205,14 +7205,14 @@ string kindAndType(Variable *v)
       return stringc << toString(ct->keyword) << " " << v->fullyQualifiedName0();
     }
     else {
-      return stringc << "type `" << v->type->toString() << "'";
+      return stringc << "type '" << v->type->toString() << "'";
     }
   }
   else if (v->type->isFunctionType()) {
-    return stringc << "function of type `" << v->type->toString() << "'";
+    return stringc << "function of type '" << v->type->toString() << "'";
   }
   else {
-    return stringc << "object of type `" << v->type->toString() << "'";
+    return stringc << "object of type '" << v->type->toString() << "'";
   }
 }
 
@@ -7316,7 +7316,7 @@ Type *E_fieldAcc::itcheck_fieldAcc_set(Env &env, LookupFlags flags,
         !fieldName->getUnqualifiedName()->isPQ_name()) {
       return env.error(lhsType, fieldName->loc, stringc
         << "RHS of . or -> must be of the form \"~ identifier\" if the LHS "
-        << "is not a class; the LHS is `" << lhsType->toString() << "'");
+        << "is not a class; the LHS is '" << lhsType->toString() << "'");
     }
 
     // this will be set to the type of the RHS
@@ -7375,20 +7375,20 @@ Type *E_fieldAcc::itcheck_fieldAcc_set(Env &env, LookupFlags flags,
       if (!secondVar || !secondVar->isType()) {
         PQName *n = getSecondToLast(fieldName->asPQ_qualifier());
         return env.error(n->loc, stringc
-          << "no such type: `" << n->toComponentString() << "'");
+          << "no such type: '" << n->toComponentString() << "'");
       }
       if (!lastVar || !lastVar->isType()) {
         PQName *n = fieldName->getUnqualifiedName();
         return env.error(n->loc, stringc
-          << "no such type: `" << n->toComponentString() << "'");
+          << "no such type: '" << n->toComponentString() << "'");
       }
       if (!lastVar->type->equals(secondVar->type)) {
         return env.error(fieldName->loc, stringc
           << "in . or -> expression, when LHS is non-class type "
-          << "(its type is `" << lhsType->toString() << "'), a qualified RHS "
+          << "(its type is '" << lhsType->toString() << "'), a qualified RHS "
           << "must be of the form Q :: t1 :: ~t2 where t1 and t2 are "
-          << "the same type, but t1 is `" << secondVar->type->toString()
-          << "' and t2 is `" << lastVar->type->toString() << "'");
+          << "the same type, but t1 is '" << secondVar->type->toString()
+          << "' and t2 is '" << lastVar->type->toString() << "'");
       }
       rhsType = lastVar->type;
     }
@@ -7398,7 +7398,7 @@ Type *E_fieldAcc::itcheck_fieldAcc_set(Env &env, LookupFlags flags,
       Variable *v = env.unqualifiedLookup_one(rhsFinalTypeName, flags);
       if (!v || !v->hasFlag(DF_TYPEDEF)) {
         return env.error(fieldName->loc,
-          stringc << "no such type: `" << rhsFinalTypeName << "'");
+          stringc << "no such type: '" << rhsFinalTypeName << "'");
       }
       rhsType = v->type;
     }
@@ -7407,7 +7407,7 @@ Type *E_fieldAcc::itcheck_fieldAcc_set(Env &env, LookupFlags flags,
       return env.error(fieldName->loc, stringc
         << "in . or -> expression, when LHS is non-class type, its type "
         << "must be the same (modulo cv qualifiers) as the RHS; but the "
-        << "LHS type is `" << lhsType->toString() << "' and the RHS type is `"
+        << "LHS type is '" << lhsType->toString() << "' and the RHS type is '"
         << rhsType->toString() << "'");
     }
 
@@ -7492,7 +7492,7 @@ Type *E_fieldAcc::itcheck_fieldAcc_set(Env &env, LookupFlags flags,
       }
       else {
         return env.error(firstQ->loc, stringc
-          << "no such scope `" << firstQ->qualifier << "'");
+          << "no such scope '" << firstQ->qualifier << "'");
       }
     }
 
@@ -7557,7 +7557,7 @@ Type *E_fieldAcc::itcheck_fieldAcc_set(Env &env, LookupFlags flags,
         }
         else {
           return env.error(fieldName->loc, stringc
-            << "no such class `" << rhsFinalTypeName << "'");
+            << "no such class '" << rhsFinalTypeName << "'");
         }
       }
 
@@ -7588,7 +7588,7 @@ Type *E_fieldAcc::itcheck_fieldAcc_set(Env &env, LookupFlags flags,
     }
 
     return env.error(lhsType, stringc
-      << "there is no member called `" << *fieldName
+      << "there is no member called '" << *fieldName
       << "' in " << lhsType->toString());
   }
 
@@ -7602,14 +7602,14 @@ Type *E_fieldAcc::itcheck_fieldAcc_set(Env &env, LookupFlags flags,
 
     if (!v->scope || !v->scope->curCompound) {
       return env.error(fieldName->loc, stringc
-        << "field `" << *fieldName << "' is not a class member");
+        << "field '" << *fieldName << "' is not a class member");
     }
 
     CompoundType *vClass = v->scope->curCompound;
     int subobjs = ct->countBaseClassSubobjects(vClass);
     if (!subobjs) {
       return env.error(fieldName->loc, stringc
-        << "field `" << *fieldName << "' is a member of "
+        << "field '" << *fieldName << "' is a member of "
         << kindAndType(vClass->typedefVar)
         << ", which is not a base class of "
         << kindAndType(ct->typedefVar));
@@ -7631,7 +7631,7 @@ Type *E_fieldAcc::itcheck_fieldAcc_set(Env &env, LookupFlags flags,
     // 10.2p2.
     if (!v->hasFlag(DF_STATIC) && subobjs>1) {
       return env.error(fieldName->loc, stringc
-        << "field `" << *fieldName << "' ambiguously refers to "
+        << "field '" << *fieldName << "' ambiguously refers to "
         << "elements of multiple base class subobjects");
     }
   }
@@ -7643,7 +7643,7 @@ Type *E_fieldAcc::itcheck_fieldAcc_set(Env &env, LookupFlags flags,
   // should not be a type (5.2.5p4b4)
   if (f->hasFlag(DF_TYPEDEF)) {
     return env.error(lhsType, stringc
-      << "member `" << *fieldName << "' is a typedef!");
+      << "member '" << *fieldName << "' is a typedef!");
   }
 
   // TODO: access control check
@@ -7820,7 +7820,7 @@ Type *resolveOverloadedUnaryOperator(
 
         // get the correct return value, at least
         Type *ret = resolver.getReturnType(winnerCand);
-        OVERLOADINDTRACE("computed built-in operator return type `" <<
+        OVERLOADINDTRACE("computed built-in operator return type '" <<
                          ret->toString() << "'");
 
         return ret;
@@ -7961,7 +7961,7 @@ Type *resolveOverloadedBinaryOperator(
         else {
           // get the correct return value, at least
           Type *ret = resolver.getReturnType(winnerCand);
-          OVERLOADINDTRACE("computed built-in operator return type `" <<
+          OVERLOADINDTRACE("computed built-in operator return type '" <<
                            ret->toString() << "'");
           return ret;
         }
@@ -8010,7 +8010,7 @@ Type *E_unary::itcheck_x(Env &env, Expression *&replacement)
         return t;
       }
       return env.error(t, stringc
-        << "argument to unary + must be of arithmetic, enumeration, or pointer type, not `"
+        << "argument to unary + must be of arithmetic, enumeration, or pointer type, not '"
         << t->toString() << "'");
 
     case UNY_MINUS:
@@ -8019,7 +8019,7 @@ Type *E_unary::itcheck_x(Env &env, Expression *&replacement)
         return env.getSimpleType(applyIntegralPromotions(t));
       }
       return env.error(t, stringc
-        << "argument to unary - must be of arithmetic or enumeration type, not `"
+        << "argument to unary - must be of arithmetic or enumeration type, not '"
         << t->toString() << "'");
 
     case UNY_NOT: {
@@ -8027,7 +8027,7 @@ Type *E_unary::itcheck_x(Env &env, Expression *&replacement)
       Type *t_bool = env.getSimpleType(ST_BOOL);
       if (!getImplicitConversion(env, expr->getSpecial(env.lang), t, t_bool)) {
         env.error(t, stringc
-          << "argument to unary ! must be convertible to bool; `"
+          << "argument to unary ! must be convertible to bool; '"
           << t->toString() << "' is not");
       }
       return t_bool;
@@ -8039,7 +8039,7 @@ Type *E_unary::itcheck_x(Env &env, Expression *&replacement)
         return env.getSimpleType(applyIntegralPromotions(t));
       }
       return env.error(t, stringc
-        << "argument to unary ~ must be of integer or enumeration type, not `"
+        << "argument to unary ~ must be of integer or enumeration type, not '"
         << t->toString() << "'");
 
       // 5.3.1 para 9 also mentions an ambiguity with "~X()", which I
@@ -8222,7 +8222,7 @@ Type *E_binary::itcheck_x(Env &env, Expression *&replacement)
         // left side should be a pointer to a class
         if (!lhsType->isPointer()) {
           return env.error(stringc
-            << "left side of ->* must be a pointer, not `"
+            << "left side of ->* must be a pointer, not '"
             << lhsType->toString() << "'");
         }
         lhsType = lhsType->asPointerType()->atType;
@@ -8251,14 +8251,14 @@ Type *E_binary::itcheck_x(Env &env, Expression *&replacement)
       int subobjs = lhsClass->countBaseClassSubobjects(ptm->inClass());
       if (subobjs == 0) {
         return env.error(stringc
-          << "the left side of .* or ->* has type `" << lhsClass->name
-          << "', but this is not equal to or derived from `" << ptm->inClass()->name
+          << "the left side of .* or ->* has type '" << lhsClass->name
+          << "', but this is not equal to or derived from '" << ptm->inClass()->name
           << "', the class whose members the right side can point at");
       }
       else if (subobjs > 1) {
         return env.error(stringc
-          << "the left side of .* or ->* has type `" << lhsClass->name
-          << "', but this is derived from `" << ptm->inClass()->name
+          << "the left side of .* or ->* has type '" << lhsClass->name
+          << "', but this is derived from '" << ptm->inClass()->name
           << "' ambiguously (in more than one way)");
       }
 
@@ -8402,7 +8402,7 @@ Type *E_addrOf::itcheck_addrOf_set(Env &env, Expression *&replacement,
 
   if (!expr->type->isLval()) {
     return env.error(expr->type, stringc
-      << "cannot take address of non-lvalue `"
+      << "cannot take address of non-lvalue '"
       << expr->type->toString() << "'");
   }
   ReferenceType *rt = expr->type->asReferenceType();
@@ -8446,7 +8446,7 @@ Type *E_deref::itcheck_x(Env &env, Expression *&replacement)
   }
 
   return env.error(rt, stringc
-    << "cannot dereference non-pointer type `" << rt->toString() << "'");
+    << "cannot dereference non-pointer type '" << rt->toString() << "'");
 }
 
 
@@ -8615,7 +8615,7 @@ Type *E_cond::itcheck_x(Env &env, Expression *&replacement)
   if (!getImplicitConversion(env, cond->getSpecial(env.lang), cond->type,
                              env.getSimpleType(ST_BOOL))) {
     env.error(cond->type, stringc
-      << "cannot convert `" << cond->type->toString()
+      << "cannot convert '" << cond->type->toString()
       << "' to bool for conditional of ?:");
   }
   // TODO (elaboration): rewrite AST if a user-defined conversion was used
@@ -8765,7 +8765,7 @@ Type *E_cond::itcheck_x(Env &env, Expression *&replacement)
 
       // get the correct return value, at least
       Type *ret = resolver.getReturnType(winnerCand);
-      OVERLOADINDTRACE("computed built-in operator return type `" <<
+      OVERLOADINDTRACE("computed built-in operator return type '" <<
                        ret->toString() << "'");
 
       // para 5 ends by saying (in effect) that 'ret' should be used
@@ -8824,8 +8824,8 @@ Type *E_cond::itcheck_x(Env &env, Expression *&replacement)
 
 incompatible:
   return env.error(stringc
-    << "incompatible ?: argument types `" << thRval->toString()
-    << "' and `" << elRval->toString() << "'");
+    << "incompatible ?: argument types '" << thRval->toString()
+    << "' and '" << elRval->toString() << "'");
 }
 
 
@@ -8964,7 +8964,7 @@ Type *E_delete::itcheck_x(Env &env, Expression *&replacement)
   }
   else if (!t->isPointer()) {
     env.error(t, stringc
-      << "can only delete pointers, not `" << t->toString() << "'");
+      << "can only delete pointers, not '" << t->toString() << "'");
   }
 
   return env.getSimpleType(ST_VOID);
@@ -9334,8 +9334,8 @@ void initializeAggregate(Env &env, Type *type,
         false /*destIsReceiver*/);
       if (!ic) {
         env.error(arg->getType(), stringc
-          << "cannot convert initializer type `" << arg->getType()->toString()
-          << "' to type `" << type->toString() << "'");
+          << "cannot convert initializer type '" << arg->getType()->toString()
+          << "' to type '" << type->toString() << "'");
       }
     }
   }
@@ -9366,7 +9366,7 @@ void IN_compound::tcheck(Env &env, Type *type)
     // 2005-04-15: for the moment it is more annoying than helpful...
     //env.weakError(loc, stringc
     //  << "too many initializers (" << inits.count()
-    //  << ") supplied for `" << type->toString() << "'");
+    //  << ") supplied for '" << type->toString() << "'");
 
     // tcheck the extra exprs anyway
     while (!initIter.isDone()) {
@@ -9405,8 +9405,8 @@ void IN_ctor::tcheck(Env &env, Type *destType)
         false /*destIsReceiver*/);
       if (!ic) {
         env.error(srcType, stringc
-          << "cannot convert initializer type `" << srcType->toString()
-          << "' to target type `" << destType->toString() << "'");
+          << "cannot convert initializer type '" << srcType->toString()
+          << "' to target type '" << destType->toString() << "'");
         return;
       }
 
@@ -9653,7 +9653,7 @@ void TP_type::itcheck(Env &env, int&)
     // introduce 'name' into the environment
     if (!env.addVariable(var)) {
       env.error(stringc
-        << "duplicate template parameter `" << name << "'",
+        << "duplicate template parameter '" << name << "'",
         EF_NONE);
     }
   }
@@ -9724,7 +9724,7 @@ void ND_alias::tcheck(Env &env)
   Variable *origVar = env.lookupPQ_one(original, LF_ONLY_NAMESPACES);
   if (!origVar) {
     env.error(stringc
-      << "could not find namespace `" << *original << "'");
+      << "could not find namespace '" << *original << "'");
     return;
   }
   xassert(origVar->isNamespace());   // meaning of LF_ONLY_NAMESPACES
@@ -9740,7 +9740,7 @@ void ND_alias::tcheck(Env &env)
     }
     else {
       env.error(stringc
-        << "redefinition of namespace alias `" << alias
+        << "redefinition of namespace alias '" << alias
         << "' not allowed because the new definition isn't the same as the old");
       return;
     }
@@ -9781,7 +9781,7 @@ void ND_usingDecl::tcheck(Env &env)
   LookupSet set;
   env.lookupPQ(set, name, LF_TEMPL_PRIMARY);
   if (set.isEmpty()) {
-    env.error(stringc << "undeclared identifier: `" << *name << "'");
+    env.error(stringc << "undeclared identifier: '" << *name << "'");
     return;
   }
 
@@ -9831,7 +9831,7 @@ void ND_usingDir::tcheck(Env &env)
   Variable *targetVar = env.lookupPQ_one(name, LF_ONLY_NAMESPACES);
   if (!targetVar) {
     env.error(stringc
-      << "could not find namespace `" << *name << "'");
+      << "could not find namespace '" << *name << "'");
     return;
   }
   xassert(targetVar->isNamespace());   // meaning of LF_ONLY_NAMESPACES

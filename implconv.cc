@@ -429,8 +429,8 @@ void test_getImplicitConversion(
     // construct a description of the call site
     stringBuilder callDesc;
     callDesc << "getImplicitConversion("
-             << toString(special) << ", `"
-             << src->toString() << "', `"
+             << toString(special) << ", '"
+             << src->toString() << "', '"
              << dest->toString() << "')";
 
     if (!matches) {

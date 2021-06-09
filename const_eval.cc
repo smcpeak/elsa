@@ -301,7 +301,7 @@ void CValue::applyBinary(BinaryOp op, CValue other)
 
   switch (op) {
     default:
-      setError(stringc << "cannot const-eval binary operator `"
+      setError(stringc << "cannot const-eval binary operator '"
                        << toString(op) << "'");
       return;
 
@@ -637,7 +637,7 @@ CValue Expression::constEval(ConstEval &env) const
   #else       // debugging
     #warning debugging code is enabled
     CValue ret = iconstEval(env);
-    cout << "const-eval of `" << exprToString() << "' is " << ret.asString() << endl;
+    cout << "const-eval of '" << exprToString() << "' is " << ret.asString() << endl;
     return ret;
   #endif
 }
@@ -831,7 +831,7 @@ CValue ConstEval::evaluateVariable(Variable *var)
   }
 
   return CValue(stringc
-    << "can't const-eval non-const variable `" << var->name << "'");
+    << "can't const-eval non-const variable '" << var->name << "'");
 }
 
 
@@ -911,7 +911,7 @@ CValue Expression::constEvalCast(ConstEval &env, ASTTypeId const *ctype,
   else {
     // TODO: this is probably not the right rule..
     return CValue(stringc
-      << "in constant expression, can only cast to arithmetic or pointer types, not `"
+      << "in constant expression, can only cast to arithmetic or pointer types, not '"
       << t->toString() << "'");
   }
 

@@ -717,7 +717,7 @@ void S_computedGoto::itcheck(Env &env)
   Type *t = target->type->asRval();
   if (!t->isPointer()) {
     env.error(t, stringc
-      << "type of expression in computed goto must be a pointer, not `"
+      << "type of expression in computed goto must be a pointer, not '"
       << t->toString() << "'");
   }
 }
@@ -918,7 +918,7 @@ Type *E_fieldAcc::itcheck_complex_selector(Env &env, LookupFlags flags,
   if (!dissectFloatingType(prec, axis, obj->type) ||
       axis != 2/*complex*/) {
     return env.error(stringc << "can only apply " << fieldName->getName()
-                             << " to complex types, not `"
+                             << " to complex types, not '"
                              << obj->type->toString() << "'");
   }
 
@@ -933,8 +933,8 @@ Type *E_binary::itcheck_complex_arith(Env &env)
   int prec2, axis2;
   if (!dissectFloatingType(prec1, axis1, e1->type) ||
       !dissectFloatingType(prec2, axis2, e2->type)) {
-    return env.error(stringc << "invalid complex arithmetic operand types `"
-                             << e1->type->toString() << "' and `"
+    return env.error(stringc << "invalid complex arithmetic operand types '"
+                             << e1->type->toString() << "' and '"
                              << e2->type->toString() << "'");
   }
 

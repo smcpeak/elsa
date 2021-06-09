@@ -9,7 +9,7 @@
   20 6C 69 6E 65 00                                   line.
 }
 ---- stderr ----
-strlit/multiline.c:5:2: warning: string literal contains (unescaped) newline character; this is allowed for gcc-2 bug compatibility only (maybe the final `"' is missing?)
-strlit/multiline.c:7:16: warning: string literal contains (unescaped) newline character; this is allowed for gcc-2 bug compatibility only (maybe the final `"' is missing?)
+strlit/multiline.c:5:2: warning: string literal contains (unescaped) newline character; this is allowed for gcc-2 bug compatibility only (maybe the final '"' is missing?)
+strlit/multiline.c:7:16: warning: string literal contains (unescaped) newline character; this is allowed for gcc-2 bug compatibility only (maybe the final '"' is missing?)
 ---- exit status ----
 Exit 0

@@ -1544,7 +1544,7 @@ bool Env::addVariable(Variable *v, bool forceReplace)
   if (disambErrorsSuppressChanges()) {
     // the environment is not supposed to be modified by an ambiguous
     // alternative that fails
-    TRACE("env",    "not adding variable `" << v->name
+    TRACE("env",    "not adding variable '" << v->name
                  << "' because there are disambiguating errors");
     return true;    // don't cause further errors; pretend it worked
   }
@@ -1572,9 +1572,9 @@ void Env::addVariableWithOload(Variable *prevLookup, Variable *v)
     prevLookup->getOrCreateOverloadSet()->addMember(v);
     registerVariable(v);
 
-    TRACE("ovl",    "overloaded `" << prevLookup->name
-                 << "': `" << prevLookup->type->toString()
-                 << "' and `" << v->type->toString() << "'");
+    TRACE("ovl",    "overloaded '" << prevLookup->name
+                 << "': '" << prevLookup->type->toString()
+                 << "' and '" << v->type->toString() << "'");
   }
   else {
     if (!addVariable(v)) {
@@ -1598,7 +1598,7 @@ bool Env::addCompound(CompoundType *ct)
 {
   // like above
   if (disambErrorsSuppressChanges()) {
-    TRACE("env",    "not adding compound `" << ct->name
+    TRACE("env",    "not adding compound '" << ct->name
                  << "' because there are disambiguating errors");
     return true;
   }
@@ -1611,7 +1611,7 @@ bool Env::addEnum(EnumType *et)
 {
   // like above
   if (disambErrorsSuppressChanges()) {
-    TRACE("env",    "not adding enum `" << et->name
+    TRACE("env",    "not adding enum '" << et->name
                  << "' because there are disambiguating errors");
     return true;
   }
@@ -1624,7 +1624,7 @@ bool Env::addTypeTag(Variable *tag)
 {
   // like above
   if (disambErrorsSuppressChanges()) {
-    TRACE("env",    "not adding type tag `" << tag->name
+    TRACE("env",    "not adding type tag '" << tag->name
                  << "' because there are disambiguating errors");
     return true;
   }
@@ -1642,7 +1642,7 @@ Type *Env::declareEnum(SourceLoc loc /*...*/, EnumType *et)
     et->typedefVar = tv;
 
     if (!addEnum(et)) {
-      error(stringc << "multiply defined enum `" << et->name << "'");
+      error(stringc << "multiply defined enum '" << et->name << "'");
     }
 
     // TODO: If the enum name is already the name of a typedef,
@@ -1793,7 +1793,7 @@ Variable *Env::lookupOneQualifier_bareName(
       // alternatively, I could just re-traverse the original name;
       // I'm lazy for now
       error(stringc
-        << "cannot find scope name `" << qual << "'",
+        << "cannot find scope name '" << qual << "'",
         EF_DISAMBIGUATES);
     }
     return NULL;
@@ -1836,7 +1836,7 @@ Scope *Env::lookupOneQualifier_useArgs(
 
     if (!qualVar->type->isCompoundType()) {
       error(stringc
-        << "typedef'd name `" << qual << "' doesn't refer to a class, "
+        << "typedef'd name '" << qual << "' doesn't refer to a class, "
         << "so it can't be used as a scope qualifier");
       return NULL;
     }
@@ -1862,14 +1862,14 @@ Scope *Env::lookupOneQualifier_useArgs(
           //    Env::insertTemplateArgBindings_oneParamList.
 
           // error(stringc
-          //   << "class `" << qual
+          //   << "class '" << qual
           //   << "' is a template, you have to supply template arguments");
           // // recovery: use the scope anyway
         }
       } else if (!ct->isTemplate()) {
         if (sargs.isNotEmpty()) {
           error(stringc
-                << "class `" << qual << "' isn't a template");
+                << "class '" << qual << "' isn't a template");
           // recovery: use the scope anyway
         }
       }
@@ -1908,7 +1908,7 @@ Scope *Env::lookupOneQualifier_useArgs(
             //
             // 8/07/04: I think the test above, 'containsVariables',
             // has resolved this issue.
-            error(stringc << "cannot find template primary or specialization `"
+            error(stringc << "cannot find template primary or specialization '"
                           << qual << sargsToString(sargs) << "'",
                   EF_DISAMBIGUATES);
             return ct;     // recovery: use the primary
@@ -1956,7 +1956,7 @@ Scope *Env::lookupOneQualifier_useArgs(
   // case 2: qualifier refers to a namespace
   else /*DF_NAMESPACE*/ {
     if (sargs.isNotEmpty()) {
-      error(stringc << "namespace `" << qual << "' can't accept template args");
+      error(stringc << "namespace '" << qual << "' can't accept template args");
     }
 
     // the namespace becomes the active scope
@@ -2104,7 +2104,7 @@ Variable *Env::applyPQNameTemplateArguments
       // which could absorb the '3' as a template argument or not,
       // depending on whether Foo is a template
       error(stringc
-        << "`" << var->name << "' is a class template, but template "
+        << "'" << var->name << "' is a class template, but template "
         << "arguments were not supplied",
         EF_DISAMBIGUATES);
       return lookupErrorObject(flags);
@@ -2153,7 +2153,7 @@ Variable *Env::applyPQNameTemplateArguments
     // disambiguates the same example as above, but selects
     // the opposite interpretation
     error(stringc
-      << "`" << var->name << "' is not a template, but template arguments were supplied",
+      << "'" << var->name << "' is not a template, but template arguments were supplied",
       EF_DISAMBIGUATES);
     return NULL;
   }
@@ -2774,7 +2774,7 @@ Variable *Env::makeUsingAliasFor(SourceLoc loc, Variable *origVar)
   // be class members or neither is class member
   if (scope->isClassScope() !=
       (origVar->scope? origVar->scope->isClassScope() : false)) {
-    error(stringc << "bad alias `" << name
+    error(stringc << "bad alias '" << name
                   << "': alias and original must both be class members or both not members");
     return NULL;
   }
@@ -2809,7 +2809,7 @@ Variable *Env::makeUsingAliasFor(SourceLoc loc, Variable *origVar)
     // 7.3.3 para 4: the original member must be in a base class of
     // the class where the alias is put
     if (!enclosingClass->hasBaseClass(origVar->scope->curCompound)) {
-      error(stringc << "bad alias `" << name
+      error(stringc << "bad alias '" << name
                     << "': original must be in a base class of alias' scope");
       return NULL;
     }
@@ -2855,7 +2855,7 @@ Variable *Env::makeUsingAliasFor(SourceLoc loc, Variable *origVar)
     // we are *not* trying to create another alias
     else if (enclosingClass) {
       // this error message could be more informative...
-      error(stringc << "alias `" << name << "' conflicts with another alias");
+      error(stringc << "alias '" << name << "' conflicts with another alias");
       return NULL;
     }
   }
@@ -2877,7 +2877,7 @@ Variable *Env::makeUsingAliasFor(SourceLoc loc, Variable *origVar)
   // hook 'newVar' up as an alias for 'origVar'
   newVar->setUsingAlias(origVar->skipAlias());    // don't make long chains
 
-  TRACE("env", "made alias `" << name <<
+  TRACE("env", "made alias '" << name <<
                "' for origVar at " << toString(origVar->loc));
 
   return newVar;
@@ -3051,9 +3051,9 @@ OverloadSet *Env::getOverloadForDeclaration(Variable *&prior, Type *type)
     // can only be an overloading if their signatures differ
     if (!sameType || !sameTemplateNess) {
       // ok, allow the overload
-      TRACE("ovl",    "overloaded `" << prior->name
-                   << "': `" << prior->type->toString()
-                   << "' and `" << type->toString() << "'");
+      TRACE("ovl",    "overloaded '" << prior->name
+                   << "': '" << prior->type->toString()
+                   << "' and '" << type->toString() << "'");
       overloadSet = prior->getOrCreateOverloadSet();
       prior = NULL;    // so we don't consider this to be the same
     }
@@ -3194,8 +3194,8 @@ Variable *Env::createDeclaration(
           !multipleDefinitionsOK(*this, prior, dflags)) {
         if (scope->isParameterScope()) {
           env.diagnose3(env.lang.allowDuplicateParameterNames, loc, stringc
-            << "parameter `" << type->toCString(name)
-            << "' conflicts with previous parameter `"
+            << "parameter '" << type->toCString(name)
+            << "' conflicts with previous parameter '"
             << prior->toCStringAsParameter() << "' (gcc bug allows it [gcc PR 13717])");
 
           // I will recover by removing the name
@@ -3215,8 +3215,8 @@ Variable *Env::createDeclaration(
         // type-vars-suppress-errors thing altogether, but I want to
         // minimize churn for the moment
         error(/*prior->type,*/ stringc
-          << "duplicate definition for `" << name
-          << "' of type `" << prior->type->toString()
+          << "duplicate definition for '" << name
+          << "' of type '" << prior->type->toString()
           << "'; previous at " << toString(prior->loc),
           maybeEF_STRONG());
 
@@ -3282,14 +3282,14 @@ Variable *Env::createDeclaration(
                  prior->hasAllFlags(DF_SELFNAME | DF_TYPEDEF)) {
           // 9/22/04: Special case for 'struct ip_opts': allow the member
           // to replace the class name, despite 9.2 para 13.
-          TRACE("env", "allowing member `" << prior->name <<
+          TRACE("env", "allowing member '" << prior->name <<
                        "' with same name as class");
           forceReplace = true;
           goto noPriorDeclaration;
         }
         else {
           error(stringc
-            << "duplicate member declaration of `" << name
+            << "duplicate member declaration of '" << name
             << "' in " << enclosingClass->keywordAndName()
             << "; previous at " << toString(prior->loc),
             maybeEF_STRONG());    // weakened for t0266.cc
@@ -3302,8 +3302,8 @@ Variable *Env::createDeclaration(
     if (prior->type->isFunctionType() &&
         prior->type->asFunctionType()->hasFlag(FF_DEFAULT_ALLOC)) {
       // replace it
-      TRACE("env", "replacing default declaration `" << prior->toString()
-                << "' with `" << type->toString() << "'");
+      TRACE("env", "replacing default declaration '" << prior->toString()
+                << "' with '" << type->toString() << "'");
       forceReplace = true;
       goto noPriorDeclaration;
     }
@@ -3369,10 +3369,10 @@ Variable *Env::createDeclaration(
       // turn the error into a warning so that the file can go
       // through; this is an unsoundness
       warning(stringc
-              << "prior declaration of function `" << name
+              << "prior declaration of function '" << name
               << "' at " << prior->loc
-              << " had type `" << prior->type->toString()
-              << "', but this one uses `" << type->toString() << "'."
+              << " had type '" << prior->type->toString()
+              << "', but this one uses '" << type->toString() << "'."
               << " This is most likely due to the prior declaration being implied "
               << "by a call to a function before it was declared.  "
               << "Keeping the implied, weaker declaration; THIS IS UNSOUND.");
@@ -3388,10 +3388,10 @@ Variable *Env::createDeclaration(
       // ruling out the possibility of function overloading
 
       string msg = stringc
-        << "prior declaration of `" << name
+        << "prior declaration of '" << name
         << "' at " << prior->loc
-        << " had type `" << prior->type->toString()
-        << "', but this one uses `" << type->toString() << "'";
+        << " had type '" << prior->type->toString()
+        << "', but this one uses '" << type->toString() << "'";
 
       if (!lang.isCplusplus &&
           prior->type->isFunctionType() &&
@@ -3456,7 +3456,7 @@ Variable *Env::createDeclaration(
     }
     else if (!sameScopes(prior->skipAlias()->scope, scope)) {
       error(type, stringc
-            << "prior declaration of `" << name
+            << "prior declaration of '" << name
             << "' at " << prior->loc
             << " refers to a different entity, so it conflicts with "
             << "the one being declared here");
@@ -3503,7 +3503,7 @@ Variable *Env::createDeclaration(
             prior->setFlag(DF_STATIC);
           } else {
             env.diagnose3(lang.allowStaticAfterNonStatic, loc, stringc
-                          << "prior declaration of `" << name
+                          << "prior declaration of '" << name
                           << "' at " << prior->loc
                           << " declared non-static, cannot re-declare as static");
           }
@@ -3566,7 +3566,7 @@ noPriorDeclaration:
     // modify the environment, during disambiguation.
 
     if (disambErrorsSuppressChanges()) {
-      TRACE("env", "not adding D_name `" << name <<
+      TRACE("env", "not adding D_name '" << name <<
             "' because there are disambiguating errors");
     }
     else {
@@ -3613,7 +3613,7 @@ void Env::mergeDefaultArguments(SourceLoc loc, Variable *prior, FunctionType *ty
 
       if (p->value) {
         error(loc, stringc
-          << "declaration of `" << prior->name
+          << "declaration of '" << prior->name
           << "' supplies a redundant default argument for parameter "
           << paramCt);
       }
@@ -3627,7 +3627,7 @@ void Env::mergeDefaultArguments(SourceLoc loc, Variable *prior, FunctionType *ty
     }
     else if (!p->value && seenSomeDefaults) {
       error(loc, stringc
-        << "declaration of `" << prior->name
+        << "declaration of '" << prior->name
         << "' supplies some default arguments, but no default for later parameter "
         << paramCt << " has been supplied");
     }
@@ -3659,7 +3659,7 @@ void Env::handleTypeOfMain(SourceLoc loc, Variable *prior, Type *&type)
 
   if (!type->isFunctionType()) {
     env.error(loc, stringc
-      << "global name `main' must be a function, not `"
+      << "global name 'main' must be a function, not '"
       << type->toString() << "'");
     return;
   }
@@ -3690,8 +3690,8 @@ void Env::handleTypeOfMain(SourceLoc loc, Variable *prior, Type *&type)
     if (!priorIter.data()->type->equals(typeIter.data()->type, mflags)) {
       env.error(loc, stringc
         << "prior declaration of main() at " << prior->loc
-        << " had type `" << prior->type->toString()
-        << "', but this one uses `" << type->toString() << "'");
+        << " had type '" << prior->type->toString()
+        << "', but this one uses '" << type->toString() << "'");
       return;
     }
     priorIter.adv();
@@ -3950,7 +3950,7 @@ Scope *Env::findParameterizingScope(Variable *bareQualifierVar,
 
   if (!lastUnassoc) {
     if (argsHaveVariables) {
-      error(stringc << "no template parameter list supplied for `"
+      error(stringc << "no template parameter list supplied for '"
                     << bareQualifierVar->name << "'");
     }
     else {
@@ -4002,7 +4002,7 @@ bool Env::ensureCompleteType(char const *action, Type *type)
     } else {
       // 8.3.4 para 1: this is an incomplete type
       error(stringc << "attempt to " << action <<
-            " incomplete type `" << type->toString() << "'");
+            " incomplete type '" << type->toString() << "'");
       return false;
     }
   }
@@ -4020,7 +4020,7 @@ bool Env::ensureCompleteCompound(char const *action, CompoundType *ct)
 
   if (!ct->isComplete()) {
     error(stringc << "attempt to " << action <<
-                     " incomplete class `" << ct->name << "'");
+                     " incomplete class '" << ct->name << "'");
     return false;
   }
 
@@ -4126,12 +4126,12 @@ Variable *Env::pickMatchingOverloadedFunctionVar(LookupSet &set, Type *type)
     }
 
     if (v->type->equals(type)) {
-      OVERLOADTRACE("13.4: selected `" << v->toString() << "'");
+      OVERLOADTRACE("13.4: selected '" << v->toString() << "'");
       return v;     // found it
     }
   }
 
-  OVERLOADTRACE("13.4: no match for type `" << type->toString() << "'");
+  OVERLOADTRACE("13.4: no match for type '" << type->toString() << "'");
   return NULL;      // no matching element
 }
 
@@ -4186,8 +4186,8 @@ void Env::possiblySetOverloadedFunctionVar(Expression *expr, Type *paramType,
     }
     else {
       env.error(getExprNameLoc(expr), stringc
-        << "failed to resolve address-of of overloaded function `"
-        << *(getExprName(expr)) << "' assigned to type `"
+        << "failed to resolve address-of of overloaded function '"
+        << *(getExprName(expr)) << "' assigned to type '"
         << paramType->toString() << "'; candidates:\n"
         << chomp(set.asString()));
     }
@@ -4382,8 +4382,8 @@ void Env::associatedScopeLookup(LookupSet &candidates, StringRef name,
         // if non-function found, while ICC seems to just ignore
         // non-functions.  Oy.
         env.error(loc(), stringc
-          << "during argument-dependent lookup of `" << name
-          << "', found non-function of type `" << v->type->toString()
+          << "during argument-dependent lookup of '" << name
+          << "', found non-function of type '" << v->type->toString()
           << "' in " << s->scopeName());
       }
       else {
@@ -4486,7 +4486,7 @@ Type *Env::resolveDQTs(SourceLoc loc, Type *t)
           breaker();      // need to test
           if (!resolvedNAT->isCVAtomicType() ||
               !resolvedNAT->asCVAtomicType()->atomic->isNamedAtomicType()) {
-            error(loc, stringc << "`" << t->toString() << "' is `"
+            error(loc, stringc << "'" << t->toString() << "' is '"
                                << resolvedNAT->toString() << "', but that "
                                << "is not allowed as a ptm-qualifier");
             return NULL;
@@ -4541,7 +4541,7 @@ Type *Env::resolveDQTs_atomic(SourceLoc loc, AtomicType *t)
     Variable *v = set.isEmpty()? NULL : set.first();
 
     if (!v || !v->isType()) {
-      error(loc, stringc << "no such type `" << t->toCString()
+      error(loc, stringc << "no such type '" << t->toCString()
                          << "' (while resolving DQTs)");
       return NULL;     // just keep using what we already have
     }
@@ -4778,7 +4778,7 @@ void Env::lookupPQ_withScope(LookupSet &set, PQName *name, LookupFlags flags,
         else if (svar->type->isNamedAtomicType()) {
           if (qual->sargs.isNotEmpty()) {
             error(name->loc, stringc     // t0265.cc error 1
-              << "cannot apply template arguments to `" << qual->qualifier << "'",
+              << "cannot apply template arguments to '" << qual->qualifier << "'",
               EF_STRONG);
             return;
           }
@@ -4858,10 +4858,10 @@ void Env::lookupPQ_withScope(LookupSet &set, PQName *name, LookupFlags flags,
     if (!className || !className->isClass()) {
       string scopeName;
       if (lookupScope) {
-        scopeName = stringc << "in scope `" << lookupScope->fullyQualifiedCName() << "'";
+        scopeName = stringc << "in scope '" << lookupScope->fullyQualifiedCName() << "'";
       }
       env.error(name->loc, stringc
-        << "no such class `" << *name << "'" << scopeName);
+        << "no such class '" << *name << "'" << scopeName);
     }
     else {
       lookupClassDestructor(set, className->type->asCompoundType(), flags);
@@ -4895,7 +4895,7 @@ void Env::unqualifiedFinalNameLookup(LookupSet &set, Scope *scope,
 
     if (set.isEmpty()) {           // t0460.cc
       env.error(name->loc, stringc
-        << "cannot apply template args to non-template `"
+        << "cannot apply template args to non-template '"
         << name->getName() << "'", EF_DISAMBIGUATES);
       return;
     }
@@ -4944,7 +4944,7 @@ void Env::unqualifiedFinalNameLookup(LookupSet &set, Scope *scope,
   // if we are even considering applying template arguments, the
   // name must be unambiguous
   if (set.count() > 1) {
-    env.error(name->loc, stringc << "ambiguous use of `" << *name
+    env.error(name->loc, stringc << "ambiguous use of '" << *name
                                  << "' in non-overloadable context");
     set.removeAllButOne();    // error recovery
     return;

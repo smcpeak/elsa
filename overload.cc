@@ -346,7 +346,7 @@ void OverloadResolver::addTemplCandidate
     (env.loc(),
      baseV,
      sargs);
-  // quarl: for some reason adding ``xassert(var0inst != NULL)'' sometimes
+  // quarl: for some reason adding "xassert(var0inst != NULL)" sometimes
   // stops the segfault without throwing an assertion failure!
   xassert(var0inst != NULL && "f1c15444-8783-4296-981f-e3908d7cb1b4");
   xassert(var0inst->templateInfo()->isCompleteSpecOrInstantiation());
@@ -1955,14 +1955,14 @@ void test_computeLUB(Env &env, Type *t1, Type *t2, Type *answer, int code)
   string expect;
   switch (code) {
     case 0: expect = "fail"; break;
-    case 1: expect = stringc << "yield `" << answer->toString() << "'"; break;
+    case 1: expect = stringc << "yield '" << answer->toString() << "'"; break;
     case 2: expect = "fail with an ambiguity"; break;
   }
 
   // actual result
   string actual;
   if (a) {
-    actual = stringc << "yielded `" << a->toString() << "'";
+    actual = stringc << "yielded '" << a->toString() << "'";
   }
   else if (!wasAmbig) {
     actual = "failed";

@@ -185,8 +185,8 @@ bool Scope::addVariable(Variable *v, bool forceReplace)
     if (!curCompound) {
       // variable outside a class
       TRACE("env",    prefix << "added " << classification
-                   << " `" << v->name
-                   << "' of type `" << v->type->toString()
+                   << " '" << v->name
+                   << "' of type '" << v->type->toString()
                    << "' at " << toLCString(v->loc)
                    << " to " << desc());
     }
@@ -195,8 +195,8 @@ bool Scope::addVariable(Variable *v, bool forceReplace)
       //v->access = curAccess;      // moved into registerVariable()
       TRACE("env",    prefix << "added " << toString(v->getAccess())
                    << " member " << classification
-                   << " `" << v->name
-                   << "' of type `" << v->type->toString()
+                   << " '" << v->name
+                   << "' of type '" << v->type->toString()
                    << "' at " << toLCString(v->loc)
                    << " to " << desc());
     }
@@ -438,7 +438,7 @@ void Scope::lookupVariable_considerBase
       else {
         // ambiguity
         env.error(stringc
-          << "reference to `" << name << "' is ambiguous, because "
+          << "reference to '" << name << "' is ambiguous, because "
           << "it could either refer to "
           << v1Subobj->ct->name << "::" << name << " or "
           << v2Base->name << "::" << name);
@@ -521,7 +521,7 @@ CompoundType const *Scope::lookupCompoundC(StringRef name, Env &env,
   else if (!v->type->isCompoundType()) {
     // TODO: further distinguish between struct/class and union
     if (!(flags & LF_SUPPRESS_ERROR)) {
-      env.error(stringc << "`" << name << "' is not a struct/class/union");
+      env.error(stringc << "'" << name << "' is not a struct/class/union");
     }
     return NULL;
   }
@@ -540,7 +540,7 @@ EnumType const *Scope::lookupEnumC(StringRef name, Env &env,
   }
   else if (!v->type->isEnumType()) {
     if (!(flags & LF_SUPPRESS_ERROR)) {
-      env.error(stringc << "`" << name << "' is not an enum");
+      env.error(stringc << "'" << name << "' is not an enum");
     }
     return NULL;
   }
@@ -566,8 +566,8 @@ Variable *Scope::lookupTypeTag(StringRef name, Env &env, LookupFlags flags) cons
           v = v2;
         }
         else if (v != v2) {
-          env.error(stringc << "ambiguous type tag: `" << v->fullyQualifiedName0()
-                            << "' vs. `" << v2->fullyQualifiedName0() << "'");
+          env.error(stringc << "ambiguous type tag: '" << v->fullyQualifiedName0()
+                            << "' vs. '" << v2->fullyQualifiedName0() << "'");
         }
       }
     }
@@ -701,7 +701,7 @@ void Scope::lookup(LookupSet &set, StringRef name, Env *env, LookupFlags flags)
           // ambiguity
           if (env) {
             env->error(stringc
-              << "reference to `" << name << "' is ambiguous, because "
+              << "reference to '" << name << "' is ambiguous, because "
               << "it could either refer to "
               << vObj->ct->name << "::" << name << " or "
               << v2Obj->ct->name << "::" << name);
@@ -1008,8 +1008,8 @@ bool Scope::foundViaUsingEdge(LookupSet &candidates, Env &env, LookupFlags flags
       }
       else {
         env.error(stringc
-          << "ambiguous lookup: `" << vfound->fullyQualifiedName0()
-          << "' vs. `" << v->fullyQualifiedName0() << "'");
+          << "ambiguous lookup: '" << vfound->fullyQualifiedName0()
+          << "' vs. '" << v->fullyQualifiedName0() << "'");
 
         // originally I kept going in hopes of reporting more
         // interesting things, but now that the same scope can
