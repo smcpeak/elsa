@@ -51,6 +51,16 @@ char *myProcessArgs(int argc, char **argv, char const *additionalInfo)
       argv++;
       argc--;
     }
+    else if (streq(argv[1], "--prettyPrint")) {
+      traceAddSys("prettyPrint");
+      argv++;
+      argc--;
+    }
+    else if (streq(argv[1], "--printStringLiterals")) {
+      traceAddSys("printStringLiterals");
+      argv++;
+      argc--;
+    }
     else {
       break;     // didn't find any more options
     }
@@ -59,11 +69,13 @@ char *myProcessArgs(int argc, char **argv, char const *additionalInfo)
   if (argc != 2) {
     cout << "usage: " << progName << " [options] input-file\n"
             "  options:\n"
-            "    -tr <flags>:       turn on given tracing flags (comma-separated)\n"
-            "    -xc                parse input as C rather than C++\n"
-            "    -w                 disable warnings\n"
-            "    --verbose          print error/warn counts and times\n"
-            "    --quiet            opposite of --verbose (and the default)\n"
+            "    -tr <flags>:           turn on given tracing flags (comma-separated)\n"
+            "    -xc                    parse input as C rather than C++\n"
+            "    -w                     disable warnings\n"
+            "    --verbose              print error/warn counts and times\n"
+            "    --quiet                opposite of --verbose (and the default)\n"
+            "    --prettyPrint          pretty-print the parsed AST as C/C++ syntax\n"
+            "    --printStringLiterals  print every decoded string literal\n"
          << (additionalInfo? additionalInfo : "");
     exit(argc==1? 0 : 2);    // error if any args supplied
   }

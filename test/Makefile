@@ -43,7 +43,7 @@ out/pprint/%.cc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
 	$(PYTHON3) ./run-compare-expect.py \
 	  --actual out/pprint/$*.cc.actual \
 	  --expect pprint/$*.cc.expect \
-	  $(CCPARSE) --quiet -tr prettyPrint $<
+	  $(CCPARSE) --prettyPrint $<
 	touch $@
 
 
@@ -53,7 +53,7 @@ out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect $(CCPARSE)
 	$(PYTHON3) ./run-compare-expect.py \
 	  --actual out/pprint/$*.c.actual \
 	  --expect pprint/$*.c.expect \
-	  $(CCPARSE) --quiet -xc -tr prettyPrint $<
+	  $(CCPARSE) -xc --prettyPrint $<
 	touch $@
 
 
@@ -63,7 +63,7 @@ out/strlit/%.cc.ok: strlit/%.cc strlit/%.cc.expect $(CCPARSE)
 	$(PYTHON3) ./run-compare-expect.py \
 	  --actual out/strlit/$*.cc.actual \
 	  --expect strlit/$*.cc.expect \
-	  $(CCPARSE) --quiet -tr printStringLiterals $<
+	  $(CCPARSE) --printStringLiterals $<
 	touch $@
 
 # Run a C string literal test.
@@ -72,7 +72,7 @@ out/strlit/%.c.ok: strlit/%.c strlit/%.c.expect $(CCPARSE)
 	$(PYTHON3) ./run-compare-expect.py \
 	  --actual out/strlit/$*.c.actual \
 	  --expect strlit/$*.c.expect \
-	  $(CCPARSE) --quiet -xc -tr printStringLiterals $<
+	  $(CCPARSE) -xc --printStringLiterals $<
 	touch $@
 
 
