@@ -7,6 +7,21 @@
 # Default rule.
 all: check
 
+
+# -------------------------- configuration -----------------------------
+# External tools.
+PYTHON3 = python3
+PERL    = perl
+
+# Name of parser binary.
+CCPARSE = ../ccparse.exe
+
+# Pull in automatic and manual configuration adjustments.
+include ../config.mk
+-include ../personal.mk
+
+
+# ------------------------------ rules ---------------------------------
 # Eliminate all implicit rules.
 .SUFFIXES:
 
@@ -16,26 +31,21 @@ all: check
 # Do not remove "intermediate" targets.
 .SECONDARY:
 
-
-# Name of parser binary.
-CCPARSE := ../ccparse.exe
-
-# --------------------- interpreter tests ------------------------
+# List of tests.  This gets added to below.
 TESTS :=
-TESTS += pprint/pp-decl.cc
-TESTS += pprint/pp-syntax.cc
-TESTS += pprint/vararg-promote.c
-TESTS += pprint/vararg-promote.cc
-TESTS += strlit/multiline.c
-TESTS += strlit/strlit1.cc
-
-check: $(patsubst %,out/%.ok,$(TESTS))
-
 
 # If we are missing an expect file, just make an empty one.
 %.expect:
 	touch $@
 
+
+# ------------------------------ pprint --------------------------------
+# Pretty-print tests run with --prettyPrint and compare the output to
+# a "known good" expected output.
+
+TESTS += pprint/pp-decl.cc
+TESTS += pprint/pp-syntax.cc
+TESTS += pprint/vararg-promote.cc
 
 # Run a C++ pretty-print test.
 out/pprint/%.cc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
@@ -47,6 +57,8 @@ out/pprint/%.cc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
 	touch $@
 
 
+TESTS += pprint/vararg-promote.c
+
 # Run a C pretty-print test.
 out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect $(CCPARSE)
 	@mkdir -p $(dir $@)
@@ -57,6 +69,12 @@ out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect $(CCPARSE)
 	touch $@
 
 
+# ------------------------------ strlit --------------------------------
+# String literal tests run with --printStringLiterals and compare the
+# output to expected output.
+
+TESTS += strlit/strlit1.cc
+
 # Run a C++ string literal test.
 out/strlit/%.cc.ok: strlit/%.cc strlit/%.cc.expect $(CCPARSE)
 	@mkdir -p $(dir $@)
@@ -65,6 +83,9 @@ out/strlit/%.cc.ok: strlit/%.cc strlit/%.cc.expect $(CCPARSE)
 	  --expect strlit/$*.cc.expect \
 	  $(CCPARSE) --printStringLiterals $<
 	touch $@
+
+
+TESTS += strlit/multiline.c
 
 # Run a C string literal test.
 out/strlit/%.c.ok: strlit/%.c strlit/%.c.expect $(CCPARSE)
@@ -76,10 +97,25 @@ out/strlit/%.c.ok: strlit/%.c strlit/%.c.expect $(CCPARSE)
 	touch $@
 
 
-# ------------------------- cleanup ----------------------------
-check:
+# ------------------------------ tcheck --------------------------------
+# Type-check tests simply run ccparse and expect it to do its own
+# internal validation with internal testing hooks.
+
+TESTS += tcheck/expr-type.c
+
+# Run a C tcheck test
+out/tcheck/%.c.ok: tcheck/%.c $(CCPARSE)
+	@mkdir -p $(dir $@)
+	$(PERL) ../multitest.pl $(CCPARSE) -xc tcheck/$*.c
+	touch $@
+
+
+# ---------------------------- check rule ------------------------------
+check: $(patsubst %,out/%.ok,$(TESTS))
 	@echo "All tests in test/ passed."
 
+
+# ----------------------------- cleanup --------------------------------
 clean:
 	rm -rf out
 
