@@ -5352,6 +5352,13 @@ static unsigned hexToInt(unsigned char c)
 }
 
 
+// This is set by main.cc in response to --printStringLiterals.
+//
+// TODO: This is an ugly way to communicate that preference.  I think a
+// better approach would be to use a visitor after parsing is done.
+bool printStringLiterals = false;
+
+
 Type *E_stringLit::itcheck_x(Env &env, Expression *&replacement)
 {
   // cppstd 2.13.4 para 1
@@ -5492,8 +5499,7 @@ Type *E_stringLit::itcheck_x(Env &env, Expression *&replacement)
   m_stringData.setFromBlock(data.getArray(), data.length());
 
   // For testing optionally print the decoded literal.
-  static bool printLiterals = tracingSys("printStringLiterals");
-  if (printLiterals) {
+  if (printStringLiterals) {
     m_stringData.print("decoded literal");
   }
 
