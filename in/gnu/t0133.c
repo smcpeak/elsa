@@ -45,12 +45,10 @@ int pass_S_normalized(S *s)
   return f( (U){ .s = s } );
 }
 
-// This is *not* accepted by gcc-3.4.3, even if we
-// mark W as being a transparent union also.
-#if 0
-int pass_T(T *t)
+void pass_T(T *t)
 {
-  return f(t /*implicitly initializes U.w.t*/);
+  // This is *not* accepted by gcc-3.4.3, even if we
+  // mark W as being a transparent union also.
+  //f(t /*implicitly initializes U.w.t*/);
 }
-#endif // 0
 

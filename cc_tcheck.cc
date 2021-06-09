@@ -6183,6 +6183,11 @@ int compareArgsToParams(Env &env, FunctionType *ft, FakeList<ArgExpression> *arg
             // what is being tcheck'd twice)
             arg->expr->tcheck(env, arg->expr);
 
+            // In order to satisfy an assertion below, change 'argInfo'
+            // to agree with the new argument type.  I'm not 100% sure
+            // this is the right thing to do.
+            argInfo[paramIndex].type = arg->getType();
+
             // stop iterating over members
             break;
           }

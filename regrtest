@@ -1488,12 +1488,11 @@ if $use_gnu; then
   testCparse gnu/t0133.c
   testCparse gnu/t0134.c
 
-  # These work, but for the wrong reason.  The transparent union attribute
-  # is dropped on the floor (bad) but then no argument checking is done
-  # so we don't notice the problem (double bad).  Oink would notice because
-  # the lack of normalization will cause problems.
-  testCparse gnu/t0135.c
-  testCparse gnu/t0136.c
+  # These do not work because the transparent union attribute is
+  # ignored due to it being associated with a type specifier rather than
+  # a declarator.
+  failCparse gnu/t0135.c "transparent union attribute ignored"
+  failCparse gnu/t0136.c "transparent union attribute ignored"
 
   # This is here just to document that Elsa does not diagnose something that
   # gcc does.  However, it's so esoteric that I don't want to consider this

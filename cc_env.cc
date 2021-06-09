@@ -381,9 +381,8 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
 
     doFunctionTemplateBodyInstantiation(!tracingSys("disableFBodyInst")),
 
-    // this can be turned off with its own flag, or in C mode (since I
-    // have not implemented any of the relaxed C rules)
-    doCompareArgsToParams(!tracingSys("doNotCompareArgsToParams") && L.isCplusplus),
+    // this can be turned off with its own flag
+    doCompareArgsToParams(!tracingSys("doNotCompareArgsToParams")),
 
     // 2005-03-09: things are finally ready to turn strict checking
     // on by default (see doc/permissive.txt)
