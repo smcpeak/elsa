@@ -1208,13 +1208,13 @@ if [ -f ../cppstdex/regrtest_inner ]; then
   source ../cppstdex/regrtest_inner
 fi
 
-# is the gnu extension built?
+# Is the gnu extension built?
 use_gnu=false
-if egrep "USE_GNU: +1" config.summary >/dev/null; then
+if grep --quiet 'active extension modules:.*gnu.ast' cc.ast.gen.h; then
   use_gnu=true
-  echo "gnu extensions are enabled"
+  echo "GNU extensions enabled"
 else
-  echo "gnu extensions are not enabled"
+  echo "GNU extensions are not enabled"
 fi
 
 if $use_gnu; then
@@ -1443,7 +1443,7 @@ testCparse c/k0016.c #"expression in compound initializer array index"
 
 # is K&R built?
 use_kandr=false
-if egrep "USE_KANDR: +1" config.summary >/dev/null; then
+if grep --quiet 'active extension modules:.*kandr.ast' cc.ast.gen.h; then
   use_kandr=true
   echo "K&R extensions are enabled"
 else
