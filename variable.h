@@ -33,6 +33,8 @@
 #ifndef VARIABLE_H
 #define VARIABLE_H
 
+#include "variable-fwd.h"      // forwards for this module
+
 #include "srcloc.h"            // SourceLoc
 #include "strtable.h"          // StringRef
 #include "cc_flags.h"          // DeclFlags, ScopeKind
