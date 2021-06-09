@@ -1,17 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-
-<HTML>
-
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <HEAD>
   <TITLE>Elsa</TITLE>
-  <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </HEAD>
-
 <body>
 
-<center><h2>
-Elsa: The Elkhound-based C/C++ Parser
-</h2></center>
+<h1>Elsa: The Elkhound-based C/C++ Parser</h1>
 
 <p>
 Elsa is a C and C++ parser.  It is based on the <a
@@ -76,7 +71,7 @@ Build instructions:
   $ make
   $ make check
 </pre>
-<a href="configure.pl"><tt>./configure</tt></a> understands
+<a href="configure.pl"><code>./configure</code></a> understands
 <a href="gendoc/configure.txt">these options</a>.  You can also
 look at the <a href="Makefile.in">Makefile</a>.
 
@@ -92,31 +87,30 @@ make it print the annotated, post-type-check AST, say
 </pre>
 
 <p>
-Additional <tt>-tr</tt> flags of interest:
+Additional <code>-tr</code> flags of interest:
 <ul>
-<li><tt>printAST</tt>: Print the (possibly ambiguous) AST before type checking.
-<li><tt>printTypedAST</tt>: Print the AST after type checking.
-<li><tt>env</tt>: Print environment modifications as they happen.
-<li><tt>disamb</tt>: Print disambiguation activity.
-<li><tt>printHierarchies</tt>: Print inheritance hierarchies in
+<li><code>printAST</code>: Print the (possibly ambiguous) AST before type checking.
+<li><code>printTypedAST</code>: Print the AST after type checking.
+<li><code>env</code>: Print environment modifications as they happen.
+<li><code>disamb</code>: Print disambiguation activity.
+<li><code>printHierarchies</code>: Print inheritance hierarchies in
     <a href="http://www.research.att.com/sw/tools/graphviz/">Dot</a> format.
     Interesting in that virtual inheritance is represented properly;
     for example <a href="in/std/3.4.5.cc">in/std/3.4.5.cc</a> yields
     <a href="gendoc/3.4.5.png">3.4.5.png</a>.
-<li><tt>mustBeUnambiguous</tt>: After type checking, scan the AST to verify there
+<li><code>mustBeUnambiguous</code>: After type checking, scan the AST to verify there
     are no remaining ambiguities.  If there are, abort.
 </ul>
-The <tt>-tr</tt> flags can be passed separately, or strung together
-separated by commas (e.g. "<tt>-tr env,disamb,printAST</tt>").
+The <code>-tr</code> flags can be passed separately, or strung together
+separated by commas (e.g. "<code>-tr env,disamb,printAST</code>").
 
 <p>
 Other command line options:
 <ul>
-<li><tt>--prettyPrint</tt>: Print out the AST as C++.  This is still somewhat incomplete.
+<li><code>--prettyPrint</code>: Print out the AST as C++.  This is still somewhat incomplete.
 </ul>
 
-<p>
-<a name="module_list">Module List</a>:
+<p id="module_list">Module List:
 <ul>
 
 <li><a href="ast_build.h">ast_build.h</a>,
@@ -243,7 +237,7 @@ the one used in the absence of a specialized procedure.
 
 <li><a href="generic_aux.h">generic_aux.h</a>:
 Some routines for printing and modifying AST nodes that have
-<tt>ambiguity</tt> pointers.
+<code>ambiguity</code> pointers.
 
 <li><a href="gnu.lex">gnu.lex</a>,
     <a href="gnu_ext.tok">gnu_ext.tok</a>,
@@ -398,7 +392,7 @@ several variations obtained by un-commenting certain lines.
 Regression tests.
 
 <li><a href="run-delta-loop">run-delta-loop</a>:
-Minimize <tt>tmp.i</tt> exhibiting some specified error message.
+Minimize <code>tmp.i</code> exhibiting some specified error message.
 
 <li><a href="test-for-error">test-for-error</a>:
 Test for exhibition of a particular error; used by run-delta-loop.
@@ -413,14 +407,5 @@ find C++ inputs to test with Elsa.  I use it to make claims like
 
 </ul>
 
-<p>
-  <a href="http://validator.w3.org/check/referer"><img border="0"
-      src="http://www.w3.org/Icons/valid-html401"
-      alt="Valid HTML 4.01!" height="31" width="88"></a>
-</p>
-
 </body>
-
-</HTML>
-
-
+</html>

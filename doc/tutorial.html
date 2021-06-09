@@ -1,23 +1,22 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-
-<HTML>
-
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <HEAD>
   <TITLE>Elsa Tutorial</TITLE>
-  <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
-  <style type="text/css">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <style>
     H1 { font-size: 150% }
     H2 { font-size: 125% }
     H3 { font-size: 100% }
     P.title { font-size: 175% }
+    .center {
+      text-align: center;
+    }
   </style>
 </HEAD>
 
 <body>
 
-<center>
-<p class="title"><b>Elsa Tutorial</b></p>
-</center>
+<p class="title center"><b>Elsa Tutorial</b></p>
 
 <h1>1. Introduction</h1>
 
@@ -75,11 +74,11 @@ Inside the Elsa distribution you will find a directory structure like this:
 <h2>2.1 Configure</h2>
 
 <p>
-At the top <tt>elsa-XXXX.XX.XX</tt> directory, just run <tt>configure</tt>:
+At the top <code>elsa-XXXX.XX.XX</code> directory, just run <code>configure</code>:
 <pre>
   elsa-XXXX.XX.XX$ ./configure
 </pre>
-The above command just runs <tt>configure</tt> scripts in each of the four
+The above command just runs <code>configure</code> scripts in each of the four
 subdirectories.  If you want to pass specific options to a configure script
 inside a specific directory, just go into the directory and run its
 particular script.
@@ -87,7 +86,7 @@ particular script.
 <p>
 In particular, if you want to be able to use the
 <a href="../../smbase/trace.html">tracing flags</a>, which I recommend,
-then pass the <tt>-debug</tt> option to <tt>elsa/configure</tt>:
+then pass the <code>-debug</code> option to <code>elsa/configure</code>:
 <pre>
   elsa-XXXX.XX.XX$ cd elsa
   elsa$ ./configure -debug
@@ -97,11 +96,11 @@ then pass the <tt>-debug</tt> option to <tt>elsa/configure</tt>:
 <h2>2.2 Make</h2>
 
 <p>
-At the top, run <tt>make</tt>:
+At the top, run <code>make</code>:
 <pre>
   elsa-XXXX.XX.XX$ make
 </pre>
-This just runs <tt>make</tt> in each of the four directories.
+This just runs <code>make</code> in each of the four directories.
 
 <p>
 Hopefully, everything will build without problems.  If not, it's
@@ -112,26 +111,26 @@ that you found necessary.
 <h2>2.3 Make check</h2>
 
 <p>
-At the top, run <tt>make check</tt>:
+At the top, run <code>make check</code>:
 <pre>
   elsa-XXXX.XX.XX$ make check
 </pre>
-Again, this just runs <tt>make check</tt> in each of the four directories.
+Again, this just runs <code>make check</code> in each of the four directories.
 While this step is in principle optional, if something fails during the
-<tt>make check</tt> then it's likely there is a serious problem.
+<code>make check</code> then it's likely there is a serious problem.
 
 <h1>3. Run ccparse</h1>
 
 <p>
-Among the executables produced by <tt>make</tt> is <tt>elsa/ccparse</tt>,
+Among the executables produced by <code>make</code> is <code>elsa/ccparse</code>,
 a program that runs the C++ parser and optionally does a number of
-post-processing activities.  While developing Elsa, <tt>ccparse</tt>
+post-processing activities.  While developing Elsa, <code>ccparse</code>
 is the program that I run most often.
 
 <h2>3.1 Parsing alone</h2>
 
 <p>
-<tt>ccparse</tt> takes the name of file to parse on the command line:
+<code>ccparse</code> takes the name of file to parse on the command line:
 <pre>
   elsa-XXXX.XX.XX$ cd elsa
   elsa$ ./ccparse in/t0001.cc
@@ -143,7 +142,7 @@ is the program that I run most often.
     warnings: 0
   %%% progress: 6ms: done elaborating (0 ms)
 </pre>
-The output includes "<tt>%%% progress</tt>" lines that report on stages
+The output includes "<code>%%% progress</code>" lines that report on stages
 of processing and timing information, the number of ambiguous nodes in
 the AST, and the number of warnings and errors emitted by the type
 checker.  Since everything worked, the output isn't all that interesting.
@@ -151,8 +150,8 @@ checker.  Since everything worked, the output isn't all that interesting.
 <h2>3.2 Pretty printing</h2>
 
 <p>
-We can ask <tt>ccparse</tt> to print out the source code it has just
-parsed in, by using the <tt>--prettyPrint</tt> command-line argument:
+We can ask <code>ccparse</code> to print out the source code it has just
+parsed in, by using the <code>--prettyPrint</code> command-line argument:
 <pre>
   elsa$ ./ccparse --prettyPrint in/t0001.cc
   %%% progress: 0ms: done parsing (0 ms, 0_235561 cycles)
@@ -174,19 +173,19 @@ Buried in amongst all that noise is the pretty-printed input file:
 </pre>
 
 <p>
-Obviously, <tt>in/t0001.cc</tt> is a fairly trivial input file.
-You're free to experiment with other files in the <tt>in/</tt>
+Obviously, <code>in/t0001.cc</code> is a fairly trivial input file.
+You're free to experiment with other files in the <code>in/</code>
 directory, or even with your own input files.  <b>Note:</b> You
-must preprocess with the input files with <tt>cpp</tt> first!
+must preprocess with the input files with <code>cpp</code> first!
 Elsa does not include a preprocessor.
 
 <h2>3.3 Printing the Abstract Syntax Tree</h2>
 
-<h3>3.3.1 <tt>in/t0001.cc</tt></h3>
+<h3>3.3.1 <code>in/t0001.cc</code></h3>
 
 <p>
-<tt>ccparse</tt> can print the Abstract Syntax Tree (AST) produced
-by the parser, by passing <tt>-tr printAST</tt>:
+<code>ccparse</code> can print the Abstract Syntax Tree (AST) produced
+by the parser, by passing <code>-tr printAST</code>:
 <pre>
   elsa$ ./ccparse -tr printAST in/t0001.cc
   %%% progress: 0ms: done parsing (1 ms, 0_235436 cycles)
@@ -219,17 +218,17 @@ by the parser, by passing <tt>-tr printAST</tt>:
   %%% progress: 11ms: done elaborating (0 ms)
 </pre>
 From this printout we can see that the entire input is a
-<tt>TranslationUnit</tt>, whose first <tt>topForm</tt> is a <tt>Declaration</tt>.
-The declaration has a type specifier, <tt>TS_simple</tt>, denoting <tt>int</tt>.
-It also has a single </tt>Declarator</tt>, with a <tt>D_name</tt> containing
-<tt>x</tt>.
+<code>TranslationUnit</code>, whose first <code>topForm</code> is a <code>Declaration</code>.
+The declaration has a type specifier, <code>TS_simple</code>, denoting <code>int</code>.
+It also has a single <code>Declarator</code>, with a <code>D_name</code> containing
+<code>x</code>.
 
 <p>
 Besides the structural information, the printout includes source locations,
-such as "<tt>in/t0001.cc:3:1</tt>".  This means line 3, column 1 of the
-file <tt>in/t0001.cc</tt>.
+such as "<code>in/t0001.cc:3:1</code>".  This means line 3, column 1 of the
+file <code>in/t0001.cc</code>.
 
-<h3>3.3.1 <tt>in/t0008.cc</tt> (ambiguous)</h3>
+<h3>3.3.1 <code>in/t0008.cc</code> (ambiguous)</h3>
 
 <p>
 The AST above is <em>unambiguous</em>; the parser was able to completely
@@ -237,7 +236,7 @@ determine the syntactic interpretation of the input file, without any
 help from the type checker.  This isn't always possible with C++, and
 since the Elsa type checker runs only <em>after</em> the parser, the
 parser sometimes produces an ambiguous AST.  A simple example is in
-<tt>in/t0008.cc</tt>:
+<code>in/t0008.cc</code>:
 <pre>
   elsa$ ./ccparse -tr printAST in/t0008.cc
   %%% progress: 0ms: done parsing (3 ms, 3_369729 cycles)
@@ -369,13 +368,13 @@ parser sometimes produces an ambiguous AST.  A simple example is in
   %%% progress: 6ms: done elaborating (0 ms)
 </pre>
 
-<h3>3.3.1 <tt>in/t0008.cc</tt> (unambiguous)</h3>
+<h3>3.3.1 <code>in/t0008.cc</code> (unambiguous)</h3>
 
 <p>
-The ambiguity can be resolved (in favor of <tt>E_binary</tt>) by
-considering that the name <tt>x</tt> refers to a variable, not a
+The ambiguity can be resolved (in favor of <code>E_binary</code>) by
+considering that the name <code>x</code> refers to a variable, not a
 type.  The type checker does just this, and produces an
-unambiguous AST.  The <tt>-tr printTypedAST</tt> command line
+unambiguous AST.  The <code>-tr printTypedAST</code> command line
 option will print the AST as it exists after the type checker
 runs:
 <pre>
@@ -397,7 +396,7 @@ runs:
             loc = in/t0008.cc:4:1
             id = int
           nameAndParams = Declarator:
-            var: <global> <definition> int main()
+            var: &lt;global&gt; &lt;definition&gt; int main()
             context = DC_FUNCTION
             decl = D_func:
               loc = in/t0008.cc:4:5
@@ -428,7 +427,7 @@ runs:
                     id = int
                   decllist:
                     decllist[0] = Declarator:
-                      var: <definition> int a
+                      var: &lt;definition&gt; int a
                       context = DC_S_DECL
                       decl = D_name:
                         loc = in/t0008.cc:6:7
@@ -449,7 +448,7 @@ runs:
                     id = int
                   decllist:
                     decllist[0] = Declarator:
-                      var: <definition> int b
+                      var: &lt;definition&gt; int b
                       context = DC_S_DECL
                       decl = D_name:
                         loc = in/t0008.cc:7:7
@@ -466,18 +465,18 @@ runs:
                   expr = E_binary:
                     type: int
                     e1 = E_grouping:
-                      type: int &
+                      type: int &amp;
                       expr = E_variable:
-                        type: int &
+                        type: int &amp;
                         var: int a, at in/t0008.cc:6:7 (0x08271940)
                         name = PQ_name:
                           loc = in/t0008.cc:9:4
                           name = a
-                    op = &
+                    op = &amp;
                     e2 = E_grouping:
-                      type: int &
+                      type: int &amp;
                       expr = E_variable:
-                        type: int &
+                        type: int &amp;
                         var: int b, at in/t0008.cc:7:7 (0x082719F8)
                         name = PQ_name:
                           loc = in/t0008.cc:9:10
@@ -499,7 +498,7 @@ to which names refer.  This information is very useful to analyses
 that come after the type checker.
 
 <p>
-If you want, take some time to experiment with <tt>ccparse</tt> and
+If you want, take some time to experiment with <code>ccparse</code> and
 the trees it can print.  Find some nasty C++ and see what Elsa
 thinks of it!  Try to crash Elsa!  When you've had your fill of
 segfaults (send me bug reports please?), you're ready to go on
