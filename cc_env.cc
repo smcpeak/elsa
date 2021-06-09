@@ -5438,7 +5438,9 @@ Expression *Env::makeConvertedArg(Expression * const arg,
         break;
 
       case SC_INT_PROM: {
-        newarg = new E_implicitStandardConversion(SC_INT_PROM, newarg);
+        // Record the entire conversion, not just SC_INT_PROM.  In
+        // particular, this captures SC_LVAL_TO_RVAL.
+        newarg = new E_implicitStandardConversion(ic.scs, newarg);
         newarg->type = env.tfac.getSimpleType(ST_INT);
         break;
       }

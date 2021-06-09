@@ -301,7 +301,13 @@ ImplicitConversion getImplicitConversionToVararg
     return ret;
   }
 
-  // TODO: lvalue-to-rvalue conversions
+  // lvalue-to-rvalue conversion.
+  StandardConversion sconv = SC_IDENTITY;
+  if (src->isReferenceType()) {
+    sconv |= SC_LVAL_TO_RVAL;
+    src = src->asReferenceType()->atType;
+  }
+
   // TODO: array-to-pointer
   // TODO: function-to-pointer
   // TODO: nullptr_t to void*
@@ -315,14 +321,12 @@ ImplicitConversion getImplicitConversionToVararg
       isIntegerPromotion(src->asCVAtomicType()->atomic,
                          &intType))
   {
-    ret.addStdConv(SC_INT_PROM);
-    return ret;
+    sconv |= SC_INT_PROM;
   }
 
   // TODO: Consider floating-point promotions.
 
-  // Since so much is not done, we'll just assume SC_IDENTITY works.
-  ret.addStdConv(SC_IDENTITY);
+  ret.addStdConv(sconv);
   return ret;
 }
 
