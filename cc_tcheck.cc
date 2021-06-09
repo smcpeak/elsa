@@ -7974,12 +7974,36 @@ Type *resolveOverloadedBinaryOperator(
 }
 
 
+// In C, "arithmetic types" includes enumeration types (6.2.5/17 and
+// 6.2.5/18), whereas in C++ it does not.  My naming follows C++ here.
 bool isArithmeticOrEnumType(Type *t)
 {
   if (t->isSimpleType()) {
     return isArithmeticType(t->asSimpleTypeC()->type);
   }
   return t->isEnumType();
+}
+
+
+// Return true if 't' is a "scalar type" according to C11 and C++14
+// (they have compatible definitions of that term).
+static bool isScalarType(Type *t)
+{
+  // C11 6.2.5/21: "Arithmetic types and pointer types are collectively
+  // called scalar types."
+  //
+  // C++14 3.9/9: "Arithmetic types (3.9.1), enumeration types, pointer
+  // types, pointer to member types (3.9.2), std::nullptr_t, and
+  // cv-qualified versions of these types (3.9.3) are collectively
+  // called scalar types."
+
+  if (isArithmeticOrEnumType(t)) {
+    return true;
+  }
+
+  // TODO: I do not implement nullptr_t.
+  return t->isPointerType() ||
+         t->isPointerToMemberType();
 }
 
 
@@ -8023,14 +8047,26 @@ Type *E_unary::itcheck_x(Env &env, Expression *&replacement)
         << t->toString() << "'");
 
     case UNY_NOT: {
-      // 5.3.1 para 8
-      Type *t_bool = env.getSimpleType(ST_BOOL);
-      if (!getImplicitConversion(env, expr->getSpecial(env.lang), t, t_bool)) {
-        env.error(t, stringc
-          << "argument to unary ! must be convertible to bool; '"
-          << t->toString() << "' is not");
+      if (env.lang.isCplusplus) {
+        // 5.3.1 para 8
+        Type *t_bool = env.getSimpleType(ST_BOOL);
+        if (!getImplicitConversion(env, expr->getSpecial(env.lang), t, t_bool)) {
+          env.error(t, stringc
+            << "argument to unary ! must be convertible to bool; '"
+            << t->toString() << "' is not");
+        }
+        return t_bool;
       }
-      return t_bool;
+      else {
+        // C11 6.5.3.3/5: Operand must have scalar type, and result is
+        // int.
+        if (!isScalarType(t)) {
+          env.error(t, stringb(
+            "The operand of unary '!' must have scalar type; '" <<
+            t->toString() << "' is not."));
+        }
+        return env.getSimpleType(ST_INT);
+      }
     }
 
     case UNY_BITNOT:
