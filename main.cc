@@ -19,7 +19,8 @@ void if_malloc_stats()
 static bool verboseOutput = false;
 
 // this is a dumb way to organize argument processing...
-char *myProcessArgs(int argc, char **argv, char const *additionalInfo)
+static char *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
+                           char const *additionalInfo)
 {
   // remember program name
   char const *progName = argv[0];
@@ -52,7 +53,7 @@ char *myProcessArgs(int argc, char **argv, char const *additionalInfo)
       argc--;
     }
     else if (streq(argv[1], "--prettyPrint")) {
-      traceAddSys("prettyPrint");
+      elsaParse.prettyPrint = true;
       argv++;
       argc--;
     }
@@ -100,10 +101,13 @@ static int doit(int argc, char **argv)
   CCLang lang;
   lang.GNU_Cplusplus();
 
+  // Object that manages the parsing process.
+  ElsaParse elsaParse(strTable, lang);
+
 
   // ------------- process command-line arguments ---------
   char const *inputFname = myProcessArgs
-    (argc, argv,
+    (argc, argv, elsaParse,
      "\n"
      "  general behavior flags:\n"
      "    c_lang             use C language rules (default is C++)\n"
@@ -119,7 +123,6 @@ static int doit(int argc, char **argv)
      "    printAST           print AST after parsing\n"
      "    printTypedAST      print AST with type info\n"
      "    printElabAST       print AST after semantic elaboration\n"
-     "    prettyPrint        echo input as pretty-printed C++\n"
      "\n"
      "  debugging output:\n"
      "    malloc_stats       print malloc stats every so often\n"
@@ -207,7 +210,7 @@ static int doit(int argc, char **argv)
     traceAddSys("scope");
     traceAddSys("templateParams");
     traceAddSys("templateXfer");
-    traceAddSys("prettyPrint");
+    elsaParse.prettyPrint = true;
     traceAddSys("topform");
   }
 
@@ -224,7 +227,6 @@ static int doit(int argc, char **argv)
   }
 
   // Run the parser.
-  ElsaParse elsaParse(strTable, lang);
   elsaParse.printErrorCount = verboseOutput;
   elsaParse.parse(inputFname);
   if (verboseOutput) {

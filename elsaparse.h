@@ -31,6 +31,10 @@ public:      // data
   // is initially false.
   bool printErrorCount;
 
+  // If true, pretty-print the parsed AST as C/C++ syntax after parsing.
+  // Initially false.
+  bool prettyPrint;
+
   // The parsed TU.
   TranslationUnit *unit;
 

@@ -150,6 +150,7 @@ ElsaParse::ElsaParse(StringTable &strTable_, CCLang &lang_)
   : strTable(strTable_),
     lang(lang_),
     printErrorCount(false),
+    prettyPrint(false),
     unit(NULL),
     mainFunction(NULL),
     parseTime(0),
@@ -433,7 +434,7 @@ void ElsaParse::parse(char const *inputFname)
     }
 
     // if we are going to pretty print, then we need to retain defunct children
-    if (tracingSys("prettyPrint")) {
+    if (prettyPrint) {
       vis.cloneDefunctChildren = true;
     }
 
@@ -472,9 +473,7 @@ void ElsaParse::parse(char const *inputFname)
     }
   }
 
-  // dsw: pretty printing
-  if (tracingSys("prettyPrint")) {
-    traceProgress() << "dsw pretty print...\n";
+  if (prettyPrint) {
     OStreamOutStream out0(cout);
     CodeOutStream codeOut(out0);
     CTypePrinter typePrinter;
@@ -484,7 +483,6 @@ void ElsaParse::parse(char const *inputFname)
     unit->print(env);
     codeOut.finish();
     cout << "---- STOP ----" << endl;
-    traceProgress() << "dsw pretty print... done\n";
   }
 
   // test AST cloning

@@ -152,9 +152,9 @@ checker.  Since everything worked, the output isn't all that interesting.
 
 <p>
 We can ask <tt>ccparse</tt> to print out the source code it has just
-parsed in, by using the <tt>-tr prettyPrint</tt> command-line argument:
+parsed in, by using the <tt>--prettyPrint</tt> command-line argument:
 <pre>
-  elsa$ ./ccparse -tr prettyPrint in/t0001.cc
+  elsa$ ./ccparse --prettyPrint in/t0001.cc
   %%% progress: 0ms: done parsing (0 ms, 0_235561 cycles)
   ambiguous nodes: 0
   %%% progress: 5ms: done type checking (3 ms)
@@ -162,12 +162,10 @@ parsed in, by using the <tt>-tr prettyPrint</tt> command-line argument:
     errors:   0
     warnings: 0
   %%% progress: 7ms: done elaborating (0 ms)
-  %%% progress: 7ms: dsw pretty print...
   ---- START ----
   // -*-c++-*-
   int x;
   ---- STOP ----
-  %%% progress: 9ms: dsw pretty print... done
 </pre>
 Buried in amongst all that noise is the pretty-printed input file:
 <pre>

@@ -99,9 +99,7 @@ for my $name(@names) {
     push @outfiles, $name;
     $outfile2command{$name} = "ORIGINAL: $name";
     eval {
-        # sm: added "-tr prettyPrint" to print the tree, since
-        # I made that printing conditional upon the tracing flag
-        my $flags = "-tr prettyPrint";
+        my $flags = "--prettyPrint";
 #          my $cppflags = "-lang-c++";      # This doesn't work!
 
         # smcpeak: The particular value of '__cplusplus' is chosen to
