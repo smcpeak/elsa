@@ -104,6 +104,24 @@ public:
 };
 
 
+class PrintStringLiteralsVisitor : public ASTVisitor {
+public:
+  virtual bool visitExpression(Expression *expr);
+};
+
+bool PrintStringLiteralsVisitor::visitExpression(Expression *expr)
+{
+  E_stringLit *lit = expr->ifE_stringLit();
+  if (lit) {
+    lit->m_stringData.print("decoded literal");
+  }
+
+  // Do not visit children.  The only children of an E_stringLit are
+  // the continuations, and they have empty 'm_stringData'.
+  return false;
+}
+
+
 class SectionTimer {
   long start;
   long &elapsed;
@@ -151,6 +169,7 @@ ElsaParse::ElsaParse(StringTable &strTable_, CCLang &lang_)
     lang(lang_),
     printErrorCount(false),
     prettyPrint(false),
+    printStringLiterals(false),
     unit(NULL),
     mainFunction(NULL),
     parseTime(0),
@@ -471,6 +490,12 @@ void ElsaParse::parse(char const *inputFname)
                       << (getMilliseconds() - start)
                       << " ms)\n";
     }
+  }
+
+  if (printStringLiterals) {
+    PrintStringLiteralsVisitor visitor;
+    LoweredASTVisitor loweredVisitor(&visitor);
+    unit->traverse(loweredVisitor);
   }
 
   if (prettyPrint) {

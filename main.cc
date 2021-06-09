@@ -18,9 +18,6 @@ void if_malloc_stats()
 // When true, print the count of warnings and errors, and the phase times.
 static bool verboseOutput = false;
 
-// Defined in cc_tcheck.cc.
-extern bool printStringLiterals;
-
 
 // this is a dumb way to organize argument processing...
 static char *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
@@ -62,7 +59,7 @@ static char *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
       argc--;
     }
     else if (streq(argv[1], "--printStringLiterals")) {
-      printStringLiterals = true;
+      elsaParse.printStringLiterals = true;
       argv++;
       argc--;
     }

@@ -1,4 +1,5 @@
 ---- stdout ----
+strlit/strlit1.cc:9:3: warning: Escape sequence '\q' is implementation-defined.  It is being treated like 'q'.
 ---- decoded literal, length = 6, crc32 = 0x6C6F6F0311B5A9CB ---- {
   68 65 6C 6C 6F 00                                  hello.
 }
@@ -15,7 +16,6 @@
 ---- decoded literal, length = 12, crc32 = 0x686E66024C33F5C3 ---- {
   77 69 64 65 20 73 74 72 69 6E 67 00                wide string.
 }
-strlit/strlit1.cc:9:3: warning: Escape sequence '\q' is implementation-defined.  It is being treated like 'q'.
 ---- stderr ----
 ---- exit status ----
 Exit 0

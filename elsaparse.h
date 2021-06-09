@@ -35,6 +35,10 @@ public:      // data
   // Initially false.
   bool prettyPrint;
 
+  // If true, print decoded string literals after parsing.  Initially
+  // false.
+  bool printStringLiterals;
+
   // The parsed TU.
   TranslationUnit *unit;
 

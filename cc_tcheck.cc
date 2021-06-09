@@ -5352,13 +5352,6 @@ static unsigned hexToInt(unsigned char c)
 }
 
 
-// This is set by main.cc in response to --printStringLiterals.
-//
-// TODO: This is an ugly way to communicate that preference.  I think a
-// better approach would be to use a visitor after parsing is done.
-bool printStringLiterals = false;
-
-
 Type *E_stringLit::itcheck_x(Env &env, Expression *&replacement)
 {
   // cppstd 2.13.4 para 1
@@ -5496,12 +5489,11 @@ Type *E_stringLit::itcheck_x(Env &env, Expression *&replacement)
   data.push(0);
 
   // Save 'data' as a DataBlock in the E_stringLit.
+  //
+  // If you pass --printStringLiterals to 'ccparse' then it will print
+  // out all of the decoded literals after parsing is done, which is
+  // used for automated testing.
   m_stringData.setFromBlock(data.getArray(), data.length());
-
-  // For testing optionally print the decoded literal.
-  if (printStringLiterals) {
-    m_stringData.print("decoded literal");
-  }
 
   CVFlags stringLitCharCVFlags = CV_NONE;
   if (env.lang.stringLitCharsAreConst) {
