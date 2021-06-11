@@ -302,12 +302,12 @@ PPCHAR        ([^\\\n]|{BACKSL}{NOTNL})
   if (lang.allowNewlinesInStringLits) {
     warning("string literal contains (unescaped) newline character; "
             "this is allowed for gcc-2 bug compatibility only "
-            "(maybe the final `\"' is missing?)");
+            "(maybe the final '\"' is missing?)");
     YY_SET_START_CONDITION(BUGGY_STRING_LIT);
     return svalTok(TOK_STRING_LITERAL);
   }
   else {
-    err("string literal missing final `\"'");
+    err("string literal missing final '\"'");
     return svalTok(TOK_STRING_LITERAL);     // error recovery
   }
 }
@@ -428,7 +428,7 @@ PPCHAR        ([^\\\n]|{BACKSL}{NOTNL})
   /* illegal */
 .  {
   updLoc();
-  err(stringc << "illegal character: `" << YY_TEXT[0] << "'");
+  err(stringc << "illegal character: '" << YY_TEXT[0] << "'");
 }
 
 <<EOF>> {
