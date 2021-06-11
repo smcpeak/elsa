@@ -269,16 +269,23 @@ class CTypePrinter : public TypePrinter {
   // type but no abstract value, such as template primaries.  However,
   // most of the time I need to disable this class so I don't
   // accidentally use it.
-  public:
+public:      // class data
   static bool enabled;
 
-  public:
+public:      // instance data
+  CCLang const &m_lang;
+
+public:      // methods
+  CTypePrinter(CCLang const &lang)
+    : m_lang(lang)
+  {}
+
   virtual ~CTypePrinter() {}
 
   // satisfy the interface to TypePrinter
   virtual void print(OutStream &out, TypeLike const *type, char const *name = NULL);
 
-  protected:
+protected:   // methods
   // **** AtomicType
   string print(AtomicType const *atomic);
 
@@ -360,11 +367,11 @@ public:      // data
   CTypePrinter tpc;
 
 public:      // code
-  StringPrintEnv(stringBuilder &sb)
+  StringPrintEnv(CCLang const &lang, stringBuilder &sb)
     : PrintEnv(tpc, &cos),
       sbos(sb),
       cos(sbos),
-      tpc()
+      tpc(lang)
   {}
 };
 

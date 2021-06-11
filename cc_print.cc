@@ -4,6 +4,9 @@
 // Adapted from cc_tcheck.cc by Daniel Wilkerson dsw@cs.berkeley.edu
 
 #include "cc_print.h"           // this module
+
+#include "cc_lang.h"            // CCLang
+
 #include "trace.h"              // trace
 #include "strutil.h"            // string utilities
 
@@ -217,7 +220,13 @@ string CTypePrinter::print(AtomicType const *atomic)
 
 string CTypePrinter::print(SimpleType const *simpleType)
 {
-  return simpleTypeName(simpleType->type);
+  if (simpleType->type == ST_BOOL && !m_lang.isCplusplus) {
+    // In C mode, use its keyword instead of the C++ spelling.
+    return "_Bool";
+  }
+  else {
+    return simpleTypeName(simpleType->type);
+  }
 }
 
 string CTypePrinter::print(CompoundType const *cpdType)
@@ -1486,7 +1495,14 @@ string Expression::exprToString() const
   stringBuilder sb;
   StringBuilderOutStream out0(sb);
   CodeOutStream codeOut(out0);
-  CTypePrinter typePrinter;
+
+  // TODO: This is not right since we're just conjuring a new language
+  // object rather than passing down the one created at the top level.
+  // But for the moment it's not causing me problems so I'll avoid the
+  // work of plumbing the real language for now.
+  CCLang lang;
+
+  CTypePrinter typePrinter(lang);
   Restorer<bool> res0(CTypePrinter::enabled, true);
   PrintEnv env(typePrinter, &codeOut);
 

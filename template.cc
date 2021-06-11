@@ -907,7 +907,8 @@ string STemplateArgument::toString() const
       // have; enable the normal type printer temporarily in order to
       // do this
       Restorer<bool> res0(CTypePrinter::enabled, true);
-      CTypePrinter typePrinter0;
+      CCLang lang;
+      CTypePrinter typePrinter0(lang);
       stringBuilder sb;
       StringBuilderOutStream sbout0(sb);
       typePrinter0.print(sbout0, value.t, "" /*do not print "anon"*/);
