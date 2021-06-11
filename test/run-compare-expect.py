@@ -6,6 +6,7 @@ Run a program and compare its output to what is expected.
 import argparse              # argparse
 import difflib               # difflib.unified_diff
 import os                    # os.getenv
+import re                    # re.compile
 import signal                # signal.signal
 import subprocess            # subprocess.run
 import sys                   # sys.argv, sys.stderr
@@ -74,12 +75,35 @@ def splitLines(data):
     lines += ["\\ no newline"]
   return lines
 
+
 def writeLinesToFile(lines, fname):
   """Write 'lines', which has no newlines, to 'fname' with LF line endings."""
 
   with open(fname, "w", newline="\n") as f:
     for line in lines:
       print(line, file=f)
+
+
+# Hexadecimal numbers with at least two digits.
+hexDigitsRE = re.compile(r"0x[0-9a-fA-F][0-9a-fA-F]+")
+
+# Particular hex sequences that should not be replaced.
+nonReplaceHexRE = re.compile(r"0x7F+");
+
+def hexReplacer(m):
+  """What to replace a match of 'hexDigitsRE' with."""
+
+  if nonReplaceHexRE.match(m.group(0)):
+    return m.group(0)
+  else:
+    return "0xHEXDIGITS"
+
+def normalizeOutput(line):
+  """Remove strings that vary from run to run so the result is suitable
+  as expected test output."""
+
+  line = hexDigitsRE.sub(hexReplacer, line)
+  return line
 
 
 def main():
@@ -110,6 +134,11 @@ def main():
   actualLines += splitLines(proc.stderr)
   actualLines += ["---- exit status ----"]
   actualLines += [f"Exit {proc.returncode}"]
+
+  # Normalize it.
+  actualLines = [normalizeOutput(line) for line in actualLines]
+
+  # Optionally save it.
   if opts.actual:
     writeLinesToFile(actualLines, opts.actual)
 
