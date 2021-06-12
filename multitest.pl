@@ -214,9 +214,6 @@ exit(0);
 sub mysystem {
   my @args = @_;
 
-  # dsw: when the test fails and it is not on the primary run, there
-  # is no output to allow you to easily reproduce the bug
-  print("running " . join(" ", @args), "\n");
   my $code = system(@args);
   if ($code == 0) { return $code; }
 
