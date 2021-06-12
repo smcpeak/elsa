@@ -183,7 +183,7 @@ foreach $selcode (@allkeys) {
     failed($selcode, 4);
   }
   else {
-    print("$selcode: failed as expected\n");
+    print("$selcode: failed as expected (code $code)\n");
     if (!$keepTemps) {
       unlink($tempfname);
     }
