@@ -9,9 +9,18 @@ all: check
 
 
 # -------------------------- configuration -----------------------------
+# Other repos, expressed relative to the *parent* directory.
+SMBASE  = ../smbase
+
+# Locations relative to *this* directory.
+SMBASE_FROM_HERE = ../$(SMBASE)
+
 # External tools.
 PYTHON3 = python3
 PERL    = perl
+
+# How to invoke run-compare-expect.py.
+RUN_COMPARE_EXPECT = $(PYTHON3) $(SMBASE_FROM_HERE)/run-compare-expect.py
 
 # Name of parser binary.
 CCPARSE = ../ccparse.exe
@@ -50,7 +59,7 @@ TESTS += pprint/vararg-promote.cc
 # Run a C++ pretty-print test.
 out/pprint/%.cc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
 	@mkdir -p $(dir $@)
-	$(PYTHON3) ./run-compare-expect.py \
+	$(RUN_COMPARE_EXPECT) \
 	  --actual out/pprint/$*.cc.actual \
 	  --expect pprint/$*.cc.expect \
 	  $(CCPARSE) --prettyPrint $<
@@ -62,7 +71,7 @@ TESTS += pprint/vararg-promote.c
 # Run a C pretty-print test.
 out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect $(CCPARSE)
 	@mkdir -p $(dir $@)
-	$(PYTHON3) ./run-compare-expect.py \
+	$(RUN_COMPARE_EXPECT) \
 	  --actual out/pprint/$*.c.actual \
 	  --expect pprint/$*.c.expect \
 	  $(CCPARSE) -xc --prettyPrint $<
@@ -78,7 +87,7 @@ TESTS += strlit/strlit1.cc
 # Run a C++ string literal test.
 out/strlit/%.cc.ok: strlit/%.cc strlit/%.cc.expect $(CCPARSE)
 	@mkdir -p $(dir $@)
-	$(PYTHON3) ./run-compare-expect.py \
+	$(RUN_COMPARE_EXPECT) \
 	  --actual out/strlit/$*.cc.actual \
 	  --expect strlit/$*.cc.expect \
 	  $(CCPARSE) --printStringLiterals $<
@@ -90,7 +99,7 @@ TESTS += strlit/multiline.c
 # Run a C string literal test.
 out/strlit/%.c.ok: strlit/%.c strlit/%.c.expect $(CCPARSE)
 	@mkdir -p $(dir $@)
-	$(PYTHON3) ./run-compare-expect.py \
+	$(RUN_COMPARE_EXPECT) \
 	  --actual out/strlit/$*.c.actual \
 	  --expect strlit/$*.c.expect \
 	  $(CCPARSE) -xc --printStringLiterals $<
