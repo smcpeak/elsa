@@ -20,6 +20,7 @@
 #include "cc_lang.h"      // Bool3
 #include "ptrmap.h"       // PtrMap
 #include "mflags.h"       // MatchFlags
+#include "ast_build.h"    // ElsaASTBuild
 
 class StringTable;        // strtable.h
 class CCLang;             // cc_lang.h
@@ -51,7 +52,7 @@ ENUM_BITWISE_OPS(InferArgFlags, IA_ALL)
 
 
 // the entire semantic analysis state
-class Env : protected ErrorList {
+class Env : protected ErrorList, private SourceLocProvider {
 protected:   // data
   // bound to '*this'; facilitates moving code into and out of Env
   Env &env;
@@ -124,6 +125,9 @@ public:      // data
 
   // interface for making types
   TypeFactory &tfac;
+
+  // For building AST nodes.
+  ElsaASTBuild m_astBuild;
 
   // client analyses may need to get ahold of all the Variables that I made
   // up, so this is a list of them; these don't include Variables built for
@@ -295,6 +299,9 @@ private:     // funcs
   Scope *createScope(ScopeKind sk);
 
   void mergeDefaultArguments(SourceLoc loc, Variable *prior, FunctionType *type);
+
+  // Implement SourceLocProvider.
+  SourceLoc provideLoc() const override;
 
 public:      // funcs
   Env(StringTable &str, CCLang &lang, TypeFactory &tfac,

@@ -37,7 +37,6 @@
 
 #include "cc_elaborate.h"      // this module
 #include "cc_ast.h"            // Declaration
-#include "ast_build.h"         // makeExprList1, etc.
 #include "trace.h"             // TRACE
 #include "cc_print.h"          // PrintEnv
 
@@ -52,6 +51,7 @@ ElabVisitor::ElabVisitor(StringTable &s, TypeFactory &tf,
     str(s),
     tfac(tf),
     tunit(tu),
+    m_astBuild(s, tf, *this),
     env(*this),
     functionStack(),              // empty
     fullExpressionAnnotStack(),   // empty
@@ -71,6 +71,12 @@ ElabVisitor::ElabVisitor(StringTable &s, TypeFactory &tf,
 
 ElabVisitor::~ElabVisitor()
 {}
+
+
+SourceLoc ElabVisitor::provideLoc() const
+{
+  return enclosingStmtLoc;
+}
 
 
 StringRef ElabVisitor::makeTempName()
@@ -498,7 +504,7 @@ void Declarator::elaborateCDtors(ElabVisitor &env, DeclFlags dflags)
         // just call the copy ctor; FIX: this is questionable; we
         // haven't decided what should really happen for an IN_expr;
         // update: dsw: I'm sure that is right
-        args0 = makeExprList1(inexpr->e);
+        args0 = env.m_astBuild.makeExprList1(inexpr->e);
         inexpr->e = env.cloneExpr(inexpr->e);
 
         fullexp = inexpr->getAnnot();
@@ -643,7 +649,8 @@ Expression *ElabVisitor::elaborateCallByValue
   // function is expected to do it
   E_constructor *ector =
     env.makeCtorExpr(loc, makeE_variable(loc, tempVar), paramType,
-                     getCopyCtor(paramCt), makeExprList1(argExpr));
+                     getCopyCtor(paramCt),
+                     m_astBuild.makeExprList1(argExpr));
 
   // combine into a comma expression so we do both but return the
   // value of the second
@@ -1099,7 +1106,7 @@ S_expr *ElabVisitor::make_S_expr_memberCopyAssign
     action = makeMemberCall(loc,
                             makeE_fieldAcc(loc, makeThisRef(loc), member) /*y*/,
                             assign,
-                            makeExprList1(otherDotY));
+                            m_astBuild.makeExprList1(otherDotY));
   }
   else {
     // use the E_assign built-in operator
@@ -1125,7 +1132,7 @@ S_expr *ElabVisitor::make_S_expr_superclassCopyAssign
 
   // "this->W::operator=(__other)"
   E_funCall *call = makeMemberCall(loc, makeThisRef(loc), assign,
-                                   makeExprList1(makeE_variable(loc, other)));
+    m_astBuild.makeExprList1(makeE_variable(loc, other)));
 
   // "this->W::operator=(__other);"
   return makeS_expr(loc, call);
@@ -1490,7 +1497,7 @@ bool E_throw::elaborate(ElabVisitor &env)
       globalCtorStatement =
         env.makeCtorStatement(loc, env.makeE_variable(loc, globalVar), exprType,
                               env.getCopyCtor(exprType->asCompoundType()),
-                              makeExprList1(origExpr));
+                              env.m_astBuild.makeExprList1(origExpr));
 
       return false;     // SES
     }

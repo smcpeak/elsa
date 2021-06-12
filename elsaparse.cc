@@ -266,12 +266,11 @@ void ElsaParse::parse(char const *inputFname)
 
 
   // ---------------- typecheck -----------------
-  BasicTypeFactory tfac;
   if (tracingSys("no-typecheck")) {
     cout << "no-typecheck" << endl;
   } else {
     SectionTimer timer(tcheckTime);
-    Env env(strTable, lang, tfac, madeUpVariables, builtinVars, unit);
+    Env env(strTable, lang, m_typeFactory, madeUpVariables, builtinVars, unit);
     try {
       env.tcheckTranslationUnit(unit);
     }
@@ -357,7 +356,7 @@ void ElsaParse::parse(char const *inputFname)
       // this is useful to measure the cost of disambiguation, since
       // now the tree is entirely free of ambiguities
       traceProgress() << "beginning second tcheck...\n";
-      Env env2(strTable, lang, tfac, madeUpVariables, builtinVars, unit);
+      Env env2(strTable, lang, m_typeFactory, madeUpVariables, builtinVars, unit);
       unit->tcheck(env2);
       traceProgress() << "end of second tcheck\n";
     }
@@ -445,7 +444,7 @@ void ElsaParse::parse(char const *inputFname)
   else {
     SectionTimer timer(elaborationTime);
 
-    ElabVisitor vis(strTable, tfac, unit);
+    ElabVisitor vis(strTable, m_typeFactory, unit);
 
     if (!lang.isCplusplus) {
       // do only the C elaboration activities
@@ -523,7 +522,7 @@ void ElsaParse::parse(char const *inputFname)
       ArrayStack<Variable*> madeUpVariables2;
       ArrayStack<Variable*> builtinVars2;
       // dsw: I hope you intend that I should use the cloned TranslationUnit
-      Env env3(strTable, lang, tfac, madeUpVariables2, builtinVars2, u2);
+      Env env3(strTable, lang, m_typeFactory, madeUpVariables2, builtinVars2, u2);
       u2->tcheck(env3);
 
       if (tracingSys("cloneTypedAST")) {

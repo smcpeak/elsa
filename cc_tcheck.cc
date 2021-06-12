@@ -3766,7 +3766,8 @@ void Declarator::mid_tcheck(Env &env, Tcheck &dt)
         delete inexpr;
 
         // put in an IN_ctor
-        IN_ctor *inctor = new IN_ctor(decl->loc, makeExprList1(e));
+        IN_ctor *inctor = new IN_ctor(decl->loc,
+          env.m_astBuild.makeExprList1(e));
         inctor->was_IN_expr = true;
         init = inctor;
       }
@@ -7803,7 +7804,7 @@ Type *resolveOverloadedUnaryOperator(
             // function to invoke
             new E_variable(env.makeFullyQualifiedName(winner->scope, pqo)),
             // arguments
-            makeExprList1(expr)
+            env.m_astBuild.makeExprList1(expr)
           );
         }
 
@@ -7909,7 +7910,7 @@ Type *resolveOverloadedBinaryOperator(
             // function to invoke
             new E_fieldAcc(e1, pqo),
             // arguments
-            makeExprList1(e2)
+            env.m_astBuild.makeExprList1(e2)
           );
         }
         else {
@@ -7918,7 +7919,7 @@ Type *resolveOverloadedBinaryOperator(
             // function to invoke
             new E_variable(env.makeFullyQualifiedName(winner->scope, pqo)),
             // arguments
-            makeExprList2(e1, e2)
+            env.m_astBuild.makeExprList2(e1, e2)
           );
         }
 

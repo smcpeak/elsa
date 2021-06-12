@@ -24,6 +24,9 @@ public:      // data
   // String table for identifiers.
   StringTable &strTable;
 
+  // Way to make types.
+  BasicTypeFactory m_typeFactory;
+
   // Language options.
   CCLang &lang;
 

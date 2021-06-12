@@ -2,6 +2,7 @@
 // code for cc_env.h
 
 #include "cc_env.h"        // this module
+
 #include "trace.h"         // tracingSys
 #include "ckheap.h"        // heapCheck
 #include "strtable.h"      // StringTable
@@ -10,6 +11,7 @@
 #include "overload.h"      // OVERLOADTRACE
 #include "mtype.h"         // MType
 #include "implconv.h"      // ImplicitConversion
+#include "ast_build.h"     // makeASTTypeId
 
 
 // forwards in this file
@@ -322,6 +324,7 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
     str(s),
     lang(L),
     tfac(tf),
+    m_astBuild(s, tf, *this),
     madeUpVariables(madeUpVariables0),
     builtinVars(builtinVars0),
 
@@ -1169,6 +1172,12 @@ FunctionType *Env::makeDestructorFunctionType(SourceLoc loc, CompoundType *ct)
   ft->flags |= FF_DTOR;
   doneParams(ft);
   return ft;
+}
+
+
+SourceLoc Env::provideLoc() const
+{
+  return loc();
 }
 
 
@@ -5393,11 +5402,7 @@ PQName *Env::makeQualifiedName(Scope *s, PQName *name)
 
 ASTTypeId *Env::buildASTTypeId(Type *type)
 {
-  // there used to be a big function here that built the full syntax
-  // of a type, but I am going to try to use TS_type instead
-  return new ASTTypeId(new TS_type(loc(), type),
-                       new Declarator(new D_name(loc(), NULL /*name*/),
-                                      NULL /*init*/));
+  return m_astBuild.makeASTTypeId(type);
 }
 
 

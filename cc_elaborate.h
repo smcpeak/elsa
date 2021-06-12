@@ -16,6 +16,7 @@
 #include "cc_ast.h"       // AST components, etc.
 #include "macros.h"       // ENUM_BITWISE_OPS
 #include "cc_ast_aux.h"   // class LoweredASTVisitor
+#include "ast_build.h"    // ElsaASTBuild
 
 // moved FullExpressionAnnot into fullexp.h to reduce dependencies
 // in the #include graph
@@ -111,7 +112,7 @@ ENUM_BITWISE_OPS(ElabActivities, EA_ALL)
 // this visitor is responsible for conducting all the
 // elaboration activities
 // Intended to be used with LoweredASTVisitor
-class ElabVisitor : private ASTVisitor {
+class ElabVisitor : private ASTVisitor, private SourceLocProvider {
 public:      // data
   LoweredASTVisitor loweredVisitor; // use this as the argument for traverse()
 
@@ -119,6 +120,9 @@ public:      // data
   StringTable &str;
   TypeFactory &tfac;
   TranslationUnit *tunit;      // doh! out damned spot!
+
+  // For synthesizing AST.
+  ElsaASTBuild m_astBuild;
 
   // little trick: as code moves about it's convenient if 'env'
   // always works, even inside ElabVisitor methods
@@ -158,6 +162,10 @@ public:      // data
   // sometimes-invalid AST, but makes some analyses happy anway.  This
   // defaults to false.
   bool cloneDefunctChildren;
+
+private:     // methods
+  // Implement SourceLocProvider.
+  SourceLoc provideLoc() const override;
 
 public:      // funcs
   // true if a particular activity is requested
