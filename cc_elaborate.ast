@@ -54,7 +54,9 @@ class PQName {
 
 
 class TypeSpecifier {
-  // denote an existing Type
+  // Denote an existing Type.  This is useful when we need to synthesize
+  // some AST that names a type but don't want to build out the full
+  // syntax.  The pretty printer knows how to print this.
   -> TS_type(Type *type);
 }
 

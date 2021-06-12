@@ -1022,9 +1022,18 @@ void ASTTypeId::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("ASTTypeId");
 
-  TypeLike const *type0 = env.getTypeLike(decl->var);
+  TypeLike const *type;
+  if (spec->isTS_type()) {
+    // Special case for TS_type, where the AST carries the type directly,
+    // and the rest of the structure might be missing due to AST
+    // synthesis.
+    type = spec->asTS_type()->type;
+  }
+  else {
+    type = env.getTypeLike(decl->var);
+  }
 
-  env.typePrinter.print(*env.out, type0);
+  env.typePrinter.print(*env.out, type);
 
   if (decl->getDeclaratorId()) {
     // One way we get here is when printing the parameter of a 'catch'.
