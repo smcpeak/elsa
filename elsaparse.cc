@@ -562,4 +562,19 @@ void ElsaParse::printTimes()
 }
 
 
+Type *ElsaParse::getGlobalType(char const *typeName_) const
+{
+  StringRef typeName = strTable.add(typeName_);
+
+  Variable *var = unit->globalScope->rawLookupVariable(typeName);
+  if (!var) {
+    xfailure(stringb("not in the global scope: " << typeName));
+  }
+  if (!var->hasFlag(DF_TYPEDEF)) {
+    xfailure(stringb("not a type: " << typeName));
+  }
+  return var->type;
+}
+
+
 // EOF
