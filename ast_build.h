@@ -56,6 +56,13 @@ public:      // methods
 
   // Make a PQ_name after turning 'name' into a StringRef.
   PQ_name *makePQ_name(char const *name);
+
+  // Make an E_funCall invoking an unqualified name.
+  E_funCall *makeNamedFunCall2(
+    char const *callee, Expression *arg1, Expression *arg2);
+
+  E_binary *makeE_binary(
+    Expression *e1, BinaryOp op, Expression *e2);
 };
 
 

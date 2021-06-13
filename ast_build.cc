@@ -61,4 +61,22 @@ PQ_name *ElsaASTBuild::makePQ_name(char const *name)
 }
 
 
+E_funCall *ElsaASTBuild::makeNamedFunCall2(
+  char const *callee, Expression *arg1, Expression *arg2)
+{
+  FakeList<ArgExpression> *args = makeExprList2(arg1, arg2);
+  E_funCall *call = new E_funCall(
+    new E_variable(makePQ_name(callee)),
+    args);
+  return call;
+}
+
+
+E_binary *ElsaASTBuild::makeE_binary(
+  Expression *e1, BinaryOp op, Expression *e2)
+{
+  return new E_binary(e1, op, e2);
+}
+
+
 // EOF
