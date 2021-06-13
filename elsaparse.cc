@@ -223,12 +223,12 @@ void ElsaParse::parse(char const *inputFname)
     }
 
     if (!toplevelParse(tree, inputFname)) {
-      exit(2); // parse error
+      xfatal("parse error");
     }
 
     // check for parse errors detected by the context class
     if (parseContext->errors || lexer->errors) {
-      exit(2);
+      xfatal("parse error");
     }
     parseWarnings = lexer->warnings + parseContext->warnings;
 
@@ -371,7 +371,7 @@ void ElsaParse::parse(char const *inputFname)
     }
 
     if (numErrors != 0) {
-      exit(4);
+      xfatal("type check error");
     }
 
     // lookup diagnostic
