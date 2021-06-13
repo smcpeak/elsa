@@ -988,9 +988,8 @@ void Declaration::print(PrintEnv &env)
       *env.out << toString(extras) << ' ';
     }
 
-    // This ignores the possibility of multiple declarator because the
-    // parser normalizes them into multiple declarations.
-
+    // Every declarator is printed as its own declaration, thereby
+    // splitting compound declarations.
     iter->print(env);
     *env.out << ';' << endl;
   }
