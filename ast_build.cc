@@ -46,7 +46,7 @@ E_intLit *ElsaASTBuild::makeE_intLit(int n)
 {
   E_intLit *ret = new E_intLit(m_stringTable.add(stringb(n).c_str()));
 
-  // This is not really safe, but will suffice for my immediate purpose.
+  // TODO: This is not really safe, but will suffice for my immediate purpose.
   ret->i = (unsigned long)n;
 
   ret->type = m_typeFactory.getSimpleType(ST_INT);
@@ -55,19 +55,21 @@ E_intLit *ElsaASTBuild::makeE_intLit(int n)
 }
 
 
-PQ_name *ElsaASTBuild::makePQ_name(char const *name)
+PQName *ElsaASTBuild::makePQName(Variable *var)
 {
-  return new PQ_name(loc(), m_stringTable.add(name));
+  // TODO: This is only right when the name is unqualified.
+  return new PQ_name(loc(), var->name);
 }
 
 
 E_funCall *ElsaASTBuild::makeNamedFunCall2(
-  char const *callee, Expression *arg1, Expression *arg2)
+  Variable *callee, Expression *arg1, Expression *arg2)
 {
   FakeList<ArgExpression> *args = makeExprList2(arg1, arg2);
   E_funCall *call = new E_funCall(
-    new E_variable(makePQ_name(callee)),
+    makeE_variable(callee),
     args);
+  call->type = callee->type->asRval()->asFunctionType()->retType;
   return call;
 }
 
@@ -76,6 +78,15 @@ E_binary *ElsaASTBuild::makeE_binary(
   Expression *e1, BinaryOp op, Expression *e2)
 {
   return new E_binary(e1, op, e2);
+}
+
+
+E_variable *ElsaASTBuild::makeE_variable(Variable *var)
+{
+  E_variable *evar = new E_variable(makePQName(var));
+  evar->var = var;
+  evar->type = var->type;
+  return evar;
 }
 
 

@@ -54,15 +54,16 @@ public:      // methods
   // Make an E_intLit.
   E_intLit *makeE_intLit(int n);
 
-  // Make a PQ_name after turning 'name' into a StringRef.
-  PQ_name *makePQ_name(char const *name);
+  PQName *makePQName(Variable *var);
 
   // Make an E_funCall invoking an unqualified name.
   E_funCall *makeNamedFunCall2(
-    char const *callee, Expression *arg1, Expression *arg2);
+    Variable *callee, Expression *arg1, Expression *arg2);
 
   E_binary *makeE_binary(
     Expression *e1, BinaryOp op, Expression *e2);
+
+  E_variable *makeE_variable(Variable *var);
 };
 
 
