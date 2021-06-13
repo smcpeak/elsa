@@ -577,4 +577,19 @@ Type *ElsaParse::getGlobalType(char const *typeName_) const
 }
 
 
+Variable *ElsaParse::getGlobalVar(char const *varName_) const
+{
+  StringRef varName = strTable.add(varName_);
+
+  Variable *var = unit->globalScope->rawLookupVariable(varName);
+  if (!var) {
+    xfailure(stringb("not in the global scope: " << varName));
+  }
+  if (var->hasFlag(DF_TYPEDEF)) {
+    xfailure(stringb("is a type, not a variable: " << varName));
+  }
+  return var;
+}
+
+
 // EOF

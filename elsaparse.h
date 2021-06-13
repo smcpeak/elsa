@@ -70,6 +70,9 @@ public:      // methods
   // Search the global scope for a type with the given name.  Throw if
   // it is not found.
   Type *getGlobalType(char const *typeName) const;
+
+  // Same for variables.
+  Variable *getGlobalVar(char const *varName) const;
 };
 
 
