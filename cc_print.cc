@@ -2296,17 +2296,15 @@ void E_implicitStandardConversion::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_implicitStandardConversion::iprint");
 
-  // I do not know what syntactic context this is in, so cannot pass
-  // that information down.  Hence, always add parens.
-  *env.out << "(/*ISC:" << type->toString() << "*/";
+  *env.out << "/*ISC:" << type->toString() << "*/";
   expr->iprint(env);
-  *env.out << ")";
 }
 
 OperatorPrecedence E_implicitStandardConversion::getPrecedence() const
 {
-  // I always add parens.
-  return OPREC_HIGHEST;
+  // Since the only thing we print is a comment, we behave transparentlt
+  // w.r.t. printing.
+  return expr->getPrecedence();
 }
 
 
