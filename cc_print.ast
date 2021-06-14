@@ -85,6 +85,12 @@ class ExceptionSpec {
 }
 
 
+class OperatorName {
+  // Print the full name, including "operator".
+  pure_virtual void print(PrintEnv &env);
+}
+
+
 class Statement {
   public void print(PrintEnv &env);
   pure_virtual void iprint(PrintEnv &env);

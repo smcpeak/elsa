@@ -490,7 +490,11 @@ string CompoundType::toCString() const
     // if we're not a template, since template instantiations
     // usually don't include the keyword 'class' (this isn't perfect..
     // I think I need more context)
-    sb << keywordName(keyword) << " ";
+    //
+    // 2021-06-13: I do not know when I need this at all in C++, and
+    // when printing implicit class members I do not want the keyword,
+    // so try turning it off altogether.
+    //sb << keywordName(keyword) << " ";
   }
 
   //sb << (instName? instName : "/*anonymous*/");

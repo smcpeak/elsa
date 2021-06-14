@@ -3,39 +3,39 @@
 // -*-c++-*-
 int global1;
 int global2 = 2;
-int globalArr[3] = {
+int globalArr[] = {
   1,
   2,
   3
 };
-int g3 = 3;
-int g4 = 4;
+int g3 = 3, g4 = 4;
 
 void f()
 {
-  int x = 1;
-  int y = 2;
-  int (*fnptr)(int /*anon*/, char /*anon*/) = 0;
+  int x = 1, y = 2;
+  int (*fnptr)(int, char) = 0;
 }
 class C {
 public:
   int m_x;
-  inline void g(/*m: class C & */ int /*anon*/)
+  inline void g(int)
   {
-    void (C::*ptmFunc)(/*m: class C & */ int /*anon*/) = &C::g;
+    void (C::*ptmFunc)(int) = &C::g;
     int C::*ptmData = &C::m_x;
+    int C::* const ptmData2 = &C::m_x;
+    int const C::* const ptmData3 = &C::m_x;
   }
   inline C()
   {}
-  inline C(class C const &__other)
+  inline C(C const &__other)
     : m_x(__other.m_x)
   {}
-  inline class C &operator=(/*m: class C & */ class C const &__other)
+  inline C &operator=(C const &__other)
   {
     (*this).m_x = __other.m_x;
     return *this;
   }
-  inline ~C(/*m: class C & */)
+  inline ~C()
   {}
 };
 ---- STOP ----

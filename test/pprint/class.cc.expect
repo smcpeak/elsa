@@ -1,0 +1,19 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+class C {
+  inline C()
+  {}
+  inline C(C const &__other)
+  {}
+  inline C &operator=(C const &__other)
+  {
+    return *this;
+  }
+  inline ~C()
+  {}
+};
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

@@ -2056,8 +2056,14 @@ void TS_type::print(PrintEnv &env)
 
 void TS_type::idetailPrint(PrintEnv &env)
 {
-  // This might not be right.
-  *env.out << type->toString();
+  if (CompoundType *ct = type->ifCompoundType()) {
+    // Print the name of the implicit typedef.
+    *env.out << ct->typedefVar->name;
+  }
+  else {
+    // This might not be right.
+    *env.out << type->toString();
+  }
 }
 
 
@@ -2079,9 +2085,12 @@ void PQ_variable::tcheck_pq(Env &env, Scope*, LookupFlags)
 
 void PQ_variable::print(PrintEnv &env)
 {
-  // this is unlikely to tcheck correctly, but that's true of
-  // lots of cc_print functions..
-  *env.out << var->name;
+  if (streq(var->name, "constructor-special")) {
+    // Do not print.
+  }
+  else {
+    *env.out << var->name;
+  }
 }
 
 // EOF

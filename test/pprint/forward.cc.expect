@@ -8,26 +8,26 @@ int main()
   Foo *x;
 }
 
-void f(class Foo */*anon*/)
+void f(Foo *)
 {}
 class Foo {
 public:
   int x;
   inline Foo()
   {}
-  inline Foo(class Foo const &__other)
+  inline Foo(Foo const &__other)
     : x(__other.x)
   {}
-  inline class Foo &operator=(/*m: class Foo & */ class Foo const &__other)
+  inline Foo &operator=(Foo const &__other)
   {
     (*this).x = __other.x;
     return *this;
   }
-  inline ~Foo(/*m: class Foo & */)
+  inline ~Foo()
   {}
 };
 
-void f(class Foo */*anon*/, int /*anon*/)
+void f(Foo *, int)
 {}
 ---- STOP ----
 ---- stderr ----

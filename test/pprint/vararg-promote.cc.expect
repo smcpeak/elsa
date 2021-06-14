@@ -1,8 +1,8 @@
 ---- stdout ----
 ---- START ----
 // -*-c++-*-
-int f(int /*anon*/, ...);
-int f2(int /*anon*/, int /*anon*/);
+int f(int, ...);
+int f2(int, int);
 
 void g()
 {

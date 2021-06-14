@@ -1,0 +1,39 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+int foo() throw();
+
+int foo() throw()
+{
+  return 3;
+}
+class Exc {
+  inline Exc()
+  {}
+  inline Exc(Exc const &__other)
+  {}
+  inline Exc &operator=(Exc const &__other)
+  {
+    return *this;
+  }
+  inline ~Exc()
+  {}
+};
+class Exc2 {
+  inline Exc2()
+  {}
+  inline Exc2(Exc2 const &__other)
+  {}
+  inline Exc2 &operator=(Exc2 const &__other)
+  {
+    return *this;
+  }
+  inline ~Exc2()
+  {}
+};
+void bar() throw(Exc);
+void bar2() throw(Exc, Exc2);
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

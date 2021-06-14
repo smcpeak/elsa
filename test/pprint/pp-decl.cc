@@ -19,6 +19,8 @@ public:
   {
     void (C::*ptmFunc)(int) = &C::g;
     int C::*ptmData = &C::m_x;
+    int C::* const ptmData2 = &C::m_x;
+    int const C::* const ptmData3 = &C::m_x;
   }
 };
 

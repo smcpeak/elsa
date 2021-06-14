@@ -13,22 +13,22 @@ public:
   int C::*ptm;
   inline C()
   {}
-  inline C(class C const &__other)
+  inline C(C const &__other)
     : q(__other.q),
       i(__other.i),
       ptm(__other.ptm)
   {}
-  inline class C &operator=(/*m: class C & */ class C const &__other)
+  inline C &operator=(C const &__other)
   {
     (*this).q = __other.q;
     (*this).i = __other.i;
     (*this).ptm = __other.ptm;
     return *this;
   }
-  inline ~C(/*m: class C & */)
+  inline ~C()
   {}
 };
-void g(int /*anon*/);
+void g(int);
 
 void scope_qualifier()
 {
@@ -36,7 +36,7 @@ void scope_qualifier()
   C::w;
 }
 
-void postfix(int x, class C c, class C *cp, int **pp)
+void postfix(int x, C c, C *cp, int **pp)
 {
   C::w++;
   C::w--;
@@ -48,7 +48,7 @@ void postfix(int x, class C c, class C *cp, int **pp)
   *(*(pp+0)+1);
 }
 
-void prefix(int x, class C c, class C *cp, int *pp)
+void prefix(int x, C c, C *cp, int *pp)
 {
   ++c.w;
   ++c.w;
@@ -71,7 +71,7 @@ void prefix(int x, class C c, class C *cp, int *pp)
   (*(+cp)).i;
 }
 
-void ptr_to_memb(class C *cp, class C &cr)
+void ptr_to_memb(C *cp, C &cr)
 {
   int C::*ptm = &C::i;
   cp->*(*cp).ptm;

@@ -10,6 +10,7 @@
 #include "trace.h"              // trace
 #include "strutil.h"            // string utilities
 
+#include <ctype.h>              // isalnum
 #include <stdlib.h>             // getenv
 
 
@@ -898,29 +899,101 @@ void TF_namespaceDecl::print(PrintEnv &env)
 
 
 // --------------------- Function -----------------
+static bool ideclaratorIsDestructor(IDeclarator const *id)
+{
+  // TODO: Ugly, just like the next function.
+  if (D_func const *df = id->ifD_funcC()) {
+    if (D_name const *dn = df->base->ifD_nameC()) {
+      if (PQ_variable const *pqv = dn->name->ifPQ_variable()) {
+        if (pqv->var->name[0] == '~') {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+// True if 'c' could be part of an identifier.
+static bool isIdentifierChar(int c)
+{
+  return isalnum(c) || c == '_';
+}
+
+// True if the declarator needs a space after the specifier 'spec'.
+static bool ideclaratorWantsSpace(TypeSpecifier const *spec,
+                                  IDeclarator const *id)
+{
+  // TODO: This is extremely ugly.
+  if (TS_type const *tst = spec->ifTS_typeC()) {
+    string specString = tst->type->toString();
+    if (!specString.empty()) {
+      char lastChar = specString[specString.length()-1];
+      if (!isIdentifierChar((unsigned char)lastChar)) {
+        // The "specifier" will print a string that does not end in an
+        // identifier character, so no space is needed.
+        return false;
+      }
+    }
+  }
+
+  if (TS_simple const *tss = spec->ifTS_simpleC()) {
+    if (tss->id == ST_CDTOR) {
+      // No space after the emptiness representing the "return type"
+      // of constructors.
+      return false;
+    }
+  }
+
+  if (D_name const *dn = id->ifD_nameC()) {
+    if (dn->name == NULL) {
+      return false;
+    }
+  }
+
+  // TODO: This is ugly and it breaks the idea that cc_elaborate.ast is
+  // not depended upon by the core.  Once I confirm this is what I want,
+  // I need to devise a better method of making this query.
+  if (D_func const *df = id->ifD_funcC()) {
+    if (D_name const *dn = df->base->ifD_nameC()) {
+      if (PQ_variable const *pqv = dn->name->ifPQ_variable()) {
+        if (streq(pqv->var->name, "constructor-special")) {
+          return false;
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+// Print a type specifier followed by a declarator.
+static void printTypeSpecifierAndDeclarator(
+  PrintEnv &env, TypeSpecifier *spec, Declarator *declarator)
+{
+  if (!ideclaratorIsDestructor(declarator->decl)) {
+    spec->detailPrint(env);
+    if (ideclaratorWantsSpace(spec, declarator->decl)) {
+      *env.out << " ";
+    }
+  }
+  declarator->detailPrint(env);
+}
+
 void Function::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("Function");
+
+  // TODO: Remove this stuff.
   TypeLike const *type0 = env.typePrinter.getFunctionTypeLike(this);
   Restorer<bool> res0(CTypePrinter::enabled, type0 == funcType);
 
-  if (retspec->isTS_name()) {
-    // Experimental new printing.
-    DeclFlags sourceFlags = dflags & DF_SOURCEFLAGS;
-    if (sourceFlags) {
-      *env.out << toString(sourceFlags) << " ";
-    }
-    retspec->detailPrint(env);
-    *env.out << " ";
-    nameAndParams->detailPrint(env);
+  DeclFlags sourceFlags = dflags & DF_SOURCEFLAGS;
+  if (sourceFlags) {
+    *env.out << toString(sourceFlags) << " ";
   }
-  else {
-    // Old printing.
-    printDeclaration(env, dflags,
-                     type0,
-                     nameAndParams->getDeclaratorId(),
-                     nameAndParams->var);
-  }
+  printTypeSpecifierAndDeclarator(env, retspec, nameAndParams);
 
   if (instButNotTchecked()) {
     // this is an unchecked instantiation
@@ -979,68 +1052,26 @@ void Function::print(PrintEnv &env)
 void Declaration::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("Declaration");
-  if(spec->isTS_classSpec()) {
-    spec->asTS_classSpec()->print(env);
-    *env.out << ";\n";
-  }
-  else if(spec->isTS_enumSpec()) {
-    spec->asTS_enumSpec()->print(env);
-    *env.out << ";\n";
+
+  DeclFlags sourceFlags = dflags & DF_SOURCEFLAGS;
+  if (sourceFlags) {
+    *env.out << toString(sourceFlags) << " ";
   }
 
-  bool useDetailPrint = false;
+  spec->detailPrint(env);
 
-  if (spec->isTS_elaborated() && fl_isEmpty(decllist)) {
-    useDetailPrint = true;
-  }
-
-  if (!(dflags & DF_TYPEDEF) &&
-      spec->isTS_name() &&
-      fl_count(decllist) == 1) {
-    // This is a declaration of a variable (not a type) that uses a
-    // typedef to name the type and only declares one thing.  I would
-    // like to pretty-print using the typedef name in this case.
-    //
-    // This is an experimental reimplementation of type and declarator
-    // priting that I might want to completely convert to.
-    useDetailPrint = true;
-  }
-
-  if (useDetailPrint) {
-    DeclFlags sourceFlags = dflags & DF_SOURCEFLAGS;
-    if (sourceFlags) {
-      *env.out << toString(sourceFlags) << " ";
+  FAKELIST_FOREACH_NC(Declarator, decllist, declarator) {
+    if (declarator != fl_first(decllist)) {
+      *env.out << ", ";
     }
-
-    spec->detailPrint(env);
-
-    if (!fl_isEmpty(decllist)) {
-      xassert(fl_count(decllist) == 1);
+    else if (ideclaratorWantsSpace(spec, declarator->decl)) {
       *env.out << " ";
-
-      Declarator *declarator = fl_first(decllist);
-      declarator->detailPrint(env);
     }
-    *env.out << ";\n";
-
-    return;
+    declarator->detailPrint(env);
   }
-
-  FAKELIST_FOREACH_NC(Declarator, decllist, iter) {
-    // if there are decl flags that didn't get put into the
-    // Variable (e.g. DF_EXTERN which gets turned off as soon
-    // as a definition is seen), print them first
-    DeclFlags extras = (DeclFlags)(dflags & ~(iter->var->flags));
-    if (extras) {
-      *env.out << toString(extras) << ' ';
-    }
-
-    // Every declarator is printed as its own declaration, thereby
-    // splitting compound declarations.
-    iter->print(env);
-    *env.out << ';' << endl;
-  }
+  *env.out << ";\n";
 }
+
 
 // -------------------- ASTTypeId -------------------
 void printInitializerOpt(PrintEnv &env, Initializer /*nullable*/ *init)
@@ -1064,48 +1095,13 @@ void printInitializerOpt(PrintEnv &env, Initializer /*nullable*/ *init)
   }
 }
 
-// True if the declarator has no associated syntax.
-static bool ideclaratorIsEmpty(IDeclarator const *id)
-{
-  return id->isD_name() &&
-         id->asD_nameC()->name == NULL;
-}
-
 void ASTTypeId::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("ASTTypeId");
 
-  if (true) {
-    // Experimental new printing.
-    spec->detailPrint(env);
-    if (!ideclaratorIsEmpty(decl->decl)) {
-      *env.out << " ";
-      decl->detailPrint(env);
-    }
-    return;
-  }
-
-  TypeLike const *type;
-  if (spec->isTS_type()) {
-    // Special case for TS_type, where the AST carries the type directly,
-    // and the rest of the structure might be missing due to AST
-    // synthesis.
-    type = spec->asTS_type()->type;
-  }
-  else {
-    type = env.getTypeLike(decl->var);
-  }
-
-  env.typePrinter.print(*env.out, type);
-
-  if (decl->getDeclaratorId()) {
-    // One way we get here is when printing the parameter of a 'catch'.
-    *env.out << " ";
-    decl->getDeclaratorId()->print(env);
-  }
-
-  printInitializerOpt(env, decl->init);
+  printTypeSpecifierAndDeclarator(env, spec, decl);
 }
+
 
 // ---------------------- PQName -------------------
 void printTemplateArgumentList
@@ -1145,12 +1141,18 @@ void PQ_qualifier::print(PrintEnv &env)
 
 void PQ_name::print(PrintEnv &env)
 {
-  *env.out << name;
+  // TODO: Put this string into the string table.
+  if (streq(name, "constructor-special")) {
+    // Do not print the name.
+  }
+  else {
+    *env.out << name;
+  }
 }
 
 void PQ_operator::print(PrintEnv &env)
 {
-  *env.out << fakeName;
+  o->print(env);
 }
 
 void PQ_template::print(PrintEnv &env)
@@ -1247,7 +1249,9 @@ void TS_name::idetailPrint(PrintEnv &env)
 
 void TS_simple::idetailPrint(PrintEnv &env)
 {
-  *env.out << toString(id);
+  if (id != ST_CDTOR) {
+    *env.out << toString(id);
+  }
 }
 
 
@@ -1365,10 +1369,10 @@ void D_name::detailPrint(PrintEnv &env)
 
 void D_pointer::detailPrint(PrintEnv &env)
 {
-  if (cv) {
-    *env.out << toString(cv) << " ";
-  }
   *env.out << "*";
+  if (cv) {
+    *env.out << " " << toString(cv) << " ";
+  }
   base->detailPrint(env);
 }
 
@@ -1430,11 +1434,11 @@ void D_bitfield::detailPrint(PrintEnv &env)
 
 void D_ptrToMember::detailPrint(PrintEnv &env)
 {
-  if (cv) {
-    *env.out << toString(cv) << " ";
-  }
   nestedName->print(env);
-  *env.out << "::";
+  *env.out << "::*";
+  if (cv) {
+    *env.out << " " << toString(cv) << " ";
+  }
   base->detailPrint(env);
 }
 
@@ -1456,11 +1460,38 @@ void D_grouping::detailPrint(PrintEnv &env)
 void ExceptionSpec::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("ExceptionSpec");
-  *env.out << "throw"; // Scott says this is right.
+  *env.out << "throw(";
   FAKELIST_FOREACH_NC(ASTTypeId, types, iter) {
+    if (iter != fl_first(types)) {
+      *env.out << ", ";
+    }
     iter->print(env);
   }
+  *env.out << ")";
 }
+
+
+// ---------------------- OperatorName ---------------------
+void ON_newDel::print(PrintEnv &env)
+{
+  *env.out << "operator "
+           << (isNew? "new" : "delete")
+           << (isArray? "[]" : "");
+}
+
+
+void ON_operator::print(PrintEnv &env)
+{
+  *env.out << "operator" << toString(op);
+}
+
+
+void ON_conversion::print(PrintEnv &env)
+{
+  *env.out << "operator ";
+  type->print(env);
+}
+
 
 // ---------------------- Statement ---------------------
 void Statement::print(PrintEnv &env)

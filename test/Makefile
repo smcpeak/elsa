@@ -52,10 +52,13 @@ TESTS :=
 # Pretty-print tests run with --prettyPrint and compare the output to
 # a "known good" expected output.
 
+TESTS += pprint/class.cc
+TESTS += pprint/conversion-op.cc
 TESTS += pprint/forward.cc
 TESTS += pprint/pp-decl.cc
 TESTS += pprint/pp-syntax.cc
 TESTS += pprint/precedence.cc
+TESTS += pprint/throwspec.cc
 TESTS += pprint/vararg-promote.cc
 
 # Run a C++ pretty-print test.
@@ -65,6 +68,11 @@ out/pprint/%.cc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
 	  --actual out/pprint/$*.cc.actual \
 	  --expect pprint/$*.cc.expect \
 	  $(CCPARSE) --prettyPrint $<
+	../chop_out < out/pprint/$*.cc.actual > out/pprint/$*.cc.trimmed
+	$(CCPARSE) out/pprint/$*.cc.trimmed
+#	TODO: Disabled because of the shenanigans in precedence.cc.
+#	g++ -c -xc++ out/pprint/$*.cc.trimmed
+#	TODO: Also run idemcheck here.
 	touch $@
 
 
@@ -79,6 +87,9 @@ out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect $(CCPARSE)
 	  --actual out/pprint/$*.c.actual \
 	  --expect pprint/$*.c.expect \
 	  $(CCPARSE) -xc --prettyPrint $<
+	../chop_out < out/pprint/$*.c.actual > out/pprint/$*.c.trimmed
+	$(CCPARSE) -xc out/pprint/$*.c.trimmed
+#	gcc -c -xc out/pprint/$*.c.trimmed
 	touch $@
 
 
