@@ -2194,14 +2194,12 @@ void E_delete::iprint(PrintEnv &env)
   *env.out << "delete";
   if (array) *env.out << "[]";
 
-  // dsw: this can be null because elaboration can remove syntax when
-  // it is replaced with other syntax
-  //
-  // TODO: That makes no sense.  Remove this test.
-  if (expr) {
-    *env.out << " ";
-    expr->print(env, this->getPrecedence());
-  }
+  // There was previously a comment here claiming that 'expr' could be
+  // NULL, but that makes no sense.
+  xassert(expr);
+
+  *env.out << " ";
+  expr->print(env, this->getPrecedence());
 }
 
 OperatorPrecedence E_delete::getPrecedence() const
