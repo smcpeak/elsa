@@ -102,11 +102,7 @@ for my $name(@names) {
         my $flags = "--prettyPrint";
 #          my $cppflags = "-lang-c++";      # This doesn't work!
 
-        # smcpeak: The particular value of '__cplusplus' is chosen to
-        # make my cpp not complain about a redefinition, but this is
-        # fragile.  I am not sure why it even needs to be defined, but
-        # for now I will just move on.
-        my $cpp = "cpp -D__cplusplus=199711L -D__LINUX__ -D__UNIX__ -DNDEBUG";
+        my $cpp = "cpp";
 
         run_command "$cpp $name", "$outname.0cppout.cc";
         run_command "$parser $flags $outname.0cppout.cc", "$outname.1rawout.cc";
