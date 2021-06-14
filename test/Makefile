@@ -52,6 +52,7 @@ TESTS :=
 # Pretty-print tests run with --prettyPrint and compare the output to
 # a "known good" expected output.
 
+TESTS += pprint/forward.cc
 TESTS += pprint/pp-decl.cc
 TESTS += pprint/pp-syntax.cc
 TESTS += pprint/precedence.cc
@@ -67,6 +68,8 @@ out/pprint/%.cc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
 	touch $@
 
 
+TESTS += pprint/func.c
+TESTS += pprint/typedef.c
 TESTS += pprint/vararg-promote.c
 
 # Run a C pretty-print test.

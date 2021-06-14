@@ -1,0 +1,35 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+class Foo;
+
+int main()
+{
+  Foo *x;
+}
+
+void f(class Foo */*anon*/)
+{}
+class Foo {
+public:
+  int x;
+  inline Foo()
+  {}
+  inline Foo(class Foo const &__other)
+    : x(__other.x)
+  {}
+  inline class Foo &operator=(/*m: class Foo & */ class Foo const &__other)
+  {
+    (*this).x = __other.x;
+    return *this;
+  }
+  inline ~Foo(/*m: class Foo & */)
+  {}
+};
+
+void f(class Foo */*anon*/, int /*anon*/)
+{}
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

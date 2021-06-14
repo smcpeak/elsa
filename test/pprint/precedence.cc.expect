@@ -40,7 +40,7 @@ void postfix(int x, class C c, class C *cp, int **pp)
 {
   C::w++;
   C::w--;
-  +(int)x;
+  +(C::INT)x;
   C::g();
   *(C::arr+0);
   c.p;

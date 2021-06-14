@@ -2054,6 +2054,12 @@ void TS_type::print(PrintEnv &env)
   xfailure("I think this is not called because TS_simple::print isn't either");
 }
 
+void TS_type::idetailPrint(PrintEnv &env)
+{
+  // This might not be right.
+  *env.out << type->toString();
+}
+
 
 // --------------------- PQ_variable ------------------------
 StringRef PQ_variable::getName() const

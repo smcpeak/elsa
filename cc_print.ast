@@ -49,6 +49,8 @@ verbatim {
 
 class TypeSpecifier {
   pure_virtual void print(PrintEnv &env);
+  public void detailPrint(PrintEnv &env);
+  pure_virtual void idetailPrint(PrintEnv &env);
 }
 
 
@@ -69,11 +71,12 @@ class Enumerator {
 
 class Declarator {
   public void print(PrintEnv &env);
+  public void detailPrint(PrintEnv &env);
 }
 
 
 class IDeclarator {
-  public void print(PrintEnv &env);
+  pure_virtual void detailPrint(PrintEnv &env);
 }
 
 

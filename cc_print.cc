@@ -904,10 +904,23 @@ void Function::print(PrintEnv &env)
   TypeLike const *type0 = env.typePrinter.getFunctionTypeLike(this);
   Restorer<bool> res0(CTypePrinter::enabled, type0 == funcType);
 
-  printDeclaration(env, dflags,
-                   type0,
-                   nameAndParams->getDeclaratorId(),
-                   nameAndParams->var);
+  if (retspec->isTS_name()) {
+    // Experimental new printing.
+    DeclFlags sourceFlags = dflags & DF_SOURCEFLAGS;
+    if (sourceFlags) {
+      *env.out << toString(sourceFlags) << " ";
+    }
+    retspec->detailPrint(env);
+    *env.out << " ";
+    nameAndParams->detailPrint(env);
+  }
+  else {
+    // Old printing.
+    printDeclaration(env, dflags,
+                     type0,
+                     nameAndParams->getDeclaratorId(),
+                     nameAndParams->var);
+  }
 
   if (instButNotTchecked()) {
     // this is an unchecked instantiation
@@ -975,9 +988,43 @@ void Declaration::print(PrintEnv &env)
     *env.out << ";\n";
   }
 
-  // TODO: this does not print "friend class Foo;" declarations
-  // because the type specifier is TS_elaborated and there are no
-  // declarators
+  bool useDetailPrint = false;
+
+  if (spec->isTS_elaborated() && fl_isEmpty(decllist)) {
+    useDetailPrint = true;
+  }
+
+  if (!(dflags & DF_TYPEDEF) &&
+      spec->isTS_name() &&
+      fl_count(decllist) == 1) {
+    // This is a declaration of a variable (not a type) that uses a
+    // typedef to name the type and only declares one thing.  I would
+    // like to pretty-print using the typedef name in this case.
+    //
+    // This is an experimental reimplementation of type and declarator
+    // priting that I might want to completely convert to.
+    useDetailPrint = true;
+  }
+
+  if (useDetailPrint) {
+    DeclFlags sourceFlags = dflags & DF_SOURCEFLAGS;
+    if (sourceFlags) {
+      *env.out << toString(sourceFlags) << " ";
+    }
+
+    spec->detailPrint(env);
+
+    if (!fl_isEmpty(decllist)) {
+      xassert(fl_count(decllist) == 1);
+      *env.out << " ";
+
+      Declarator *declarator = fl_first(decllist);
+      declarator->detailPrint(env);
+    }
+    *env.out << ";\n";
+
+    return;
+  }
 
   FAKELIST_FOREACH_NC(Declarator, decllist, iter) {
     // if there are decl flags that didn't get put into the
@@ -1003,7 +1050,7 @@ void printInitializerOpt(PrintEnv &env, Initializer /*nullable*/ *init)
     if (ctor) {
       // sm: don't print "()" as an IN_ctor initializer (cppstd 8.5 para 8)
       if (fl_isEmpty(ctor->args)) {
-        *env.out << " /*default-ctor-init*/";
+        // Don't print anything.
       }
       else {
         // dsw:Constructor arguments.
@@ -1017,9 +1064,26 @@ void printInitializerOpt(PrintEnv &env, Initializer /*nullable*/ *init)
   }
 }
 
+// True if the declarator has no associated syntax.
+static bool ideclaratorIsEmpty(IDeclarator const *id)
+{
+  return id->isD_name() &&
+         id->asD_nameC()->name == NULL;
+}
+
 void ASTTypeId::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("ASTTypeId");
+
+  if (true) {
+    // Experimental new printing.
+    spec->detailPrint(env);
+    if (!ideclaratorIsEmpty(decl->decl)) {
+      *env.out << " ";
+      decl->detailPrint(env);
+    }
+    return;
+  }
 
   TypeLike const *type;
   if (spec->isTS_type()) {
@@ -1162,13 +1226,59 @@ void TS_enumSpec::print(PrintEnv &env)
   }
 }
 
-// BaseClass
+
+void TypeSpecifier::detailPrint(PrintEnv &env)
+{
+  idetailPrint(env);
+  if (cv) {
+    *env.out << " " << toString(cv);
+  }
+}
+
+
+void TS_name::idetailPrint(PrintEnv &env)
+{
+  if (typenameUsed) {
+    *env.out << "typename ";
+  }
+  name->print(env);
+}
+
+
+void TS_simple::idetailPrint(PrintEnv &env)
+{
+  *env.out << toString(id);
+}
+
+
+void TS_elaborated::idetailPrint(PrintEnv &env)
+{
+  *env.out << toString(keyword) << " ";
+  name->print(env);
+}
+
+
+void TS_classSpec::idetailPrint(PrintEnv &env)
+{
+  // The existing 'print' is probably adequate.
+  this->print(env);
+}
+
+
+void TS_enumSpec::idetailPrint(PrintEnv &env)
+{
+  this->print(env);
+}
+
+
+// ---------------------- BaseClassSpec ----------------------
 void BaseClassSpec::print(PrintEnv &env) {
   TreeWalkDebug treeDebug("BaseClassSpec");
   if (isVirtual) *env.out << "virtual ";
   if (access!=AK_UNSPECIFIED) *env.out << toString(access) << " ";
   *env.out << name->toString();
 }
+
 
 // MemberList
 
@@ -1235,6 +1345,112 @@ void Declarator::print(PrintEnv &env)
   }
   printInitializerOpt(env, init);
 }
+
+
+void Declarator::detailPrint(PrintEnv &env)
+{
+  decl->detailPrint(env);
+  printInitializerOpt(env, init);
+}
+
+
+// -------------------- IDeclarator --------------------
+void D_name::detailPrint(PrintEnv &env)
+{
+  if (name) {
+    name->print(env);
+  }
+}
+
+
+void D_pointer::detailPrint(PrintEnv &env)
+{
+  if (cv) {
+    *env.out << toString(cv) << " ";
+  }
+  *env.out << "*";
+  base->detailPrint(env);
+}
+
+
+void D_reference::detailPrint(PrintEnv &env)
+{
+  *env.out << "&";
+  base->detailPrint(env);
+}
+
+
+void D_func::detailPrint(PrintEnv &env)
+{
+  base->detailPrint(env);
+  *env.out << "(";
+
+  FAKELIST_FOREACH_NC(ASTTypeId, params, param) {
+    param->print(env);
+    if (param->next) {
+      *env.out << ", ";
+    }
+  }
+
+  *env.out << ")";
+
+  if (cv) {
+    *env.out << " " << toString(cv);
+  }
+
+  if (exnSpec) {
+    *env.out << " ";
+    exnSpec->print(env);
+  }
+}
+
+
+void D_array::detailPrint(PrintEnv &env)
+{
+  base->detailPrint(env);
+  *env.out << "[";
+  if (size) {
+    size->print(env, OPREC_LOWEST);
+  }
+  *env.out << "]";
+}
+
+
+void D_bitfield::detailPrint(PrintEnv &env)
+{
+  if (name) {
+    name->print(env);
+  }
+
+  *env.out << " : ";
+
+  bits->print(env, OPREC_LOWEST);
+}
+
+
+void D_ptrToMember::detailPrint(PrintEnv &env)
+{
+  if (cv) {
+    *env.out << toString(cv) << " ";
+  }
+  nestedName->print(env);
+  *env.out << "::";
+  base->detailPrint(env);
+}
+
+
+void D_grouping::detailPrint(PrintEnv &env)
+{
+  // It might be nice to automatically supply the parens where needed,
+  // similar to how I do for expressions, but I don't have a pressing
+  // need for that, and I'm concerned it might be complicated due to the
+  // possibility of introducing ambiguities with the expression syntax.
+
+  *env.out << "(";
+  base->detailPrint(env);
+  *env.out << ")";
+}
+
 
 // ------------------- ExceptionSpec --------------------
 void ExceptionSpec::print(PrintEnv &env)

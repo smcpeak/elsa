@@ -1074,6 +1074,26 @@ void TS_typeof::print(PrintEnv &env)
 }
 
 
+void TS_typeof::idetailPrint(PrintEnv &env)
+{
+  *env.out << "typeof(";
+
+  ASTSWITCH(ASTTypeof, atype) {
+    ASTCASE(TS_typeof_expr, e) {
+      e->expr->print(env);
+    }
+
+    ASTNEXT(TS_typeof_type, t) {
+      t->atype->print(env);
+    }
+
+    ASTENDCASED
+  }
+
+  *env.out << ")";
+}
+
+
 void ASTTypeof::printAmbiguities(ostream &os, int indent) const
 {
   genericPrintAmbiguities(this, "TypeSpecifier", os, indent);
