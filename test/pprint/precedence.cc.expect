@@ -1,0 +1,220 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+class C {
+public:
+  static int w;
+  static int g();
+  typedef int INT;
+  static int *arr;
+  static int *p;
+  int *q;
+  int i;
+  int C::*ptm;
+  inline C()
+  {}
+  inline C(class C const &__other)
+    : q(__other.q),
+      i(__other.i),
+      ptm(__other.ptm)
+  {}
+  inline class C &operator=(/*m: class C & */ class C const &__other)
+  {
+    (*this).q = __other.q;
+    (*this).i = __other.i;
+    (*this).ptm = __other.ptm;
+    return *this;
+  }
+  inline ~C(/*m: class C & */)
+  {}
+};
+void g(int /*anon*/);
+
+void scope_qualifier()
+{
+  C::w;
+  C::w;
+}
+
+void postfix(int x, class C c, class C *cp, int **pp)
+{
+  C::w++;
+  C::w--;
+  +(int)x;
+  C::g();
+  *(C::arr+0);
+  c.p;
+  (*cp).p;
+  *(*(pp+0)+1);
+}
+
+void prefix(int x, class C c, class C *cp, int *pp)
+{
+  ++c.w;
+  ++c.w;
+  --c.w;
+  +c.w;
+  -c.w;
+  !c.w;
+  ~c.w;
+  (int)c.w;
+  *c.q;
+  &c.w;
+  sizeof(c.w);
+  new int;
+  new int [2];
+  delete c.q;
+  delete[] c.q;
+  (++x)++;
+  *(+pp+0);
+  (&g)(0);
+  (*(+cp)).i;
+}
+
+void ptr_to_memb(class C *cp, class C &cr)
+{
+  int C::*ptm = &C::i;
+  cp->*(*cp).ptm;
+  cp->*cr.ptm;
+  cr.*(*cp).ptm;
+  cr.*cr.ptm;
+}
+
+void multiply(int x, int y, int z)
+{
+  x*y*z;
+  x*y/z%x;
+  x*(y*z);
+  x*(y/z)%x;
+  x+y*z;
+  x*y+z;
+  (x+y)*z;
+  x/(y-z);
+}
+
+void shift(int x, int y, int z)
+{
+  x << y << z;
+  x >> y >> z;
+  x << y >> z;
+  x << (y >> z);
+  x << y+z;
+  x+y >> z;
+  x + (y << z);
+  (x >> y) + z;
+}
+
+void relational(int x, int y, int z)
+{
+  (x < y) < z;
+  x < (y < z);
+  (x < y) > z;
+  (x > y) < z;
+  x > (y > z);
+  x < (y << z);
+  (x >> y) > z;
+  (x < y) << z;
+  x >> (y > z);
+}
+
+void equality(int x, int y, int z)
+{
+  (x == y) == z;
+  x == (y == z);
+  (x != y) != z;
+  x == (y != z);
+  x == (y > z);
+  (x > y) == z;
+  x+y == z;
+  x == y+z;
+}
+
+void bitwise(int x, int y, int z)
+{
+  x & (y == z);
+  (x == y) & z;
+  x & y+z;
+  x+y & z;
+  (x & y) + z;
+  x + (y & z);
+  x | y+z;
+  x+y | z;
+  (x | y) + z;
+  x + (y | z);
+  (x & y) | z;
+  x | (y & z);
+  x & (y | z);
+  (x | y) & z;
+  x ^ y+z;
+  x+y ^ z;
+  (x ^ y) + z;
+  x + (y ^ z);
+}
+
+void logical(int x, int y, int z)
+{
+  x && y && z;
+  x && (y && z);
+  x && y & z;
+  x & y && z;
+  x || y || z;
+  x || (y || z);
+  x && y || z;
+  x || y && z;
+  x && (y || z);
+  (x || y) && z;
+}
+
+void assign(int x, int y, int z)
+{
+  x = (y = z);
+  x = (y = z);
+  (x = y) = z;
+  x += (y += z);
+  x += (y += z);
+  (x = y) += z;
+  x = y || z;
+  x || y = z;
+  x += y || z;
+  x || y += z;
+  (x = y) || z;
+  x || (y = z);
+  (x += y) || z;
+  x || (y += z);
+}
+
+void conditional(int u, int w, int x, int y, int z)
+{
+  w? x : (y? z : u);
+  (w? x : y)? z : u;
+  w? (x? y : z) : u;
+  (w = x)? y : z;
+  w? (x = y) : z;
+  w? x : (y = z);
+  w = (x? y : z);
+  (w? x : y) = z;
+}
+
+void comma(int x, int y, int z)
+{
+  x, y, z;
+  x, (y, z);
+  x = y, z;
+  x, y = z;
+  x = (y, z);
+  (x, y) = z;
+}
+
+void test_throw(int x, int y)
+{
+  throw (throw);
+  throw (throw x);
+  throw x+y;
+  throw (x, y);
+  x, throw y;
+  throw x, y;
+}
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

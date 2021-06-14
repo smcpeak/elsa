@@ -1217,7 +1217,7 @@ void Enumerator::print(PrintEnv &env)
   *env.out << name;
   if (expr) {
     *env.out << '=';
-    expr->print(env);
+    expr->print(env, OPREC_ASSIGN);
   }
   *env.out << ',' << ' ';
 }
@@ -1231,7 +1231,7 @@ void Declarator::print(PrintEnv &env)
   D_bitfield *b = dynamic_cast<D_bitfield*>(decl);
   if (b) {
     *env.out << ':';
-    b->bits->print(env);
+    b->bits->print(env, OPREC_LOWEST);
   }
   printInitializerOpt(env, init);
 }
@@ -1273,7 +1273,7 @@ void S_case::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_case::iprint");
   *env.out << "case";
-  expr->print(env);
+  expr->print(env, OPREC_LOWEST);
   *env.out << ':';
   s->print(env);
 }
@@ -1470,7 +1470,7 @@ void FullExpression::print(PrintEnv &env)
   // again, and we aren't using E_statement, so it would not reflect
   // the actual ast.
   if (expr) {
-    expr->print(env);
+    expr->print(env, OPREC_LOWEST);
   } else {
     // 2006-05-25
     //   TODO: this can happen e.g.
@@ -1486,16 +1486,23 @@ void FullExpression::print(PrintEnv &env)
 
 // ------------------- Expression print -----------------------
 
-// dsw: Couldn't we have fewer functions for printing out an
-// expression?  Or at least name them in a way that reveals some sort
-// of system.
 
-void Expression::print(PrintEnv &env)
+void Expression::print(PrintEnv &env, OperatorPrecedence parentPrec)
 {
   TreeWalkDebug treeDebug("Expression");
-  PairDelim pair(*env.out, "", "(", ")"); // this will put parens around every expression
-  iprint(env);
+
+  OperatorPrecedence thisPrec = this->getPrecedence();
+  if (thisPrec >= parentPrec) {
+    PairDelim pair(*env.out, "", "(", ")");
+    iprint(env);
+  }
+  else {
+    // 'this' expression has higher precedence than its parent, so does
+    // not need parentheses.
+    iprint(env);
+  }
 }
+
 
 string Expression::exprToString() const
 {
@@ -1516,7 +1523,7 @@ string Expression::exprToString() const
 
   // sm: I think all the 'print' methods should be 'const', but
   // I'll leave such a change up to this module's author (dsw)
-  const_cast<Expression*>(this)->print(env);
+  const_cast<Expression*>(this)->print(env, OPREC_LOWEST);
   codeOut.flush();
 
   return sb;
@@ -1546,6 +1553,12 @@ void E_boolLit::iprint(PrintEnv &env)
   *env.out << b;
 }
 
+OperatorPrecedence E_boolLit::getPrecedence() const
+{
+  return OPREC_HIGHEST;
+}
+
+
 void E_intLit::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_intLit::iprint");
@@ -1554,6 +1567,12 @@ void E_intLit::iprint(PrintEnv &env)
 //    *env.out << i;
   *env.out << text;
 }
+
+OperatorPrecedence E_intLit::getPrecedence() const
+{
+  return OPREC_HIGHEST;
+}
+
 
 void E_floatLit::iprint(PrintEnv &env)
 {
@@ -1566,6 +1585,12 @@ void E_floatLit::iprint(PrintEnv &env)
   // literals
   *env.out << text;
 }
+
+OperatorPrecedence E_floatLit::getPrecedence() const
+{
+  return OPREC_HIGHEST;
+}
+
 
 void E_stringLit::iprint(PrintEnv &env)
 {
@@ -1581,17 +1606,35 @@ void E_stringLit::iprint(PrintEnv &env)
   }
 }
 
+OperatorPrecedence E_stringLit::getPrecedence() const
+{
+  return OPREC_HIGHEST;
+}
+
+
 void E_charLit::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_charLit::iprint");
   *env.out << text;
 }
 
+OperatorPrecedence E_charLit::getPrecedence() const
+{
+  return OPREC_HIGHEST;
+}
+
+
 void E_this::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_this::iprint");
   *env.out << "this";
 }
+
+OperatorPrecedence E_this::getPrecedence() const
+{
+  return OPREC_HIGHEST;
+}
+
 
 // modified from STemplateArgument::toString()
 void printSTemplateArgument(PrintEnv &env, STemplateArgument const *sta)
@@ -1629,7 +1672,9 @@ void printSTemplateArgument(PrintEnv &env, STemplateArgument const *sta)
               << "::" << sta->value.v->name;
       break;
     case STemplateArgument::STA_DEPEXPR:
-      sta->getDepExpr()->print(env);
+      // OPREC_RELATIONAL because we need parens if there are '<' or '>'
+      // in the expression.
+      sta->getDepExpr()->print(env, OPREC_RELATIONAL);
       break;
     case STemplateArgument::STA_TEMPLATE:
       *env.out << string("template (?)");
@@ -1685,13 +1730,22 @@ void E_variable::iprint(PrintEnv &env)
     // this is a bound template variable, so print its value instead
     // of printing its name
     xassert(var->value);
-    var->value->print(env);
+
+    // OPREC_HIGHEST because we do not know what context we are in here,
+    // so should always use parentheses.
+    var->value->print(env, OPREC_HIGHEST);
   }
   else {
     *env.out << name->qualifierString() << name->getName();
     printTemplateArgs(env, var);
   }
 }
+
+OperatorPrecedence E_variable::getPrecedence() const
+{
+  return OPREC_HIGHEST;
+}
+
 
 void printArgExprList(PrintEnv &env, FakeList<ArgExpression> *list)
 {
@@ -1700,17 +1754,23 @@ void printArgExprList(PrintEnv &env, FakeList<ArgExpression> *list)
   FAKELIST_FOREACH_NC(ArgExpression, list, iter) {
     if (first_time) first_time = false;
     else *env.out << ',' << ' ';
-    iter->expr->print(env);
+    iter->expr->print(env, OPREC_COMMA);
   }
 }
 
 void E_funCall::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_funCall::iprint");
-  func->print(env);
+  func->print(env, this->getPrecedence());
   PairDelim pair(*env.out, "", "(", ")");
   printArgExprList(env, args);
 }
+
+OperatorPrecedence E_funCall::getPrecedence() const
+{
+  return OPREC_POSTFIX;
+}
+
 
 void E_constructor::iprint(PrintEnv &env)
 {
@@ -1723,6 +1783,12 @@ void E_constructor::iprint(PrintEnv &env)
   PairDelim pair(*env.out, "", "(", ")");
   printArgExprList(env, args);
 }
+
+OperatorPrecedence E_constructor::getPrecedence() const
+{
+  return OPREC_POSTFIX;
+}
+
 
 void printVariableName(PrintEnv &env, Variable *var)
 {
@@ -1748,7 +1814,7 @@ void printVariableName(PrintEnv &env, Variable *var)
 void E_fieldAcc::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_fieldAcc::iprint");
-  obj->print(env);
+  obj->print(env, this->getPrecedence());
   *env.out << '.';
   if (field &&
       !field->type->isDependent()) {
@@ -1768,57 +1834,204 @@ void E_fieldAcc::iprint(PrintEnv &env)
   }
 }
 
+OperatorPrecedence E_fieldAcc::getPrecedence() const
+{
+  return OPREC_POSTFIX;
+}
+
+
 void E_arrow::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_arrow::iprint");
 
   // E_arrow shouldn't normally be present in code that is to be
   // prettyprinted, so it doesn't much matter what this does.
-  obj->print(env);
+  obj->print(env, this->getPrecedence());
   *env.out << "->";
   fieldName->print(env);
 }
 
+OperatorPrecedence E_arrow::getPrecedence() const
+{
+  return OPREC_POSTFIX;
+}
+
+
 void E_sizeof::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_sizeof::iprint");
-  // NOTE parens are not necessary because it's an expression, not a
-  // type.
-  *env.out << "sizeof";
-  expr->print(env);             // putting parens in here so we are safe wrt precedence
+
+  *env.out << "sizeof(";
+  expr->print(env, OPREC_LOWEST);
+  *env.out << ")";
 }
+
+OperatorPrecedence E_sizeof::getPrecedence() const
+{
+  // I choose to always put parens, even though they are optional here.
+  return OPREC_HIGHEST;
+}
+
 
 // dsw: unary expression?
 void E_unary::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_unary::iprint");
   *env.out << toString(op);
-  expr->print(env);
+  expr->print(env, this->getPrecedence());
 }
+
+OperatorPrecedence E_unary::getPrecedence() const
+{
+  switch (op) {
+    default:            xfailure("bad unary operator");
+    case UNY_PLUS:      return OPREC_ADD;
+    case UNY_MINUS:     return OPREC_ADD;
+    case UNY_NOT:       return OPREC_PREFIX;
+    case UNY_BITNOT:    return OPREC_PREFIX;
+  }
+}
+
 
 void E_effect::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_effect::iprint");
   if (!isPostfix(op)) *env.out << toString(op);
-  expr->print(env);
+  expr->print(env, this->getPrecedence());
   if (isPostfix(op)) *env.out << toString(op);
+}
+
+OperatorPrecedence E_effect::getPrecedence() const
+{
+  switch (op) {
+    default:            xfailure("bad effect operator");
+    case EFF_POSTINC:   return OPREC_POSTFIX;
+    case EFF_POSTDEC:   return OPREC_POSTFIX;
+    case EFF_PREINC:    return OPREC_PREFIX;
+    case EFF_PREDEC:    return OPREC_PREFIX;
+  }
+}
+
+
+// In my opinion, there is a "gray area" in C/C++ operator precedence
+// where a lot of people, including myself, do not easily remember the
+// exact order.  When both operators in an expression are in the gray
+// area, I will print parens even when not strictly necessary.
+static bool isGrayArea(OperatorPrecedence prec)
+{
+  return OPREC_SHIFT <= prec && prec <= OPREC_BIT_OR;
+}
+
+static bool bothGray(OperatorPrecedence p1, OperatorPrecedence p2)
+{
+  if (p1 == OPREC_SHIFT && p2 == OPREC_SHIFT) {
+    // Shift versus shift is an exception since the "x << y << z" idiom
+    // is so common in C++.  No parens needed.
+    return false;
+  }
+
+  return isGrayArea(p1) && isGrayArea(p2);
 }
 
 // dsw: binary operator.
 void E_binary::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_binary::iprint");
-  e1->print(env);
-  if (op != BIN_BRACKETS) {
-    *env.out << toString(op);
-    e2->print(env);
+
+  OperatorPrecedence thisPrec = this->getPrecedence();
+  OperatorPrecedence e1Prec   = e1->getPrecedence();
+  OperatorPrecedence e2Prec   = e2->getPrecedence();
+
+  if (bothGray(thisPrec, e1Prec)) {
+    // Always print parens when both operators are in the gray area.
+    e1->print(env, OPREC_HIGHEST);
   }
   else {
+    // Pretend the parent has one level lower precedence in order to
+    // take advantage of left associativity.
+    e1->print(env, (OperatorPrecedence)(thisPrec+1));
+  }
+
+  if (op != BIN_BRACKETS) {
+    // Does this operator or either operand have precedence of shift
+    // or lower?  If so, we'll put spaces around this operator.
+    bool shiftOrLower =
+      thisPrec >= OPREC_SHIFT ||
+      e1Prec   >= OPREC_SHIFT ||
+      e2Prec   >= OPREC_SHIFT;
+
+    if (op != BIN_COMMA && shiftOrLower) {
+      *env.out << " ";
+    }
+
+    *env.out << toString(op);
+
+    if (shiftOrLower) {
+      *env.out << " ";
+    }
+
+    if (bothGray(thisPrec, e2Prec)) {
+      // Use parens.
+      e2->print(env, OPREC_HIGHEST);
+    }
+    else {
+      e2->print(env, thisPrec);
+    }
+  }
+
+  else {
     *env.out << "[";
-    e2->print(env);
+    e2->print(env, OPREC_LOWEST);
     *env.out << "]";
   }
 }
+
+OperatorPrecedence E_binary::getPrecedence() const
+{
+  switch (op) {
+    default:                 xfailure("bad binary operator");
+
+    case BIN_EQUAL:          return OPREC_EQUALITY;
+    case BIN_NOTEQUAL:       return OPREC_EQUALITY;
+    case BIN_LESS:           return OPREC_RELATIONAL;
+    case BIN_GREATER:        return OPREC_RELATIONAL;
+    case BIN_LESSEQ:         return OPREC_RELATIONAL;
+    case BIN_GREATEREQ:      return OPREC_RELATIONAL;
+
+    case BIN_MULT:           return OPREC_MULTIPLY;
+    case BIN_DIV:            return OPREC_MULTIPLY;
+    case BIN_MOD:            return OPREC_MULTIPLY;
+    case BIN_PLUS:           return OPREC_ADD;
+    case BIN_MINUS:          return OPREC_ADD;
+    case BIN_LSHIFT:         return OPREC_SHIFT;
+    case BIN_RSHIFT:         return OPREC_SHIFT;
+    case BIN_BITAND:         return OPREC_BIT_AND;
+    case BIN_BITXOR:         return OPREC_BIT_XOR;
+    case BIN_BITOR:          return OPREC_BIT_OR;
+    case BIN_AND:            return OPREC_LOGICAL_AND;
+    case BIN_OR:             return OPREC_LOGICAL_OR;
+    case BIN_COMMA:          return OPREC_COMMA;
+
+    // https://gcc.gnu.org/pipermail/gcc-help/2011-March/102507.html
+    case BIN_MINIMUM:        return OPREC_RELATIONAL;
+    case BIN_MAXIMUM:        return OPREC_RELATIONAL;
+
+    case BIN_BRACKETS:       return OPREC_POSTFIX;
+
+    case BIN_ASSIGN:         return OPREC_ASSIGN;
+
+    case BIN_DOT_STAR:       return OPREC_PTR_TO_MEMB;
+    case BIN_ARROW_STAR:     return OPREC_PTR_TO_MEMB;
+
+    // The old theorem prover used a different prec/assoc scheme than
+    // the base language, so it doesn't make much sense to assign them a
+    // precedence.  I will use LOWEST since that will safely cause them
+    // to be printed with parentheses (if I ever even print them).
+    case BIN_IMPLIES:        return OPREC_LOWEST;
+    case BIN_EQUIVALENT:     return OPREC_LOWEST;
+  }
+}
+
 
 void E_addrOf::iprint(PrintEnv &env)
 {
@@ -1829,16 +2042,28 @@ void E_addrOf::iprint(PrintEnv &env)
     expr->iprint(env);
   }
   else {
-    expr->print(env);
+    expr->print(env, this->getPrecedence());
   }
 }
+
+OperatorPrecedence E_addrOf::getPrecedence() const
+{
+  return OPREC_PREFIX;
+}
+
 
 void E_deref::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_deref::iprint");
   *env.out << "*";
-  ptr->print(env);
+  ptr->print(env, this->getPrecedence());
 }
+
+OperatorPrecedence E_deref::getPrecedence() const
+{
+  return OPREC_PREFIX;
+}
+
 
 // C-style cast
 void E_cast::iprint(PrintEnv &env)
@@ -1848,23 +2073,40 @@ void E_cast::iprint(PrintEnv &env)
     PairDelim pair(*env.out, "", "(", ")");
     ctype->print(env);
   }
-  expr->print(env);
+  expr->print(env, this->getPrecedence());
 }
+
+OperatorPrecedence E_cast::getPrecedence() const
+{
+  return OPREC_PREFIX;
+}
+
 
 // ? : syntax
 void E_cond::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_cond::iprint");
-  cond->print(env);
-  *env.out << "?";
-  // In gcc it is legal to omit the 'then' part;
-  // http://gcc.gnu.org/onlinedocs/gcc-3.4.1/gcc/Conditionals.html#Conditionals
+
+  cond->print(env, this->getPrecedence());
+
   if (th) {
-    th->print(env);
+    *env.out << "? ";
+    th->print(env, this->getPrecedence());
+    *env.out << " : ";
   }
-  *env.out << ":";
-  el->print(env);
+  else {
+    // GNU binary conditional.
+    *env.out << " ?: ";
+  }
+
+  el->print(env, this->getPrecedence());
 }
+
+OperatorPrecedence E_cond::getPrecedence() const
+{
+  return OPREC_ASSIGN;
+}
+
 
 void E_sizeofType::iprint(PrintEnv &env)
 {
@@ -1873,14 +2115,32 @@ void E_sizeofType::iprint(PrintEnv &env)
   atype->print(env);
 }
 
+OperatorPrecedence E_sizeofType::getPrecedence() const
+{
+  return OPREC_PREFIX;
+}
+
+
 void E_assign::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_assign::iprint");
-  target->print(env);
-  if (op!=BIN_ASSIGN) *env.out << toString(op);
-  *env.out << "=";
-  src->print(env);
+
+  target->print(env, this->getPrecedence());
+
+  *env.out << " ";
+  if (op != BIN_ASSIGN) {
+    *env.out << toString(op);
+  }
+  *env.out << "= ";
+
+  src->print(env, this->getPrecedence());
 }
+
+OperatorPrecedence E_assign::getPrecedence() const
+{
+  return OPREC_ASSIGN;
+}
+
 
 void E_new::iprint(PrintEnv &env)
 {
@@ -1910,8 +2170,8 @@ void E_new::iprint(PrintEnv &env)
     //   arraySize->print()                is "n"
     //   "array of 5 ints"->rightString()  is "[5]"
     Type const *t = atype->decl->var->type;   // type-id in question
-    *env.out << t->leftString() << " [";
-    arraySize->print(env);
+    *env.out << t->leftString() << "[";
+    arraySize->print(env, OPREC_LOWEST);
     *env.out << "]" << t->rightString();
   }
 
@@ -1921,25 +2181,50 @@ void E_new::iprint(PrintEnv &env)
   }
 }
 
+OperatorPrecedence E_new::getPrecedence() const
+{
+  return OPREC_PREFIX;
+}
+
+
 void E_delete::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_delete::iprint");
   if (colonColon) *env.out << "::";
   *env.out << "delete";
   if (array) *env.out << "[]";
+
   // dsw: this can be null because elaboration can remove syntax when
   // it is replaced with other syntax
+  //
+  // TODO: That makes no sense.  Remove this test.
   if (expr) {
-    expr->print(env);
+    *env.out << " ";
+    expr->print(env, this->getPrecedence());
   }
 }
+
+OperatorPrecedence E_delete::getPrecedence() const
+{
+  return OPREC_PREFIX;
+}
+
 
 void E_throw::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_throw::iprint");
   *env.out << "throw";
-  if (expr) expr->print(env);
+  if (expr) {
+    *env.out << " ";
+    expr->print(env, this->getPrecedence());
+  }
 }
+
+OperatorPrecedence E_throw::getPrecedence() const
+{
+  return OPREC_ASSIGN;
+}
+
 
 // C++-style cast
 void E_keywordCast::iprint(PrintEnv &env)
@@ -1951,16 +2236,32 @@ void E_keywordCast::iprint(PrintEnv &env)
     ctype->print(env);
   }
   PairDelim pair(*env.out, "", "(", ")");
-  expr->print(env);
+  expr->print(env, this->getPrecedence());
 }
+
+OperatorPrecedence E_keywordCast::getPrecedence() const
+{
+  // The syntax includes its own parentheses, and precedence cannot be
+  // used to interfere with the binding of the cast keyword to the angle
+  // brackets.
+  return OPREC_HIGHEST;
+}
+
 
 // RTTI: typeid(expression)
 void E_typeidExpr::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_typeidExpr::iprint");
   PairDelim pair(*env.out, "typeid", "(", ")");
-  expr->print(env);
+  expr->print(env, this->getPrecedence());
 }
+
+OperatorPrecedence E_typeidExpr::getPrecedence() const
+{
+  // Syntax has its own parentheses.
+  return OPREC_HIGHEST;
+}
+
 
 // RTTI: typeid(type)
 void E_typeidType::iprint(PrintEnv &env)
@@ -1970,24 +2271,26 @@ void E_typeidType::iprint(PrintEnv &env)
   ttype->print(env);
 }
 
+OperatorPrecedence E_typeidType::getPrecedence() const
+{
+  // Syntax has its own parentheses.
+  return OPREC_HIGHEST;
+}
+
+
 void E_grouping::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_grouping::iprint");
 
-  // sm: given that E_grouping is now in the tree, and prints its
-  // parentheses, perhaps we could eliminate some of the
-  // paren-printing above?
-  //PairDelim pair(*env.out, "", "(", ")");
-  //
-  // update:  Actually, it's a problem for E_grouping to print parens
-  // because it messes up idempotency.  And, if we restored idempotency
-  // by turning off paren-printing elsewhere, then we'd have a subtle
-  // long-term problem that AST transformations would be required to
-  // insert E_grouping when composing new expression trees, and that
-  // would suck.  So I'll let E_grouping be a no-op, and continue to
-  // idly plan some sort of precedence-aware paren-inserter mechanism.
+  // Do not print these parentheses.  The printer will insert parens
+  // where they are needed.
+  expr->print(env, OPREC_LOWEST);
+}
 
-  expr->iprint(env);    // iprint means Expression won't put parens either
+OperatorPrecedence E_grouping::getPrecedence() const
+{
+  // We never print parens for E_grouping itself.
+  return OPREC_HIGHEST;
 }
 
 
@@ -1995,8 +2298,17 @@ void E_implicitStandardConversion::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_implicitStandardConversion::iprint");
 
-  *env.out << "/*ISC:" << type->toString() << "*/";
+  // I do not know what syntactic context this is in, so cannot pass
+  // that information down.  Hence, always add parens.
+  *env.out << "(/*ISC:" << type->toString() << "*/";
   expr->iprint(env);
+  *env.out << ")";
+}
+
+OperatorPrecedence E_implicitStandardConversion::getPrecedence() const
+{
+  // I always add parens.
+  return OPREC_HIGHEST;
 }
 
 
@@ -2008,7 +2320,7 @@ void E_implicitStandardConversion::iprint(PrintEnv &env)
 void IN_expr::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("IN_expr");
-  e->print(env);
+  e->print(env, OPREC_ASSIGN);
 }
 
 // int x[] = {1, 2, 3};
@@ -2172,7 +2484,7 @@ void TA_type::print(PrintEnv &env)
 
 void TA_nontype::print(PrintEnv &env)
 {
-  expr->print(env);
+  expr->print(env, OPREC_RELATIONAL /* use parens if '<' or '>' */);
 }
 
 void TA_templateUsed::print(PrintEnv &env)

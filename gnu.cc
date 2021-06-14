@@ -1105,9 +1105,9 @@ void S_rangeCase::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_rangeCase::iprint");
   *env.out << "case";
-  exprLo->print(env);
+  exprLo->print(env, OPREC_LOWEST);
   *env.out << "...";
-  exprHi->print(env);
+  exprHi->print(env, OPREC_LOWEST);
   *env.out << ":";
   s->print(env);
 }
@@ -1117,7 +1117,7 @@ void S_computedGoto::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_computedGoto::iprint");
   *env.out << "goto *";
-  target->print(env);
+  target->print(env, OPREC_PREFIX);
   *env.out << ";\n";
 }
 
@@ -1132,21 +1132,40 @@ void E_compoundLit::iprint(PrintEnv &env)
   init->print(env);
 }
 
+OperatorPrecedence E_compoundLit::getPrecedence() const
+{
+  // I'm not sure about this one.
+  return OPREC_PREFIX;
+}
+
+
 void E___builtin_constant_p::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E___builtin_constant_p::iprint");
   PairDelim pair(*env.out, "__builtin_constant_p", "(", ")");
-  expr->print(env);
+  expr->print(env, OPREC_LOWEST);
 }
+
+OperatorPrecedence E___builtin_constant_p::getPrecedence() const
+{
+  return OPREC_HIGHEST;
+}
+
 
 void E___builtin_va_arg::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E___builtin_va_arg::iprint");
   PairDelim pair(*env.out, "__builtin_va_arg", "(", ")");
-  expr->print(env);
+  expr->print(env, OPREC_LOWEST);
   *env.out << ", ";
   atype->print(env);
 }
+
+OperatorPrecedence E___builtin_va_arg::getPrecedence() const
+{
+  return OPREC_HIGHEST;
+}
+
 
 void E_alignofType::iprint(PrintEnv &env)
 {
@@ -1155,12 +1174,24 @@ void E_alignofType::iprint(PrintEnv &env)
   atype->print(env);
 }
 
+OperatorPrecedence E_alignofType::getPrecedence() const
+{
+  return OPREC_HIGHEST;
+}
+
+
 void E_alignofExpr::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_alignofType::iprint");
   PairDelim pair(*env.out, "__alignof__", "(", ")");
-  expr->print(env);
+  expr->print(env, OPREC_LOWEST);
 }
+
+OperatorPrecedence E_alignofExpr::getPrecedence() const
+{
+  return OPREC_HIGHEST;
+}
+
 
 // void E_offsetof:iprint(PrintEnv &env)
 // {
@@ -1170,6 +1201,7 @@ void E_alignofExpr::iprint(PrintEnv &env)
 //   fieldName->print(env);
 // }
 
+
 void E_statement::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_statement::iprint");
@@ -1177,19 +1209,35 @@ void E_statement::iprint(PrintEnv &env)
   s->iprint(env);
 }
 
+OperatorPrecedence E_statement::getPrecedence() const
+{
+  return OPREC_HIGHEST;
+}
+
+
 void E_gnuCond::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_gnuCond::iprint");
-  PairDelim pair(*env.out, "", "(", ")");
-  cond->print(env);
+  cond->print(env, this->getPrecedence());
   *env.out << " ?: ";
-  el->print(env);
+  el->print(env, this->getPrecedence());
 }
+
+OperatorPrecedence E_gnuCond::getPrecedence() const
+{
+  return OPREC_ASSIGN;
+}
+
 
 void E_addrOfLabel::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_addrOfLabel::iprint");
   *env.out << "&&" << labelName;
+}
+
+OperatorPrecedence E_addrOfLabel::getPrecedence() const
+{
+  return OPREC_PREFIX;
 }
 
 
@@ -1223,10 +1271,10 @@ void SubscriptDesignator::print(PrintEnv &env)
   TreeWalkDebug treeDebug("SubscriptDesignator");
   xassert(idx_expr);
   PairDelim pair(*env.out, "", "[", "]");
-  idx_expr->print(env);
+  idx_expr->print(env, OPREC_LOWEST);
   if (idx_expr2) {
     *env.out << " ... ";
-    idx_expr2->print(env);
+    idx_expr2->print(env, OPREC_LOWEST);
   }
 }
 

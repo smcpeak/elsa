@@ -6,9 +6,9 @@ int f2(int /*anon*/, int /*anon*/);
 
 void g(char c)
 {
-  ((f)((1)));
-  ((f)((1), (2)));
-  ((f)((1), (/*ISC:int*/c)));
+  f(1);
+  f(1, 2);
+  f(1, (/*ISC:int*/c));
 }
 ---- STOP ----
 ---- stderr ----

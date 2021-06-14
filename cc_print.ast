@@ -3,8 +3,10 @@
 // syntax from the AST
 
 verbatim {
-  class PrintEnv;               // cc_print.h
-  class CodeOutStream;          // cc_print.h
+  class PrintEnv;                      // cc_print.h
+  class CodeOutStream;                 // cc_print.h
+
+  #include "cc_precedence.h"           // OperatorPrecedence
 }
 
 
@@ -102,8 +104,16 @@ class FullExpression {
 
 
 class Expression {
-  public void print(PrintEnv &env);
+  // Print this expression to 'env'.  The precedence of the parent
+  // operator is in 'parentPrec', and is used to decide whether to
+  // print parentheses around this expression.
+  public void print(PrintEnv &env, OperatorPrecedence parentPrec);
+
+  // Print the expression without outer parentheses.
   pure_virtual void iprint(PrintEnv &env);
+
+  // Get the precedence for this expression.
+  pure_virtual OperatorPrecedence getPrecedence() const;
 
   public string exprToString() const;
   public string asString() const { return exprToString(); };

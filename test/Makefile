@@ -54,6 +54,7 @@ TESTS :=
 
 TESTS += pprint/pp-decl.cc
 TESTS += pprint/pp-syntax.cc
+TESTS += pprint/precedence.cc
 TESTS += pprint/vararg-promote.cc
 
 # Run a C++ pretty-print test.
