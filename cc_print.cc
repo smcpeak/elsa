@@ -647,52 +647,6 @@ void PrintEnv::ptype(Type const *type, char const *name)
 
 // ****************
 
-// WARNING: if you are inclined to inline this function back into its
-// one call site, be sure you are careful that you do not change the
-// semantics of Restorer below: the site of its destructor call is
-// very important to the semantics of the printing, as it changes
-// which OutStream is being printed to.
-string printDeclaration_makeName
-  (PrintEnv &env,
-   Type const *type,
-   PQName const * /*nullable*/ pqname,
-   Variable *var,
-   StringRef finalName)
-{
-  stringBuilder sb0;
-  StringBuilderOutStream out0(sb0);
-  CodeOutStream codeOut0(out0);
-  // NOTE: temporarily change the OutStream in the PrintEnv; see the
-  // WARNING above.
-  Restorer<CodeOutStream*> tempSubstCodeOutInEnv(env.out, &codeOut0);
-
-  if (pqname) {
-    codeOut0 << pqname->qualifierString();
-  }
-  codeOut0 << finalName;
-  if (type->isFunctionType() &&
-      var->templateInfo() &&
-      var->templateInfo()->isCompleteSpecOrInstantiation()) {
-    // print the spec/inst args after the function name;
-    //
-    // NOTE: This was inlined from sargsToString; it used to read as follows:
-    //          codeOut0 << sargsToString(var->templateInfo()->arguments);
-    codeOut0 << '<';
-    int ct=0;
-    FOREACH_OBJLIST_NC(STemplateArgument, var->templateInfo()->arguments, iter) {
-      if (ct++ > 0) {
-        codeOut0 << ',' << ' ';
-      }
-      printSTemplateArgument(env, iter.data());
-    }
-    codeOut0 << '>';
-  }
-
-  codeOut0 << var->namePrintSuffix();    // hook for verifier
-  codeOut0.finish();
-  return sb0;
-}
-
 // hooks for Oink
 //
 // sm: My intuition is that these hooks and ought to be parallel
@@ -721,80 +675,6 @@ static void printDeclFlags(PrintEnv &env, DeclFlags dflags)
     env << toString(sourceFlags) << " ";
   }
 }
-
-// function for printing declarations (without the final semicolon);
-// handles a variety of declarations such as:
-//   int x
-//   int x()
-//   C()                    // ctor inside class C
-//   operator delete[]()
-//   char operator()        // conversion operator to 'char'
-void printDeclaration
-  (PrintEnv &env,
-
-  // declflags present in source; not same as 'var->flags' because
-  // the latter is a mixture of flags present in different
-  // declarations
-  DeclFlags dflags,
-
-  // type of the variable; not same as 'var->type' because the latter
-  // can come from a prototype and hence have different parameter
-  // names
-  TypeLike const *type,
-
-  // original name in the source; for now this is redundant with
-  // 'var->name', but we plan to print the qualifiers by looking
-  // at 'pqname'
-  PQName const * /*nullable*/ pqname,
-
-  // associated variable; in the final design, this will only be
-  // used to look up the variable's scope
-  Variable *var)
-{
-  printDeclFlags(env, dflags);
-
-  // the string name after all of the qualifiers; if this is
-  // a special function, we're getting the encoded version
-  StringRef finalName = pqname? pqname->getName() : NULL;
-
-  if (finalName && streq(finalName, "conversion-operator")) {
-    // special syntax for conversion operators; first the keyword
-    env << "operator ";
-
-    // then the return type and the function designator
-    TypeLike const *retThing = getDeclarationRetTypeLike(type);
-    env.ptype(retThing);
-
-    env << " ()";
-  }
-
-  else if (finalName && streq(finalName, "constructor-special")) {
-    // extract the class name, which can be found by looking up
-    // the name of the scope which contains the associated variable
-    env.ptype(type, var->scope->curCompound->name);
-  }
-
-  else {
-    if (finalName) {
-      Type const *type0 = getDeclarationTypeLike(type);
-      string name = printDeclaration_makeName(env, type0, pqname, var, finalName);
-      env.ptype(type, name.c_str());
-    } else {
-      env.ptype(type, finalName);
-    }
-  }
-}
-
-
-// more specialized version of the previous function
-void printVar(PrintEnv &env, Variable *var, PQName const * /*nullable*/ pqname)
-{
-  TypeLike const *type0 = env.getTypeLike(var);
-
-  printDeclaration(env, var->flags,
-                   type0, pqname, var);
-}
-
 
 // this is a prototype for a function down near E_funCall::iprint
 void printArgExprList(PrintEnv &env, FakeList<ArgExpression> *list);
