@@ -152,6 +152,9 @@ Declaration *ElabVisitor::makeDeclaration(SourceLoc loc, Variable *var, Declarat
 
 // given a function declaration, make a Declarator containing
 // a D_func that refers to it
+//
+// TODO: This code is very similar to code in
+// ElsaASTBuild::makeASTTypeId.  They should be combined.
 Declarator *ElabVisitor::makeFuncDeclarator(SourceLoc loc, Variable *var, DeclaratorContext context)
 {
   FunctionType *ft = var->type->asFunctionType();

@@ -1,13 +1,14 @@
 // main.cc            see license.txt for copyright and terms of use
 // entry-point module for a program that parses C++
 
+#include "ast_build.h"    // test_astbuild
 #include "elsaparse.h"    // ElsaParse
 
 // smbase
 #include "ckheap.h"       // malloc_stats
 
 
-void if_malloc_stats()
+static void if_malloc_stats()
 {
   if (tracingSys("malloc_stats")) {
     malloc_stats();
@@ -232,6 +233,12 @@ static int doit(int argc, char **argv)
   elsaParse.parse(inputFname);
   if (verboseOutput) {
     elsaParse.printTimes();
+  }
+
+  // Turn this testing on all the time by default.  Its effect on
+  // end to end speed is less than what I can easily measure.
+  if (!tracingSys("notest_astbuild")) {
+    test_astbuild(elsaParse);
   }
 
   //traceProgress() << "cleaning up...\n";

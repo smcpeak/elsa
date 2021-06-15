@@ -323,8 +323,14 @@ libelsa.a: $(CCPARSE_OBJS)
 	-$(RANLIB) $@
 
 
+# Modules that are part of 'ccparse' but not 'libelsa'.  These have
+# the 'main()' function and some unit test modules.
+CCPARSE_PROG_OBJS :=
+CCPARSE_PROG_OBJS += main.o
+CCPARSE_PROG_OBJS += test-astbuild.o
+
 # parser binary
-ccparse.exe: main.o libelsa.a $(LIBS)
+ccparse.exe: $(CCPARSE_PROG_OBJS) libelsa.a $(LIBS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^
 	./ccparse.exe in/t0001.cc
 

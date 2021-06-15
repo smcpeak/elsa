@@ -4,6 +4,8 @@
 #ifndef ELSAPARSE_H
 #define ELSAPARSE_H
 
+#include "elsaparse-fwd.h"             // forwards for this module
+
 // elsa
 #include "cc.gr.gen.h"                 // TranslationUnit, Function
 #include "cc_lang.h"                   // CCLang

@@ -4,7 +4,8 @@
 #ifndef AST_BUILD_H
 #define AST_BUILD_H
 
-#include "cc_ast.h"      // C++ AST
+#include "cc_ast.h"                    // C++ AST
+#include "elsaparse-fwd.h"             // ElsaParse
 
 
 // Interface for ElsaASTBuild to obtain a location.
@@ -15,14 +16,15 @@ public:
 };
 
 
-// Methods for constructing fragments of the C++ AST.
+// Methods for constructing fragments of the C++ AST from an existing
+// semantic description.  This is essentially the reverse of type
+// checking, which converts syntax into semantics.
 //
 // This is meant for use during semantic elaboration and for source
-// to source instrumentation.
+// to source transformation and instrumentation.
 //
-// Currently, some methods do not create AST that satisfies all of the
-// invariants that the type checker does, since I am using it primarily
-// for source-to-source where that isn't needed.
+// My intention is that the constructed AST satisfies the same
+// invariants that it would after normal type checking.
 //
 class ElsaASTBuild {
 public:      // data
@@ -48,8 +50,18 @@ public:      // methods
   // wrap a pair of expressions in a list
   FakeList<ArgExpression> *makeExprList2(Expression *e1, Expression *e2);
 
-  // Return an ASTTypeId denoting 'type'.
-  ASTTypeId *makeASTTypeId(Type *type);
+  // Return a syntactic ASTTypeId denoting semantic 'type'.
+  //
+  // 'name' is used as the name of the innermost D_name.  If it is NULL
+  // then the declarator is "abstract", meaning it does not declare any
+  // name with the denoted type.
+  //
+  // 'type' is not 'const' because the returned syntax contains a
+  // non-const pointer to it.
+  ASTTypeId *makeASTTypeId(Type *type, PQName *name = NULL);
+
+  // Make a syntactic exception specification.
+  ExceptionSpec *makeExceptionSpec(FunctionType::ExnSpec *srcSpec);
 
   // Make an E_intLit.
   E_intLit *makeE_intLit(int n);
@@ -66,5 +78,8 @@ public:      // methods
   E_variable *makeE_variable(Variable *var);
 };
 
+
+// Run tests of this module after parsing.
+void test_astbuild(ElsaParse &elsaParse);
 
 #endif // AST_BUILD_H

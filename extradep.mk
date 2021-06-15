@@ -43,6 +43,9 @@ smin.o: iptparse.yy.h
 sprint.o: cc.ast.gen.h
 stdconv.o: cc.ast.gen.h
 template.o: cc.ast.gen.h
+test-astbuild.o: cc.ast.gen.h
+test-astbuild.o: cc.gr.gen.h
+test-astbuild.o: cc_tokens.h
 tlexer.o: cc_tokens.h
 tlexer.o: lexer.yy.h
 typelistiter.o: cc.ast.gen.h
