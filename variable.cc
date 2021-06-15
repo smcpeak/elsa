@@ -671,6 +671,17 @@ Variable const *Variable::skipAliasC() const
 }
 
 
+string toString(Variable const *v)
+{
+  if (v) {
+    return v->toString();
+  }
+  else {
+    return "NULL";
+  }
+}
+
+
 // this isn't right if either is a set of overloaded functions...
 bool sameEntity(Variable const *v1, Variable const *v2)
 {
