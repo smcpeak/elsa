@@ -2049,11 +2049,6 @@ Type *TS_type::itcheck(Env &env, DeclFlags dflags)
   return type;
 }
 
-void TS_type::print(PrintEnv &env) const
-{
-  xfailure("I think this is not called because TS_simple::print isn't either");
-}
-
 void TS_type::idetailPrint(PrintEnv &env) const
 {
   if (CompoundType *ct = type->ifCompoundType()) {

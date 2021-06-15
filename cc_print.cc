@@ -1131,62 +1131,6 @@ void PQ_template::print(PrintEnv &env) const
 
 
 // --------------------- TypeSpecifier --------------
-void TS_name::print(PrintEnv &env) const
-{
-  xassert(0);                   // I'll bet this is never called.
-//    env << toString(ql);          // see string toString(class dummyType*) above
-//    name->print(env);
-}
-
-void TS_simple::print(PrintEnv &env) const
-{
-  xassert(0);                   // I'll bet this is never called.
-//    env << toString(ql);          // see string toString(class dummyType*) above
-}
-
-void TS_elaborated::print(PrintEnv &env) const
-{
-  env.loc = loc;
-  env << toString(ql);          // see string toString(class dummyType*) above
-  env << toString(keyword) << ' ';
-  name->print(env);
-}
-
-void TS_classSpec::print(PrintEnv &env) const
-{
-  env << toString(ql);          // see string toString(class dummyType*) above
-  env << toString(cv);
-  env << toString(keyword) << ' ';
-  if (name) env << name->toString();
-  bool first_time = true;
-  FAKELIST_FOREACH_NC(BaseClassSpec, bases, iter) {
-    if (first_time) {
-      env << ' ' << ':' << ' ';
-      first_time = false;
-    }
-    else env << ',' << ' ';
-    iter->print(env);
-  }
-  PairDelim pair(env, " ", "{\n", "}");
-  FOREACH_ASTLIST(Member, members->list, iter2) {
-    iter2.data()->print(env);
-  }
-}
-
-void TS_enumSpec::print(PrintEnv &env) const
-{
-  env << toString(ql);          // see string toString(class dummyType*) above
-  env << toString(cv);
-  env << "enum ";
-  if (name) env << name;
-  PairDelim pair(env, "", "{\n", "}");
-  FAKELIST_FOREACH_NC(Enumerator, elts, iter) {
-    iter->print(env);
-    env << "\n";
-  }
-}
-
-
 void TypeSpecifier::detailPrint(PrintEnv &env) const
 {
   idetailPrint(env);
@@ -1222,14 +1166,37 @@ void TS_elaborated::idetailPrint(PrintEnv &env) const
 
 void TS_classSpec::idetailPrint(PrintEnv &env) const
 {
-  // The existing 'print' is probably adequate.
-  this->print(env);
+  env << toString(ql);          // see string toString(class dummyType*) above
+  env << toString(cv);
+  env << toString(keyword) << ' ';
+  if (name) env << name->toString();
+  bool first_time = true;
+  FAKELIST_FOREACH_NC(BaseClassSpec, bases, iter) {
+    if (first_time) {
+      env << ' ' << ':' << ' ';
+      first_time = false;
+    }
+    else env << ',' << ' ';
+    iter->print(env);
+  }
+  PairDelim pair(env, " ", "{\n", "}");
+  FOREACH_ASTLIST(Member, members->list, iter2) {
+    iter2.data()->print(env);
+  }
 }
 
 
 void TS_enumSpec::idetailPrint(PrintEnv &env) const
 {
-  this->print(env);
+  env << toString(ql);          // see string toString(class dummyType*) above
+  env << toString(cv);
+  env << "enum ";
+  if (name) env << name;
+  PairDelim pair(env, "", "{\n", "}");
+  FAKELIST_FOREACH_NC(Enumerator, elts, iter) {
+    iter->print(env);
+    env << "\n";
+  }
 }
 
 
@@ -2548,7 +2515,7 @@ void TD_decl::iprint(PrintEnv &env) const
         CompoundType *instCT = instV->type->asCompoundType();
         if (instCT->syntax) {
           env << "\n";
-          instCT->syntax->print(env);
+          instCT->syntax->detailPrint(env);
           env << ";\n";
         }
         else {
