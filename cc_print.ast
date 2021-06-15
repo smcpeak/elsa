@@ -12,32 +12,32 @@ verbatim {
 
 class TranslationUnit {
   // This is the toplevel entry point to the pretty printer.
-  public void print(PrintEnv &env);
+  public void print(PrintEnv &env) const;
 }
 
 
 class TopForm {
-  pure_virtual void print(PrintEnv &env);
+  pure_virtual void print(PrintEnv &env) const;
 }
 
 
 class Function {
-  public void print(PrintEnv &env);
+  public void print(PrintEnv &env) const;
 }
 
 
 class Declaration {
-  public void print(PrintEnv &env);
+  public void print(PrintEnv &env) const;
 }
 
 
 class ASTTypeId {
-  public void print(PrintEnv &env);
+  public void print(PrintEnv &env) const;
 }
 
 
 class PQName {
-  pure_virtual void print(PrintEnv &env);
+  pure_virtual void print(PrintEnv &env) const;
 }
 
 verbatim {
@@ -48,67 +48,67 @@ verbatim {
 
 
 class TypeSpecifier {
-  pure_virtual void print(PrintEnv &env);
-  public void detailPrint(PrintEnv &env);
-  pure_virtual void idetailPrint(PrintEnv &env);
+  pure_virtual void print(PrintEnv &env) const;
+  public void detailPrint(PrintEnv &env) const;
+  pure_virtual void idetailPrint(PrintEnv &env) const;
 }
 
 
 class BaseClassSpec {
-  public void print(PrintEnv &env);
+  public void print(PrintEnv &env) const;
 }
 
 
 class Member {
-  pure_virtual void print(PrintEnv &env);
+  pure_virtual void print(PrintEnv &env) const;
 }
 
 
 class Enumerator {
-  public void print(PrintEnv &env);
+  public void print(PrintEnv &env) const;
 }
 
 
 class Declarator {
-  public void print(PrintEnv &env);
-  public void detailPrint(PrintEnv &env);
+  public void print(PrintEnv &env) const;
+  public void detailPrint(PrintEnv &env) const;
 }
 
 
 class IDeclarator {
-  pure_virtual void detailPrint(PrintEnv &env);
+  pure_virtual void detailPrint(PrintEnv &env) const;
 }
 
 
 class ExceptionSpec {
-  public void print(PrintEnv &env);
+  public void print(PrintEnv &env) const;
 }
 
 
 class OperatorName {
   // Print the full name, including "operator".
-  pure_virtual void print(PrintEnv &env);
+  pure_virtual void print(PrintEnv &env) const;
 }
 
 
 class Statement {
-  public void print(PrintEnv &env);
-  pure_virtual void iprint(PrintEnv &env);
+  public void print(PrintEnv &env) const;
+  pure_virtual void iprint(PrintEnv &env) const;
 }
 
 
 class Condition {
-  pure_virtual void print(PrintEnv &env);
+  pure_virtual void print(PrintEnv &env) const;
 }
 
 
 class Handler {
-  public void print(PrintEnv &env);
+  public void print(PrintEnv &env) const;
 }
 
 
 class FullExpression {
-  public void print(PrintEnv &env);
+  public void print(PrintEnv &env) const;
 }
 
 
@@ -116,10 +116,10 @@ class Expression {
   // Print this expression to 'env'.  The precedence of the parent
   // operator is in 'parentPrec', and is used to decide whether to
   // print parentheses around this expression.
-  public void print(PrintEnv &env, OperatorPrecedence parentPrec);
+  public void print(PrintEnv &env, OperatorPrecedence parentPrec) const;
 
   // Print the expression without outer parentheses.
-  pure_virtual void iprint(PrintEnv &env);
+  pure_virtual void iprint(PrintEnv &env) const;
 
   // Get the precedence for this expression.
   pure_virtual OperatorPrecedence getPrecedence() const;
@@ -136,26 +136,26 @@ verbatim {
 
 
 class Initializer {
-  pure_virtual void print(PrintEnv &env);
+  pure_virtual void print(PrintEnv &env) const;
 }
 
 
 class TemplateDeclaration {
-  public void print(PrintEnv &env);
-  pure_virtual void iprint(PrintEnv &env);
+  public void print(PrintEnv &env) const;
+  pure_virtual void iprint(PrintEnv &env) const;
 }
 
 
 class TemplateParameter {
-  pure_virtual void print(PrintEnv &env);
+  pure_virtual void print(PrintEnv &env) const;
 }
 
 
 class TemplateArgument {
-  pure_virtual void print(PrintEnv &env);
+  pure_virtual void print(PrintEnv &env) const;
 }
 
 
 class NamespaceDecl {
-  pure_virtual void print(PrintEnv &env);
+  pure_virtual void print(PrintEnv &env) const;
 }

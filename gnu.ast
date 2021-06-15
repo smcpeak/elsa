@@ -194,7 +194,7 @@ class Designator (SourceLoc loc) {
     }
   }
 
-  pure_virtual void print(PrintEnv &env);
+  pure_virtual void print(PrintEnv &env) const;
 
   -> FieldDesignator(StringRef id);
 

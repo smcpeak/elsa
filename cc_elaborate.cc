@@ -2049,12 +2049,12 @@ Type *TS_type::itcheck(Env &env, DeclFlags dflags)
   return type;
 }
 
-void TS_type::print(PrintEnv &env)
+void TS_type::print(PrintEnv &env) const
 {
   xfailure("I think this is not called because TS_simple::print isn't either");
 }
 
-void TS_type::idetailPrint(PrintEnv &env)
+void TS_type::idetailPrint(PrintEnv &env) const
 {
   if (CompoundType *ct = type->ifCompoundType()) {
     // Print the name of the implicit typedef.
@@ -2083,7 +2083,7 @@ void PQ_variable::tcheck_pq(Env &env, Scope*, LookupFlags)
   // nothing to check
 }
 
-void PQ_variable::print(PrintEnv &env)
+void PQ_variable::print(PrintEnv &env) const
 {
   if (streq(var->name, "constructor-special")) {
     // Do not print.
