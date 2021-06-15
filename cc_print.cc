@@ -712,6 +712,16 @@ Type const *getDeclarationTypeLike(TypeLike const *type)
   return type;
 }
 
+// Print the flags in 'dflags' that can appear in source code.  If there
+// are any, print a space afterward.
+static void printDeclFlags(PrintEnv &env, DeclFlags dflags)
+{
+  DeclFlags sourceFlags = dflags & DF_SOURCEFLAGS;
+  if (sourceFlags) {
+    env << toString(sourceFlags) << " ";
+  }
+}
+
 // function for printing declarations (without the final semicolon);
 // handles a variety of declarations such as:
 //   int x
@@ -741,12 +751,7 @@ void printDeclaration
   // used to look up the variable's scope
   Variable *var)
 {
-  // mask off flags used for internal purposes, so all that's
-  // left is the flags that were present in the source
-  dflags = (DeclFlags)(dflags & DF_SOURCEFLAGS);
-  if (dflags) {
-    env << toString(dflags) << " ";
-  }
+  printDeclFlags(env, dflags);
 
   // the string name after all of the qualifiers; if this is
   // a special function, we're getting the encoded version
@@ -957,10 +962,7 @@ void Function::print(PrintEnv &env) const
   TypeLike const *type0 = env.typePrinter.getFunctionTypeLike(this);
   Restorer<bool> res0(CTypePrinter::enabled, type0 == funcType);
 
-  DeclFlags sourceFlags = dflags & DF_SOURCEFLAGS;
-  if (sourceFlags) {
-    env << toString(sourceFlags) << " ";
-  }
+  printDeclFlags(env, dflags);
   printTypeSpecifierAndDeclarator(env, retspec, nameAndParams);
 
   if (instButNotTchecked()) {
@@ -1019,10 +1021,7 @@ void Function::print(PrintEnv &env) const
 // -------------------- Declaration -------------------
 void Declaration::print(PrintEnv &env) const
 {
-  DeclFlags sourceFlags = dflags & DF_SOURCEFLAGS;
-  if (sourceFlags) {
-    env << toString(sourceFlags) << " ";
-  }
+  printDeclFlags(env, dflags);
 
   spec->detailPrint(env);
 
