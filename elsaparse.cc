@@ -1,31 +1,37 @@
 // elsaparse.cc          see license.txt for copyright and terms of use
 // Code for elsaparse.h.
 
-#include "elsaparse.h"    // this module
+#include "elsaparse.h"                 // this module
 
-#include "sm-iostream.h"  // cout
-#include <stdlib.h>       // exit, getenv, abort
-#include "sm-fstream.h"   // ofstream
+// elsa
+#include "cc.gr.gen.h"                 // CCParse
+#include "cc_ast.h"                    // C++ AST (r)
+#include "cc_ast_aux.h"                // class LoweredASTVisitor
+#include "cc_elaborate.h"              // ElabVisitor
+#include "cc_env.h"                    // Env
+#include "cc_lang.h"                   // CCLang
+#include "cc_print.h"                  // PrintEnv
+#include "integrity.h"                 // IntegrityVisitor
+#include "parssppt.h"                  // ParseTreeAndTokens, treeMain
+#include "sprint.h"                    // structurePrint
 
-#include "trace.h"        // traceAddSys
-#include "parssppt.h"     // ParseTreeAndTokens, treeMain
-#include "srcloc.h"       // SourceLocManager
-#include "ckheap.h"       // checkHeap
-#include "cc_env.h"       // Env
-#include "cc_ast.h"       // C++ AST (r)
-#include "cc_ast_aux.h"   // class LoweredASTVisitor
-#include "cc_lang.h"      // CCLang
-#include "parsetables.h"  // ParseTables
-#include "cc_print.h"     // PrintEnv
-#include "cc.gr.gen.h"    // CCParse
-#include "nonport.h"      // getMilliseconds
-#include "ptreenode.h"    // PTreeNode
-#include "ptreeact.h"     // ParseTreeLexer, ParseTreeActions
-#include "sprint.h"       // structurePrint
-#include "strtokp.h"      // StrtokParse
-#include "smregexp.h"     // regexpMatch
-#include "cc_elaborate.h" // ElabVisitor
-#include "integrity.h"    // IntegrityVisitor
+// elkhound
+#include "parsetables.h"               // ParseTables
+#include "ptreeact.h"                  // ParseTreeLexer, ParseTreeActions
+#include "ptreenode.h"                 // PTreeNode
+
+// smbase
+#include "ckheap.h"                    // checkHeap
+#include "nonport.h"                   // getMilliseconds
+#include "sm-fstream.h"                // ofstream
+#include "sm-iostream.h"               // cout
+#include "smregexp.h"                  // regexpMatch
+#include "srcloc.h"                    // SourceLocManager
+#include "strtokp.h"                   // StrtokParse
+#include "trace.h"                     // traceAddSys
+
+// libc
+#include <stdlib.h>                    // exit, getenv, abort
 
 
 // little check: is it true that only global declarators
