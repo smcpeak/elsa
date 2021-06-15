@@ -321,12 +321,13 @@ class Declarator {
   custom clone {ret->var = var;}
 
   // This field need not be identical to 'var->type'; the 'type' here
-  // comes directly from the declartor syntax, but 'var' might refer
-  // to a previous declaration (e.g. two protoypes of the same
+  // comes directly from the declarator syntax, but 'var' might refer
+  // to a previous declaration (e.g., two protoypes of the same
   // function), and hence 'var->type' might differ in details like
   // parameter names.  Otherwise, nominally, 'var->type' and 'type'
   // denote equivalent types.
   public Type *type = NULL;
+  custom clone {ret->type = type;}
 
   // syntactic context; sometimes useful to visitors
   public DeclaratorContext context = DC_UNKNOWN;
