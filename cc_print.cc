@@ -657,9 +657,14 @@ string CTypePrinter::printAsParameter(Variable const *var)
   return sb;
 }
 
+
 // **************** class PrintEnv
 
-// (none; placeholder)
+void PrintEnv::ptype(Type const *type, char const *name)
+{
+  typePrinter.print(*out, type, name);
+}
+
 
 // ****************
 
@@ -776,7 +781,7 @@ void printDeclaration
 
     // then the return type and the function designator
     TypeLike const *retThing = getDeclarationRetTypeLike(type);
-    env.typePrinter.print(*env.out, retThing);
+    env.ptype(retThing);
 
     env << " ()";
   }
@@ -784,16 +789,16 @@ void printDeclaration
   else if (finalName && streq(finalName, "constructor-special")) {
     // extract the class name, which can be found by looking up
     // the name of the scope which contains the associated variable
-    env.typePrinter.print(*env.out, type, var->scope->curCompound->name);
+    env.ptype(type, var->scope->curCompound->name);
   }
 
   else {
     if (finalName) {
       Type const *type0 = getDeclarationTypeLike(type);
       string name = printDeclaration_makeName(env, type0, pqname, var, finalName);
-      env.typePrinter.print(*env.out, type, name.c_str());
+      env.ptype(type, name.c_str());
     } else {
-      env.typePrinter.print(*env.out, type, finalName);
+      env.ptype(type, finalName);
     }
   }
 }
@@ -1898,7 +1903,7 @@ void printSTemplateArgument(PrintEnv &env, STemplateArgument const *sta)
       // have; enable the normal type printer temporarily in order to
       // do this
       Restorer<bool> res0(CTypePrinter::enabled, true);
-      env.typePrinter.print(*env.out, sta->value.t); // assume 'type' if no comment
+      env.ptype(sta->value.t); // assume 'type' if no comment
       }
       break;
     case STemplateArgument::STA_INT:
@@ -2026,7 +2031,7 @@ void E_constructor::iprint(PrintEnv &env)
   TypeLike const *type0 = env.typePrinter.getE_constructorTypeLike(this);
   Restorer<bool> res0(CTypePrinter::enabled, type == type0);
 
-  env.typePrinter.print(*env.out, type0);
+  env.ptype(type0);
   PairDelim pair(*env.out, "", "(", ")");
   printArgExprList(env, args);
 }
@@ -2049,7 +2054,7 @@ void printVariableName(PrintEnv &env, Variable *var)
     env << "/""*conversion*/operator(";
     Type *t = var->type->asFunctionType()->retType;
     Restorer<bool> res0(CTypePrinter::enabled, true);
-    env.typePrinter.print(*env.out, t);
+    env.ptype(t);
     env << ')';
     return;
   }
@@ -2633,7 +2638,7 @@ void TD_func::iprint(PrintEnv &env)
     // NOTE: inlined from Variable::toCString()
 
     TypeLike const *type0 = env.getTypeLike(var);
-    env.typePrinter.print(*env.out, type0, (var->name? var->name : "/*anon*/"));
+    env.ptype(type0, (var->name? var->name : "/*anon*/"));
     env << var->namePrintSuffix() << "\n";
     printFuncInstantiations(env, var);
 
@@ -2671,7 +2676,7 @@ void TD_decl::iprint(PrintEnv &env)
 
         env << "// ";
         TypeLike const *type0 = env.getTypeLike(instV);
-        env.typePrinter.print(*env.out, type0);
+        env.ptype(type0);
         CompoundType *instCT = instV->type->asCompoundType();
         if (instCT->syntax) {
           env << "\n";
@@ -2722,7 +2727,7 @@ void TA_type::print(PrintEnv &env)
   // dig down to prevent printing "/*anon*/" since template
   // type arguments are always anonymous so it's just clutter
   Restorer<bool> res0(CTypePrinter::enabled, true);
-  env.typePrinter.print(*env.out, type->decl->var->type);
+  env.ptype(type->decl->var->type);
 }
 
 void TA_nontype::print(PrintEnv &env)

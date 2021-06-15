@@ -14,6 +14,7 @@
 
 #include "sm-iostream.h"        // ostream
 
+
 // this virtual semi-abstract class is intended to act as a
 // "superclass" for ostream, stringBuilder, and any other "output
 // stream" classes
@@ -237,19 +238,10 @@ class TypePrinter {
   public:
   virtual ~TypePrinter() {}
 
-  // dsw: type has to be a void* because in the Oink TypePrinter it is
-  // a Value which isn't a type; I don't know of a good way to fix
-  // this other than to invent some abstract interface generalization
-  // called TypeLike that both Type and Value inherit from.  I think
-  // this is too much generality for OO to handle well
-  //
-  // sm: 2005-08-17: I made the default value of 'name' be "".  This
-  // means that in contexts that do not typically have names, "" will
-  // be passed and hence no /*anon*/ will be printed; while in
-  // contexts that usually do have names, but some instance does not
-  // (has a NULL pointer there), /*anon*/ *will* be printed.  Thus,
-  // /*anon*/ is only printed in places where name could go.
-  virtual void print(OutStream &out, TypeLike const *type, char const *name = "") = 0;
+  // Print 'type'.  'name' is printed among the type syntax in a way
+  // that would declare a variable of that name.  If it is NULL, then
+  // "/*anon*/" is printed.
+  virtual void print(OutStream &out, TypeLike const *type, char const *name) = 0;
 
   // retrieve the TypeLike to print for a Variable; in Elsa, this
   // just gets Variable::type, but Oink does something else
@@ -357,6 +349,9 @@ class PrintEnv {
   MAKE_INSERTER(double)
   MAKE_INSERTER(rostring)
   #undef MAKE_INSERTER
+
+  // Print 'type' using 'typePrinter'.
+  void ptype(TypeLike const *type, char const *name = "");
 };
 
 // version of PrintEnv that prints to a string in the default syntax
