@@ -24,40 +24,40 @@ class ElsaParse {
 
 public:      // data
   // String table for identifiers.
-  StringTable &strTable;
+  StringTable &m_stringTable;
 
   // Way to make types.
   BasicTypeFactory m_typeFactory;
 
   // Language options.
-  CCLang &lang;
+  CCLang &m_lang;
 
   // If true, print the counts of errors and warnings at the end.  This
   // is initially false.
-  bool printErrorCount;
+  bool m_printErrorCount;
 
   // If true, pretty-print the parsed AST as C/C++ syntax after parsing.
   // Initially false.
-  bool prettyPrint;
+  bool m_prettyPrint;
 
   // If true, print decoded string literals after parsing.  Initially
   // false.
-  bool printStringLiterals;
+  bool m_printStringLiterals;
 
   // The parsed TU.
-  TranslationUnit *unit;
+  TranslationUnit *m_translationUnit;
 
   // The 'main' function definition; NULL if none.
-  Function *mainFunction;
+  Function *m_mainFunction;
 
   // Time in milliseconds for various phases.
-  long parseTime;
-  long tcheckTime;
-  long integrityTime;
-  long elaborationTime;
+  long m_parseTime;
+  long m_tcheckTime;
+  long m_integrityTime;
+  long m_elaborationTime;
 
 public:      // methods
-  ElsaParse(StringTable &strTable, CCLang &lang);
+  ElsaParse(StringTable &stringTable, CCLang &lang);
   ~ElsaParse();
 
   // Parse 'inputFname' according to the language preferences in 'lang'.

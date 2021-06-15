@@ -55,12 +55,12 @@ static char *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
       argc--;
     }
     else if (streq(argv[1], "--prettyPrint")) {
-      elsaParse.prettyPrint = true;
+      elsaParse.m_prettyPrint = true;
       argv++;
       argc--;
     }
     else if (streq(argv[1], "--printStringLiterals")) {
-      elsaParse.printStringLiterals = true;
+      elsaParse.m_printStringLiterals = true;
       argv++;
       argc--;
     }
@@ -212,7 +212,7 @@ static int doit(int argc, char **argv)
     traceAddSys("scope");
     traceAddSys("templateParams");
     traceAddSys("templateXfer");
-    elsaParse.prettyPrint = true;
+    elsaParse.m_prettyPrint = true;
     traceAddSys("topform");
   }
 
@@ -229,7 +229,7 @@ static int doit(int argc, char **argv)
   }
 
   // Run the parser.
-  elsaParse.printErrorCount = verboseOutput;
+  elsaParse.m_printErrorCount = verboseOutput;
   elsaParse.parse(inputFname);
   if (verboseOutput) {
     elsaParse.printTimes();

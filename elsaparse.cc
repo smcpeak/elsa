@@ -170,18 +170,19 @@ void handle_xBase(Env &env, xBase &x)
 }
 
 
-ElsaParse::ElsaParse(StringTable &strTable_, CCLang &lang_)
-  : strTable(strTable_),
-    lang(lang_),
-    printErrorCount(false),
-    prettyPrint(false),
-    printStringLiterals(false),
-    unit(NULL),
-    mainFunction(NULL),
-    parseTime(0),
-    tcheckTime(0),
-    integrityTime(0),
-    elaborationTime(0)
+ElsaParse::ElsaParse(StringTable &stringTable_, CCLang &lang_)
+  : m_stringTable(stringTable_),
+    m_typeFactory(),
+    m_lang(lang_),
+    m_printErrorCount(false),
+    m_prettyPrint(false),
+    m_printStringLiterals(false),
+    m_translationUnit(NULL),
+    m_mainFunction(NULL),
+    m_parseTime(0),
+    m_tcheckTime(0),
+    m_integrityTime(0),
+    m_elaborationTime(0)
 {}
 
 
@@ -198,16 +199,16 @@ void ElsaParse::parse(char const *inputFname)
 
   int parseWarnings = 0;
   {
-    SectionTimer timer(parseTime);
+    SectionTimer timer(m_parseTime);
     SemanticValue treeTop;
-    ParseTreeAndTokens tree(lang, treeTop, strTable, inputFname);
+    ParseTreeAndTokens tree(m_lang, treeTop, m_stringTable, inputFname);
 
     // grab the lexer so we can check it for errors (damn this
     // 'tree' thing is stupid..)
     Lexer *lexer = dynamic_cast<Lexer*>(tree.lexer);
     xassert(lexer);
 
-    CCParse *parseContext = new CCParse(strTable, lang);
+    CCParse *parseContext = new CCParse(m_stringTable, m_lang);
     tree.userAct = parseContext;
 
     traceProgress(2) << "building parse tables from internal data\n";
@@ -247,9 +248,9 @@ void ElsaParse::parse(char const *inputFname)
     }
 
     // treeTop is a TranslationUnit pointer
-    unit = (TranslationUnit*)treeTop;
+    m_translationUnit = (TranslationUnit*)treeTop;
 
-    //unit->debugPrint(cout, 0);
+    //m_translationUnit->debugPrint(cout, 0);
 
     delete parseContext;
     delete tables;
@@ -259,11 +260,11 @@ void ElsaParse::parse(char const *inputFname)
 
   // print abstract syntax tree
   if (tracingSys("printAST")) {
-    unit->debugPrint(cout, 0);
+    m_translationUnit->debugPrint(cout, 0);
   }
 
-  //if (unit) {     // when "-tr trivialActions" it's NULL...
-  //  cout << "ambiguous nodes: " << numAmbiguousNodes(unit) << endl;
+  //if (m_translationUnit) {     // when "-tr trivialActions" it's NULL...
+  //  cout << "ambiguous nodes: " << numAmbiguousNodes(m_translationUnit) << endl;
   //}
 
   if (tracingSys("stopAfterParse")) {
@@ -275,10 +276,10 @@ void ElsaParse::parse(char const *inputFname)
   if (tracingSys("no-typecheck")) {
     cout << "no-typecheck" << endl;
   } else {
-    SectionTimer timer(tcheckTime);
-    Env env(strTable, lang, m_typeFactory, madeUpVariables, builtinVars, unit);
+    SectionTimer timer(m_tcheckTime);
+    Env env(m_stringTable, m_lang, m_typeFactory, madeUpVariables, builtinVars, m_translationUnit);
     try {
-      env.tcheckTranslationUnit(unit);
+      env.tcheckTranslationUnit(m_translationUnit);
     }
     catch (XUnimp &x) {
       HANDLER();
@@ -344,33 +345,34 @@ void ElsaParse::parse(char const *inputFname)
     // by a parsing mode that parsed each function, analyzed it, and then
     // immediately discarded its AST.
     if (numErrors == 0) {
-      numErrors += computeUnitCFG(unit);
+      numErrors += computeUnitCFG(m_translationUnit);
     }
     #endif // CFG_EXTENSION
 
     // print abstract syntax tree annotated with types
     if (tracingSys("printTypedAST")) {
-      unit->debugPrint(cout, 0);
+      m_translationUnit->debugPrint(cout, 0);
     }
 
     // structural delta thing
     if (tracingSys("structure")) {
-      structurePrint(unit);
+      structurePrint(m_translationUnit);
     }
 
     if (numErrors==0 && tracingSys("secondTcheck")) {
       // this is useful to measure the cost of disambiguation, since
       // now the tree is entirely free of ambiguities
       traceProgress() << "beginning second tcheck...\n";
-      Env env2(strTable, lang, m_typeFactory, madeUpVariables, builtinVars, unit);
-      unit->tcheck(env2);
+      Env env2(m_stringTable, m_lang, m_typeFactory, madeUpVariables,
+               builtinVars, m_translationUnit);
+      m_translationUnit->tcheck(env2);
       traceProgress() << "end of second tcheck\n";
     }
 
     // print errors and warnings
     env.errors.print(cout);
 
-    if (printErrorCount) {
+    if (m_printErrorCount) {
       cout << "typechecking results:\n"
            << "  errors:   " << numErrors << "\n"
            << "  warnings: " << numWarnings << "\n";
@@ -385,7 +387,7 @@ void ElsaParse::parse(char const *inputFname)
       // scan AST
       NameChecker nc;
       nc.sb << "collectLookupResults";
-      unit->traverse(nc);
+      m_translationUnit->traverse(nc);
 
       // compare to given text
       if (streq(env.collectLookupResults, nc.sb)) {
@@ -402,22 +404,22 @@ void ElsaParse::parse(char const *inputFname)
 
     // For the benefit of the interpreter, get 'main' if it exists.
     {
-      StringRef mainName = strTable.add("main");
+      StringRef mainName = m_stringTable.add("main");
       Variable *mainVar =
         env.globalScope()->lookupVariable(mainName, env);
       if (mainVar) {
-        mainFunction = mainVar->funcDefn;
+        m_mainFunction = mainVar->funcDefn;
       }
     }
   }
 
   // ---------------- integrity checking ----------------
   {
-    SectionTimer timer(integrityTime);
+    SectionTimer timer(m_integrityTime);
 
     // check AST integrity
     IntegrityVisitor ivis;
-    unit->traverse(ivis);
+    m_translationUnit->traverse(ivis);
 
     // check that the AST is a tree *and* that the lowered AST is a
     // tree; only do this *after* confirming that tcheck finished
@@ -425,7 +427,7 @@ void ElsaParse::parse(char const *inputFname)
     if (tracingSys("treeCheck")) {
       long start = getMilliseconds();
       LoweredIsTreeVisitor treeCheckVisitor;
-      unit->traverse(treeCheckVisitor.loweredVisitor);
+      m_translationUnit->traverse(treeCheckVisitor.loweredVisitor);
       traceProgress() << "done with tree check 1 ("
                       << (getMilliseconds() - start)
                       << " ms)\n";
@@ -434,7 +436,7 @@ void ElsaParse::parse(char const *inputFname)
     // check an expected property of the annotated AST
     if (tracingSys("declTypeCheck") || getenv("declTypeCheck")) {
       DeclTypeChecker vis;
-      unit->traverse(vis.loweredVisitor);
+      m_translationUnit->traverse(vis.loweredVisitor);
       cout << "instances of type != var->type: " << vis.instances << endl;
     }
 
@@ -448,26 +450,26 @@ void ElsaParse::parse(char const *inputFname)
     cout << "no-elaborate" << endl;
   }
   else {
-    SectionTimer timer(elaborationTime);
+    SectionTimer timer(m_elaborationTime);
 
-    ElabVisitor vis(strTable, m_typeFactory, unit);
+    ElabVisitor vis(m_stringTable, m_typeFactory, m_translationUnit);
 
-    if (!lang.isCplusplus) {
+    if (!m_lang.isCplusplus) {
       // do only the C elaboration activities
       vis.activities = EA_C_ACTIVITIES;
     }
 
     // if we are going to pretty print, then we need to retain defunct children
-    if (prettyPrint) {
+    if (m_prettyPrint) {
       vis.cloneDefunctChildren = true;
     }
 
     // do elaboration
-    unit->traverse(vis.loweredVisitor);
+    m_translationUnit->traverse(vis.loweredVisitor);
 
     // print abstract syntax tree annotated with types
     if (tracingSys("printElabAST")) {
-      unit->debugPrint(cout, 0);
+      m_translationUnit->debugPrint(cout, 0);
     }
     if (tracingSys("stopAfterElab")) {
       return;
@@ -478,50 +480,50 @@ void ElsaParse::parse(char const *inputFname)
   {
     MarkRealVars markReal;
     visitVarsF(builtinVars, markReal);
-    visitRealVarsF(unit, markReal);
+    visitRealVarsF(m_translationUnit, markReal);
   }
 
   // more integrity checking
   {
-    SectionTimer timer(integrityTime);
+    SectionTimer timer(m_integrityTime);
 
     // Check AST integrity again after elaboration.
     IntegrityVisitor ivis;
-    unit->traverse(ivis);
+    m_translationUnit->traverse(ivis);
 
     // check that the AST is a tree *and* that the lowered AST is a
     // tree (do this *after* elaboration!)
     if (tracingSys("treeCheck")) {
       long start = getMilliseconds();
       LoweredIsTreeVisitor treeCheckVisitor;
-      unit->traverse(treeCheckVisitor.loweredVisitor);
+      m_translationUnit->traverse(treeCheckVisitor.loweredVisitor);
       traceProgress() << "done with tree check 2 ("
                       << (getMilliseconds() - start)
                       << " ms)\n";
     }
   }
 
-  if (printStringLiterals) {
+  if (m_printStringLiterals) {
     PrintStringLiteralsVisitor visitor;
     LoweredASTVisitor loweredVisitor(&visitor);
-    unit->traverse(loweredVisitor);
+    m_translationUnit->traverse(loweredVisitor);
   }
 
-  if (prettyPrint) {
+  if (m_prettyPrint) {
     OStreamOutStream out0(cout);
     CodeOutStream codeOut(out0);
-    CTypePrinter typePrinter(lang);
+    CTypePrinter typePrinter(m_lang);
     PrintEnv env(typePrinter, &codeOut);
     cout << "---- START ----" << endl;
     cout << "// -*-c++-*-" << endl;
-    unit->print(env);
+    m_translationUnit->print(env);
     codeOut.finish();
     cout << "---- STOP ----" << endl;
   }
 
   // test AST cloning
   if (tracingSys("testClone")) {
-    TranslationUnit *u2 = unit->clone();
+    TranslationUnit *u2 = m_translationUnit->clone();
 
     if (tracingSys("cloneAST")) {
       cout << "------- cloned AST --------\n";
@@ -532,7 +534,7 @@ void ElsaParse::parse(char const *inputFname)
       ArrayStack<Variable*> madeUpVariables2;
       ArrayStack<Variable*> builtinVars2;
       // dsw: I hope you intend that I should use the cloned TranslationUnit
-      Env env3(strTable, lang, m_typeFactory, madeUpVariables2, builtinVars2, u2);
+      Env env3(m_stringTable, m_lang, m_typeFactory, madeUpVariables2, builtinVars2, u2);
       u2->tcheck(env3);
 
       if (tracingSys("cloneTypedAST")) {
@@ -543,7 +545,7 @@ void ElsaParse::parse(char const *inputFname)
       if (tracingSys("clonePrint")) {
         OStreamOutStream out0(cout);
         CodeOutStream codeOut(out0);
-        CTypePrinter typePrinter(lang);
+        CTypePrinter typePrinter(m_lang);
         PrintEnv penv(typePrinter, &codeOut);
         cout << "---- cloned pretty print ----" << endl;
         u2->print(penv);
@@ -556,17 +558,17 @@ void ElsaParse::parse(char const *inputFname)
   // make sure it doesn't segfault or abort)
   if (tracingSys("testDebugPrint")) {
     ofstream devnull("/dev/null");
-    unit->debugPrint(devnull, 0);
+    m_translationUnit->debugPrint(devnull, 0);
   }
 }
 
 
 void ElsaParse::printTimes()
 {
-  cout << "parse=" << parseTime << "ms"
-       << " tcheck=" << tcheckTime << "ms"
-       << " integ=" << integrityTime << "ms"
-       << " elab=" << elaborationTime << "ms"
+  cout << "parse=" << m_parseTime << "ms"
+       << " tcheck=" << m_tcheckTime << "ms"
+       << " integ=" << m_integrityTime << "ms"
+       << " elab=" << m_elaborationTime << "ms"
        << "\n"
        ;
 }
@@ -574,9 +576,9 @@ void ElsaParse::printTimes()
 
 Type *ElsaParse::getGlobalType(char const *typeName_) const
 {
-  StringRef typeName = strTable.add(typeName_);
+  StringRef typeName = m_stringTable.add(typeName_);
 
-  Variable *var = unit->globalScope->rawLookupVariable(typeName);
+  Variable *var = m_translationUnit->globalScope->rawLookupVariable(typeName);
   if (!var) {
     xfailure(stringb("not in the global scope: " << typeName));
   }
@@ -589,9 +591,9 @@ Type *ElsaParse::getGlobalType(char const *typeName_) const
 
 Variable *ElsaParse::getGlobalVar(char const *varName_) const
 {
-  StringRef varName = strTable.add(varName_);
+  StringRef varName = m_stringTable.add(varName_);
 
-  Variable *var = unit->globalScope->rawLookupVariable(varName);
+  Variable *var = m_translationUnit->globalScope->rawLookupVariable(varName);
   if (!var) {
     xfailure(stringb("not in the global scope: " << varName));
   }

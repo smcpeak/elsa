@@ -35,7 +35,7 @@ public:
 
 string TestASTBuildVisitor::astTypeIdToString(ASTTypeId *astTypeId)
 {
-  CTypePrinter typePrinter(m_elsaParse.lang);
+  CTypePrinter typePrinter(m_elsaParse.m_lang);
   stringBuilder sb;
   StringBuilderOutStream sbos(sb);
   CodeOutStream cos(sbos);
@@ -108,11 +108,11 @@ bool TestASTBuildVisitor::visitASTTypeId(ASTTypeId *originalId)
 void test_astbuild(ElsaParse &elsaParse)
 {
   SourceLocProvider locProvider;
-  ElsaASTBuild astBuild(elsaParse.strTable, elsaParse.m_typeFactory,
+  ElsaASTBuild astBuild(elsaParse.m_stringTable, elsaParse.m_typeFactory,
                         locProvider);
   TestASTBuildVisitor visitor(elsaParse, astBuild);
 
-  elsaParse.unit->traverse(visitor);
+  elsaParse.m_translationUnit->traverse(visitor);
 }
 
 
