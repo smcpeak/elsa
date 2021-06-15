@@ -1,11 +1,11 @@
 // main.cc            see license.txt for copyright and terms of use
 // entry-point module for a program that parses C++
 
-#include "ast_build.h"    // test_astbuild
-#include "elsaparse.h"    // ElsaParse
+#include "ast_build.h"                 // test_astbuild
+#include "elsaparse.h"                 // ElsaParse
 
 // smbase
-#include "ckheap.h"       // malloc_stats
+#include "ckheap.h"                    // malloc_stats
 
 
 static void if_malloc_stats()
