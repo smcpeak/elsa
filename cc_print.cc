@@ -1254,18 +1254,6 @@ void Enumerator::print(PrintEnv &env) const
 }
 
 // -------------------- Declarator --------------------
-void Declarator::print(PrintEnv &env) const
-{
-  printVar(env, var, decl->getDeclaratorId());
-  D_bitfield *b = dynamic_cast<D_bitfield*>(decl);
-  if (b) {
-    env << ':';
-    b->bits->print(env, OPREC_LOWEST);
-  }
-  printInitializerOpt(env, init);
-}
-
-
 void Declarator::detailPrint(PrintEnv &env) const
 {
   decl->detailPrint(env);

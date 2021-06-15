@@ -63,7 +63,6 @@ class Enumerator {
 
 
 class Declarator {
-  public void print(PrintEnv &env) const;
   public void detailPrint(PrintEnv &env) const;
 }
 
