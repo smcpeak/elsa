@@ -763,7 +763,7 @@ void printDeclaration
   // left is the flags that were present in the source
   dflags = (DeclFlags)(dflags & DF_SOURCEFLAGS);
   if (dflags) {
-    *env.out << toString(dflags) << " ";
+    env << toString(dflags) << " ";
   }
 
   // the string name after all of the qualifiers; if this is
@@ -772,13 +772,13 @@ void printDeclaration
 
   if (finalName && streq(finalName, "conversion-operator")) {
     // special syntax for conversion operators; first the keyword
-    *env.out << "operator ";
+    env << "operator ";
 
     // then the return type and the function designator
     TypeLike const *retThing = getDeclarationRetTypeLike(type);
     env.typePrinter.print(*env.out, retThing);
 
-    *env.out << " ()";
+    env << " ()";
   }
 
   else if (finalName && streq(finalName, "constructor-special")) {
@@ -835,7 +835,7 @@ void TF_decl::print(PrintEnv &env)
 void TF_func::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("TF_func");
-  *env.out << endl;
+  env << "\n";
   env.loc = loc;
   f->print(env);
 }
@@ -851,7 +851,7 @@ void TF_explicitInst::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("TF_explicitInst");
   env.loc = loc;
-  *env.out << "template ";
+  env << "template ";
   d->print(env);
 }
 
@@ -859,7 +859,7 @@ void TF_linkage::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("TF_linkage");
   env.loc = loc;
-  *env.out << "extern " << linkageType;
+  env << "extern " << linkageType;
   PairDelim pair(*env.out, "", " {\n", "}\n");
   forms->print(env);
 }
@@ -868,7 +868,7 @@ void TF_one_linkage::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("TF_one_linkage");
   env.loc = loc;
-  *env.out << "extern " << linkageType << " ";
+  env << "extern " << linkageType << " ";
   form->print(env);
 }
 
@@ -876,18 +876,18 @@ void TF_asm::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("TF_asm");
   env.loc = loc;
-  *env.out << "asm(" << text << ");\n";
+  env << "asm(" << text << ");\n";
 }
 
 void TF_namespaceDefn::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("TF_namespaceDefn");
   env.loc = loc;
-  *env.out << "namespace " << (name? name : "/*anon*/") << " {\n";
+  env << "namespace " << (name? name : "/*anon*/") << " {\n";
   FOREACH_ASTLIST_NC(TopForm, forms, iter) {
     iter.data()->print(env);
   }
-  *env.out << "} /""* namespace " << (name? name : "(anon)") << " */\n";
+  env << "} /""* namespace " << (name? name : "(anon)") << " */\n";
 }
 
 void TF_namespaceDecl::print(PrintEnv &env)
@@ -975,7 +975,7 @@ static void printTypeSpecifierAndDeclarator(
   if (!ideclaratorIsDestructor(declarator->decl)) {
     spec->detailPrint(env);
     if (ideclaratorWantsSpace(spec, declarator->decl)) {
-      *env.out << " ";
+      env << " ";
     }
   }
   declarator->detailPrint(env);
@@ -991,47 +991,47 @@ void Function::print(PrintEnv &env)
 
   DeclFlags sourceFlags = dflags & DF_SOURCEFLAGS;
   if (sourceFlags) {
-    *env.out << toString(sourceFlags) << " ";
+    env << toString(sourceFlags) << " ";
   }
   printTypeSpecifierAndDeclarator(env, retspec, nameAndParams);
 
   if (instButNotTchecked()) {
     // this is an unchecked instantiation
-    *env.out << "; // not instantiated\n";
+    env << "; // not instantiated\n";
     return;
   }
 
-  *env.out << "\n";
+  env << "\n";
   if (handlers) {
-    *env.out << "try";
+    env << "try";
     if (inits) {
       // Newline before member inits.
-      *env.out << "\n";
+      env << "\n";
     }
     else {
       // Space before opening brace.
-      *env.out << " ";
+      env << " ";
     }
   }
 
   if (inits) {
-    *env.out << "  : ";
+    env << "  : ";
     bool first_time = true;
     FAKELIST_FOREACH_NC(MemberInit, inits, iter) {
       if (first_time) first_time = false;
-      else *env.out << ",\n    ";
+      else env << ",\n    ";
       // NOTE: eventually will be able to figure out if we are
       // initializing a base class or a member variable.  There will
       // be a field added to class MemberInit that will say.
       PairDelim pair(*env.out, iter->name->toString(), "(", ")");
       printArgExprList(env, iter->args);
     }
-    *env.out << "\n";
+    env << "\n";
   }
 
   if (body->stmts.isEmpty()) {
     // more concise
-    *env.out << "{}\n";
+    env << "{}\n";
   }
   else {
     body->print(env);
@@ -1041,7 +1041,7 @@ void Function::print(PrintEnv &env)
     FAKELIST_FOREACH_NC(Handler, handlers, iter) {
       iter->print(env);
     }
-    *env.out << "\n";
+    env << "\n";
   }
 }
 
@@ -1055,21 +1055,21 @@ void Declaration::print(PrintEnv &env)
 
   DeclFlags sourceFlags = dflags & DF_SOURCEFLAGS;
   if (sourceFlags) {
-    *env.out << toString(sourceFlags) << " ";
+    env << toString(sourceFlags) << " ";
   }
 
   spec->detailPrint(env);
 
   FAKELIST_FOREACH_NC(Declarator, decllist, declarator) {
     if (declarator != fl_first(decllist)) {
-      *env.out << ", ";
+      env << ", ";
     }
     else if (ideclaratorWantsSpace(spec, declarator->decl)) {
-      *env.out << " ";
+      env << " ";
     }
     declarator->detailPrint(env);
   }
-  *env.out << ";\n";
+  env << ";\n";
 }
 
 
@@ -1089,7 +1089,7 @@ void printInitializerOpt(PrintEnv &env, Initializer /*nullable*/ *init)
         ctor->print(env);       // NOTE: You can NOT factor this line out of the if!
       }
     } else {
-      *env.out << " = ";
+      env << " = ";
       init->print(env);         // Don't pull this out!
     }
   }
@@ -1111,7 +1111,7 @@ void printTemplateArgumentList
   while (args) {
     if (!args->isTA_templateUsed()) {
       if (ct++ > 0) {
-        *env.out << ',' << ' ';
+        env << ',' << ' ';
       }
       args->print(env);
     }
@@ -1123,18 +1123,18 @@ void printTemplateArgumentList
 void PQ_qualifier::print(PrintEnv &env)
 {
   if (templateUsed()) {
-    *env.out << "template ";
+    env << "template ";
   }
 
   if (qualifier) {
-    *env.out << qualifier;
+    env << qualifier;
     if (templArgs/*isNotEmpty*/) {
-      *env.out << '<';
+      env << '<';
       printTemplateArgumentList(env, templArgs);
-      *env.out << '>';
+      env << '>';
     }
   }
-  *env.out << ':' << ':';
+  env << ':' << ':';
 
   rest->print(env);
 }
@@ -1146,7 +1146,7 @@ void PQ_name::print(PrintEnv &env)
     // Do not print the name.
   }
   else {
-    *env.out << name;
+    env << name;
   }
 }
 
@@ -1158,12 +1158,12 @@ void PQ_operator::print(PrintEnv &env)
 void PQ_template::print(PrintEnv &env)
 {
   if (templateUsed()) {
-    *env.out << "template ";
+    env << "template ";
   }
 
-  *env.out << name << '<';
+  env << name << '<';
   printTemplateArgumentList(env, templArgs);
-  *env.out << '>';
+  env << '>';
 }
 
 
@@ -1172,7 +1172,7 @@ void TS_name::print(PrintEnv &env)
 {
   xassert(0);                   // I'll bet this is never called.
 //    TreeWalkDebug treeDebug("TS_name");
-//    *env.out << toString(ql);          // see string toString(class dummyType*) above
+//    env << toString(ql);          // see string toString(class dummyType*) above
 //    name->print(env);
 }
 
@@ -1180,32 +1180,32 @@ void TS_simple::print(PrintEnv &env)
 {
   xassert(0);                   // I'll bet this is never called.
 //    TreeWalkDebug treeDebug("TS_simple");
-//    *env.out << toString(ql);          // see string toString(class dummyType*) above
+//    env << toString(ql);          // see string toString(class dummyType*) above
 }
 
 void TS_elaborated::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("TS_elaborated");
   env.loc = loc;
-  *env.out << toString(ql);          // see string toString(class dummyType*) above
-  *env.out << toString(keyword) << ' ';
+  env << toString(ql);          // see string toString(class dummyType*) above
+  env << toString(keyword) << ' ';
   name->print(env);
 }
 
 void TS_classSpec::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("TS_classSpec");
-  *env.out << toString(ql);          // see string toString(class dummyType*) above
-  *env.out << toString(cv);
-  *env.out << toString(keyword) << ' ';
-  if (name) *env.out << name->toString();
+  env << toString(ql);          // see string toString(class dummyType*) above
+  env << toString(cv);
+  env << toString(keyword) << ' ';
+  if (name) env << name->toString();
   bool first_time = true;
   FAKELIST_FOREACH_NC(BaseClassSpec, bases, iter) {
     if (first_time) {
-      *env.out << ' ' << ':' << ' ';
+      env << ' ' << ':' << ' ';
       first_time = false;
     }
-    else *env.out << ',' << ' ';
+    else env << ',' << ' ';
     iter->print(env);
   }
   PairDelim pair(*env.out, " ", "{\n", "}");
@@ -1217,14 +1217,14 @@ void TS_classSpec::print(PrintEnv &env)
 void TS_enumSpec::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("TS_enumSpec");
-  *env.out << toString(ql);          // see string toString(class dummyType*) above
-  *env.out << toString(cv);
-  *env.out << "enum ";
-  if (name) *env.out << name;
+  env << toString(ql);          // see string toString(class dummyType*) above
+  env << toString(cv);
+  env << "enum ";
+  if (name) env << name;
   PairDelim pair(*env.out, "", "{\n", "}");
   FAKELIST_FOREACH_NC(Enumerator, elts, iter) {
     iter->print(env);
-    *env.out << "\n";
+    env << "\n";
   }
 }
 
@@ -1233,7 +1233,7 @@ void TypeSpecifier::detailPrint(PrintEnv &env)
 {
   idetailPrint(env);
   if (cv) {
-    *env.out << " " << toString(cv);
+    env << " " << toString(cv);
   }
 }
 
@@ -1241,7 +1241,7 @@ void TypeSpecifier::detailPrint(PrintEnv &env)
 void TS_name::idetailPrint(PrintEnv &env)
 {
   if (typenameUsed) {
-    *env.out << "typename ";
+    env << "typename ";
   }
   name->print(env);
 }
@@ -1250,14 +1250,14 @@ void TS_name::idetailPrint(PrintEnv &env)
 void TS_simple::idetailPrint(PrintEnv &env)
 {
   if (id != ST_CDTOR) {
-    *env.out << toString(id);
+    env << toString(id);
   }
 }
 
 
 void TS_elaborated::idetailPrint(PrintEnv &env)
 {
-  *env.out << toString(keyword) << " ";
+  env << toString(keyword) << " ";
   name->print(env);
 }
 
@@ -1278,9 +1278,9 @@ void TS_enumSpec::idetailPrint(PrintEnv &env)
 // ---------------------- BaseClassSpec ----------------------
 void BaseClassSpec::print(PrintEnv &env) {
   TreeWalkDebug treeDebug("BaseClassSpec");
-  if (isVirtual) *env.out << "virtual ";
-  if (access!=AK_UNSPECIFIED) *env.out << toString(access) << " ";
-  *env.out << name->toString();
+  if (isVirtual) env << "virtual ";
+  if (access!=AK_UNSPECIFIED) env << toString(access) << " ";
+  env << name->toString();
 }
 
 
@@ -1306,7 +1306,7 @@ void MR_access::print(PrintEnv &env)
   // Print access specifiers un-intended.
   env.out->up();
 
-  *env.out << toString(k) << ":\n";
+  env << toString(k) << ":\n";
 
   env.out->down();
 }
@@ -1328,12 +1328,12 @@ void MR_template::print(PrintEnv &env)
 void Enumerator::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("Enumerator");
-  *env.out << name;
+  env << name;
   if (expr) {
-    *env.out << '=';
+    env << '=';
     expr->print(env, OPREC_ASSIGN);
   }
-  *env.out << ',' << ' ';
+  env << ',' << ' ';
 }
 
 // -------------------- Declarator --------------------
@@ -1344,7 +1344,7 @@ void Declarator::print(PrintEnv &env)
   printVar(env, var, decl->getDeclaratorId());
   D_bitfield *b = dynamic_cast<D_bitfield*>(decl);
   if (b) {
-    *env.out << ':';
+    env << ':';
     b->bits->print(env, OPREC_LOWEST);
   }
   printInitializerOpt(env, init);
@@ -1369,9 +1369,9 @@ void D_name::detailPrint(PrintEnv &env)
 
 void D_pointer::detailPrint(PrintEnv &env)
 {
-  *env.out << "*";
+  env << "*";
   if (cv) {
-    *env.out << " " << toString(cv) << " ";
+    env << " " << toString(cv) << " ";
   }
   base->detailPrint(env);
 }
@@ -1379,7 +1379,7 @@ void D_pointer::detailPrint(PrintEnv &env)
 
 void D_reference::detailPrint(PrintEnv &env)
 {
-  *env.out << "&";
+  env << "&";
   base->detailPrint(env);
 }
 
@@ -1387,23 +1387,23 @@ void D_reference::detailPrint(PrintEnv &env)
 void D_func::detailPrint(PrintEnv &env)
 {
   base->detailPrint(env);
-  *env.out << "(";
+  env << "(";
 
   FAKELIST_FOREACH_NC(ASTTypeId, params, param) {
     param->print(env);
     if (param->next) {
-      *env.out << ", ";
+      env << ", ";
     }
   }
 
-  *env.out << ")";
+  env << ")";
 
   if (cv) {
-    *env.out << " " << toString(cv);
+    env << " " << toString(cv);
   }
 
   if (exnSpec) {
-    *env.out << " ";
+    env << " ";
     exnSpec->print(env);
   }
 }
@@ -1412,11 +1412,11 @@ void D_func::detailPrint(PrintEnv &env)
 void D_array::detailPrint(PrintEnv &env)
 {
   base->detailPrint(env);
-  *env.out << "[";
+  env << "[";
   if (size) {
     size->print(env, OPREC_LOWEST);
   }
-  *env.out << "]";
+  env << "]";
 }
 
 
@@ -1426,7 +1426,7 @@ void D_bitfield::detailPrint(PrintEnv &env)
     name->print(env);
   }
 
-  *env.out << " : ";
+  env << " : ";
 
   bits->print(env, OPREC_LOWEST);
 }
@@ -1435,9 +1435,9 @@ void D_bitfield::detailPrint(PrintEnv &env)
 void D_ptrToMember::detailPrint(PrintEnv &env)
 {
   nestedName->print(env);
-  *env.out << "::*";
+  env << "::*";
   if (cv) {
-    *env.out << " " << toString(cv) << " ";
+    env << " " << toString(cv) << " ";
   }
   base->detailPrint(env);
 }
@@ -1450,9 +1450,9 @@ void D_grouping::detailPrint(PrintEnv &env)
   // need for that, and I'm concerned it might be complicated due to the
   // possibility of introducing ambiguities with the expression syntax.
 
-  *env.out << "(";
+  env << "(";
   base->detailPrint(env);
-  *env.out << ")";
+  env << ")";
 }
 
 
@@ -1460,21 +1460,21 @@ void D_grouping::detailPrint(PrintEnv &env)
 void ExceptionSpec::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("ExceptionSpec");
-  *env.out << "throw(";
+  env << "throw(";
   FAKELIST_FOREACH_NC(ASTTypeId, types, iter) {
     if (iter != fl_first(types)) {
-      *env.out << ", ";
+      env << ", ";
     }
     iter->print(env);
   }
-  *env.out << ")";
+  env << ")";
 }
 
 
 // ---------------------- OperatorName ---------------------
 void ON_newDel::print(PrintEnv &env)
 {
-  *env.out << "operator "
+  env << "operator "
            << (isNew? "new" : "delete")
            << (isArray? "[]" : "");
 }
@@ -1482,13 +1482,13 @@ void ON_newDel::print(PrintEnv &env)
 
 void ON_operator::print(PrintEnv &env)
 {
-  *env.out << "operator" << toString(op);
+  env << "operator" << toString(op);
 }
 
 
 void ON_conversion::print(PrintEnv &env)
 {
-  *env.out << "operator ";
+  env << "operator ";
   type->print(env);
 }
 
@@ -1499,36 +1499,36 @@ void Statement::print(PrintEnv &env)
   TreeWalkDebug treeDebug("Statement");
   env.loc = loc;
   iprint(env);
-  //    *env.out << ";\n";
+  //    env << ";\n";
 }
 
 // no-op
 void S_skip::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_skip::iprint");
-  *env.out << ";\n";
+  env << ";\n";
 }
 
 void S_label::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_label::iprint");
-  *env.out << name << ':';
+  env << name << ':';
   s->print(env);
 }
 
 void S_case::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_case::iprint");
-  *env.out << "case";
+  env << "case";
   expr->print(env, OPREC_LOWEST);
-  *env.out << ':';
+  env << ':';
   s->print(env);
 }
 
 void S_default::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_default::iprint");
-  *env.out << "default:";
+  env << "default:";
   s->print(env);
 }
 
@@ -1536,7 +1536,7 @@ void S_expr::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_expr::iprint");
   expr->print(env);
-  *env.out << ";\n";
+  env << ";\n";
 }
 
 void S_compound::iprint(PrintEnv &env)
@@ -1556,7 +1556,7 @@ void S_if::iprint(PrintEnv &env)
     cond->print(env);
   }
   thenBranch->print(env);
-  *env.out << "else ";
+  env << "else ";
   elseBranch->print(env);
 }
 
@@ -1591,7 +1591,7 @@ void S_doWhile::iprint(PrintEnv &env)
     PairDelim pair(*env.out, "while ", "(", ")");
     expr->print(env);
   }
-  *env.out << ";\n";
+  env << ";\n";
 }
 
 void S_for::iprint(PrintEnv &env)
@@ -1601,9 +1601,9 @@ void S_for::iprint(PrintEnv &env)
     PairDelim pair(*env.out, "for ", "(", ")");
     init->print(env);
     // this one not needed as the declaration provides one
-    //          *env.out << ";";
+    //          env << ";";
     cond->print(env);
-    *env.out << ';';
+    env << ';';
     after->print(env);
   }
   body->print(env);
@@ -1612,24 +1612,24 @@ void S_for::iprint(PrintEnv &env)
 void S_break::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_break::iprint");
-  *env.out << "break;\n";
+  env << "break;\n";
 }
 
 void S_continue::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_continue::iprint");
-  *env.out << "continue;\n";
+  env << "continue;\n";
 }
 
 void S_return::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_return::iprint");
-  *env.out << "return";
+  env << "return";
   if (expr) {
-    *env.out << " ";
+    env << " ";
     expr->print(env);
   }
-  *env.out << ";\n";
+  env << ";\n";
 }
 
 void S_goto::iprint(PrintEnv &env)
@@ -1637,22 +1637,22 @@ void S_goto::iprint(PrintEnv &env)
   // dsw: When doing a control-flow pass, keep a current function so
   // we know where to look for the label.
   TreeWalkDebug treeDebug("S_goto::iprint");
-  *env.out << "goto ";
-  *env.out << target;
-  *env.out << ";\n";
+  env << "goto ";
+  env << target;
+  env << ";\n";
 }
 
 void S_decl::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_decl::iprint");
   decl->print(env);
-  //      *env.out << ";\n";
+  //      env << ";\n";
 }
 
 void S_try::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_try::iprint");
-  *env.out << "try";
+  env << "try";
   body->print(env);
   FAKELIST_FOREACH_NC(Handler, handlers, iter) {
     iter->print(env);
@@ -1662,7 +1662,7 @@ void S_try::iprint(PrintEnv &env)
 void S_asm::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_asm::iprint");
-  *env.out << "asm(" << text << ");\n";
+  env << "asm(" << text << ");\n";
 }
 
 void S_namespaceDecl::iprint(PrintEnv &env)
@@ -1697,7 +1697,7 @@ void Handler::print(PrintEnv &env)
   {
     PairDelim pair(*env.out, "catch ", "(", ") ");
     if (isEllipsis()) {
-      *env.out << "...";
+      env << "...";
     }
     else {
       typeId->print(env);
@@ -1797,7 +1797,7 @@ int expr_debugPrint(Expression const *e)
 void E_boolLit::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_boolLit::iprint");
-  *env.out << b;
+  env << b;
 }
 
 OperatorPrecedence E_boolLit::getPrecedence() const
@@ -1811,8 +1811,8 @@ void E_intLit::iprint(PrintEnv &env)
   TreeWalkDebug treeDebug("E_intLit::iprint");
   // FIX: do this correctly from the internal representation
   // fails to print the trailing U for an unsigned int.
-//    *env.out << i;
-  *env.out << text;
+//    env << i;
+  env << text;
 }
 
 OperatorPrecedence E_intLit::getPrecedence() const
@@ -1827,10 +1827,10 @@ void E_floatLit::iprint(PrintEnv &env)
   // FIX: do this correctly from the internal representation
   // this fails to print ".0" for a float/double that happens to lie
   // on an integer boundary
-//    *env.out << d;
+//    env << d;
   // doing it this way also preserves the trailing "f" for float
   // literals
-  *env.out << text;
+  env << text;
 }
 
 OperatorPrecedence E_floatLit::getPrecedence() const
@@ -1845,10 +1845,10 @@ void E_stringLit::iprint(PrintEnv &env)
 
   E_stringLit *p = this;
   while (p) {
-    *env.out << p->text;
+    env << p->text;
     p = p->continuation;
     if (p) {
-      *env.out << ' ';
+      env << ' ';
     }
   }
 }
@@ -1862,7 +1862,7 @@ OperatorPrecedence E_stringLit::getPrecedence() const
 void E_charLit::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_charLit::iprint");
-  *env.out << text;
+  env << text;
 }
 
 OperatorPrecedence E_charLit::getPrecedence() const
@@ -1874,7 +1874,7 @@ OperatorPrecedence E_charLit::getPrecedence() const
 void E_this::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_this::iprint");
-  *env.out << "this";
+  env << "this";
 }
 
 OperatorPrecedence E_this::getPrecedence() const
@@ -1889,7 +1889,7 @@ void printSTemplateArgument(PrintEnv &env, STemplateArgument const *sta)
   switch (sta->kind) {
     default: xfailure("bad kind");
     case STemplateArgument::STA_NONE:
-      *env.out << string("STA_NONE");
+      env << string("STA_NONE");
       break;
     case STemplateArgument::STA_TYPE:
       {
@@ -1902,19 +1902,19 @@ void printSTemplateArgument(PrintEnv &env, STemplateArgument const *sta)
       }
       break;
     case STemplateArgument::STA_INT:
-      *env.out << stringc << "/*int*/ " << sta->value.i;
+      env << stringc << "/*int*/ " << sta->value.i;
       break;
     case STemplateArgument::STA_ENUMERATOR:
-      *env.out << stringc << "/*enum*/ " << sta->value.v->name;
+      env << stringc << "/*enum*/ " << sta->value.v->name;
       break;
     case STemplateArgument::STA_REFERENCE:
-      *env.out << stringc << "/*ref*/ " << sta->value.v->name;
+      env << stringc << "/*ref*/ " << sta->value.v->name;
       break;
     case STemplateArgument::STA_POINTER:
-      *env.out << stringc << "/*ptr*/ &" << sta->value.v->name;
+      env << stringc << "/*ptr*/ &" << sta->value.v->name;
       break;
     case STemplateArgument::STA_MEMBER:
-      *env.out << stringc
+      env << stringc
               << "/*member*/ &" << sta->value.v->scope->curCompound->name
               << "::" << sta->value.v->name;
       break;
@@ -1924,10 +1924,10 @@ void printSTemplateArgument(PrintEnv &env, STemplateArgument const *sta)
       sta->getDepExpr()->print(env, OPREC_RELATIONAL);
       break;
     case STemplateArgument::STA_TEMPLATE:
-      *env.out << string("template (?)");
+      env << string("template (?)");
       break;
     case STemplateArgument::STA_ATOMIC:
-      *env.out << sta->value.at->toString();
+      env << sta->value.at->toString();
       break;
   }
 }
@@ -1959,15 +1959,15 @@ void printTemplateArgs(PrintEnv &env, Variable *var)
   for (int i=0; i < (totArgs-args); i++) {
     iter.adv();
   }
-  *env.out << '<';
+  env << '<';
   int ct=0;
   for (; !iter.isDone(); iter.adv()) {
     if (ct++ > 0) {
-      *env.out << ',' << ' ';
+      env << ',' << ' ';
     }
     printSTemplateArgument(env, iter.data());
   }
-  *env.out << '>';
+  env << '>';
 }
 
 void E_variable::iprint(PrintEnv &env)
@@ -1983,7 +1983,7 @@ void E_variable::iprint(PrintEnv &env)
     var->value->print(env, OPREC_HIGHEST);
   }
   else {
-    *env.out << name->qualifierString() << name->getName();
+    env << name->qualifierString() << name->getName();
     printTemplateArgs(env, var);
   }
 }
@@ -2000,7 +2000,7 @@ void printArgExprList(PrintEnv &env, FakeList<ArgExpression> *list)
   bool first_time = true;
   FAKELIST_FOREACH_NC(ArgExpression, list, iter) {
     if (first_time) first_time = false;
-    else *env.out << ',' << ' ';
+    else env << ',' << ' ';
     iter->expr->print(env, OPREC_COMMA);
   }
 }
@@ -2046,23 +2046,23 @@ void printVariableName(PrintEnv &env, Variable *var)
   if (var->type->isFunctionType() &&
       var->type->asFunctionType()->isConversionOperator()) {
     // the name is just "conversion-operator", so print differently
-    *env.out << "/""*conversion*/operator(";
+    env << "/""*conversion*/operator(";
     Type *t = var->type->asFunctionType()->retType;
     Restorer<bool> res0(CTypePrinter::enabled, true);
     env.typePrinter.print(*env.out, t);
-    *env.out << ')';
+    env << ')';
     return;
   }
 
   // normal case
-  *env.out << var->name;
+  env << var->name;
 }
 
 void E_fieldAcc::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_fieldAcc::iprint");
   obj->print(env, this->getPrecedence());
-  *env.out << '.';
+  env << '.';
   if (field &&
       !field->type->isDependent()) {
     printVariableName(env, field);
@@ -2077,7 +2077,7 @@ void E_fieldAcc::iprint(PrintEnv &env)
     // any event when checking the template *itself* (as
     // opposed to an instantiation) we never have enough
     // information to fill in all the variable references..
-    *env.out << fieldName->toString();
+    env << fieldName->toString();
   }
 }
 
@@ -2094,7 +2094,7 @@ void E_arrow::iprint(PrintEnv &env)
   // E_arrow shouldn't normally be present in code that is to be
   // prettyprinted, so it doesn't much matter what this does.
   obj->print(env, this->getPrecedence());
-  *env.out << "->";
+  env << "->";
   fieldName->print(env);
 }
 
@@ -2108,9 +2108,9 @@ void E_sizeof::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_sizeof::iprint");
 
-  *env.out << "sizeof(";
+  env << "sizeof(";
   expr->print(env, OPREC_LOWEST);
-  *env.out << ")";
+  env << ")";
 }
 
 OperatorPrecedence E_sizeof::getPrecedence() const
@@ -2124,7 +2124,7 @@ OperatorPrecedence E_sizeof::getPrecedence() const
 void E_unary::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_unary::iprint");
-  *env.out << toString(op);
+  env << toString(op);
   expr->print(env, this->getPrecedence());
 }
 
@@ -2143,9 +2143,9 @@ OperatorPrecedence E_unary::getPrecedence() const
 void E_effect::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_effect::iprint");
-  if (!isPostfix(op)) *env.out << toString(op);
+  if (!isPostfix(op)) env << toString(op);
   expr->print(env, this->getPrecedence());
-  if (isPostfix(op)) *env.out << toString(op);
+  if (isPostfix(op)) env << toString(op);
 }
 
 OperatorPrecedence E_effect::getPrecedence() const
@@ -2208,13 +2208,13 @@ void E_binary::iprint(PrintEnv &env)
       e2Prec   >= OPREC_SHIFT;
 
     if (op != BIN_COMMA && shiftOrLower) {
-      *env.out << " ";
+      env << " ";
     }
 
-    *env.out << toString(op);
+    env << toString(op);
 
     if (shiftOrLower) {
-      *env.out << " ";
+      env << " ";
     }
 
     if (bothGray(thisPrec, e2Prec)) {
@@ -2227,9 +2227,9 @@ void E_binary::iprint(PrintEnv &env)
   }
 
   else {
-    *env.out << "[";
+    env << "[";
     e2->print(env, OPREC_LOWEST);
-    *env.out << "]";
+    env << "]";
   }
 }
 
@@ -2283,7 +2283,7 @@ OperatorPrecedence E_binary::getPrecedence() const
 void E_addrOf::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_addrOf::iprint");
-  *env.out << "&";
+  env << "&";
   if (expr->isE_variable()) {
     // could be forming ptr-to-member, do not parenthesize
     expr->iprint(env);
@@ -2302,7 +2302,7 @@ OperatorPrecedence E_addrOf::getPrecedence() const
 void E_deref::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_deref::iprint");
-  *env.out << "*";
+  env << "*";
   ptr->print(env, this->getPrecedence());
 }
 
@@ -2337,13 +2337,13 @@ void E_cond::iprint(PrintEnv &env)
   cond->print(env, this->getPrecedence());
 
   if (th) {
-    *env.out << "? ";
+    env << "? ";
     th->print(env, this->getPrecedence());
-    *env.out << " : ";
+    env << " : ";
   }
   else {
     // GNU binary conditional.
-    *env.out << " ?: ";
+    env << " ?: ";
   }
 
   el->print(env, this->getPrecedence());
@@ -2374,11 +2374,11 @@ void E_assign::iprint(PrintEnv &env)
 
   target->print(env, this->getPrecedence());
 
-  *env.out << " ";
+  env << " ";
   if (op != BIN_ASSIGN) {
-    *env.out << toString(op);
+    env << toString(op);
   }
-  *env.out << "= ";
+  env << "= ";
 
   src->print(env, this->getPrecedence());
 }
@@ -2392,8 +2392,8 @@ OperatorPrecedence E_assign::getPrecedence() const
 void E_new::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_new::iprint");
-  if (colonColon) *env.out << "::";
-  *env.out << "new ";
+  if (colonColon) env << "::";
+  env << "new ";
   if (placementArgs) {
     PairDelim pair(*env.out, "", "(", ")");
     printArgExprList(env, placementArgs);
@@ -2417,9 +2417,9 @@ void E_new::iprint(PrintEnv &env)
     //   arraySize->print()                is "n"
     //   "array of 5 ints"->rightString()  is "[5]"
     Type const *t = atype->decl->var->type;   // type-id in question
-    *env.out << t->leftString() << "[";
+    env << t->leftString() << "[";
     arraySize->print(env, OPREC_LOWEST);
-    *env.out << "]" << t->rightString();
+    env << "]" << t->rightString();
   }
 
   if (ctorArgs) {
@@ -2437,15 +2437,15 @@ OperatorPrecedence E_new::getPrecedence() const
 void E_delete::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_delete::iprint");
-  if (colonColon) *env.out << "::";
-  *env.out << "delete";
-  if (array) *env.out << "[]";
+  if (colonColon) env << "::";
+  env << "delete";
+  if (array) env << "[]";
 
   // There was previously a comment here claiming that 'expr' could be
   // NULL, but that makes no sense.
   xassert(expr);
 
-  *env.out << " ";
+  env << " ";
   expr->print(env, this->getPrecedence());
 }
 
@@ -2458,9 +2458,9 @@ OperatorPrecedence E_delete::getPrecedence() const
 void E_throw::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_throw::iprint");
-  *env.out << "throw";
+  env << "throw";
   if (expr) {
-    *env.out << " ";
+    env << " ";
     expr->print(env, this->getPrecedence());
   }
 }
@@ -2475,7 +2475,7 @@ OperatorPrecedence E_throw::getPrecedence() const
 void E_keywordCast::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_keywordCast::iprint");
-  *env.out << toString(key);
+  env << toString(key);
   {
     PairDelim pair(*env.out, "", "<", ">");
     ctype->print(env);
@@ -2543,7 +2543,7 @@ void E_implicitStandardConversion::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_implicitStandardConversion::iprint");
 
-  *env.out << "/*ISC:" << type->toString() << "*/";
+  env << "/*ISC:" << type->toString() << "*/";
   expr->iprint(env);
 }
 
@@ -2575,7 +2575,7 @@ void IN_compound::print(PrintEnv &env)
   bool first_time = true;
   FOREACH_ASTLIST_NC(Initializer, inits, iter) {
     if (first_time) first_time = false;
-    else *env.out << ",\n";
+    else env << ",\n";
     iter.data()->print(env);
   }
 }
@@ -2593,15 +2593,15 @@ void TemplateDeclaration::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("TemplateDeclaration");
 
-  *env.out << "template <";
+  env << "template <";
   int ct=0;
   for (TemplateParameter *iter = params; iter; iter = iter->next) {
     if (ct++ > 0) {
-      *env.out << ", ";
+      env << ", ";
     }
     iter->print(env);
   }
-  *env.out << ">\n";
+  env << ">\n";
 
   iprint(env);
 }
@@ -2615,7 +2615,7 @@ void printFuncInstantiations(PrintEnv &env, Variable const *var)
       inst->funcDefn->print(env);
     }
     else {
-      *env.out << inst->toQualifiedString() << ";    // decl but not defn\n";
+      env << inst->toQualifiedString() << ";    // decl but not defn\n";
     }
   }
 }
@@ -2629,12 +2629,12 @@ void TD_func::iprint(PrintEnv &env)
   Variable *var = f->nameAndParams->var;
   if (var->isTemplate() &&      // for complete specializations, don't print
       !var->templateInfo()->isPartialInstantiation()) {     // nor partial inst
-    *env.out << "#if 0    // instantiations of ";
+    env << "#if 0    // instantiations of ";
     // NOTE: inlined from Variable::toCString()
 
     TypeLike const *type0 = env.getTypeLike(var);
     env.typePrinter.print(*env.out, type0, (var->name? var->name : "/*anon*/"));
-    *env.out << var->namePrintSuffix() << "\n";
+    env << var->namePrintSuffix() << "\n";
     printFuncInstantiations(env, var);
 
     TemplateInfo *varTI = var->templateInfo();
@@ -2651,7 +2651,7 @@ void TD_func::iprint(PrintEnv &env)
       }
     }
 
-    *env.out << "#endif   // instantiations of " << var->name << "\n\n";
+    env << "#endif   // instantiations of " << var->name << "\n\n";
   }
 }
 
@@ -2664,25 +2664,25 @@ void TD_decl::iprint(PrintEnv &env)
     CompoundType *ct = d->spec->asTS_classSpec()->ctype;
     TemplateInfo *ti = ct->typedefVar->templateInfo();
     if (!ti->isCompleteSpec()) {
-      *env.out << "#if 0    // instantiations of " << ct->name << "\n";
+      env << "#if 0    // instantiations of " << ct->name << "\n";
 
       SFOREACH_OBJLIST(Variable, ti->instantiations, iter) {
         Variable const *instV = iter.data();
 
-        *env.out << "// ";
+        env << "// ";
         TypeLike const *type0 = env.getTypeLike(instV);
         env.typePrinter.print(*env.out, type0);
         CompoundType *instCT = instV->type->asCompoundType();
         if (instCT->syntax) {
-          *env.out << "\n";
+          env << "\n";
           instCT->syntax->print(env);
-          *env.out << ";\n";
+          env << ";\n";
         }
         else {
-          *env.out << ";     // body not instantiated\n";
+          env << ";     // body not instantiated\n";
         }
       }
-      *env.out << "#endif   // instantiations of " << ct->name << "\n\n";
+      env << "#endif   // instantiations of " << ct->name << "\n\n";
     }
   }
   else {
@@ -2701,10 +2701,10 @@ void TD_tmember::iprint(PrintEnv &env)
 void TP_type::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("TP_type");
-  *env.out << "class " << (name? name : "/*anon*/");
+  env << "class " << (name? name : "/*anon*/");
 
   if (defaultType) {
-    *env.out << " = ";
+    env << " = ";
     defaultType->print(env);
   }
 }
@@ -2741,23 +2741,23 @@ void TA_templateUsed::print(PrintEnv &env)
 // -------------------- NamespaceDecl ---------------------
 void ND_alias::print(PrintEnv &env)
 {
-  *env.out << "namespace " << alias << " = ";
+  env << "namespace " << alias << " = ";
   original->print(env);
-  *env.out << ";\n";
+  env << ";\n";
 }
 
 void ND_usingDecl::print(PrintEnv &env)
 {
-  *env.out << "using ";
+  env << "using ";
   name->print(env);
-  *env.out << ";\n";
+  env << ";\n";
 }
 
 void ND_usingDir::print(PrintEnv &env)
 {
-  *env.out << "using namespace ";
+  env << "using namespace ";
   name->print(env);
-  *env.out << ";\n";
+  env << ";\n";
 }
 
 
