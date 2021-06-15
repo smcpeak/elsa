@@ -18,24 +18,24 @@ void f()
 class C {
 public:
   int m_x;
-  inline void g(int)
+  void g(int)
   {
     void (C::*ptmFunc)(int) = &C::g;
     int C::*ptmData = &C::m_x;
     int C::* const ptmData2 = &C::m_x;
     int const C::* const ptmData3 = &C::m_x;
   }
-  inline C()
+  C()
   {}
-  inline C(C const &__other)
+  C(C const &__other)
     : m_x(__other.m_x)
   {}
-  inline C &operator=(C const &__other)
+  C &operator=(C const &__other)
   {
     (*this).m_x = __other.m_x;
     return *this;
   }
-  inline ~C()
+  ~C()
   {}
 };
 ---- STOP ----

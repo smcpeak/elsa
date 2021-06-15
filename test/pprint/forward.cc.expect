@@ -13,17 +13,17 @@ void f(Foo *)
 class Foo {
 public:
   int x;
-  inline Foo()
+  Foo()
   {}
-  inline Foo(Foo const &__other)
+  Foo(Foo const &__other)
     : x(__other.x)
   {}
-  inline Foo &operator=(Foo const &__other)
+  Foo &operator=(Foo const &__other)
   {
     (*this).x = __other.x;
     return *this;
   }
-  inline ~Foo()
+  ~Foo()
   {}
 };
 

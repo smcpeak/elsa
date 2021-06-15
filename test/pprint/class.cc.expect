@@ -2,15 +2,15 @@
 ---- START ----
 // -*-c++-*-
 class C {
-  inline C()
+  C()
   {}
-  inline C(C const &__other)
+  C(C const &__other)
   {}
-  inline C &operator=(C const &__other)
+  C &operator=(C const &__other)
   {
     return *this;
   }
-  inline ~C()
+  ~C()
   {}
 };
 ---- STOP ----

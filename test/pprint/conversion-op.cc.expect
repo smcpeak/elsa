@@ -4,15 +4,15 @@
 class B {
 public:
   operator int();
-  inline B()
+  B()
   {}
-  inline B(B const &__other)
+  B(B const &__other)
   {}
-  inline B &operator=(B const &__other)
+  B &operator=(B const &__other)
   {
     return *this;
   }
-  inline ~B()
+  ~B()
   {}
 };
 ---- STOP ----

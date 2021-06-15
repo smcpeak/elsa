@@ -22,7 +22,9 @@ class TopForm {
 
 
 class Function {
-  public void print(PrintEnv &env) const;
+  // When printing the function, suppress printing any DeclFlags that
+  // are not in 'declFlagMask'.
+  public void print(PrintEnv &env, DeclFlags declFlagsMask = ALL_DECLFLAGS) const;
 }
 
 

@@ -836,13 +836,13 @@ static void printTypeSpecifierAndDeclarator(
   declarator->print(env);
 }
 
-void Function::print(PrintEnv &env) const
+void Function::print(PrintEnv &env, DeclFlags declFlagsMask) const
 {
   // TODO: Remove this stuff.
   TypeLike const *type0 = env.typePrinter.getFunctionTypeLike(this);
   Restorer<bool> res0(CTypePrinter::enabled, type0 == funcType);
 
-  printDeclFlags(env, dflags);
+  printDeclFlags(env, dflags & declFlagsMask);
   printTypeSpecifierAndDeclarator(env, retspec, nameAndParams);
 
   if (instButNotTchecked()) {
@@ -1098,7 +1098,9 @@ void MR_decl::print(PrintEnv &env) const
 
 void MR_func::print(PrintEnv &env) const
 {
-  f->print(env);
+  // Methods that are defined in their class body are implicitly inline,
+  // and Elsa makes that explicit.  Remove DF_INLINE to reduce clutter.
+  f->print(env, ~DF_INLINE);
 }
 
 void MR_access::print(PrintEnv &env) const

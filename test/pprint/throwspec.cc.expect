@@ -8,27 +8,27 @@ int foo() throw()
   return 3;
 }
 class Exc {
-  inline Exc()
+  Exc()
   {}
-  inline Exc(Exc const &__other)
+  Exc(Exc const &__other)
   {}
-  inline Exc &operator=(Exc const &__other)
+  Exc &operator=(Exc const &__other)
   {
     return *this;
   }
-  inline ~Exc()
+  ~Exc()
   {}
 };
 class Exc2 {
-  inline Exc2()
+  Exc2()
   {}
-  inline Exc2(Exc2 const &__other)
+  Exc2(Exc2 const &__other)
   {}
-  inline Exc2 &operator=(Exc2 const &__other)
+  Exc2 &operator=(Exc2 const &__other)
   {
     return *this;
   }
-  inline ~Exc2()
+  ~Exc2()
   {}
 };
 void bar() throw(Exc);

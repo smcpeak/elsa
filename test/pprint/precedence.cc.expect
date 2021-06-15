@@ -11,21 +11,21 @@ public:
   int *q;
   int i;
   int C::*ptm;
-  inline C()
+  C()
   {}
-  inline C(C const &__other)
+  C(C const &__other)
     : q(__other.q),
       i(__other.i),
       ptm(__other.ptm)
   {}
-  inline C &operator=(C const &__other)
+  C &operator=(C const &__other)
   {
     (*this).q = __other.q;
     (*this).i = __other.i;
     (*this).ptm = __other.ptm;
     return *this;
   }
-  inline ~C()
+  ~C()
   {}
 };
 void g(int);
