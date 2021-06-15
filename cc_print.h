@@ -283,7 +283,7 @@ public:      // methods
   virtual ~CTypePrinter() {}
 
   // satisfy the interface to TypePrinter
-  virtual void print(OutStream &out, TypeLike const *type, char const *name = NULL);
+  virtual void print(OutStream &out, TypeLike const *type, char const *name);
 
 protected:   // methods
   // **** AtomicType
