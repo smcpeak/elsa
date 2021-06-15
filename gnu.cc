@@ -1146,7 +1146,7 @@ void E_compoundLit::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_compoundLit::iprint");
   {
-    PairDelim pair(*env.out, "", "(", ")");
+    PairDelim pair(env, "", "(", ")");
     stype->print(env);
   }
   init->print(env);
@@ -1162,7 +1162,7 @@ OperatorPrecedence E_compoundLit::getPrecedence() const
 void E___builtin_constant_p::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E___builtin_constant_p::iprint");
-  PairDelim pair(*env.out, "__builtin_constant_p", "(", ")");
+  PairDelim pair(env, "__builtin_constant_p", "(", ")");
   expr->print(env, OPREC_LOWEST);
 }
 
@@ -1175,7 +1175,7 @@ OperatorPrecedence E___builtin_constant_p::getPrecedence() const
 void E___builtin_va_arg::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E___builtin_va_arg::iprint");
-  PairDelim pair(*env.out, "__builtin_va_arg", "(", ")");
+  PairDelim pair(env, "__builtin_va_arg", "(", ")");
   expr->print(env, OPREC_LOWEST);
   *env.out << ", ";
   atype->print(env);
@@ -1190,7 +1190,7 @@ OperatorPrecedence E___builtin_va_arg::getPrecedence() const
 void E_alignofType::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_alignofType::iprint");
-  PairDelim pair(*env.out, "__alignof__", "(", ")");
+  PairDelim pair(env, "__alignof__", "(", ")");
   atype->print(env);
 }
 
@@ -1203,7 +1203,7 @@ OperatorPrecedence E_alignofType::getPrecedence() const
 void E_alignofExpr::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_alignofType::iprint");
-  PairDelim pair(*env.out, "__alignof__", "(", ")");
+  PairDelim pair(env, "__alignof__", "(", ")");
   expr->print(env, OPREC_LOWEST);
 }
 
@@ -1216,7 +1216,7 @@ OperatorPrecedence E_alignofExpr::getPrecedence() const
 // void E_offsetof:iprint(PrintEnv &env)
 // {
 //   TreeWalkDebug treeDebug("E_alignofType::iprint");
-//   PairDelim pair(*env.out, "__offsetof__", "(", ")");
+//   PairDelim pair(env, "__offsetof__", "(", ")");
 //   atype->print(env);
 //   fieldName->print(env);
 // }
@@ -1225,7 +1225,7 @@ OperatorPrecedence E_alignofExpr::getPrecedence() const
 void E_statement::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_statement::iprint");
-  PairDelim pair(*env.out, "", "(", ")");
+  PairDelim pair(env, "", "(", ")");
   s->iprint(env);
 }
 
@@ -1290,7 +1290,7 @@ void SubscriptDesignator::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("SubscriptDesignator");
   xassert(idx_expr);
-  PairDelim pair(*env.out, "", "[", "]");
+  PairDelim pair(env, "", "[", "]");
   idx_expr->print(env, OPREC_LOWEST);
   if (idx_expr2) {
     *env.out << " ... ";

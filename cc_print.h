@@ -15,6 +15,10 @@
 #include "sm-iostream.h"        // ostream
 
 
+// Forward in this file.
+class PrintEnv;
+
+
 // this virtual semi-abstract class is intended to act as a
 // "superclass" for ostream, stringBuilder, and any other "output
 // stream" classes
@@ -161,9 +165,9 @@ class PairDelim {
   char const *close;            // FIX: why can't I use an rostring?
   CodeOutStream &out;
 
-  public:
-  PairDelim(CodeOutStream &out, rostring message, rostring open, char const *close);
-  PairDelim(CodeOutStream &out, rostring message);
+public:      // methods
+  PairDelim(PrintEnv &env, rostring message, rostring open, char const *close);
+  PairDelim(PrintEnv &env, rostring message);
   ~PairDelim();
 };
 

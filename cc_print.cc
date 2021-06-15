@@ -116,16 +116,16 @@ CodeOutStream & CodeOutStream::operator << (char const *message)
 
 // **** class PairDelim
 
-PairDelim::PairDelim(CodeOutStream &out, rostring message, rostring open, char const *close0)
-    : close(close0), out(out)
+PairDelim::PairDelim(PrintEnv &env, rostring message, rostring open, char const *close0)
+    : close(close0), out(*env.out)
 {
   out << message;
   out << open;
   if (strchr(toCStr(open), '{')) out.down();
 }
 
-PairDelim::PairDelim(CodeOutStream &out, rostring message)
-  : close(""), out(out)
+PairDelim::PairDelim(PrintEnv &env, rostring message)
+  : close(""), out(*env.out)
 {
   out << message;
 }
@@ -865,7 +865,7 @@ void TF_linkage::print(PrintEnv &env)
   TreeWalkDebug treeDebug("TF_linkage");
   env.loc = loc;
   env << "extern " << linkageType;
-  PairDelim pair(*env.out, "", " {\n", "}\n");
+  PairDelim pair(env, "", " {\n", "}\n");
   forms->print(env);
 }
 
@@ -1028,7 +1028,7 @@ void Function::print(PrintEnv &env)
       // NOTE: eventually will be able to figure out if we are
       // initializing a base class or a member variable.  There will
       // be a field added to class MemberInit that will say.
-      PairDelim pair(*env.out, iter->name->toString(), "(", ")");
+      PairDelim pair(env, iter->name->toString(), "(", ")");
       printArgExprList(env, iter->args);
     }
     env << "\n";
@@ -1090,7 +1090,7 @@ void printInitializerOpt(PrintEnv &env, Initializer /*nullable*/ *init)
       }
       else {
         // dsw:Constructor arguments.
-        PairDelim pair(*env.out, "", "(", ")");
+        PairDelim pair(env, "", "(", ")");
         ctor->print(env);       // NOTE: You can NOT factor this line out of the if!
       }
     } else {
@@ -1213,7 +1213,7 @@ void TS_classSpec::print(PrintEnv &env)
     else env << ',' << ' ';
     iter->print(env);
   }
-  PairDelim pair(*env.out, " ", "{\n", "}");
+  PairDelim pair(env, " ", "{\n", "}");
   FOREACH_ASTLIST_NC(Member, members->list, iter2) {
     iter2.data()->print(env);
   }
@@ -1226,7 +1226,7 @@ void TS_enumSpec::print(PrintEnv &env)
   env << toString(cv);
   env << "enum ";
   if (name) env << name;
-  PairDelim pair(*env.out, "", "{\n", "}");
+  PairDelim pair(env, "", "{\n", "}");
   FAKELIST_FOREACH_NC(Enumerator, elts, iter) {
     iter->print(env);
     env << "\n";
@@ -1547,7 +1547,7 @@ void S_expr::iprint(PrintEnv &env)
 void S_compound::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_compound::iprint");
-  PairDelim pair(*env.out, "", "{\n", "}\n");
+  PairDelim pair(env, "", "{\n", "}\n");
   FOREACH_ASTLIST_NC(Statement, stmts, iter) {
     iter.data()->print(env);
   }
@@ -1557,7 +1557,7 @@ void S_if::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_if::iprint");
   {
-    PairDelim pair(*env.out, "if ", "(", ")");
+    PairDelim pair(env, "if ", "(", ")");
     cond->print(env);
   }
   thenBranch->print(env);
@@ -1569,7 +1569,7 @@ void S_switch::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_switch::iprint");
   {
-    PairDelim pair(*env.out, "switch ", "(", ")");
+    PairDelim pair(env, "switch ", "(", ")");
     cond->print(env);
   }
   branches->print(env);
@@ -1579,7 +1579,7 @@ void S_while::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_while::iprint");
   {
-    PairDelim pair(*env.out, "while ", "(", ")");
+    PairDelim pair(env, "while ", "(", ")");
     cond->print(env);
   }
   body->print(env);
@@ -1589,11 +1589,11 @@ void S_doWhile::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_doWhile::iprint");
   {
-    PairDelim pair(*env.out, "do");
+    PairDelim pair(env, "do");
     body->print(env);
   }
   {
-    PairDelim pair(*env.out, "while ", "(", ")");
+    PairDelim pair(env, "while ", "(", ")");
     expr->print(env);
   }
   env << ";\n";
@@ -1603,7 +1603,7 @@ void S_for::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("S_for::iprint");
   {
-    PairDelim pair(*env.out, "for ", "(", ")");
+    PairDelim pair(env, "for ", "(", ")");
     init->print(env);
     // this one not needed as the declaration provides one
     //          env << ";";
@@ -1700,7 +1700,7 @@ void Handler::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("Handler");
   {
-    PairDelim pair(*env.out, "catch ", "(", ") ");
+    PairDelim pair(env, "catch ", "(", ") ");
     if (isEllipsis()) {
       env << "...";
     }
@@ -1745,7 +1745,7 @@ void Expression::print(PrintEnv &env, OperatorPrecedence parentPrec)
 
   OperatorPrecedence thisPrec = this->getPrecedence();
   if (thisPrec >= parentPrec) {
-    PairDelim pair(*env.out, "", "(", ")");
+    PairDelim pair(env, "", "(", ")");
     iprint(env);
   }
   else {
@@ -2014,7 +2014,7 @@ void E_funCall::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_funCall::iprint");
   func->print(env, this->getPrecedence());
-  PairDelim pair(*env.out, "", "(", ")");
+  PairDelim pair(env, "", "(", ")");
   printArgExprList(env, args);
 }
 
@@ -2032,7 +2032,7 @@ void E_constructor::iprint(PrintEnv &env)
   Restorer<bool> res0(CTypePrinter::enabled, type == type0);
 
   env.ptype(type0);
-  PairDelim pair(*env.out, "", "(", ")");
+  PairDelim pair(env, "", "(", ")");
   printArgExprList(env, args);
 }
 
@@ -2322,7 +2322,7 @@ void E_cast::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_cast::iprint");
   {
-    PairDelim pair(*env.out, "", "(", ")");
+    PairDelim pair(env, "", "(", ")");
     ctype->print(env);
   }
   expr->print(env, this->getPrecedence());
@@ -2363,7 +2363,7 @@ OperatorPrecedence E_cond::getPrecedence() const
 void E_sizeofType::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_sizeofType::iprint");
-  PairDelim pair(*env.out, "sizeof", "(", ")"); // NOTE yes, you do want the parens because argument is a type.
+  PairDelim pair(env, "sizeof", "(", ")"); // NOTE yes, you do want the parens because argument is a type.
   atype->print(env);
 }
 
@@ -2400,7 +2400,7 @@ void E_new::iprint(PrintEnv &env)
   if (colonColon) env << "::";
   env << "new ";
   if (placementArgs) {
-    PairDelim pair(*env.out, "", "(", ")");
+    PairDelim pair(env, "", "(", ")");
     printArgExprList(env, placementArgs);
   }
 
@@ -2428,7 +2428,7 @@ void E_new::iprint(PrintEnv &env)
   }
 
   if (ctorArgs) {
-    PairDelim pair(*env.out, "", "(", ")");
+    PairDelim pair(env, "", "(", ")");
     printArgExprList(env, ctorArgs->list);
   }
 }
@@ -2482,10 +2482,10 @@ void E_keywordCast::iprint(PrintEnv &env)
   TreeWalkDebug treeDebug("E_keywordCast::iprint");
   env << toString(key);
   {
-    PairDelim pair(*env.out, "", "<", ">");
+    PairDelim pair(env, "", "<", ">");
     ctype->print(env);
   }
-  PairDelim pair(*env.out, "", "(", ")");
+  PairDelim pair(env, "", "(", ")");
   expr->print(env, this->getPrecedence());
 }
 
@@ -2502,7 +2502,7 @@ OperatorPrecedence E_keywordCast::getPrecedence() const
 void E_typeidExpr::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_typeidExpr::iprint");
-  PairDelim pair(*env.out, "typeid", "(", ")");
+  PairDelim pair(env, "typeid", "(", ")");
   expr->print(env, this->getPrecedence());
 }
 
@@ -2517,7 +2517,7 @@ OperatorPrecedence E_typeidExpr::getPrecedence() const
 void E_typeidType::iprint(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("E_typeidType::iprint");
-  PairDelim pair(*env.out, "typeid", "(", ")");
+  PairDelim pair(env, "typeid", "(", ")");
   ttype->print(env);
 }
 
@@ -2576,7 +2576,7 @@ void IN_expr::print(PrintEnv &env)
 void IN_compound::print(PrintEnv &env)
 {
   TreeWalkDebug treeDebug("IN_compound");
-  PairDelim pair(*env.out, "", "{\n", "\n}");
+  PairDelim pair(env, "", "{\n", "\n}");
   bool first_time = true;
   FOREACH_ASTLIST_NC(Initializer, inits, iter) {
     if (first_time) first_time = false;
