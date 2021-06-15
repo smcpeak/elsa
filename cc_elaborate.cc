@@ -2049,7 +2049,7 @@ Type *TS_type::itcheck(Env &env, DeclFlags dflags)
   return type;
 }
 
-void TS_type::idetailPrint(PrintEnv &env) const
+void TS_type::iprint(PrintEnv &env) const
 {
   if (CompoundType *ct = type->ifCompoundType()) {
     // Print the name of the implicit typedef.

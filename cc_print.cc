@@ -948,12 +948,12 @@ static void printTypeSpecifierAndDeclarator(
   PrintEnv &env, TypeSpecifier *spec, Declarator *declarator)
 {
   if (!ideclaratorIsDestructor(declarator->decl)) {
-    spec->detailPrint(env);
+    spec->print(env);
     if (ideclaratorWantsSpace(spec, declarator->decl)) {
       env << " ";
     }
   }
-  declarator->detailPrint(env);
+  declarator->print(env);
 }
 
 void Function::print(PrintEnv &env) const
@@ -1023,7 +1023,7 @@ void Declaration::print(PrintEnv &env) const
 {
   printDeclFlags(env, dflags);
 
-  spec->detailPrint(env);
+  spec->print(env);
 
   FAKELIST_FOREACH_NC(Declarator, decllist, declarator) {
     if (declarator != fl_first(decllist)) {
@@ -1032,7 +1032,7 @@ void Declaration::print(PrintEnv &env) const
     else if (ideclaratorWantsSpace(spec, declarator->decl)) {
       env << " ";
     }
-    declarator->detailPrint(env);
+    declarator->print(env);
   }
   env << ";\n";
 }
@@ -1131,16 +1131,16 @@ void PQ_template::print(PrintEnv &env) const
 
 
 // --------------------- TypeSpecifier --------------
-void TypeSpecifier::detailPrint(PrintEnv &env) const
+void TypeSpecifier::print(PrintEnv &env) const
 {
-  idetailPrint(env);
+  iprint(env);
   if (cv) {
     env << " " << toString(cv);
   }
 }
 
 
-void TS_name::idetailPrint(PrintEnv &env) const
+void TS_name::iprint(PrintEnv &env) const
 {
   if (typenameUsed) {
     env << "typename ";
@@ -1149,7 +1149,7 @@ void TS_name::idetailPrint(PrintEnv &env) const
 }
 
 
-void TS_simple::idetailPrint(PrintEnv &env) const
+void TS_simple::iprint(PrintEnv &env) const
 {
   if (id != ST_CDTOR) {
     env << toString(id);
@@ -1157,14 +1157,14 @@ void TS_simple::idetailPrint(PrintEnv &env) const
 }
 
 
-void TS_elaborated::idetailPrint(PrintEnv &env) const
+void TS_elaborated::iprint(PrintEnv &env) const
 {
   env << toString(keyword) << " ";
   name->print(env);
 }
 
 
-void TS_classSpec::idetailPrint(PrintEnv &env) const
+void TS_classSpec::iprint(PrintEnv &env) const
 {
   env << toString(ql);          // see string toString(class dummyType*) above
   env << toString(cv);
@@ -1186,7 +1186,7 @@ void TS_classSpec::idetailPrint(PrintEnv &env) const
 }
 
 
-void TS_enumSpec::idetailPrint(PrintEnv &env) const
+void TS_enumSpec::iprint(PrintEnv &env) const
 {
   env << toString(ql);          // see string toString(class dummyType*) above
   env << toString(cv);
@@ -1254,15 +1254,15 @@ void Enumerator::print(PrintEnv &env) const
 }
 
 // -------------------- Declarator --------------------
-void Declarator::detailPrint(PrintEnv &env) const
+void Declarator::print(PrintEnv &env) const
 {
-  decl->detailPrint(env);
+  decl->print(env);
   printInitializerOpt(env, init);
 }
 
 
 // -------------------- IDeclarator --------------------
-void D_name::detailPrint(PrintEnv &env) const
+void D_name::print(PrintEnv &env) const
 {
   if (name) {
     name->print(env);
@@ -1270,26 +1270,26 @@ void D_name::detailPrint(PrintEnv &env) const
 }
 
 
-void D_pointer::detailPrint(PrintEnv &env) const
+void D_pointer::print(PrintEnv &env) const
 {
   env << "*";
   if (cv) {
     env << " " << toString(cv) << " ";
   }
-  base->detailPrint(env);
+  base->print(env);
 }
 
 
-void D_reference::detailPrint(PrintEnv &env) const
+void D_reference::print(PrintEnv &env) const
 {
   env << "&";
-  base->detailPrint(env);
+  base->print(env);
 }
 
 
-void D_func::detailPrint(PrintEnv &env) const
+void D_func::print(PrintEnv &env) const
 {
-  base->detailPrint(env);
+  base->print(env);
   env << "(";
 
   FAKELIST_FOREACH_NC(ASTTypeId, params, param) {
@@ -1312,9 +1312,9 @@ void D_func::detailPrint(PrintEnv &env) const
 }
 
 
-void D_array::detailPrint(PrintEnv &env) const
+void D_array::print(PrintEnv &env) const
 {
-  base->detailPrint(env);
+  base->print(env);
   env << "[";
   if (size) {
     size->print(env, OPREC_LOWEST);
@@ -1323,7 +1323,7 @@ void D_array::detailPrint(PrintEnv &env) const
 }
 
 
-void D_bitfield::detailPrint(PrintEnv &env) const
+void D_bitfield::print(PrintEnv &env) const
 {
   if (name) {
     name->print(env);
@@ -1335,18 +1335,18 @@ void D_bitfield::detailPrint(PrintEnv &env) const
 }
 
 
-void D_ptrToMember::detailPrint(PrintEnv &env) const
+void D_ptrToMember::print(PrintEnv &env) const
 {
   nestedName->print(env);
   env << "::*";
   if (cv) {
     env << " " << toString(cv) << " ";
   }
-  base->detailPrint(env);
+  base->print(env);
 }
 
 
-void D_grouping::detailPrint(PrintEnv &env) const
+void D_grouping::print(PrintEnv &env) const
 {
   // It might be nice to automatically supply the parens where needed,
   // similar to how I do for expressions, but I don't have a pressing
@@ -1354,7 +1354,7 @@ void D_grouping::detailPrint(PrintEnv &env) const
   // possibility of introducing ambiguities with the expression syntax.
 
   env << "(";
-  base->detailPrint(env);
+  base->print(env);
   env << ")";
 }
 
@@ -2503,7 +2503,7 @@ void TD_decl::iprint(PrintEnv &env) const
         CompoundType *instCT = instV->type->asCompoundType();
         if (instCT->syntax) {
           env << "\n";
-          instCT->syntax->detailPrint(env);
+          instCT->syntax->print(env);
           env << ";\n";
         }
         else {

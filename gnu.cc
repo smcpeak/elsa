@@ -1067,7 +1067,7 @@ bool E_gnuCond::extHasUnparenthesizedGT()
 // }
 
 // ------------------------ print --------------------------
-void TS_typeof::idetailPrint(PrintEnv &env) const
+void TS_typeof::iprint(PrintEnv &env) const
 {
   *env.out << "typeof(";
 

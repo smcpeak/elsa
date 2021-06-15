@@ -42,8 +42,8 @@ class PQName {
 
 
 class TypeSpecifier {
-  public void detailPrint(PrintEnv &env) const;
-  pure_virtual void idetailPrint(PrintEnv &env) const;
+  public void print(PrintEnv &env) const;
+  pure_virtual void iprint(PrintEnv &env) const;
 }
 
 
@@ -63,12 +63,12 @@ class Enumerator {
 
 
 class Declarator {
-  public void detailPrint(PrintEnv &env) const;
+  public void print(PrintEnv &env) const;
 }
 
 
 class IDeclarator {
-  pure_virtual void detailPrint(PrintEnv &env) const;
+  pure_virtual void print(PrintEnv &env) const;
 }
 
 
