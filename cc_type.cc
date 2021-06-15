@@ -206,6 +206,17 @@ bool AtomicType::equals(AtomicType const *obj) const
 }
 
 
+string toString(AtomicType const *at)
+{
+  if (at) {
+    return at->toString();
+  }
+  else {
+    return "NULL";
+  }
+}
+
+
 // ------------------ SimpleType -----------------
 SimpleType SimpleType::fixed[NUM_SIMPLE_TYPES] = {
   SimpleType(ST_CHAR),
