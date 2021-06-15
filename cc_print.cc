@@ -753,9 +753,11 @@ static bool ideclaratorIsDestructor(IDeclarator const *id)
   // TODO: Ugly, just like the next function.
   if (D_func const *df = id->ifD_funcC()) {
     if (D_name const *dn = df->base->ifD_nameC()) {
-      if (PQ_variable const *pqv = dn->name->ifPQ_variable()) {
-        if (pqv->var->name[0] == '~') {
-          return true;
+      if (dn->name) {
+        if (PQ_variable const *pqv = dn->name->ifPQ_variable()) {
+          if (pqv->var->name[0] == '~') {
+            return true;
+          }
         }
       }
     }
@@ -806,9 +808,11 @@ static bool ideclaratorWantsSpace(TypeSpecifier const *spec,
   // I need to devise a better method of making this query.
   if (D_func const *df = id->ifD_funcC()) {
     if (D_name const *dn = df->base->ifD_nameC()) {
-      if (PQ_variable const *pqv = dn->name->ifPQ_variable()) {
-        if (streq(pqv->var->name, "constructor-special")) {
-          return false;
+      if (dn->name) {
+        if (PQ_variable const *pqv = dn->name->ifPQ_variable()) {
+          if (streq(pqv->var->name, "constructor-special")) {
+            return false;
+          }
         }
       }
     }
