@@ -503,7 +503,7 @@ void readFile(rostring fname, GrowArray<char> &dest)
 
 // ---------------------- test code ----------------------
 #ifdef TEST_IPTREE
-#include "test.h"        // USUAL_MAIN
+#include "sm-test.h"     // USUAL_MAIN
 
 void entry()
 {

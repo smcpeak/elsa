@@ -4,7 +4,7 @@
 #include "lexer.h"         // Lexer
 #include "strtable.h"      // StringTable
 #include "cc_lang.h"       // CCLang
-#include "test.h"          // ARGS_MAIN
+#include "sm-test.h"       // ARGS_MAIN
 #include "nonport.h"       // getMilliseconds
 #include "trace.h"         // tracingSys
 

@@ -177,7 +177,7 @@ IPTree *parseFile(rostring fname)
 // --------------------- test code ---------------------
 #ifdef TEST_IPTPARSE
 
-#include "test.h"      // ARGS_MAIN
+#include "sm-test.h"   // ARGS_MAIN
 
 void entry(int argc, char *argv[])
 {

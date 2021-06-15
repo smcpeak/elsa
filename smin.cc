@@ -1,7 +1,7 @@
 // smin.cc
 // structural minimizer
 
-#include "test.h"           // ARGS_MAIN
+#include "sm-test.h"        // ARGS_MAIN
 #include "smin.h"           // this module
 #include "trace.h"          // TRACE_ARGS
 

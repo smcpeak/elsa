@@ -7,7 +7,7 @@
 #include "cc_print.h"                  // PrintEnv, etc.
 #include "elsaparse.h"                 // ElsaParse
 
-#include "test.h"                      // EXPECT_EQ
+#include "sm-test.h"                   // EXPECT_EQ
 
 
 // Visitor that tests ElsaASTBuild at certain nodes.
