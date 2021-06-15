@@ -15,7 +15,7 @@ Foo f(Foo *x, void *p)
 {
   Foo local_foo;
   x = (Foo*)p;
-  return (Foo)x;
+  return (Foo)*x;
 }
 
 // EOF

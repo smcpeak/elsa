@@ -164,8 +164,9 @@ void logical(int x, int y, int z)
   x && (y || z);
   (x || y) && z;
 }
+int &operator||(C const &c1, C const &c2);
 
-void assign(int x, int y, int z)
+void assign(int x, int y, int z, C c1, C c2)
 {
   x = (y = z);
   x = (y = z);
@@ -174,9 +175,9 @@ void assign(int x, int y, int z)
   x += (y += z);
   (x = y) += z;
   x = y || z;
-  x || y = z;
+  ::operator||(c1, c2) = z;
   x += y || z;
-  x || y += z;
+  ::operator||(c1, c2) += z;
   (x = y) || z;
   x || (y = z);
   (x += y) || z;
@@ -207,8 +208,6 @@ void comma(int x, int y, int z)
 
 void test_throw(int x, int y)
 {
-  throw (throw);
-  throw (throw x);
   throw x+y;
   throw (x, y);
   x, throw y;

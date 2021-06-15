@@ -70,8 +70,7 @@ out/pprint/%.cc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
 	  $(CCPARSE) --prettyPrint $<
 	../chop_out < out/pprint/$*.cc.actual > out/pprint/$*.cc.trimmed
 	$(CCPARSE) out/pprint/$*.cc.trimmed
-#	TODO: Disabled because of the shenanigans in precedence.cc.
-#	g++ -c -xc++ out/pprint/$*.cc.trimmed
+	g++ -c -oout/pprint/$*.cc.trimmed.o -xc++ out/pprint/$*.cc.trimmed
 	../idemcheck --elsadir .. -d $(dir $@)idem -q $<
 	touch $@
 
@@ -89,7 +88,7 @@ out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect $(CCPARSE)
 	  $(CCPARSE) -xc --prettyPrint $<
 	../chop_out < out/pprint/$*.c.actual > out/pprint/$*.c.trimmed
 	$(CCPARSE) -xc out/pprint/$*.c.trimmed
-#	gcc -c -xc out/pprint/$*.c.trimmed
+	gcc -c -oout/pprint/$*.c.trimmed.o -xc out/pprint/$*.c.trimmed
 	../idemcheck --elsadir .. -d $(dir $@)idem -xc -q $<
 	touch $@
 

@@ -204,7 +204,10 @@ void logical(int x, int y, int z)
   (x || y) && z;
 }
 
-void assign(int x, int y, int z)
+// Arrange for operator|| to yield an lvalue.
+int& operator|| (C const &c1, C const &c2);
+
+void assign(int x, int y, int z, C c1, C c2)
 {
   // OPREC_ASSIGN on OPREC_ASSIGN.
   x = y = z;
@@ -216,9 +219,9 @@ void assign(int x, int y, int z)
 
   // OPREC_ASSIGN on OPREC_LOGICAL_OR.
   x = y || z;
-  x || y = z;        // Possibly legal in C++, and not rejected by Elsa.
+  c1 || c2 = z;
   x += y || z;
-  x || y += z;
+  c1 || c2 += z;
 
   // OPREC_LOGICAL_OR on OPREC_ASSIGN.
   (x = y) || z;
@@ -261,9 +264,9 @@ void comma(int x, int y, int z)
 
 void test_throw(int x, int y)
 {
-  // Throw on throw.
-  throw throw;
-  throw throw x;
+  // Throw on throw.  Not legal.
+  //throw throw;
+  //throw throw x;
 
   // Throw on OPREC_ADD.
   throw x+y;
