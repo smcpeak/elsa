@@ -249,14 +249,6 @@ class TypePrinter {
 
 // This class knows how to print out Types in C syntax
 class CTypePrinter : public TypePrinter {
-  // dsw: I need to be able to use CTypePrinter class in
-  // ValueTypePrinter to print out the occasional object that has a
-  // type but no abstract value, such as template primaries.  However,
-  // most of the time I need to disable this class so I don't
-  // accidentally use it.
-public:      // class data
-  static bool enabled;
-
 public:      // instance data
   CCLang const &m_lang;
 

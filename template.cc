@@ -889,9 +889,7 @@ string STemplateArgument::toString() const
       //
       // FIX: not sure if this is a bug but there is no abstract value
       // lying around to be printed here so we just print what we
-      // have; enable the normal type printer temporarily in order to
-      // do this
-      Restorer<bool> res0(CTypePrinter::enabled, true);
+      // have
       CCLang lang;
       CTypePrinter typePrinter0(lang);
       stringBuilder sb;

@@ -166,11 +166,8 @@ TypeLike const *TypePrinter::getE_constructorTypeLike(E_constructor const *c)
 
 // **************** class CTypePrinter
 
-bool CTypePrinter::enabled = true;
-
 void CTypePrinter::print(OutStream &out, TypeLike const *type, char const *name)
 {
-  xassert(enabled);
   // see the note at the interface TypePrinter::print()
   Type const *type0 = static_cast<Type const *>(type);
   out << print(type0, name);
@@ -835,10 +832,6 @@ static void printTypeSpecifierAndDeclarator(
 
 void Function::print(PrintEnv &env, DeclFlags declFlagsMask) const
 {
-  // TODO: Remove this stuff.
-  TypeLike const *type0 = env.typePrinter.getFunctionTypeLike(this);
-  Restorer<bool> res0(CTypePrinter::enabled, type0 == funcType);
-
   printDeclFlags(env, dflags & declFlagsMask);
   printTypeSpecifierAndDeclarator(env, retspec, nameAndParams);
 
@@ -1519,7 +1512,6 @@ string Expression::exprToString() const
   CCLang lang;
 
   CTypePrinter typePrinter(lang);
-  Restorer<bool> res0(CTypePrinter::enabled, true);
   PrintEnv env(typePrinter, &codeOut);
 
   this->print(env, OPREC_LOWEST);
@@ -1642,7 +1634,6 @@ void printSTemplateArgument(PrintEnv &env, STemplateArgument const *sta)
       // lying around to be printed here so we just print what we
       // have; enable the normal type printer temporarily in order to
       // do this
-      Restorer<bool> res0(CTypePrinter::enabled, true);
       env.ptype(sta->value.t); // assume 'type' if no comment
       }
       break;
@@ -1764,7 +1755,6 @@ OperatorPrecedence E_funCall::getPrecedence() const
 void E_constructor::iprint(PrintEnv &env) const
 {
   TypeLike const *type0 = env.typePrinter.getE_constructorTypeLike(this);
-  Restorer<bool> res0(CTypePrinter::enabled, type == type0);
 
   env.ptype(type0);
   PairDelim pair(env, "", "(", ")");
@@ -1788,7 +1778,6 @@ void printVariableName(PrintEnv &env, Variable *var)
     // the name is just "conversion-operator", so print differently
     env << "/""*conversion*/operator(";
     Type *t = var->type->asFunctionType()->retType;
-    Restorer<bool> res0(CTypePrinter::enabled, true);
     env.ptype(t);
     env << ')';
     return;
@@ -2426,7 +2415,6 @@ void TA_type::print(PrintEnv &env) const
 {
   // dig down to prevent printing "/*anon*/" since template
   // type arguments are always anonymous so it's just clutter
-  Restorer<bool> res0(CTypePrinter::enabled, true);
   env.ptype(type->decl->var->type);
 }
 
