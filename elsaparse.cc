@@ -479,6 +479,10 @@ void ElsaParse::parse(char const *inputFname)
   {
     SectionTimer timer(integrityTime);
 
+    // Check AST integrity again after elaboration.
+    IntegrityVisitor ivis;
+    unit->traverse(ivis);
+
     // check that the AST is a tree *and* that the lowered AST is a
     // tree (do this *after* elaboration!)
     if (tracingSys("treeCheck")) {
