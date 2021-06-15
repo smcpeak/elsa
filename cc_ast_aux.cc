@@ -929,7 +929,7 @@ SourceLoc Declarator::getLoc() const
 void Declarator::printExtras(ostream &os, int indent) const
 {
   if (var) {
-    ind(os, indent) << "var: "
+    ind(os, indent) << "var = "
       << toString(var->flags) << (var->flags? " " : "")
       << var->toString();
 
@@ -939,6 +939,16 @@ void Declarator::printExtras(ostream &os, int indent) const
     }
 
     os << "\n";
+  }
+  else {
+    ind(os, indent) << "var is null\n";
+  }
+
+  if (type) {
+    ind(os, indent) << "type = " << type->toString() << "\n";
+  }
+  else {
+    ind(os, indent) << "type is null\n";
   }
 
   ind(os, indent) << "context = " << toString(context) << "\n";
