@@ -299,6 +299,23 @@ bool NamedAtomicType::isNamedAtomicType() const
 }
 
 
+TypeIntr NamedAtomicType::getTypeIntr() const
+{
+  if (CompoundType const *ctype = this->ifCompoundTypeC()) {
+    return CompoundType::toTypeIntr(ctype->keyword);
+  }
+
+  if (this->isEnumType()) {
+    return TI_ENUM;
+  }
+
+  // Should not be possible since there are only two subclasses of
+  // NamedAtomicType.
+  xfailure("AtomicType is neither CompoundType nor EnumType");
+  return TI_STRUCT;           // Not reached.
+}
+
+
 // ---------------- BaseClassSubobj ----------------
 void BaseClass::traverse(TypeVisitor &vis)
 {
@@ -399,6 +416,19 @@ STATICDEF char const *CompoundType::keywordName(Keyword k)
     case K_STRUCT:    return "struct";
     case K_CLASS:     return "class";
     case K_UNION:     return "union";
+  }
+}
+
+
+// Elsewhere (cc_tcheck.cc), we rely on TypeIntr and Keyword having
+// compatible numeric values.  I do not want to continue that.
+STATICDEF TypeIntr CompoundType::toTypeIntr(Keyword k)
+{
+  switch (k) {
+    default: xfailure("bad keyword");
+    case K_STRUCT: return TI_STRUCT;
+    case K_CLASS:  return TI_CLASS;
+    case K_UNION:  return TI_UNION;
   }
 }
 

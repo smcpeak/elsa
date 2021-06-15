@@ -293,6 +293,9 @@ public:
   ~NamedAtomicType();
 
   virtual bool isNamedAtomicType() const;       // returns true
+
+  // Get the syntactic introduction keyword.
+  TypeIntr getTypeIntr() const;
 };
 
 
@@ -465,6 +468,7 @@ public:      // funcs
   bool hasVirtualFns() const;
 
   static char const *keywordName(Keyword k);
+  static TypeIntr toTypeIntr(Keyword k);
 
   // AtomicType interface
   virtual Tag getTag() const { return T_COMPOUND; }
