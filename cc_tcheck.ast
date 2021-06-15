@@ -220,21 +220,22 @@ class TypeSpecifier {
 
   -> TS_name {
        // typedef Variable this name refers to
-       public Variable *var = NULL;
+       public(field) Variable *var = NULL;
 
        // if the lookup is *not* dependent (and some other conditions
        // hold...), this will point to 'var' and be preserved when
        // the AST is cloned
-       public Variable *nondependentVar = NULL;
+       public(field) Variable *nondependentVar = NULL;
        custom clone { ret->nondependentVar = nondependentVar; }
      }
 
   -> TS_elaborated {
-       public NamedAtomicType *atype = NULL;
+       public(field) NamedAtomicType *atype = NULL;
      }
 
   -> TS_classSpec {
-       public CompoundType *ctype = NULL;
+       public(field) CompoundType *ctype = NULL;
+
        public void tcheckIntoCompound(
          Env &env, DeclFlags dflags, CompoundType *ct);
        private void tcheckFunctionBodies(Env &env);
@@ -244,7 +245,7 @@ class TypeSpecifier {
      }
 
   -> TS_enumSpec {
-       public EnumType *etype = NULL;
+       public(field) EnumType *etype = NULL;
      }
 }
 
