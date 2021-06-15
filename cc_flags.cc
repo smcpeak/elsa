@@ -2,7 +2,7 @@
 // code for cc_flags.h
 
 #include "cc_flags.h"     // this module
-#include "macros.h"       // STATIC_ASSERT
+#include "sm-macros.h"    // STATIC_ASSERT
 #include "xassert.h"      // xassert
 #include "trace.h"        // tracingSys
 #include "strtokpc.h"     // StrtokParseC

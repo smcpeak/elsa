@@ -16,7 +16,7 @@
 #ifndef STDCONV_H
 #define STDCONV_H
 
-#include "macros.h"    // ENUM_BITWISE_AND,OR
+#include "sm-macros.h" // ENUM_BITWISE_AND,OR
 #include "str.h"       // string
 #include "cc_flags.h"  // SpecialExpr
 

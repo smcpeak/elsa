@@ -5,7 +5,7 @@
 #ifndef MFLAGS_H
 #define MFLAGS_H
 
-#include "macros.h"      // ENUM_BITWISE_OPS
+#include "sm-macros.h"   // ENUM_BITWISE_OPS
 #include "str.h"         // string
 
 enum MatchFlags {

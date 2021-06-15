@@ -19,7 +19,7 @@ verbatim {
 
   // smbase
   #include "datablok.h"      // DataBlock
-  #include "macros.h"        // Restorer
+  #include "sm-macros.h"     // Restorer
 
   class Env;                 // cc_env.h
   class ArgumentInfo;        // overload.h

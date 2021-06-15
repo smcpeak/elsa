@@ -24,7 +24,7 @@
 #include "implint.h"        // resolveImplIntAmbig
 #include "ast_build.h"      // makeExprList1, etc.
 #include "strutil.h"        // prefixEquals, pluraln
-#include "macros.h"         // Restorer
+#include "sm-macros.h"      // Restorer
 #include "typelistiter.h"   // TypeListIter_FakeList
 #include "owner.h"          // Owner
 #include "mtype.h"          // MType

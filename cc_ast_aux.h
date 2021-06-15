@@ -5,7 +5,7 @@
 #define CC_AST_AUX_H
 
 #include "sobjset.h"            // class SObjSet
-#include "macros.h"             // ENUM_BITWISE_OPS
+#include "sm-macros.h"          // ENUM_BITWISE_OPS
 #include "cc_ast.h"             // ASTVisitor
 
 // Note that LoweredASTVisitor and LoweredASTVisitorHelper work

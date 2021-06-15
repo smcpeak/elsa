@@ -18,8 +18,8 @@
 #ifndef CC_FLAGS_H
 #define CC_FLAGS_H
 
-#include "str.h"     // string
-#include "macros.h"  // ENUM_BITWISE_OPS
+#include "sm-macros.h"                 // ENUM_BITWISE_OPS
+#include "str.h"                       // string
 
 // ----------------------- TypeIntr ----------------------
 // type introducer keyword
