@@ -76,4 +76,11 @@ bool IntegrityVisitor::visitExpression(Expression *obj)
 }
 
 
+void integrityCheckTU(TranslationUnit *tu)
+{
+  IntegrityVisitor ivis;
+  tu->traverse(ivis);
+}
+
+
 // EOF

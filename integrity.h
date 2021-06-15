@@ -23,4 +23,8 @@ public:      // funcs
   virtual bool visitExpression(Expression *obj);
 };
 
+// Run the checks on an entire TU.
+void integrityCheckTU(TranslationUnit *tu);
+
+
 #endif // INTEGRITY_H

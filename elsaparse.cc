@@ -417,9 +417,7 @@ void ElsaParse::parse(char const *inputFname)
   {
     SectionTimer timer(m_integrityTime);
 
-    // check AST integrity
-    IntegrityVisitor ivis;
-    m_translationUnit->traverse(ivis);
+    integrityCheckTU(m_translationUnit);
 
     // check that the AST is a tree *and* that the lowered AST is a
     // tree; only do this *after* confirming that tcheck finished
@@ -488,8 +486,7 @@ void ElsaParse::parse(char const *inputFname)
     SectionTimer timer(m_integrityTime);
 
     // Check AST integrity again after elaboration.
-    IntegrityVisitor ivis;
-    m_translationUnit->traverse(ivis);
+    integrityCheckTU(m_translationUnit);
 
     // check that the AST is a tree *and* that the lowered AST is a
     // tree (do this *after* elaboration!)
