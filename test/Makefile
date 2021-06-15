@@ -63,7 +63,7 @@ TESTS += pprint/vararg-promote.cc
 
 # Run a C++ pretty-print test.
 out/pprint/%.cc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
-	@mkdir -p $(dir $@)
+	@mkdir -p $(dir $@)idem
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/pprint/$*.cc.actual \
 	  --expect pprint/$*.cc.expect \
@@ -72,7 +72,7 @@ out/pprint/%.cc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
 	$(CCPARSE) out/pprint/$*.cc.trimmed
 #	TODO: Disabled because of the shenanigans in precedence.cc.
 #	g++ -c -xc++ out/pprint/$*.cc.trimmed
-#	TODO: Also run idemcheck here.
+	../idemcheck --elsadir .. -d $(dir $@)idem -q $<
 	touch $@
 
 
@@ -82,7 +82,7 @@ TESTS += pprint/vararg-promote.c
 
 # Run a C pretty-print test.
 out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect $(CCPARSE)
-	@mkdir -p $(dir $@)
+	@mkdir -p $(dir $@)idem
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/pprint/$*.c.actual \
 	  --expect pprint/$*.c.expect \
@@ -90,6 +90,7 @@ out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect $(CCPARSE)
 	../chop_out < out/pprint/$*.c.actual > out/pprint/$*.c.trimmed
 	$(CCPARSE) -xc out/pprint/$*.c.trimmed
 #	gcc -c -xc out/pprint/$*.c.trimmed
+	../idemcheck --elsadir .. -d $(dir $@)idem -xc -q $<
 	touch $@
 
 

@@ -6,16 +6,27 @@ use strict;
 
 # Daniel S. Wilkerson dsw@cs.berkeley.edu
 
-my $parser = "./ccparse.exe";
-die "No executable file: $parser\n" unless -x $parser;
+# Root directory of Elsa.  This is used to find 'ccparse.exe' and
+# 'chop_out'.
+my $elsadir = ".";
+
 my @names = ();
+
+# Options to pass to ccparse.
+my $ccparseOptions = "";
+
+# When true, print extra info about files being processed and the final
+# counts.  This information is useful when running on a lot of files at
+# once, but not when running on a single file.
+my $verbose = 1;
+
 my @outfiles = ();
 my %outfile2command = ();
 
 my $outdir;
 
 my $usage=<<END
-Usage: idemcheck -d <outputdir> <inputlist>...
+Usage: idemcheck -d <outputdir> [--elsadir elsadir] [-xc] [-q] <inputlist>...
 END
     ;
 
@@ -38,16 +49,32 @@ if (+@ARGV==0) {
 {
     my $arg = shift @ARGV;
     last unless defined $arg;
-    if ($arg=~/^-d/) {
+    if ($arg eq "-d") {
         $outdir = shift @ARGV;
         die "No argument to -d\n" unless defined $outdir;
         die "No such dir: $outdir\n" unless -d $outdir;
-    } else {
+    }
+    elsif ($arg eq "--elsadir") {
+        $elsadir = shift @ARGV;
+    }
+    elsif ($arg eq "-xc") {
+        $ccparseOptions = "-xc";
+    }
+    elsif ($arg eq "-q") {
+        $verbose = 0;
+    }
+    elsif ($arg =~ m/^-/) {
+        die("Unknown option: $arg\n");
+    }
+    else {
         push @names, $arg;
     }
     redo;
 }
 die "You must specify an out directory with -d\n$usage" unless defined $outdir;
+
+my $parser = "$elsadir/ccparse.exe";
+die "No executable file: $parser\n" unless -x $parser;
 
 sub run_only ($$) {
     my ($command, $outfile) = @_;
@@ -68,6 +95,7 @@ sub run_only ($$) {
 
 sub run_command ($$) {
     my ($command, $outfile) = @_;
+    #print("run_command: $command\n");
     my $realcommand = "$command >> $outfile";
     $outfile2command{$outfile} = $realcommand;
     push @outfiles, $outfile;
@@ -86,7 +114,9 @@ my $numinputs = 0;
 my $numpass = 0;
 my @failingFiles = ();
 for my $name(@names) {
-    print "$name\n";
+    if ($verbose) {
+        print "$name\n";
+    }
     die "No such file $name\n" unless -f "$name";
     ++$numinputs;
 
@@ -99,7 +129,7 @@ for my $name(@names) {
     push @outfiles, $name;
     $outfile2command{$name} = "ORIGINAL: $name";
     eval {
-        my $flags = "--prettyPrint";
+        my $flags = "--prettyPrint $ccparseOptions";
 #          my $cppflags = "-lang-c++";      # This doesn't work!
 
         my $cpp = "cpp";
@@ -111,10 +141,10 @@ for my $name(@names) {
         # because the latter produces a spurious warning, "is shorter
         # than expected", from GCC cpp on Windows when the input file
         # contains CRLF line endings.
-        run_only "cat $outname.1rawout.cc | $cpp | perl ./chop_out", "$outname.2out.cc";
+        run_only "cat $outname.1rawout.cc | $cpp | perl $elsadir/chop_out", "$outname.2out.cc";
 
         run_command "$parser $flags $outname.2out.cc", "$outname.3rawout.cc";
-        run_only "cat $outname.3rawout.cc | $cpp | perl ./chop_out", "$outname.4out.cc";
+        run_only "cat $outname.3rawout.cc | $cpp | perl $elsadir/chop_out", "$outname.4out.cc";
     };
     if ($@) {
         dump_outfiles();
@@ -138,15 +168,18 @@ for my $name(@names) {
     }
 }
 
-print "";
-print "Num inputs $numinputs\n";
-print "Num pass   $numpass\n";
+if ($verbose) {
+  print "Num inputs $numinputs\n";
+  print "Num pass   $numpass\n";
+}
 if (@failingFiles) {
     print ("Failing files: ", join(' ', @failingFiles), "\n");
 }
 
 if ($numinputs==$numpass) {
-    print "PASS\n";
+    if ($verbose) {
+        print "PASS\n";
+    }
     exit 0;
 } else {
     print "FAIL\n";
