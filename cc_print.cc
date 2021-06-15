@@ -14,11 +14,6 @@
 #include <stdlib.h>             // getenv
 
 
-// set this environment variable to see the twalk_layer debugging
-// output
-OStreamOutStream treeWalkOut0(cout);
-TreeWalkOutStream treeWalkOut(treeWalkOut0, getenv("TWALK_VERBOSE"));
-
 // This is a dummy global so that this file will compile both in
 // default mode and in qualifiers mode.
 class dummyType;                // This does nothing.
@@ -151,22 +146,6 @@ TreeWalkOutStream & TreeWalkOutStream::operator << (ostream& (*manipfunc)(ostrea
   if (on) out << manipfunc;
   return *this;
 }
-
-// **** class TreeWalkDebug
-
-TreeWalkDebug::TreeWalkDebug(char const *message, TreeWalkOutStream &out)
-  : out(out)
-{
-  out << message << endl;
-  out.flush();
-  out.down();
-}
-
-TreeWalkDebug::~TreeWalkDebug()
-{
-  out.up();
-}
-
 
 // **************** class TypePrinter
 
@@ -762,8 +741,6 @@ void printDeclaration
   // used to look up the variable's scope
   Variable *var)
 {
-  TreeWalkDebug treeDebug("printDeclaration");
-
   // mask off flags used for internal purposes, so all that's
   // left is the flags that were present in the source
   dflags = (DeclFlags)(dflags & DF_SOURCEFLAGS);
@@ -807,8 +784,6 @@ void printDeclaration
 // more specialized version of the previous function
 void printVar(PrintEnv &env, Variable *var, PQName const * /*nullable*/ pqname)
 {
-  TreeWalkDebug treeDebug("printVar");
-
   TypeLike const *type0 = env.getTypeLike(var);
 
   printDeclaration(env, var->flags,
@@ -823,7 +798,6 @@ void printArgExprList(PrintEnv &env, FakeList<ArgExpression> *list);
 // ------------------- TranslationUnit --------------------
 void TranslationUnit::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("TranslationUnit");
   FOREACH_ASTLIST(TopForm, topForms, iter) {
     iter.data()->print(env);
   }
@@ -832,14 +806,12 @@ void TranslationUnit::print(PrintEnv &env) const
 // --------------------- TopForm ---------------------
 void TF_decl::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("TF_decl");
   env.loc = loc;
   decl->print(env);
 }
 
 void TF_func::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("TF_func");
   env << "\n";
   env.loc = loc;
   f->print(env);
@@ -847,14 +819,12 @@ void TF_func::print(PrintEnv &env) const
 
 void TF_template::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("TF_template");
   env.loc = loc;
   td->print(env);
 }
 
 void TF_explicitInst::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("TF_explicitInst");
   env.loc = loc;
   env << "template ";
   d->print(env);
@@ -862,7 +832,6 @@ void TF_explicitInst::print(PrintEnv &env) const
 
 void TF_linkage::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("TF_linkage");
   env.loc = loc;
   env << "extern " << linkageType;
   PairDelim pair(env, "", " {\n", "}\n");
@@ -871,7 +840,6 @@ void TF_linkage::print(PrintEnv &env) const
 
 void TF_one_linkage::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("TF_one_linkage");
   env.loc = loc;
   env << "extern " << linkageType << " ";
   form->print(env);
@@ -879,14 +847,12 @@ void TF_one_linkage::print(PrintEnv &env) const
 
 void TF_asm::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("TF_asm");
   env.loc = loc;
   env << "asm(" << text << ");\n";
 }
 
 void TF_namespaceDefn::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("TF_namespaceDefn");
   env.loc = loc;
   env << "namespace " << (name? name : "/*anon*/") << " {\n";
   FOREACH_ASTLIST(TopForm, forms, iter) {
@@ -897,7 +863,6 @@ void TF_namespaceDefn::print(PrintEnv &env) const
 
 void TF_namespaceDecl::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("TF_namespaceDecl");
   env.loc = loc;
   decl->print(env);
 }
@@ -988,8 +953,6 @@ static void printTypeSpecifierAndDeclarator(
 
 void Function::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("Function");
-
   // TODO: Remove this stuff.
   TypeLike const *type0 = env.typePrinter.getFunctionTypeLike(this);
   Restorer<bool> res0(CTypePrinter::enabled, type0 == funcType);
@@ -1056,8 +1019,6 @@ void Function::print(PrintEnv &env) const
 // -------------------- Declaration -------------------
 void Declaration::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("Declaration");
-
   DeclFlags sourceFlags = dflags & DF_SOURCEFLAGS;
   if (sourceFlags) {
     env << toString(sourceFlags) << " ";
@@ -1102,8 +1063,6 @@ void printInitializerOpt(PrintEnv &env, Initializer /*nullable*/ *init)
 
 void ASTTypeId::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("ASTTypeId");
-
   printTypeSpecifierAndDeclarator(env, spec, decl);
 }
 
@@ -1176,7 +1135,6 @@ void PQ_template::print(PrintEnv &env) const
 void TS_name::print(PrintEnv &env) const
 {
   xassert(0);                   // I'll bet this is never called.
-//    TreeWalkDebug treeDebug("TS_name");
 //    env << toString(ql);          // see string toString(class dummyType*) above
 //    name->print(env);
 }
@@ -1184,13 +1142,11 @@ void TS_name::print(PrintEnv &env) const
 void TS_simple::print(PrintEnv &env) const
 {
   xassert(0);                   // I'll bet this is never called.
-//    TreeWalkDebug treeDebug("TS_simple");
 //    env << toString(ql);          // see string toString(class dummyType*) above
 }
 
 void TS_elaborated::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("TS_elaborated");
   env.loc = loc;
   env << toString(ql);          // see string toString(class dummyType*) above
   env << toString(keyword) << ' ';
@@ -1199,7 +1155,6 @@ void TS_elaborated::print(PrintEnv &env) const
 
 void TS_classSpec::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("TS_classSpec");
   env << toString(ql);          // see string toString(class dummyType*) above
   env << toString(cv);
   env << toString(keyword) << ' ';
@@ -1221,7 +1176,6 @@ void TS_classSpec::print(PrintEnv &env) const
 
 void TS_enumSpec::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("TS_enumSpec");
   env << toString(ql);          // see string toString(class dummyType*) above
   env << toString(cv);
   env << "enum ";
@@ -1282,7 +1236,6 @@ void TS_enumSpec::idetailPrint(PrintEnv &env) const
 
 // ---------------------- BaseClassSpec ----------------------
 void BaseClassSpec::print(PrintEnv &env) const {
-  TreeWalkDebug treeDebug("BaseClassSpec");
   if (isVirtual) env << "virtual ";
   if (access!=AK_UNSPECIFIED) env << toString(access) << " ";
   env << name->toString();
@@ -1294,20 +1247,16 @@ void BaseClassSpec::print(PrintEnv &env) const {
 // ---------------------- Member ----------------------
 void MR_decl::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("MR_decl");
   d->print(env);
 }
 
 void MR_func::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("MR_func");
   f->print(env);
 }
 
 void MR_access::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("MR_access");
-
   // Print access specifiers un-intended.
   env.out->up();
 
@@ -1318,13 +1267,11 @@ void MR_access::print(PrintEnv &env) const
 
 void MR_usingDecl::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("MR_usingDecl");
   decl->print(env);
 }
 
 void MR_template::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("MR_template");
   d->print(env);
 }
 
@@ -1332,7 +1279,6 @@ void MR_template::print(PrintEnv &env) const
 // -------------------- Enumerator --------------------
 void Enumerator::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("Enumerator");
   env << name;
   if (expr) {
     env << '=';
@@ -1344,8 +1290,6 @@ void Enumerator::print(PrintEnv &env) const
 // -------------------- Declarator --------------------
 void Declarator::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("Declarator");
-
   printVar(env, var, decl->getDeclaratorId());
   D_bitfield *b = dynamic_cast<D_bitfield*>(decl);
   if (b) {
@@ -1464,7 +1408,6 @@ void D_grouping::detailPrint(PrintEnv &env) const
 // ------------------- ExceptionSpec --------------------
 void ExceptionSpec::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("ExceptionSpec");
   env << "throw(";
   FAKELIST_FOREACH_NC(ASTTypeId, types, iter) {
     if (iter != fl_first(types)) {
@@ -1501,7 +1444,6 @@ void ON_conversion::print(PrintEnv &env) const
 // ---------------------- Statement ---------------------
 void Statement::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("Statement");
   env.loc = loc;
   iprint(env);
   //    env << ";\n";
@@ -1510,20 +1452,17 @@ void Statement::print(PrintEnv &env) const
 // no-op
 void S_skip::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_skip::iprint");
   env << ";\n";
 }
 
 void S_label::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_label::iprint");
   env << name << ':';
   s->print(env);
 }
 
 void S_case::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_case::iprint");
   env << "case";
   expr->print(env, OPREC_LOWEST);
   env << ':';
@@ -1532,21 +1471,18 @@ void S_case::iprint(PrintEnv &env) const
 
 void S_default::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_default::iprint");
   env << "default:";
   s->print(env);
 }
 
 void S_expr::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_expr::iprint");
   expr->print(env);
   env << ";\n";
 }
 
 void S_compound::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_compound::iprint");
   PairDelim pair(env, "", "{\n", "}\n");
   FOREACH_ASTLIST(Statement, stmts, iter) {
     iter.data()->print(env);
@@ -1555,7 +1491,6 @@ void S_compound::iprint(PrintEnv &env) const
 
 void S_if::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_if::iprint");
   {
     PairDelim pair(env, "if ", "(", ")");
     cond->print(env);
@@ -1567,7 +1502,6 @@ void S_if::iprint(PrintEnv &env) const
 
 void S_switch::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_switch::iprint");
   {
     PairDelim pair(env, "switch ", "(", ")");
     cond->print(env);
@@ -1577,7 +1511,6 @@ void S_switch::iprint(PrintEnv &env) const
 
 void S_while::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_while::iprint");
   {
     PairDelim pair(env, "while ", "(", ")");
     cond->print(env);
@@ -1587,7 +1520,6 @@ void S_while::iprint(PrintEnv &env) const
 
 void S_doWhile::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_doWhile::iprint");
   {
     PairDelim pair(env, "do");
     body->print(env);
@@ -1601,7 +1533,6 @@ void S_doWhile::iprint(PrintEnv &env) const
 
 void S_for::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_for::iprint");
   {
     PairDelim pair(env, "for ", "(", ")");
     init->print(env);
@@ -1616,19 +1547,16 @@ void S_for::iprint(PrintEnv &env) const
 
 void S_break::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_break::iprint");
   env << "break;\n";
 }
 
 void S_continue::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_continue::iprint");
   env << "continue;\n";
 }
 
 void S_return::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_return::iprint");
   env << "return";
   if (expr) {
     env << " ";
@@ -1641,7 +1569,6 @@ void S_goto::iprint(PrintEnv &env) const
 {
   // dsw: When doing a control-flow pass, keep a current function so
   // we know where to look for the label.
-  TreeWalkDebug treeDebug("S_goto::iprint");
   env << "goto ";
   env << target;
   env << ";\n";
@@ -1649,14 +1576,12 @@ void S_goto::iprint(PrintEnv &env) const
 
 void S_decl::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_decl::iprint");
   decl->print(env);
   //      env << ";\n";
 }
 
 void S_try::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_try::iprint");
   env << "try";
   body->print(env);
   FAKELIST_FOREACH_NC(Handler, handlers, iter) {
@@ -1666,13 +1591,11 @@ void S_try::iprint(PrintEnv &env) const
 
 void S_asm::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_asm::iprint");
   env << "asm(" << text << ");\n";
 }
 
 void S_namespaceDecl::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_namespaceDecl::iprint");
   decl->print(env);
 }
 
@@ -1683,14 +1606,12 @@ void S_namespaceDecl::iprint(PrintEnv &env) const
 // this situation: if (gronk()) {...
 void CN_expr::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("CN_expr");
   expr->print(env);
 }
 
 // this situation: if (bool b=gronk()) {...
 void CN_decl::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("CN_decl");
   typeId->print(env);
 }
 
@@ -1698,7 +1619,6 @@ void CN_decl::print(PrintEnv &env) const
 // catch clause
 void Handler::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("Handler");
   {
     PairDelim pair(env, "catch ", "(", ") ");
     if (isEllipsis()) {
@@ -1715,7 +1635,6 @@ void Handler::print(PrintEnv &env) const
 // ------------------- Full Expression print -----------------------
 void FullExpression::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("FullExpression");
   // FIX: for now I omit printing the declarations of the temporaries
   // since we really don't have a syntax for it.  We would have to
   // print some curlies somewhere to make it legal to parse it back in
@@ -1741,8 +1660,6 @@ void FullExpression::print(PrintEnv &env) const
 
 void Expression::print(PrintEnv &env, OperatorPrecedence parentPrec) const
 {
-  TreeWalkDebug treeDebug("Expression");
-
   OperatorPrecedence thisPrec = this->getPrecedence();
   if (thisPrec >= parentPrec) {
     PairDelim pair(env, "", "(", ")");
@@ -1758,7 +1675,6 @@ void Expression::print(PrintEnv &env, OperatorPrecedence parentPrec) const
 
 string Expression::exprToString() const
 {
-  TreeWalkDebug treeDebug("Expression::exprToString");
   stringBuilder sb;
   StringBuilderOutStream out0(sb);
   CodeOutStream codeOut(out0);
@@ -1799,7 +1715,6 @@ int expr_debugPrint(Expression const *e)
 
 void E_boolLit::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_boolLit::iprint");
   env << b;
 }
 
@@ -1811,7 +1726,6 @@ OperatorPrecedence E_boolLit::getPrecedence() const
 
 void E_intLit::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_intLit::iprint");
   // FIX: do this correctly from the internal representation
   // fails to print the trailing U for an unsigned int.
 //    env << i;
@@ -1826,7 +1740,6 @@ OperatorPrecedence E_intLit::getPrecedence() const
 
 void E_floatLit::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_floatLit::iprint");
   // FIX: do this correctly from the internal representation
   // this fails to print ".0" for a float/double that happens to lie
   // on an integer boundary
@@ -1844,8 +1757,6 @@ OperatorPrecedence E_floatLit::getPrecedence() const
 
 void E_stringLit::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_stringLit::iprint");
-
   E_stringLit const *p = this;
   while (p) {
     env << p->text;
@@ -1864,7 +1775,6 @@ OperatorPrecedence E_stringLit::getPrecedence() const
 
 void E_charLit::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_charLit::iprint");
   env << text;
 }
 
@@ -1876,7 +1786,6 @@ OperatorPrecedence E_charLit::getPrecedence() const
 
 void E_this::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_this::iprint");
   env << "this";
 }
 
@@ -1975,7 +1884,6 @@ void printTemplateArgs(PrintEnv &env, Variable *var)
 
 void E_variable::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_variable::iprint");
   if (var && var->isBoundTemplateParam()) {
     // this is a bound template variable, so print its value instead
     // of printing its name
@@ -1999,7 +1907,6 @@ OperatorPrecedence E_variable::getPrecedence() const
 
 void printArgExprList(PrintEnv &env, FakeList<ArgExpression> *list)
 {
-  TreeWalkDebug treeDebug("printArgExprList");
   bool first_time = true;
   FAKELIST_FOREACH_NC(ArgExpression, list, iter) {
     if (first_time) first_time = false;
@@ -2010,7 +1917,6 @@ void printArgExprList(PrintEnv &env, FakeList<ArgExpression> *list)
 
 void E_funCall::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_funCall::iprint");
   func->print(env, this->getPrecedence());
   PairDelim pair(env, "", "(", ")");
   printArgExprList(env, args);
@@ -2024,8 +1930,6 @@ OperatorPrecedence E_funCall::getPrecedence() const
 
 void E_constructor::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_constructor::iprint");
-
   TypeLike const *type0 = env.typePrinter.getE_constructorTypeLike(this);
   Restorer<bool> res0(CTypePrinter::enabled, type == type0);
 
@@ -2063,7 +1967,6 @@ void printVariableName(PrintEnv &env, Variable *var)
 
 void E_fieldAcc::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_fieldAcc::iprint");
   obj->print(env, this->getPrecedence());
   env << '.';
   if (field &&
@@ -2092,8 +1995,6 @@ OperatorPrecedence E_fieldAcc::getPrecedence() const
 
 void E_arrow::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_arrow::iprint");
-
   // E_arrow shouldn't normally be present in code that is to be
   // prettyprinted, so it doesn't much matter what this does.
   obj->print(env, this->getPrecedence());
@@ -2109,8 +2010,6 @@ OperatorPrecedence E_arrow::getPrecedence() const
 
 void E_sizeof::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_sizeof::iprint");
-
   env << "sizeof(";
   expr->print(env, OPREC_LOWEST);
   env << ")";
@@ -2126,7 +2025,6 @@ OperatorPrecedence E_sizeof::getPrecedence() const
 // dsw: unary expression?
 void E_unary::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_unary::iprint");
   env << toString(op);
   expr->print(env, this->getPrecedence());
 }
@@ -2145,7 +2043,6 @@ OperatorPrecedence E_unary::getPrecedence() const
 
 void E_effect::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_effect::iprint");
   if (!isPostfix(op)) env << toString(op);
   expr->print(env, this->getPrecedence());
   if (isPostfix(op)) env << toString(op);
@@ -2186,8 +2083,6 @@ static bool bothGray(OperatorPrecedence p1, OperatorPrecedence p2)
 // dsw: binary operator.
 void E_binary::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_binary::iprint");
-
   OperatorPrecedence thisPrec = this->getPrecedence();
   OperatorPrecedence e1Prec   = e1->getPrecedence();
   OperatorPrecedence e2Prec   = e2->getPrecedence();
@@ -2285,7 +2180,6 @@ OperatorPrecedence E_binary::getPrecedence() const
 
 void E_addrOf::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_addrOf::iprint");
   env << "&";
   if (expr->isE_variable()) {
     // could be forming ptr-to-member, do not parenthesize
@@ -2304,7 +2198,6 @@ OperatorPrecedence E_addrOf::getPrecedence() const
 
 void E_deref::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_deref::iprint");
   env << "*";
   ptr->print(env, this->getPrecedence());
 }
@@ -2318,7 +2211,6 @@ OperatorPrecedence E_deref::getPrecedence() const
 // C-style cast
 void E_cast::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_cast::iprint");
   {
     PairDelim pair(env, "", "(", ")");
     ctype->print(env);
@@ -2335,8 +2227,6 @@ OperatorPrecedence E_cast::getPrecedence() const
 // ? : syntax
 void E_cond::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_cond::iprint");
-
   cond->print(env, this->getPrecedence());
 
   if (th) {
@@ -2360,7 +2250,6 @@ OperatorPrecedence E_cond::getPrecedence() const
 
 void E_sizeofType::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_sizeofType::iprint");
   PairDelim pair(env, "sizeof", "(", ")"); // NOTE yes, you do want the parens because argument is a type.
   atype->print(env);
 }
@@ -2373,8 +2262,6 @@ OperatorPrecedence E_sizeofType::getPrecedence() const
 
 void E_assign::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_assign::iprint");
-
   target->print(env, this->getPrecedence());
 
   env << " ";
@@ -2394,7 +2281,6 @@ OperatorPrecedence E_assign::getPrecedence() const
 
 void E_new::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_new::iprint");
   if (colonColon) env << "::";
   env << "new ";
   if (placementArgs) {
@@ -2439,7 +2325,6 @@ OperatorPrecedence E_new::getPrecedence() const
 
 void E_delete::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_delete::iprint");
   if (colonColon) env << "::";
   env << "delete";
   if (array) env << "[]";
@@ -2460,7 +2345,6 @@ OperatorPrecedence E_delete::getPrecedence() const
 
 void E_throw::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_throw::iprint");
   env << "throw";
   if (expr) {
     env << " ";
@@ -2477,7 +2361,6 @@ OperatorPrecedence E_throw::getPrecedence() const
 // C++-style cast
 void E_keywordCast::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_keywordCast::iprint");
   env << toString(key);
   {
     PairDelim pair(env, "", "<", ">");
@@ -2499,7 +2382,6 @@ OperatorPrecedence E_keywordCast::getPrecedence() const
 // RTTI: typeid(expression)
 void E_typeidExpr::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_typeidExpr::iprint");
   PairDelim pair(env, "typeid", "(", ")");
   expr->print(env, this->getPrecedence());
 }
@@ -2514,7 +2396,6 @@ OperatorPrecedence E_typeidExpr::getPrecedence() const
 // RTTI: typeid(type)
 void E_typeidType::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_typeidType::iprint");
   PairDelim pair(env, "typeid", "(", ")");
   ttype->print(env);
 }
@@ -2528,8 +2409,6 @@ OperatorPrecedence E_typeidType::getPrecedence() const
 
 void E_grouping::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_grouping::iprint");
-
   // Do not print these parentheses.  The printer will insert parens
   // where they are needed.
   expr->print(env, OPREC_LOWEST);
@@ -2544,8 +2423,6 @@ OperatorPrecedence E_grouping::getPrecedence() const
 
 void E_implicitStandardConversion::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_implicitStandardConversion::iprint");
-
   env << "/*ISC:" << type->toString() << "*/";
   expr->iprint(env);
 }
@@ -2565,7 +2442,6 @@ OperatorPrecedence E_implicitStandardConversion::getPrecedence() const
 //         ^ only
 void IN_expr::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("IN_expr");
   e->print(env, OPREC_ASSIGN);
 }
 
@@ -2573,7 +2449,6 @@ void IN_expr::print(PrintEnv &env) const
 //           ^^^^^^^^^ only
 void IN_compound::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("IN_compound");
   PairDelim pair(env, "", "{\n", "\n}");
   bool first_time = true;
   FOREACH_ASTLIST(Initializer, inits, iter) {
@@ -2585,7 +2460,6 @@ void IN_compound::print(PrintEnv &env) const
 
 void IN_ctor::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("IN_ctor");
   printArgExprList(env, args);
 }
 
@@ -2594,8 +2468,6 @@ void IN_ctor::print(PrintEnv &env) const
 // -------------------- TemplateDeclaration ---------------
 void TemplateDeclaration::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("TemplateDeclaration");
-
   env << "template <";
   int ct=0;
   for (TemplateParameter *iter = params; iter; iter = iter->next) {
@@ -2625,7 +2497,6 @@ void printFuncInstantiations(PrintEnv &env, Variable const *var)
 
 void TD_func::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("TD_func");
   f->print(env);
 
   // print instantiations
@@ -2703,7 +2574,6 @@ void TD_tmember::iprint(PrintEnv &env) const
 // ------------------- TemplateParameter ------------------
 void TP_type::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("TP_type");
   env << "class " << (name? name : "/*anon*/");
 
   if (defaultType) {
@@ -2714,7 +2584,6 @@ void TP_type::print(PrintEnv &env) const
 
 void TP_nontype::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("TP_nontype");
   param->print(env);
 }
 

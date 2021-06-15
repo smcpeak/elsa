@@ -1070,7 +1070,6 @@ bool E_gnuCond::extHasUnparenthesizedGT()
 void TS_typeof::print(PrintEnv &env) const
 {
   xassert(0);                   // I'll bet this is never called.
-//    TreeWalkDebug treeDebug("TS_typeof_expr");
 }
 
 
@@ -1116,14 +1115,12 @@ void ASTTypeof::addAmbiguity(ASTTypeof *alt)
 
 void S_function::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_function::iprint");
   f->print(env);
 }
 
 
 void S_rangeCase::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_rangeCase::iprint");
   *env.out << "case";
   exprLo->print(env, OPREC_LOWEST);
   *env.out << "...";
@@ -1135,7 +1132,6 @@ void S_rangeCase::iprint(PrintEnv &env) const
 
 void S_computedGoto::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("S_computedGoto::iprint");
   *env.out << "goto *";
   target->print(env, OPREC_PREFIX);
   *env.out << ";\n";
@@ -1144,7 +1140,6 @@ void S_computedGoto::iprint(PrintEnv &env) const
 
 void E_compoundLit::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_compoundLit::iprint");
   {
     PairDelim pair(env, "", "(", ")");
     stype->print(env);
@@ -1161,7 +1156,6 @@ OperatorPrecedence E_compoundLit::getPrecedence() const
 
 void E___builtin_constant_p::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E___builtin_constant_p::iprint");
   PairDelim pair(env, "__builtin_constant_p", "(", ")");
   expr->print(env, OPREC_LOWEST);
 }
@@ -1174,7 +1168,6 @@ OperatorPrecedence E___builtin_constant_p::getPrecedence() const
 
 void E___builtin_va_arg::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E___builtin_va_arg::iprint");
   PairDelim pair(env, "__builtin_va_arg", "(", ")");
   expr->print(env, OPREC_LOWEST);
   *env.out << ", ";
@@ -1189,7 +1182,6 @@ OperatorPrecedence E___builtin_va_arg::getPrecedence() const
 
 void E_alignofType::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_alignofType::iprint");
   PairDelim pair(env, "__alignof__", "(", ")");
   atype->print(env);
 }
@@ -1202,7 +1194,6 @@ OperatorPrecedence E_alignofType::getPrecedence() const
 
 void E_alignofExpr::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_alignofType::iprint");
   PairDelim pair(env, "__alignof__", "(", ")");
   expr->print(env, OPREC_LOWEST);
 }
@@ -1215,7 +1206,6 @@ OperatorPrecedence E_alignofExpr::getPrecedence() const
 
 // void E_offsetof:iprint(PrintEnv &env) const
 // {
-//   TreeWalkDebug treeDebug("E_alignofType::iprint");
 //   PairDelim pair(env, "__offsetof__", "(", ")");
 //   atype->print(env);
 //   fieldName->print(env);
@@ -1224,7 +1214,6 @@ OperatorPrecedence E_alignofExpr::getPrecedence() const
 
 void E_statement::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_statement::iprint");
   PairDelim pair(env, "", "(", ")");
   s->iprint(env);
 }
@@ -1237,7 +1226,6 @@ OperatorPrecedence E_statement::getPrecedence() const
 
 void E_gnuCond::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_gnuCond::iprint");
   cond->print(env, this->getPrecedence());
   *env.out << " ?: ";
   el->print(env, this->getPrecedence());
@@ -1251,7 +1239,6 @@ OperatorPrecedence E_gnuCond::getPrecedence() const
 
 void E_addrOfLabel::iprint(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("E_addrOfLabel::iprint");
   *env.out << "&&" << labelName;
 }
 
@@ -1281,14 +1268,12 @@ void IN_designated::print(PrintEnv &env) const
 
 void FieldDesignator::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("FieldDesignator");
   xassert(id);
   *env.out << "." << id;
 }
 
 void SubscriptDesignator::print(PrintEnv &env) const
 {
-  TreeWalkDebug treeDebug("SubscriptDesignator");
   xassert(idx_expr);
   PairDelim pair(env, "", "[", "]");
   idx_expr->print(env, OPREC_LOWEST);

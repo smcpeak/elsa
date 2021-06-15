@@ -220,17 +220,6 @@ class TreeWalkOutStream : public OutStream {
   #undef MAKE_INSERTER
 };
 
-extern TreeWalkOutStream treeWalkOut;
-
-// a class to make on the stack at ever frame of the tree walk that
-// will automatically manage the indentation level of the
-// TreeWalkOutStream given
-class TreeWalkDebug {
-  TreeWalkOutStream &out;
-  public:
-  TreeWalkDebug(char const *message, TreeWalkOutStream &out = treeWalkOut);
-  ~TreeWalkDebug();
-};
 
 // In Oink, TypeLike is a superclass of Type but here we will just
 // make it synonymous with Type.  oink/cc_print.h.cpatch comments-out
