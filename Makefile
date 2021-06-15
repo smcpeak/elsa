@@ -279,64 +279,64 @@ TOCLEAN += cc.gr.gen.h cc.gr.gen.cc cc.gr.gen.out
 # list of modules needed for the parser; ideally they're in an order
 # that finds serious compilation problems earliest (it's ok to
 # rearrange as different parts of the code are in flux)
-CCPARSE_OBJS :=
-CCPARSE_OBJS += elsaparse.o
-CCPARSE_OBJS += mtype.o
-CCPARSE_OBJS += integrity.o
-CCPARSE_OBJS += astvisit.o
-CCPARSE_OBJS += template.o
-CCPARSE_OBJS += cc_env.o
-CCPARSE_OBJS += cc_tcheck.o
-CCPARSE_OBJS += const_eval.o
-CCPARSE_OBJS += implint.o
-CCPARSE_OBJS += serialno.o
-CCPARSE_OBJS += cc_scope.o
-CCPARSE_OBJS += cc_elaborate.o
-CCPARSE_OBJS += ast_build.o
-CCPARSE_OBJS += $(LEXER_OBJS)
-CCPARSE_OBJS += $(EXT_OBJS)
-CCPARSE_OBJS += builtinops.o
-CCPARSE_OBJS += cfg.o
-CCPARSE_OBJS += sprint.o
-CCPARSE_OBJS += mangle.o
-CCPARSE_OBJS += cc_err.o
-CCPARSE_OBJS += cc_type.o
-CCPARSE_OBJS += stdconv.o
-CCPARSE_OBJS += implconv.o
-CCPARSE_OBJS += overload.o
-CCPARSE_OBJS += typelistiter.o
-CCPARSE_OBJS += cc.ast.gen.o
-CCPARSE_OBJS += cc.gr.gen.o
-CCPARSE_OBJS += parssppt.o
-CCPARSE_OBJS += cc_flags.o
-CCPARSE_OBJS += cc_print.o
-CCPARSE_OBJS += cc_ast_aux.o
-CCPARSE_OBJS += variable.o
-CCPARSE_OBJS += lookupset.o
-CCPARSE_OBJS += ccparse.o
+ELSA_OBJS :=
+ELSA_OBJS += elsaparse.o
+ELSA_OBJS += mtype.o
+ELSA_OBJS += integrity.o
+ELSA_OBJS += astvisit.o
+ELSA_OBJS += template.o
+ELSA_OBJS += cc_env.o
+ELSA_OBJS += cc_tcheck.o
+ELSA_OBJS += const_eval.o
+ELSA_OBJS += implint.o
+ELSA_OBJS += serialno.o
+ELSA_OBJS += cc_scope.o
+ELSA_OBJS += cc_elaborate.o
+ELSA_OBJS += ast_build.o
+ELSA_OBJS += $(LEXER_OBJS)
+ELSA_OBJS += $(EXT_OBJS)
+ELSA_OBJS += builtinops.o
+ELSA_OBJS += cfg.o
+ELSA_OBJS += sprint.o
+ELSA_OBJS += mangle.o
+ELSA_OBJS += cc_err.o
+ELSA_OBJS += cc_type.o
+ELSA_OBJS += stdconv.o
+ELSA_OBJS += implconv.o
+ELSA_OBJS += overload.o
+ELSA_OBJS += typelistiter.o
+ELSA_OBJS += cc.ast.gen.o
+ELSA_OBJS += cc.gr.gen.o
+ELSA_OBJS += parssppt.o
+ELSA_OBJS += cc_flags.o
+ELSA_OBJS += cc_print.o
+ELSA_OBJS += cc_ast_aux.o
+ELSA_OBJS += variable.o
+ELSA_OBJS += lookupset.o
+ELSA_OBJS += ccparse.o
 
 # Parser as a library.
 TOCLEAN += libelsa.a
-libelsa.a: $(CCPARSE_OBJS)
+libelsa.a: $(ELSA_OBJS)
 	rm -f $@
-	$(AR) -r $@ $(CCPARSE_OBJS)
+	$(AR) -r $@ $(ELSA_OBJS)
 	-$(RANLIB) $@
 
 
 # Modules that are part of 'ccparse' but not 'libelsa'.  These have
 # the 'main()' function and some unit test modules.
-CCPARSE_PROG_OBJS :=
-CCPARSE_PROG_OBJS += main.o
-CCPARSE_PROG_OBJS += test-astbuild.o
+CCPARSE_OBJS :=
+CCPARSE_OBJS += main.o
+CCPARSE_OBJS += test-astbuild.o
 
 # parser binary
-ccparse.exe: $(CCPARSE_PROG_OBJS) libelsa.a $(LIBS)
+ccparse.exe: $(CCPARSE_OBJS) libelsa.a $(LIBS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^
 	./ccparse.exe in/t0001.cc
 
 
 # -------------------- semgrep --------------------
-semgrep.exe: $(CCPARSE_OBJS) semgrep.o $(LIBS)
+semgrep.exe: semgrep.o libelsa.a $(LIBS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^
 
 
