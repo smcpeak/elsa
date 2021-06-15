@@ -40,12 +40,6 @@ class PQName {
   pure_virtual void print(PrintEnv &env) const;
 }
 
-verbatim {
-  // so clients outside cc_print.cc can print these lists; this
-  // does *not* print the surrounding angle brackets
-  void printTemplateArgumentFakeList(PrintEnv &env, FakeList<TemplateArgument> *args);
-}
-
 
 class TypeSpecifier {
   pure_virtual void print(PrintEnv &env) const;
