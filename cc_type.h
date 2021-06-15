@@ -75,10 +75,6 @@ class BasicTypeFactory;
 class TypePred;
 
 
-// This is a debugging aid.
-extern bool global_mayUseTypeAndVarToCString;
-
-
 // --------------------- type visitor -----------------------
 // Visitor that digs down into template arguments, among other things.
 // Like the AST visitors, the 'visit' functions return true to

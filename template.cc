@@ -41,17 +41,6 @@ void copyTemplateArgs(ObjList<STemplateArgument> &dest,
 }
 
 
-// Is it ok to call into these routines right now?  This is
-// part of a migration scheme, where dsw wants to ensure that
-// these routines aren't used in some contexts.
-static void checkOkToBeHere()
-{
-  if (!global_mayUseTypeAndVarToCString) {
-    xfailure("suspended during CTypePrinter::print");
-  }
-}
-
-
 // ------------------ TypeVariable ----------------
 TypeVariable::~TypeVariable()
 {}
@@ -59,8 +48,6 @@ TypeVariable::~TypeVariable()
 
 string TypeVariable::toCString() const
 {
-  checkOkToBeHere();
-
   if (!name) {
     return "/""*anon*/";
   }
@@ -122,7 +109,6 @@ PseudoInstantiation::~PseudoInstantiation()
 
 string PseudoInstantiation::toCString() const
 {
-  checkOkToBeHere();
   return stringc << name << sargsToString(args);
 }
 
@@ -172,7 +158,6 @@ DependentQType::~DependentQType()
 bool dqt_toString_failWhenRestIsNull = false;
 string DependentQType::toCString() const
 {
-  checkOkToBeHere();
   xassert(first);
 
 //   xassert(rest && "b6160580-54bb-4f08-a032-a69eb4791f3b");

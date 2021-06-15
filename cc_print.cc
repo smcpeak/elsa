@@ -170,9 +170,6 @@ bool CTypePrinter::enabled = true;
 
 void CTypePrinter::print(OutStream &out, TypeLike const *type, char const *name)
 {
-  // temporarily suspend the Type::toCString, Variable::toCString(),
-  // etc. methods
-  Restorer<bool> res0(global_mayUseTypeAndVarToCString, false);
   xassert(enabled);
   // see the note at the interface TypePrinter::print()
   Type const *type0 = static_cast<Type const *>(type);
