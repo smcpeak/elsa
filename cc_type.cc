@@ -166,13 +166,13 @@ AtomicType::~AtomicType()
 }
 
 
-DOWNCAST_EX_IMPL(AtomicType, SimpleType)
-DOWNCAST_EX_IMPL(AtomicType, NamedAtomicType)
-DOWNCAST_EX_IMPL(AtomicType, CompoundType)
-DOWNCAST_EX_IMPL(AtomicType, EnumType)
-DOWNCAST_EX_IMPL(AtomicType, TypeVariable)
-DOWNCAST_EX_IMPL(AtomicType, PseudoInstantiation)
-DOWNCAST_EX_IMPL(AtomicType, DependentQType)
+DOWNCAST_IMPL(AtomicType, SimpleType)
+DOWNCAST_IMPL(AtomicType, NamedAtomicType)
+DOWNCAST_IMPL(AtomicType, CompoundType)
+DOWNCAST_IMPL(AtomicType, EnumType)
+DOWNCAST_IMPL(AtomicType, TypeVariable)
+DOWNCAST_IMPL(AtomicType, PseudoInstantiation)
+DOWNCAST_IMPL(AtomicType, DependentQType)
 
 
 void AtomicType::gdb() const

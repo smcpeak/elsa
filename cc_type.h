@@ -159,31 +159,6 @@ public:
 };
 
 
-// ------------------------ downcast macros -------------------------
-// TODO: If these work out, move them to smbase/macros.h.
-
-// These have 'if' methods in addition to 'as'.
-#define DOWNCAST_EX_FN(destType)                                                \
-  destType const *as##destType##C() const;                                      \
-  destType *as##destType() { return const_cast<destType*>(as##destType##C()); } \
-  destType const *if##destType##C() const;                                      \
-  destType *if##destType() { return const_cast<destType*>(if##destType##C()); }
-
-#define DOWNCAST_EX_IMPL(inClass, destType)         \
-  destType const *inClass::as##destType##C() const  \
-  {                                                 \
-    xassert(is##destType());                        \
-    return static_cast<destType const*>(this);      \
-  }                                                 \
-  destType const *inClass::if##destType##C() const  \
-  {                                                 \
-    if (!is##destType()) {                          \
-      return NULL;                                  \
-    }                                               \
-    return static_cast<destType const*>(this);      \
-  }
-
-
 // --------------------- atomic types --------------------------
 // interface to types that are atomic in the sense that no
 // modifiers can be stripped away; see cc_type.html
@@ -217,13 +192,13 @@ public:     // funcs
   virtual bool isNamedAtomicType() const;    // default impl returns false
 
   // see smbase/macros.h
-  DOWNCAST_EX_FN(SimpleType)
-  DOWNCAST_EX_FN(NamedAtomicType)
-  DOWNCAST_EX_FN(CompoundType)
-  DOWNCAST_EX_FN(EnumType)
-  DOWNCAST_EX_FN(TypeVariable)
-  DOWNCAST_EX_FN(PseudoInstantiation)
-  DOWNCAST_EX_FN(DependentQType)
+  DOWNCAST_FN(SimpleType)
+  DOWNCAST_FN(NamedAtomicType)
+  DOWNCAST_FN(CompoundType)
+  DOWNCAST_FN(EnumType)
+  DOWNCAST_FN(TypeVariable)
+  DOWNCAST_FN(PseudoInstantiation)
+  DOWNCAST_FN(DependentQType)
 
   // concrete types do not have holes
   bool isConcrete() const
