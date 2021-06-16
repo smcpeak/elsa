@@ -204,7 +204,7 @@ Function *ElabVisitor::makeFunction(SourceLoc loc, Variable *var,
   Declarator *funcDecl = makeFuncDeclarator(loc, var, DC_FUNCTION);
 
   Function *f = new Function(
-    var->flags,       // this is too many (I only want syntactic); but won't hurt
+    var->flags & DF_SOURCEFLAGS,
     new TS_type(loc, ft->retType),
     funcDecl,
     inits,
