@@ -93,7 +93,7 @@ bool TestASTBuildVisitor::visitASTTypeId(ASTTypeId *originalId)
     //EXPECT_EQ(newString, originalString);
 
     // Run the integrity checker on the new fragment.
-    IntegrityVisitor ivis(this->inTemplate);
+    IntegrityVisitor ivis(m_inTemplate);
     newId->traverse(ivis);
 
     delete newId;

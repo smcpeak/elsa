@@ -23,9 +23,9 @@ private:     // funcs
 
 public:      // funcs
   // The integrity checks depend on whether we are in an uninstantiated
-  // template, which must be passed as the 'inTemplate' parameter.  When
-  // true, it means the topmost visited AST node is a descendant of
-  // TD_func, TD_decl, or TD_tmember.
+  // template (see comments on 'm_inTemplate' in cc_tcheck.ast for
+  // exactly what that means), which must be passed as the 'inTemplate'
+  // parameter.
   //
   // If this visitor is being launched from another visitor, pass the
   // outer visitor's 'inTemplate'.  Otherwise, one would usually pass

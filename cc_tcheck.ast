@@ -27,11 +27,18 @@ verbatim {
 
 custom ASTVisitor {
 public:      // custom data extensions
-  // this is true when we are inside the body of a template function
-  // or class (uninstantiated)
-  bool inTemplate;
+  // This is true when we are inside the body of a template function or
+  // class (uninstantiated).  That is, it is true when we are beneath
+  // TD_func, TD_decl, or TD_tmember (that has at least one template
+  // parameter), and not then inside a list of template instantiations.
+  //
+  // If a visitor uses this field, it should also require its initial
+  // value to be passed to the visitor constructor since a visitor
+  // traversal can start anywhere in the AST.  See IntegrityVisitor for
+  // an example.
+  bool m_inTemplate;
 }
-custom ASTVisitor_ctor { inTemplate=false; }
+custom ASTVisitor_ctor { m_inTemplate=false; }
 
 
 class TranslationUnit {
@@ -743,19 +750,19 @@ class TemplateDeclaration {
        custom preemptTraverse {
          // we are now in a template if we already were, or if this
          // declaration is not a complete specialization
-         Restorer<bool> r(vis.inTemplate, vis.inTemplate || params!=NULL);
+         Restorer<bool> r(vis.m_inTemplate, vis.m_inTemplate || params!=NULL);
        }
      }
 
   -> TD_decl {
        custom preemptTraverse {
-         Restorer<bool> r(vis.inTemplate, vis.inTemplate || params!=NULL);
+         Restorer<bool> r(vis.m_inTemplate, vis.m_inTemplate || params!=NULL);
        }
      }
 
   -> TD_tmember {
        custom preemptTraverse {
-         Restorer<bool> r(vis.inTemplate, vis.inTemplate || params!=NULL);
+         Restorer<bool> r(vis.m_inTemplate, vis.m_inTemplate || params!=NULL);
        }
      }
 }

@@ -4,10 +4,10 @@
 #include "integrity.h"         // this module
 
 
-IntegrityVisitor::IntegrityVisitor(bool inTemplate_)
+IntegrityVisitor::IntegrityVisitor(bool inTemplate)
   : ASTVisitorEx()
 {
-  this->inTemplate = inTemplate_;
+  m_inTemplate = inTemplate;
 }
 
 
@@ -62,7 +62,7 @@ bool IntegrityVisitor::visitDeclarator(Declarator *obj)
   }
 
   // make sure the type is not a DQT if we are not in a template
-  if (!inTemplate) {
+  if (!m_inTemplate) {
     checkNontemplateType(obj->var->type);
     checkNontemplateType(obj->type);
   }
@@ -92,7 +92,7 @@ bool IntegrityVisitor::visitExpression(Expression *obj)
   // TODO: Make a way for ASTVisitorEx to communicate to visitors
   // whether they are in template bodies or not.
   //
-  // 2006-05-30: Um, what was I thinking?  Why is 'inTemplate' not
+  // 2006-05-30: Um, what was I thinking?  Why is 'm_inTemplate' not
   // sufficient?
   #if 0
   if (obj->isE_grouping()) {
@@ -104,7 +104,7 @@ bool IntegrityVisitor::visitExpression(Expression *obj)
   #endif // 0
 
   // why was I not doing this before?  detects problem in/t0584.cc
-  if (!inTemplate && obj->type) {
+  if (!m_inTemplate && obj->type) {
     checkNontemplateType(obj->type);
   }
 
