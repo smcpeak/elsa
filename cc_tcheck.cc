@@ -2066,6 +2066,7 @@ Type *TS_elaborated::itcheck(Env &env, DeclFlags dflags)
       else {
         // make a forward-declared enum (gnu/d0083.c)
         EnumType *et = new EnumType(name->getName());
+        this->atype = et;
         return env.declareEnum(loc, et);
       }
     }
@@ -2082,7 +2083,7 @@ Type *TS_elaborated::itcheck(Env &env, DeclFlags dflags)
     }
     EnumType *et = tag->type->asCVAtomicType()->atomic->asEnumType();
 
-    this->atype = et;          // annotation
+    this->atype = et;
     return env.makeType(et);
   }
 
@@ -2092,7 +2093,7 @@ Type *TS_elaborated::itcheck(Env &env, DeclFlags dflags)
     ct = env.errorCompoundType;
   }
 
-  this->atype = ct;              // annotation
+  this->atype = ct;
 
   return ct->typedefVar->type;
 }
