@@ -6,6 +6,7 @@
 #include "cc_ast.h"                    // ModificationASTVisitor
 #include "cc_print.h"                  // PrintEnv, etc.
 #include "elsaparse.h"                 // ElsaParse
+#include "integrity.h"                 // IntegrityVisitor
 
 #include "sm-test.h"                   // EXPECT_EQ
 
@@ -91,7 +92,11 @@ bool TestASTBuildVisitor::visitASTTypeId(ASTTypeId *originalId)
     // will just be to exercise the machinery.
     //EXPECT_EQ(newString, originalString);
 
-    delete newName;
+    // Run the integrity checker on the new fragment.
+    IntegrityVisitor ivis(this->inTemplate);
+    newId->traverse(ivis);
+
+    delete newId;
   }
   catch (XUnimp &x) {
     if (verbose) {
