@@ -38,6 +38,41 @@
 // class if necessary to avoid yielding it as a semantic value.
 
 
+// Elsewhere, I prefer to order things that correspond to AST nodes in
+// the same order as they appear in this file.  For convenience, this is
+// a complete list of AST superclasses, in the same order as they appear
+// below, along with a brief description of what each one represents:
+//
+//   TranslationUnit         A complete C/C++ file with #included syntax.
+//   TopForm                 Top-level form in a TU.
+//   Function                Function definition.
+//   MemberInit              Class member initializer.
+//   Declaration             e.g., "int x, *y;".
+//   ASTTypeId               e.g., "int x" or just "int".
+//   PQName                  Possibly-qualified name, e.g., "std::cout".
+//   TypeSpecifier           The "int" in "int x, *y;".
+//   BaseClassSpec           Element of a list of base classes after ":".
+//   Enumerator              Element of an enumeration.
+//   MemberList              The "..." in "class Foo {...}".
+//   Member                  One member in a class definition.
+//   Declarator              The "x" and "*y" in "int x, *y;".
+//   IDeclarator             Inner declarator; e.g., "x", "*y", and "y".
+//   ExceptionSpec           Set of types that can be thrown.
+//   OperatorName            Name of an operator or conversion function.
+//   Statement               Statement in function definition.
+//   Condition               The condition of an 'if' or 'while'.
+//   Handler                 e.g., "catch (int x) {}".
+//   Expression              e.g., "1+2".
+//   FullExpression          Expression that is not a sub-expression.
+//   ArgExpression           Argument expression.
+//   ArgExpressionListOpt    Optional list of arguments.
+//   Initializer             Initializer as part of a declaration.
+//   TemplateDeclaration     e.g., "template <class T> ...".
+//   TemplateParameter       One parameter in a TemplateDeclaration.
+//   TemplateArgument        The "int" in "std::set<int>".
+//   NamespaceDecl           e.g., "namespace Foo {...}".
+
+
 // emitted verbatim into generated header (cc.ast.gen.h)
 verbatim {
   #include "cc_flags.h"         // CVFlags, DeclFlags, etc. (r)
