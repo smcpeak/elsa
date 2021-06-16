@@ -116,10 +116,12 @@ Variable *ElabVisitor::makeVariable(SourceLoc loc, StringRef name, Type *type, D
 
 
 // Variable -> D_name
+//
+// TODO: Remove this.
 D_name *ElabVisitor::makeD_name(SourceLoc loc, Variable *var)
 {
-  D_name *ret = new D_name(loc, new PQ_variable(loc, var));
-  return ret;
+  RESTORER(SourceLoc, enclosingStmtLoc, loc);
+  return m_astBuild.makeD_name(var);
 }
 
 
@@ -142,11 +144,11 @@ Declarator *ElabVisitor::makeDeclarator(SourceLoc loc, Variable *var, Declarator
 // and similar for a full (singleton) declaration
 Declaration *ElabVisitor::makeDeclaration(SourceLoc loc, Variable *var, DeclaratorContext context)
 {
-  Declarator *declarator = makeDeclarator(loc, var, context);
-  Declaration *declaration =
-    new Declaration(DF_NONE, new TS_type(loc, var->type),
-      FakeList<Declarator>::makeList(declarator));
-  return declaration;
+  // Set 'enclosingStmtLoc', which 'm_astBuild' uses.
+  RESTORER(SourceLoc, enclosingStmtLoc, loc);
+
+  // Build the declaration.
+  return m_astBuild.makeDeclaration(var, context);
 }
 
 

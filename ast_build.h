@@ -50,6 +50,20 @@ public:      // methods
   // wrap a pair of expressions in a list
   FakeList<ArgExpression> *makeExprList2(Expression *e1, Expression *e2);
 
+  // Given a Variable, create a D_name that refers to it.  This D_name
+  // must have additional IDeclarators wrapped around it in order to
+  // properly express the type of 'var'.
+  D_name *makeD_name(Variable *var);
+
+  // Given a base declarator (which should be a D_name), add more
+  // IDeclarators on top of it in order to denote 'type'.  Stop when we
+  // reach an atomic type, returning it.
+  CVAtomicType const *buildUpDeclarator(
+    Type const *type, IDeclarator *&idecl /*INOUT*/);
+
+  // Express 'atype' as a type specifier.
+  TypeSpecifier *makeTypeSpecifier(CVAtomicType const *atype);
+
   // Return a syntactic ASTTypeId denoting semantic 'type'.
   //
   // 'name' is used as the name of the innermost D_name.  If it is NULL
@@ -59,6 +73,10 @@ public:      // methods
   // 'type' is not 'const' because the returned syntax contains a
   // non-const pointer to it.
   ASTTypeId *makeASTTypeId(Type *type, PQName *name = NULL);
+
+  // Return a declaration for a variable.
+  Declaration *makeDeclaration(
+    Variable *var, DeclaratorContext context = DC_UNKNOWN);
 
   // Make a syntactic exception specification.
   ExceptionSpec *makeExceptionSpec(FunctionType::ExnSpec *srcSpec);

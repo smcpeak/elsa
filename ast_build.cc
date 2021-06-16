@@ -29,12 +29,16 @@ FakeList<ArgExpression> *ElsaASTBuild::makeExprList2(Expression *e1, Expression 
 }
 
 
-ASTTypeId *ElsaASTBuild::makeASTTypeId(Type *type, PQName *name)
+D_name *ElsaASTBuild::makeD_name(Variable *var)
 {
-  // Inner declarator that, together with the type specifier built at
-  // the end, denotes 'type'.  This gets built up as we examine 'type'.
-  IDeclarator *idecl = new D_name(loc(), name);
+  // TODO: This still uses PQ_variable, which I want to eliminate.
+  return new D_name(loc(), new PQ_variable(loc(), var));
+}
 
+
+CVAtomicType const *ElsaASTBuild::buildUpDeclarator(
+  Type const *type, IDeclarator *&idecl)
+{
   // Loop until we hit an atomic type.
   while (!type->isCVAtomicType()) {
     // Currently, my declarator printing code relies on the presence of
@@ -135,9 +139,12 @@ ASTTypeId *ElsaASTBuild::makeASTTypeId(Type *type, PQName *name)
   } // while (!atomic)
 
   // Loop terminates when 'type' is atomic.
-  CVAtomicType const *atype = type->asCVAtomicTypeC();
+  return type->asCVAtomicTypeC();
+}
 
-  // Express the atomic type as a type specifier.
+
+TypeSpecifier *ElsaASTBuild::makeTypeSpecifier(CVAtomicType const *atype)
+{
   TypeSpecifier *tspec = NULL;
   switch (atype->atomic->getTag()) {
     case AtomicType::T_SIMPLE: {
@@ -158,9 +165,25 @@ ASTTypeId *ElsaASTBuild::makeASTTypeId(Type *type, PQName *name)
 
     default:
       // The template types get here.  I'm not ready to do them yet.
-      xunimp(stringb("makeASTTypeId for: " << type->toString()));
+      xunimp(stringb("makeASTTypeId for: " << atype->toString()));
   }
+
   tspec->cv = atype->cv;
+  return tspec;
+}
+
+
+ASTTypeId *ElsaASTBuild::makeASTTypeId(Type *type, PQName *name)
+{
+  // Inner declarator that, together with the type specifier built at
+  // the end, denotes 'type'.  This gets built up as we examine 'type'.
+  IDeclarator *idecl = new D_name(loc(), name);
+
+  // Add type constructors on top of 'idecl'.
+  CVAtomicType const *atype = buildUpDeclarator(type, idecl /*INOUT*/);
+
+  // Express the atomic type as a type specifier.
+  TypeSpecifier *tspec = makeTypeSpecifier(atype);
 
   // Wrap up 'tspec' and 'idecl' in an ASTTypeId.
   Declarator *decl = new Declarator(idecl, NULL /*init*/);
@@ -168,6 +191,35 @@ ASTTypeId *ElsaASTBuild::makeASTTypeId(Type *type, PQName *name)
   decl->var = m_typeFactory.makeVariable(loc(), nameSR, type, DF_NONE);
   decl->type = type;
   return new ASTTypeId(tspec, decl);
+}
+
+
+Declaration *ElsaASTBuild::makeDeclaration(
+  Variable *var, DeclaratorContext context)
+{
+  // Build the base declarator.
+  IDeclarator *idecl = makeD_name(var);
+
+  // Wrap it in IDeclarators to express most of the type.
+  CVAtomicType const *atype = buildUpDeclarator(var->type, idecl /*INOUT*/);
+
+  // Stack a Declarator on that, and annotate it with the given 'var'
+  // so the declaration as a whole is seen as declaring that specific
+  // Variable, not just one with the same name and type.
+  Declarator *declarator = new Declarator(idecl, NULL /*init*/);
+  declarator->var = var;
+  declarator->type = var->type;
+  declarator->context = context;
+
+  // Express the atomic type as a type specifier.
+  TypeSpecifier *specifier = makeTypeSpecifier(atype);
+
+  // Wrap them in a declaration.
+  Declaration *declaration =
+    new Declaration(var->flags & DF_SOURCEFLAGS, specifier,
+      FakeList<Declarator>::makeList(declarator));
+
+  return declaration;
 }
 
 
