@@ -4706,6 +4706,13 @@ void Env::lookupPQ_withScope(LookupSet &set, PQName *name, LookupFlags flags,
   // keep track of the scope we found just before 'scope'
   Scope *prevScope = NULL;
 
+  // Handle special PQ_variable case, which directly specifies the
+  // Variable it refers to.
+  if (name->isPQ_variable()) {
+    set.add(name->asPQ_variable()->var);
+    return;
+  }
+
   // lookup along the chain of qualifiers
   while (name->isPQ_qualifier()) {
     PQ_qualifier *qual = name->asPQ_qualifier();
