@@ -45,7 +45,7 @@ void postfix(int x, C c, C *cp, int **pp)
   *(C::arr+0);
   c.p;
   (*cp).p;
-  *(*(pp+0)+1);
+  *(*(pp+0) + 1);
 }
 
 void prefix(int x, C c, C *cp, int *pp)
@@ -66,7 +66,7 @@ void prefix(int x, C c, C *cp, int *pp)
   delete c.q;
   delete[] c.q;
   (++x)++;
-  *(+pp+0);
+  *(+pp + 0);
   (&g)(0);
   (*(+cp)).i;
 }
@@ -82,14 +82,14 @@ void ptr_to_memb(C *cp, C &cr)
 
 void multiply(int x, int y, int z)
 {
-  x*y*z;
-  x*y/z%x;
-  x*(y*z);
-  x*(y/z)%x;
-  x+y*z;
-  x*y+z;
-  (x+y)*z;
-  x/(y-z);
+  x*y * z;
+  x*y / z % x;
+  x * (y*z);
+  x * (y/z) % x;
+  x + y*z;
+  x*y + z;
+  (x+y) * z;
+  x / (y-z);
 }
 
 void shift(int x, int y, int z)

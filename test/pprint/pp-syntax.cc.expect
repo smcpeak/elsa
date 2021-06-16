@@ -49,6 +49,11 @@ catch (int y) {
   y++;
 }
 
+
+int h(C &c, int x)
+{
+  return c.m_x + x;
+}
 ---- STOP ----
 ---- stderr ----
 ---- exit status ----

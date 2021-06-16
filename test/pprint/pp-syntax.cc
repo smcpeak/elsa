@@ -38,5 +38,9 @@ catch (int y) {
   // Implicitly re-throws.
 }
 
+int h(C &c, int x)
+{
+  return c.m_x + x;
+}
 
 // EOF

@@ -1906,6 +1906,23 @@ static bool bothGray(OperatorPrecedence p1, OperatorPrecedence p2)
   return isGrayArea(p1) && isGrayArea(p2);
 }
 
+// Return true if 'e' is something so simple that it makes sense to
+// write it as an operand of '+' or similar without a separating space.
+// So, for example, "x+y" is fine, but "a.x+y" should be written as
+// "a.x + y".
+//
+// This isn't perfect because it produces "x*y * z" rather than "x*y*z"
+// but I'll accept it for now.
+static bool verySimple(Expression const *e)
+{
+  return e->isE_boolLit() ||
+         e->isE_intLit() ||
+         e->isE_floatLit() ||
+         e->isE_charLit() ||
+         e->isE_this() ||
+         e->isE_variable();
+}
+
 // dsw: binary operator.
 void E_binary::iprint(PrintEnv &env) const
 {
@@ -1931,13 +1948,21 @@ void E_binary::iprint(PrintEnv &env) const
       e1Prec   >= OPREC_SHIFT ||
       e2Prec   >= OPREC_SHIFT;
 
-    if (op != BIN_COMMA && shiftOrLower) {
+    // Is either operand not very simple, and this operand an arithmetic
+    // operator?  That too will cause a space.
+    bool arithmeticOnNonIdentifier =
+      (!verySimple(e1) || !verySimple(e2)) &&
+      thisPrec >= OPREC_MULTIPLY;
+
+    bool addSpaces = shiftOrLower || arithmeticOnNonIdentifier;
+
+    if (op != BIN_COMMA && addSpaces) {
       env << " ";
     }
 
     env << toString(op);
 
-    if (shiftOrLower) {
+    if (addSpaces) {
       env << " ";
     }
 
