@@ -7,6 +7,8 @@
 #include "cc_ast.h"                    // C++ AST
 #include "elsaparse-fwd.h"             // ElsaParse
 
+#include <utility>                     // std::pair
+
 
 // Interface for ElsaASTBuild to obtain a location.
 class SourceLocProvider {
@@ -64,6 +66,11 @@ public:      // methods
   // Express 'atype' as a type specifier.
   TypeSpecifier *makeTypeSpecifier(CVAtomicType const *atype);
 
+  // Given 'var', return a TypeSpecifier and a Declarator (both as owner
+  // pointers) that declares that variable.
+  std::pair<TypeSpecifier*, Declarator*>
+    makeTSandDeclarator(Variable *var, DeclaratorContext context);
+
   // Return a syntactic ASTTypeId denoting semantic 'type'.
   //
   // 'name' is used as the name of the innermost D_name.  If it is NULL
@@ -72,11 +79,14 @@ public:      // methods
   //
   // 'type' is not 'const' because the returned syntax contains a
   // non-const pointer to it.
-  ASTTypeId *makeASTTypeId(Type *type, PQName *name = NULL);
+  ASTTypeId *makeASTTypeId(Type *type, PQName *name,
+    DeclaratorContext context);
+
+  // Return an ASTTypeId to represent the parameter denoted by 'var'.
+  ASTTypeId *makeParameter(Variable *var);
 
   // Return a declaration for a variable.
-  Declaration *makeDeclaration(
-    Variable *var, DeclaratorContext context = DC_UNKNOWN);
+  Declaration *makeDeclaration(Variable *var, DeclaratorContext context);
 
   // Make a syntactic exception specification.
   ExceptionSpec *makeExceptionSpec(FunctionType::ExnSpec *srcSpec);

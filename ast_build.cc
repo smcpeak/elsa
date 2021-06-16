@@ -31,8 +31,7 @@ FakeList<ArgExpression> *ElsaASTBuild::makeExprList2(Expression *e1, Expression 
 
 D_name *ElsaASTBuild::makeD_name(Variable *var)
 {
-  // TODO: This still uses PQ_variable, which I want to eliminate.
-  return new D_name(loc(), new PQ_variable(loc(), var));
+  return new D_name(loc(), makePQName(var));
 }
 
 
@@ -88,8 +87,16 @@ CVAtomicType const *ElsaASTBuild::buildUpDeclarator(
         }
 
         for (; !srcParamIter.isDone(); srcParamIter.adv()) {
+          Variable const *srcParamVar = srcParamIter.data();
+
+          // Make a new Variable for this parameter.  At the moment, my
+          // only motivation for cloning rather than reusing is it means
+          // 'type' can continue to be 'const'.
+          Variable *destParamVar = m_typeFactory.makeVariable(
+            loc(), srcParamVar->name, srcParamVar->type, srcParamVar->flags);
+
           // Recursively translate the parameter type to its syntax.
-          ASTTypeId *destParam = makeASTTypeId(srcParamIter.data()->type);
+          ASTTypeId *destParam = makeParameter(destParamVar);
           destParams = fl_prepend(destParams, destParam);
         }
 
@@ -156,10 +163,24 @@ TypeSpecifier *ElsaASTBuild::makeTypeSpecifier(CVAtomicType const *atype)
     case AtomicType::T_COMPOUND:
     case AtomicType::T_ENUM: {
       NamedAtomicType *ntype = atype->atomic->asNamedAtomicType();
-      TS_elaborated *tse = new TS_elaborated(loc(), ntype->getTypeIntr(),
-                                             makePQName(ntype->typedefVar));
-      tse->atype = ntype;
-      tspec = tse;
+
+      // Whenever possible, I want to use the typedefName.  However, I
+      // can't tell here whether typedefName is in fact accessible...
+      //
+      // TODO: Straighten this out.
+      if (1) {
+        TS_name *tsn = new TS_name(loc(),
+          makePQName(ntype->typedefVar), false /*typenameUsed*/);
+        tsn->var = ntype->typedefVar;
+        tspec = tsn;
+      }
+      else {
+        TS_elaborated *tse = new TS_elaborated(loc(), ntype->getTypeIntr(),
+                                               makePQName(ntype->typedefVar));
+        tse->atype = ntype;
+        tspec = tse;
+      }
+
       break;
     }
 
@@ -173,37 +194,20 @@ TypeSpecifier *ElsaASTBuild::makeTypeSpecifier(CVAtomicType const *atype)
 }
 
 
-ASTTypeId *ElsaASTBuild::makeASTTypeId(Type *type, PQName *name)
+std::pair<TypeSpecifier*, Declarator*>
+  ElsaASTBuild::makeTSandDeclarator(Variable *var, DeclaratorContext context)
 {
-  // Inner declarator that, together with the type specifier built at
-  // the end, denotes 'type'.  This gets built up as we examine 'type'.
-  IDeclarator *idecl = new D_name(loc(), name);
+  // Inner declarator for 'var' that, together with the type specifier,
+  // denotes 'var->type'.
+  IDeclarator *idecl = makeD_name(var);
 
   // Add type constructors on top of 'idecl'.
-  CVAtomicType const *atype = buildUpDeclarator(type, idecl /*INOUT*/);
+  CVAtomicType const *atype = buildUpDeclarator(var->type, idecl /*INOUT*/);
 
   // Express the atomic type as a type specifier.
   TypeSpecifier *tspec = makeTypeSpecifier(atype);
 
-  // Wrap up 'tspec' and 'idecl' in an ASTTypeId.
-  Declarator *decl = new Declarator(idecl, NULL /*init*/);
-  StringRef nameSR = name? name->getName() : NULL;
-  decl->var = m_typeFactory.makeVariable(loc(), nameSR, type, DF_NONE);
-  decl->type = type;
-  return new ASTTypeId(tspec, decl);
-}
-
-
-Declaration *ElsaASTBuild::makeDeclaration(
-  Variable *var, DeclaratorContext context)
-{
-  // Build the base declarator.
-  IDeclarator *idecl = makeD_name(var);
-
-  // Wrap it in IDeclarators to express most of the type.
-  CVAtomicType const *atype = buildUpDeclarator(var->type, idecl /*INOUT*/);
-
-  // Stack a Declarator on that, and annotate it with the given 'var'
+  // Stack a Declarator on 'idecl', and annotate it with the given 'var'
   // so the declaration as a whole is seen as declaring that specific
   // Variable, not just one with the same name and type.
   Declarator *declarator = new Declarator(idecl, NULL /*init*/);
@@ -211,13 +215,49 @@ Declaration *ElsaASTBuild::makeDeclaration(
   declarator->type = var->type;
   declarator->context = context;
 
-  // Express the atomic type as a type specifier.
-  TypeSpecifier *specifier = makeTypeSpecifier(atype);
+  return std::make_pair(tspec, declarator);
+}
+
+
+ASTTypeId *ElsaASTBuild::makeASTTypeId(Type *type, PQName *name,
+  DeclaratorContext context)
+{
+  // Construct a Variable out of 'type' and 'name'.
+  StringRef nameSR = name? name->getName() : NULL;
+  Variable *var = m_typeFactory.makeVariable(loc(), nameSR, type, DF_NONE);
+
+  // Build a type specifier and declarator to represent 'type'.
+  std::pair<TypeSpecifier*, Declarator*> ts_and_decl =
+    makeTSandDeclarator(var, context);
+
+  // Package those as an ASTTypeId.
+  return new ASTTypeId(ts_and_decl.first, ts_and_decl.second);
+}
+
+
+ASTTypeId *ElsaASTBuild::makeParameter(Variable *var)
+{
+  // Build a type specifier and declarator to represent 'var->type'.
+  std::pair<TypeSpecifier*, Declarator*> ts_and_decl =
+    makeTSandDeclarator(var, DC_D_FUNC);
+
+  // Package those as an ASTTypeId.
+  return new ASTTypeId(ts_and_decl.first, ts_and_decl.second);
+}
+
+
+Declaration *ElsaASTBuild::makeDeclaration(
+  Variable *var, DeclaratorContext context)
+{
+  // Make a specifier and declarator.
+  std::pair<TypeSpecifier*, Declarator*> ts_and_decl =
+    makeTSandDeclarator(var, context);
 
   // Wrap them in a declaration.
   Declaration *declaration =
-    new Declaration(var->flags & DF_SOURCEFLAGS, specifier,
-      FakeList<Declarator>::makeList(declarator));
+    new Declaration(var->flags & DF_SOURCEFLAGS,
+      ts_and_decl.first,
+      FakeList<Declarator>::makeList(ts_and_decl.second));
 
   return declaration;
 }
@@ -233,7 +273,8 @@ ExceptionSpec *ElsaASTBuild::makeExceptionSpec(FunctionType::ExnSpec *srcSpec)
   FakeList<ASTTypeId> *destTypes = FakeList<ASTTypeId>::emptyList();
   SFOREACH_OBJLIST_NC(Type, srcSpec->types, srcIter) {
     Type *type = srcIter.data();
-    destTypes = fl_prepend(destTypes, makeASTTypeId(type));
+    ASTTypeId *tid = makeASTTypeId(type, NULL /*name*/, DC_EXCEPTIONSPEC);
+    destTypes = fl_prepend(destTypes, tid);
   }
 
   // Fix the reversal.
@@ -264,7 +305,16 @@ PQName *ElsaASTBuild::makePQName(Variable *var)
   }
 
   // TODO: This is only right when the name is unqualified.
-  return new PQ_name(loc(), var->name);
+  //
+  // Now I'm sort of grasping at straws.  Notably, I see cases where
+  // 'var->scope' is set to the global scope.  Anyway, the goal is to
+  // get rid of PQ_variable so I'll push forward.
+  if (var->scope) {
+    return new PQ_variable(loc(), var);
+  }
+  else {
+    return new PQ_name(loc(), var->name);
+  }
 }
 
 

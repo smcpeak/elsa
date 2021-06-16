@@ -159,6 +159,7 @@ Declaration *ElabVisitor::makeDeclaration(SourceLoc loc, Variable *var, Declarat
 // ElsaASTBuild::makeASTTypeId.  They should be combined.
 Declarator *ElabVisitor::makeFuncDeclarator(SourceLoc loc, Variable *var, DeclaratorContext context)
 {
+  RESTORER(SourceLoc, enclosingStmtLoc, loc);
   FunctionType *ft = var->type->asFunctionType();
 
   // construct parameter list
@@ -171,9 +172,7 @@ Declarator *ElabVisitor::makeFuncDeclarator(SourceLoc loc, Variable *var, Declar
     }
     for (; !iter.isDone(); iter.adv()) {
       Variable *param = iter.data();
-
-      ASTTypeId *typeId = new ASTTypeId(new TS_type(loc, param->type),
-                                        makeDeclarator(loc, param, DC_D_FUNC));
+      ASTTypeId *typeId = m_astBuild.makeParameter(param);
       params = fl_prepend(params, typeId);
     }
     params = fl_reverse(params);     // fix prepend()-induced reversal

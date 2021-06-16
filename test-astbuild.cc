@@ -79,7 +79,8 @@ bool TestASTBuildVisitor::visitASTTypeId(ASTTypeId *originalId)
     // Now build a new one.
     PQName *newName = m_astBuild.makePQName(originalId->decl->var);
     ASTTypeId *newId =
-      m_astBuild.makeASTTypeId(originalId->decl->type, newName);
+      m_astBuild.makeASTTypeId(originalId->decl->type, newName,
+                               originalId->decl->context);
 
     // Print that to a string as well.
     string newString = astTypeIdToString(newId);

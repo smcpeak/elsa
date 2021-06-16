@@ -685,7 +685,7 @@ public:      // funcs
   PQName *makeFullyQualifiedName(Scope *s, PQName *name);
   PQName *makeQualifiedName(Scope *s, PQName *name);
   /*fakelist*/TemplateArgument *makeTemplateArgs(TemplateInfo *ti);
-  ASTTypeId *buildASTTypeId(Type *type);
+  ASTTypeId *buildASTTypeId(Type *type, DeclaratorContext context);
 
   // make AST nodes, as if they have been tcheck'd
   E_intLit *build_E_intLit(int i);

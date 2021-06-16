@@ -6173,7 +6173,7 @@ int compareArgsToParams(Env &env, FunctionType *ft, FakeList<ArgExpression> *arg
             inits->append(new IN_designated(loc,
                                             FakeList<Designator>::makeList(d),
                                             new IN_expr(loc, arg->expr)));
-            ASTTypeId *ati = env.buildASTTypeId(param->type);
+            ASTTypeId *ati = env.buildASTTypeId(param->type, DC_E_COMPOUNDLIT);
             E_compoundLit *ecl =
               new E_compoundLit(ati, new IN_compound(loc, inits));
 
