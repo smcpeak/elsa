@@ -3111,6 +3111,7 @@ realStart:
   }
   else {
     // has this name already been declared in the innermost scope?
+    xassert(unqualifiedName);
     prior = env.lookupVariableForDeclaration(scope, unqualifiedName, dt.type,
       dt.funcSyntax? dt.funcSyntax->cv : CV_NONE);
   }
