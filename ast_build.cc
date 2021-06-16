@@ -148,9 +148,11 @@ ASTTypeId *ElsaASTBuild::makeASTTypeId(Type *type, PQName *name)
 
     case AtomicType::T_COMPOUND:
     case AtomicType::T_ENUM: {
-      NamedAtomicType const *ntype = atype->atomic->asNamedAtomicTypeC();
-      tspec = new TS_elaborated(loc(), ntype->getTypeIntr(),
-                                makePQName(ntype->typedefVar));
+      NamedAtomicType *ntype = atype->atomic->asNamedAtomicType();
+      TS_elaborated *tse = new TS_elaborated(loc(), ntype->getTypeIntr(),
+                                             makePQName(ntype->typedefVar));
+      tse->atype = ntype;
+      tspec = tse;
       break;
     }
 
@@ -162,6 +164,8 @@ ASTTypeId *ElsaASTBuild::makeASTTypeId(Type *type, PQName *name)
 
   // Wrap up 'tspec' and 'idecl' in an ASTTypeId.
   Declarator *decl = new Declarator(idecl, NULL /*init*/);
+  StringRef nameSR = name? name->getName() : NULL;
+  decl->var = m_typeFactory.makeVariable(loc(), nameSR, type, DF_NONE);
   decl->type = type;
   return new ASTTypeId(tspec, decl);
 }
