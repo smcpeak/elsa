@@ -4,6 +4,13 @@
 #include "integrity.h"         // this module
 
 
+IntegrityVisitor::IntegrityVisitor(bool inTemplate_)
+  : ASTVisitorEx()
+{
+  this->inTemplate = inTemplate_;
+}
+
+
 void IntegrityVisitor::foundAmbiguous(void *obj, void **ambig, char const *kind)
 {
   // 2005-06-29: I have so far been unable to provoke this error by
@@ -17,6 +24,35 @@ void IntegrityVisitor::foundAmbiguous(void *obj, void **ambig, char const *kind)
   // I'm reasonably confident that this check will work properly.
   xfatal(toString(loc) << ": internal error: found ambiguous " << kind);
 }
+
+
+// The various annotations added by the type checker should all be
+// present.
+bool IntegrityVisitor::visitTypeSpecifier(TypeSpecifier *typeSpecifier)
+{
+  ASTSWITCHC(TypeSpecifier, typeSpecifier) {
+    ASTCASEC(TS_name, tsn) {
+      xassert(tsn->var != NULL);
+    }
+
+    ASTNEXTC(TS_elaborated, tse) {
+      xassert(tse->atype != NULL);
+    }
+
+    ASTNEXTC(TS_classSpec, tsc) {
+      xassert(tsc->ctype != NULL);
+    }
+
+    ASTNEXTC(TS_enumSpec, tse) {
+      xassert(tse->etype != NULL);
+    }
+
+    ASTENDCASECD
+  }
+
+  return true;
+}
+
 
 
 bool IntegrityVisitor::visitDeclarator(Declarator *obj)
@@ -78,7 +114,7 @@ bool IntegrityVisitor::visitExpression(Expression *obj)
 
 void integrityCheckTU(TranslationUnit *tu)
 {
-  IntegrityVisitor ivis;
+  IntegrityVisitor ivis(false /*inTemplate*/);
   tu->traverse(ivis);
 }
 
