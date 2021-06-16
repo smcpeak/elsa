@@ -2085,7 +2085,7 @@ StringRef PQ_variable::getName() const
 
 string PQ_variable::toComponentString() const
 {
-  return var->name;
+  return var->name? var->name : "";
 }
 
 void PQ_variable::tcheck_pq(Env &env, Scope*, LookupFlags)
@@ -2095,11 +2095,13 @@ void PQ_variable::tcheck_pq(Env &env, Scope*, LookupFlags)
 
 void PQ_variable::print(PrintEnv &env) const
 {
-  if (streq(var->name, "constructor-special")) {
-    // Do not print.
-  }
-  else {
-    *env.out << var->name;
+  if (var->name) {
+    if (streq(var->name, "constructor-special")) {
+      // Do not print.
+    }
+    else {
+      *env.out << var->name;
+    }
   }
 }
 
