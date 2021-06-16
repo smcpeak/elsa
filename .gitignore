@@ -28,5 +28,7 @@ lexer.yy.cc
 lexer.yy.h
 personal.mk
 quicktest
+tmp.c
+tmp.cc
 
 # EOF
