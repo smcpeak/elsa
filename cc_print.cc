@@ -755,7 +755,7 @@ static bool ideclaratorIsDestructor(IDeclarator const *id)
     if (D_name const *dn = df->base->ifD_nameC()) {
       if (dn->name) {
         if (PQ_variable const *pqv = dn->name->ifPQ_variable()) {
-          if (pqv->var->name[0] == '~') {
+          if (pqv->var->name && pqv->var->name[0] == '~') {
             return true;
           }
         }
@@ -810,7 +810,7 @@ static bool ideclaratorWantsSpace(TypeSpecifier const *spec,
     if (D_name const *dn = df->base->ifD_nameC()) {
       if (dn->name) {
         if (PQ_variable const *pqv = dn->name->ifPQ_variable()) {
-          if (streq(pqv->var->name, "constructor-special")) {
+          if (pqv->var->name && streq(pqv->var->name, "constructor-special")) {
             return false;
           }
         }
