@@ -39,6 +39,15 @@ public:      // data
   // Used when an AST node needs a location.
   SourceLocProvider &m_locProvider;
 
+  // HACK: When true, which is the default, use the 'typedefVar' carried
+  // by NamedAtomicType to name such a type, rather than the elaborated
+  // name (with the 'class' or whatever keyword).
+  //
+  // This results in more compact code when printed, but is sometimes
+  // WRONG because I don't actually know whether the typedef is
+  // accessible (or even exists, in the case of C!).
+  bool m_useTypedefsForNamedAtomics;
+
 public:      // methods
   ElsaASTBuild(StringTable &stringTable, TypeFactory &tfac,
                SourceLocProvider &locProvider);

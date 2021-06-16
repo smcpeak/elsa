@@ -14,7 +14,8 @@ ElsaASTBuild::ElsaASTBuild(StringTable &stringTable, TypeFactory &tfac,
                            SourceLocProvider &locProvider)
   : m_stringTable(stringTable),
     m_typeFactory(tfac),
-    m_locProvider(locProvider)
+    m_locProvider(locProvider),
+    m_useTypedefsForNamedAtomics(true)
 {}
 
 
@@ -168,7 +169,7 @@ TypeSpecifier *ElsaASTBuild::makeTypeSpecifier(CVAtomicType const *atype)
       // can't tell here whether typedefName is in fact accessible...
       //
       // TODO: Straighten this out.
-      if (1) {
+      if (m_useTypedefsForNamedAtomics) {
         TS_name *tsn = new TS_name(loc(),
           makePQName(ntype->typedefVar), false /*typenameUsed*/);
         tsn->var = ntype->typedefVar;
