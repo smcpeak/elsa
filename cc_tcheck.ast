@@ -226,15 +226,21 @@ class TypeSpecifier {
        // hold...), this will point to 'var' and be preserved when
        // the AST is cloned
        public(field) Variable *nondependentVar = NULL;
-       custom clone { ret->nondependentVar = nondependentVar; }
+
+       custom clone {
+         ret->nondependentVar = nondependentVar;
+         ret->var = var;
+       }
      }
 
   -> TS_elaborated {
        public(field) NamedAtomicType *atype = NULL;
+       custom clone { ret->atype = atype; }
      }
 
   -> TS_classSpec {
        public(field) CompoundType *ctype = NULL;
+       custom clone { ret->ctype = ctype; }
 
        public void tcheckIntoCompound(
          Env &env, DeclFlags dflags, CompoundType *ct);
@@ -246,6 +252,7 @@ class TypeSpecifier {
 
   -> TS_enumSpec {
        public(field) EnumType *etype = NULL;
+       custom clone { ret->etype = etype; }
      }
 }
 
