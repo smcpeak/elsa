@@ -38,12 +38,8 @@ class Function {
   // implicitly called
   public(field,owner) Statement *dtorStatement = NULL;
 
-  // is this function implicitly defined?  dsw: I need to know so that
-  // the linker imitator doesn't think there is a double-definition
-  // when the same class occurs in two different translation units
-  //
-  // sm: this is now redundant with Variable::isImplicitMemberFunc()
-  public(field) bool implicitlyDefined = false;
+  // Is this function implicitly defined?
+  public bool implicitlyDefined() const;
 }
 
 

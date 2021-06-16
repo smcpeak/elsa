@@ -218,8 +218,6 @@ Function *ElabVisitor::makeFunction(SourceLoc loc, Variable *var,
     f->receiver = f->funcType->getReceiver();
   }
 
-  f->implicitlyDefined = true;
-
   // the existence of a definition has implications for the Variable too
   var->setFlag(DF_DEFINITION);
   var->funcDefn = f;
@@ -1693,6 +1691,19 @@ bool ElabVisitor::visitFunction(Function *f)
 void ElabVisitor::postvisitFunction(Function *)
 {
   functionStack.pop();
+}
+
+
+// 2021-06-16: Previously, there was a data member called
+// 'implicitlyDefined', and a comment saying that was redundant with
+// 'isImplicitMemberFunc()'.  I'm putting that comment into action in
+// order to remove a data field.
+//
+// (I'm tempted to remove the function entirely, but I will keep it for
+// the possible migration benefit of clients such as Oink.)
+bool Function::implicitlyDefined() const
+{
+  return nameAndParams->var->isImplicitMemberFunc();
 }
 
 
