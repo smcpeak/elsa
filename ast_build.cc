@@ -4,12 +4,27 @@
 #include "ast_build.h"      // this module
 
 
+// ----------------------- SourceLocProvider ---------------------------
 SourceLoc SourceLocProvider::provideLoc() const
 {
   return SL_UNKNOWN;
 }
 
 
+// -------------------- MemberSourceLocProvider ------------------------
+MemberSourceLocProvider::MemberSourceLocProvider(SourceLoc locForProvider)
+  : SourceLocProvider(),
+    m_locForProvider(locForProvider)
+{}
+
+
+SourceLoc MemberSourceLocProvider::provideLoc() const
+{
+  return m_locForProvider;
+}
+
+
+// -------------------------- ElsaASTBuild -----------------------------
 ElsaASTBuild::ElsaASTBuild(StringTable &stringTable, TypeFactory &tfac,
                            SourceLocProvider &locProvider)
   : m_stringTable(stringTable),

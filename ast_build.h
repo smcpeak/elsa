@@ -12,9 +12,22 @@
 
 // Interface for ElsaASTBuild to obtain a location.
 class SourceLocProvider {
-public:
+public:      // methods
   // The default implementation returns SL_UNKNOWN.
   virtual SourceLoc provideLoc() const;
+};
+
+
+// Implements SourceLocProvider by returning a member variable.
+class MemberSourceLocProvider : public SourceLocProvider {
+public:      // data
+  // The value to return.
+  SourceLoc m_locForProvider;
+
+public:      // methods
+  explicit MemberSourceLocProvider(SourceLoc locForProvider);
+
+  SourceLoc provideLoc() const override;
 };
 
 
