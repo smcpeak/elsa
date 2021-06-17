@@ -76,6 +76,7 @@ out/pprint/%.cc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
 
 
 TESTS += pprint/func.c
+TESTS += pprint/funcptr.c
 TESTS += pprint/typedef.c
 TESTS += pprint/vararg-promote.c
 

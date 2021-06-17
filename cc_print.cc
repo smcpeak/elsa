@@ -1163,9 +1163,39 @@ void D_reference::print(PrintEnv &env) const
 }
 
 
+// Return true if 'idecl' is a declarator whose syntax comes before
+// the base declarator rather than after.
+static bool isPrefixDeclarator(IDeclarator const *idecl)
+{
+  // Skip D_grouping because we won't print those.
+  while (D_grouping const *g = idecl->ifD_groupingC()) {
+    idecl = g->base;
+  }
+
+  return idecl->isD_pointer() ||
+         idecl->isD_reference() ||
+         idecl->isD_ptrToMember();
+}
+
+
+// Print base declarator 'base' in the context of a suffix declarator.
+static void printBaseDeclaratorOfSuffixDeclarator(
+  PrintEnv &env, IDeclarator const *base)
+{
+  if (isPrefixDeclarator(base)) {
+    env << "(";
+  }
+  base->print(env);
+  if (isPrefixDeclarator(base)) {
+    env << ")";
+  }
+}
+
+
 void D_func::print(PrintEnv &env) const
 {
-  base->print(env);
+  printBaseDeclaratorOfSuffixDeclarator(env, base);
+
   env << "(";
 
   FAKELIST_FOREACH_NC(ASTTypeId, params, param) {
@@ -1190,7 +1220,8 @@ void D_func::print(PrintEnv &env) const
 
 void D_array::print(PrintEnv &env) const
 {
-  base->print(env);
+  printBaseDeclaratorOfSuffixDeclarator(env, base);
+
   env << "[";
   if (size) {
     size->print(env, OPREC_LOWEST);
@@ -1224,14 +1255,9 @@ void D_ptrToMember::print(PrintEnv &env) const
 
 void D_grouping::print(PrintEnv &env) const
 {
-  // It might be nice to automatically supply the parens where needed,
-  // similar to how I do for expressions, but I don't have a pressing
-  // need for that, and I'm concerned it might be complicated due to the
-  // possibility of introducing ambiguities with the expression syntax.
-
-  env << "(";
+  // Like with E_grouping, we will drop the parens here, and instead
+  // supply them automatically where needed.
   base->print(env);
-  env << ")";
 }
 
 
