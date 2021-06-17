@@ -1407,9 +1407,6 @@ bool RealVarAndTypeASTVisitor::visitTypeSpecifier(TypeSpecifier *obj) {
     visitVariable(tsn->var);
     visitVariable(tsn->nondependentVar);
   }
-  if (obj->isTS_type()) {
-    visitType(obj->asTS_type()->type);
-  }
   return true;
 }
 

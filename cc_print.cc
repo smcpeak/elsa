@@ -766,29 +766,10 @@ static bool ideclaratorIsDestructor(IDeclarator const *id)
   return false;
 }
 
-// True if 'c' could be part of an identifier.
-static bool isIdentifierChar(int c)
-{
-  return isalnum(c) || c == '_';
-}
-
 // True if the declarator needs a space after the specifier 'spec'.
 static bool ideclaratorWantsSpace(TypeSpecifier const *spec,
                                   IDeclarator const *id)
 {
-  // TODO: This is extremely ugly.
-  if (TS_type const *tst = spec->ifTS_typeC()) {
-    string specString = tst->type->toString();
-    if (!specString.empty()) {
-      char lastChar = specString[specString.length()-1];
-      if (!isIdentifierChar((unsigned char)lastChar)) {
-        // The "specifier" will print a string that does not end in an
-        // identifier character, so no space is needed.
-        return false;
-      }
-    }
-  }
-
   if (TS_simple const *tss = spec->ifTS_simpleC()) {
     if (tss->id == ST_CDTOR) {
       // No space after the emptiness representing the "return type"

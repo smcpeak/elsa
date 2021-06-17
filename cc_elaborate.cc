@@ -2024,25 +2024,6 @@ void ElabVisitor::postvisitInitializer(Initializer *in)
 
 
 // =================== extra AST nodes =====================
-// ------------------------ TS_type ------------------------
-Type *TS_type::itcheck(Env &env, DeclFlags dflags)
-{
-  return type;
-}
-
-void TS_type::iprint(PrintEnv &env) const
-{
-  if (CompoundType *ct = type->ifCompoundType()) {
-    // Print the name of the implicit typedef.
-    *env.out << ct->typedefVar->name;
-  }
-  else {
-    // This might not be right.
-    *env.out << type->toString();
-  }
-}
-
-
 // --------------------- PQ_variable ------------------------
 StringRef PQ_variable::getName() const
 {

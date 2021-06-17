@@ -49,14 +49,6 @@ class PQName {
 }
 
 
-class TypeSpecifier {
-  // Denote an existing Type.  This is useful when we need to synthesize
-  // some AST that names a type but don't want to build out the full
-  // syntax.  The pretty printer knows how to print this.
-  -> TS_type(Type *type);
-}
-
-
 class MemberInit {
   // A single MemberInit seems very much like a single expression to
   // me, since it is a ctor call and an IN_ctor is also
