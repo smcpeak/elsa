@@ -9480,7 +9480,10 @@ void IN_ctor::tcheck(Env &env, Type *destType)
       if (ic.kind == ImplicitConversion::IC_USER_DEFINED) {
         if (ic.user->type->asFunctionType()->isConstructor()) {
           // wrap 'args' in an E_constructor
-          TypeSpecifier *destTS = new TS_type(loc, destType);
+          MemberSourceLocProvider locProvider(loc);
+          ElsaASTBuild astBuild(env.str, env.tfac, locProvider);
+          TypeSpecifier *destTS =
+            astBuild.makeTypeSpecifier(destType->asCVAtomicType());
           E_constructor *ector = new E_constructor(destTS, args);
           ector->type = destType;
           ector->ctorVar = ic.user;
