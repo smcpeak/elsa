@@ -277,7 +277,7 @@ void Scope::registerVariable(Variable *v)
   }
 
   if (isPermanentScope()) {
-    v->scope = this;
+    v->m_containingScope = this;
   }
 
   if (curCompound) {

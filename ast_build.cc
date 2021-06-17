@@ -316,7 +316,7 @@ PQName *ElsaASTBuild::makePQName(Variable *var)
   // Now I'm sort of grasping at straws.  Notably, I see cases where
   // 'var->scope' is set to the global scope.  Anyway, the goal is to
   // get rid of PQ_variable so I'll push forward.
-  if (var->scope) {
+  if (var->m_containingScope) {
     return new PQ_variable(loc(), var);
   }
   else {

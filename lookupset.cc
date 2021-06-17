@@ -226,11 +226,11 @@ string LookupSet::asString() const
   }
 
   // are all the names in the same scope?
-  Scope *scope = firstC()->scope;
+  Scope *scope = firstC()->m_containingScope;
   SFOREACH_OBJLIST(Variable, *this, iter1) {
     Variable const *v = iter1.data();
 
-    if (v->scope != scope) {
+    if (v->m_containingScope != scope) {
       scope = NULL;
     }
   }

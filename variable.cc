@@ -67,7 +67,7 @@ Variable::Variable(SourceLoc L, StringRef n, Type *t, DeclFlags f)
     funcDefn(NULL),
     overload(NULL),
     virtuallyOverride(NULL),
-    scope(NULL),
+    m_containingScope(NULL),
     usingAlias_or_parameterizedEntity(NULL),
     templInfo(NULL)
 {
@@ -116,8 +116,11 @@ void Variable::setFlagsTo(DeclFlags f)
   const_cast<DeclFlags&>(flags) = f;
 }
 
-bool Variable::inGlobalOrNamespaceScope() const {
-  return scope && (scope->isGlobalScope() || scope->isNamespace());
+bool Variable::inGlobalOrNamespaceScope() const
+{
+  return m_containingScope &&
+         (m_containingScope->isGlobalScope() ||
+          m_containingScope->isNamespace());
 }
 
 bool Variable::linkerVisibleName() const {
@@ -126,7 +129,7 @@ bool Variable::linkerVisibleName() const {
 
 bool Variable::linkerVisibleName(bool evenIfStaticLinkage) const {
 //    bool oldAnswer;
-//    if (scope) oldAnswer = scope->linkerVisible();
+//    if (m_containingScope) oldAnswer = m_containingScope->linkerVisible();
 //    else oldAnswer = hasFlag(DF_GLOBAL);
 
   // do not consider templates
@@ -161,7 +164,7 @@ bool Variable::linkerVisibleName(bool evenIfStaticLinkage) const {
   // FIX: what the heck was this?  Some attempt to treat struct
   // members as linkerVisibleName-s?  This doesn't work because there
   // is no well-defined name for an anonymous struct anyway.
-  if (!scope) {
+  if (!m_containingScope) {
     // FIX: I hope this is right.
     // FIX: hmm, when else can this occur?
 //      xassert(hasFlag(DF_PARAMETER));
@@ -173,14 +176,14 @@ bool Variable::linkerVisibleName(bool evenIfStaticLinkage) const {
   // quarl 2006-07-11
   //    Check for this even if not in class scope, e.g. a struct defined
   //    within a function (Test/struct_sizeof.c)
-  if (!scope->linkerVisible()) {
+  if (!m_containingScope->linkerVisible()) {
     return false;
   }
 
   // dsw: I hate this overloading of the 'static' keyword.  Static members of
   // CompoundTypes are linker visible if the CompoundType is linkerVisible.
   // Non-static members are visible only if they are FunctionTypes.
-  if (scope->isClassScope()) {
+  if (m_containingScope->isClassScope()) {
     if (!hasFlag(DF_MEMBER)) {
       return false;
     }
@@ -212,7 +215,8 @@ bool Variable::isUninstTemplateMember() const
       !templateInfo()->isCompleteSpecOrInstantiation()) {
     return true;
   }
-  return scope && scope->isWithinUninstTemplate();
+  return m_containingScope &&
+         m_containingScope->isWithinUninstTemplate();
 }
 
 
@@ -393,25 +397,25 @@ string Variable::fullyQualifiedName0() const
   // except for built-ins which are basically global.  Unfortunately,
   // Scott doesn't use it that way.
 //   if (loc != SL_INIT) {
-//     xassert(scope);
-//     xassert(scope->hasName() || scope->isGlobalScope());
+//     xassert(m_containingScope);
+//     xassert(m_containingScope->hasName() || m_containingScope->isGlobalScope());
 //   }
 
   if (isNamespace()) {
-    if (scope->isGlobalScope()) {
+    if (m_containingScope->isGlobalScope()) {
       return "::";
     }
     else {
-      return scope->fullyQualifiedCName();
+      return m_containingScope->fullyQualifiedCName();
     }
   }
 
   stringBuilder tmp;
-  if (scope && !scope->isGlobalScope()) {
-    tmp << scope->fullyQualifiedCName();
+  if (m_containingScope && !m_containingScope->isGlobalScope()) {
+    tmp << m_containingScope->fullyQualifiedCName();
   }
   if (hasFlag(DF_SELFNAME)) {
-    // don't need another "::name", since my 'scope' is the same
+    // don't need another "::name", since my 'm_containingScope' is the same
   }
   else {
     if (!tmp.empty()) {
@@ -473,7 +477,7 @@ string Variable::mangledName0() {
 
 string Variable::fullyQualifiedMangledName0() {
 //    cout << "name '" << name;
-//    if (scope) cout << "; has a scope" << endl;
+//    if (m_containingScope) cout << "; has a scope" << endl;
 //    else cout << "; NO scope" << endl;
 
   // dsw: what was I thinking here?  See assertion at the top of
@@ -505,7 +509,7 @@ string Variable::fullyQualifiedMangledName0() {
   }
 
   fqName << fullyQualifiedName0();
-//    if (scope) fqName << scope->fullyQualifiedName();
+//    if (m_containingScope) fqName << m_containingScope->fullyQualifiedName();
 //    fqName << "::" << mangledName0();
   appendMangledness(fqName);
 
@@ -566,16 +570,16 @@ bool Variable::isPureVirtualMethod() const
 
 bool Variable::isMemberOfTemplate() const
 {
-  if (!scope) { return false; }
-  if (!scope->curCompound) { return false; }
+  if (!m_containingScope) { return false; }
+  if (!m_containingScope->curCompound) { return false; }
 
-  if (scope->curCompound->isTemplate()) {
+  if (m_containingScope->curCompound->isTemplate()) {
     return true;
   }
 
   // member of non-template class; ask if that class is itself
   // a member of a template
-  return scope->curCompound->typedefVar->isMemberOfTemplate();
+  return m_containingScope->curCompound->typedefVar->isMemberOfTemplate();
 }
 
 
@@ -769,7 +773,7 @@ int Variable::getBitfieldSize() const
 Scope *Variable::getDenotedScope() const
 {
   if (isNamespace()) {
-    return scope;
+    return m_containingScope;
   }
 
   if (type->isCompoundType()) {

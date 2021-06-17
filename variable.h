@@ -113,7 +113,7 @@ public:    // data
   // if this Variable isNamespace(), then 'scope' points at the
   // namespace it names, rather than the containing scope; see
   // getDenotedScope()
-  Scope *scope;           // (nullable serf)
+  Scope *m_containingScope;           // (nullable serf)
 
   // total number of Variables created
   static size_t numVariables;

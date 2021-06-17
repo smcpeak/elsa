@@ -1662,7 +1662,8 @@ void printSTemplateArgument(PrintEnv &env, STemplateArgument const *sta)
       break;
     case STemplateArgument::STA_MEMBER:
       env << stringc
-              << "/*member*/ &" << sta->value.v->scope->curCompound->name
+              << "/*member*/ &"
+              << sta->value.v->m_containingScope->curCompound->name
               << "::" << sta->value.v->name;
       break;
     case STemplateArgument::STA_DEPEXPR:

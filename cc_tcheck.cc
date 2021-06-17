@@ -391,7 +391,7 @@ void TF_namespaceDefn::itcheck(Env &env)
   Scope *s;
   if (existing) {
     // extend existing scope
-    s = existing->scope;
+    s = existing->m_containingScope;
   }
   else {
     // make new namespace
@@ -530,7 +530,7 @@ void Function::tcheckBody(Env &env)
   ScopeSeq qualifierScopes;
   CompoundType *inClass = NULL;
   {
-    Scope *s = nameAndParams->var->scope;
+    Scope *s = nameAndParams->var->m_containingScope;
     if (s) {
       inClass = s->curCompound;   // might be NULL, that's ok
 
@@ -704,8 +704,8 @@ CompoundType *Function::verifyIsCtor(Env &env, char const *context)
 {
   // make sure this function is a class member
   CompoundType *enclosing = NULL;
-  if (nameAndParams->var->scope) {
-    enclosing = nameAndParams->var->scope->curCompound;
+  if (nameAndParams->var->m_containingScope) {
+    enclosing = nameAndParams->var->m_containingScope->curCompound;
   }
   if (!enclosing) {
     env.error(stringc
@@ -1410,7 +1410,7 @@ void maybeNondependent(Env &env, SourceLoc loc, Variable *&nondependentVar,
     return;
   }
 
-  if (!var->scope && !var->isTemplateParam()) {
+  if (!var->m_containingScope && !var->isTemplateParam()) {
     // I'm pretty sure I don't need to remember names that are not
     // in named scopes, other than template params themselves (t0277.cc)
     return;
@@ -6329,7 +6329,7 @@ void compareCtorArgsToParams(Env &env, Variable *ctor,
     // this isn't perfect, b/c I'm instantiating the dtor for "new
     // Foo" as well as other declarations of Foo, but it's probably
     // close enough
-    CompoundType *ct = ctor->scope->curCompound;
+    CompoundType *ct = ctor->m_containingScope->curCompound;
     xassert(ct);
 
     // ugh, hacking it again
@@ -7487,7 +7487,7 @@ Type *E_fieldAcc::itcheck_fieldAcc_set(Env &env, LookupFlags flags,
         << "a class or namespace, not " << kindAndType(firstQVar1));
     }
     Scope *firstQScope1 = (!firstQVar1)?             NULL :
-                          firstQVar1->isNamespace()? firstQVar1->scope :
+                          firstQVar1->isNamespace()? firstQVar1->m_containingScope :
                                                      firstQVar1->type->asCompoundType();
 
     // lookup of firstQ in scope of LHS class
@@ -7625,16 +7625,16 @@ Type *E_fieldAcc::itcheck_fieldAcc_set(Env &env, LookupFlags flags,
   SFOREACH_OBJLIST(Variable, candidates, iter) {
     Variable const *v = iter.data();
 
-    if (v->scope == ct) {
+    if (v->m_containingScope == ct) {
       continue;         // easy case
     }
 
-    if (!v->scope || !v->scope->curCompound) {
+    if (!v->m_containingScope || !v->m_containingScope->curCompound) {
       return env.error(fieldName->loc, stringc
         << "field '" << *fieldName << "' is not a class member");
     }
 
-    CompoundType *vClass = v->scope->curCompound;
+    CompoundType *vClass = v->m_containingScope->curCompound;
     int subobjs = ct->countBaseClassSubobjects(vClass);
     if (!subobjs) {
       return env.error(fieldName->loc, stringc
@@ -7830,7 +7830,8 @@ Type *resolveOverloadedUnaryOperator(
           // replace '~a' with '<scope>::operator~(a)'
           replacement = new E_funCall(
             // function to invoke
-            new E_variable(env.makeFullyQualifiedName(winner->scope, pqo)),
+            new E_variable(
+              env.makeFullyQualifiedName(winner->m_containingScope, pqo)),
             // arguments
             env.m_astBuild.makeExprList1(expr)
           );
@@ -7945,7 +7946,8 @@ Type *resolveOverloadedBinaryOperator(
           // replace 'a+b' with '<scope>::operator+(a,b)'
           replacement = new E_funCall(
             // function to invoke
-            new E_variable(env.makeFullyQualifiedName(winner->scope, pqo)),
+            new E_variable(
+              env.makeFullyQualifiedName(winner->m_containingScope, pqo)),
             // arguments
             env.m_astBuild.makeExprList2(e1, e2)
           );
@@ -8376,7 +8378,7 @@ static Type *makePTMType(Env &env, Variable *var, SourceLoc loc)
     return env.error(loc, "attempted to make a pointer to member to a reference");
   }
 
-  CompoundType *inClass0 = var->scope->curCompound;
+  CompoundType *inClass0 = var->m_containingScope->curCompound;
   xassert(inClass0);
 
   return env.tfac.makePointerToMemberType
@@ -9803,7 +9805,7 @@ void ND_alias::tcheck(Env &env)
     // 7.3.2 para 3: redefinitions are allowed only if they make it
     // refer to the same thing
     if (existing->isNamespace() &&
-        existing->scope == origVar->scope) {
+        existing->m_containingScope == origVar->m_containingScope) {
       return;     // ok; nothing needs to be done
     }
     else {
@@ -9819,7 +9821,7 @@ void ND_alias::tcheck(Env &env)
   env.addVariable(v);
 
   // make it refer to the same namespace as the original one
-  v->scope = origVar->scope;
+  v->m_containingScope = origVar->m_containingScope;
 
   // note that, if one cares to, the alias can be distinguished from
   // the original name in that the scope's 'namespaceVar' still points
@@ -9878,7 +9880,9 @@ void ND_usingDecl::tcheck(Env &env)
   // for a long time this code has been written to only look at the
   // first element of 'set', and so far I have been unable to write
   // a test that shows any problem with that
-  Scope *origScope = origVar->scope? origVar->scope : env.globalScope();
+  Scope *origScope = origVar->m_containingScope?
+                       origVar->m_containingScope :
+                       env.globalScope();
 
   // see if there is a name in the tag space of the same scope
   // where 'origVar' was found
@@ -9903,7 +9907,7 @@ void ND_usingDir::tcheck(Env &env)
     return;
   }
   xassert(targetVar->isNamespace());   // meaning of LF_ONLY_NAMESPACES
-  Scope *target = targetVar->scope;
+  Scope *target = targetVar->m_containingScope;
 
   // to implement transitivity of 'using namespace', add a "using"
   // edge from the current scope to the target scope, if the current

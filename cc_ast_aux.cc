@@ -1517,7 +1517,7 @@ void ReachableVarsVariableVisitor::visitVariable(Variable *var) {
   xassert(!var->isUninstTemplateMember());
   if (shouldVisitVariable(var)) visitVariableIdem(var);
   typeVisitor->visitType(var->type);
-  typeVisitor->visitScope(var->scope);
+  typeVisitor->visitScope(var->m_containingScope);
 }
 
 void VisitRealVars::visitVariableIdem(Variable *var) {

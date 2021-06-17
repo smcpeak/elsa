@@ -412,7 +412,7 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
     // make a Variable for it
     globalScopeVar = makeVariable(SL_INIT, str("<globalScope>"),
                                   NULL /*type*/, DF_NAMESPACE);
-    globalScopeVar->scope = s;
+    globalScopeVar->m_containingScope = s;
     s->namespaceVar = globalScopeVar;
   }
 
@@ -1288,7 +1288,7 @@ void Env::gdbScopes()
 
       Variable *value = iter.value();
       if (value->hasFlag(DF_NAMESPACE)) {
-        cout << "  " << iter.key() << ": " << value->scope->desc() << endl;
+        cout << "  " << iter.key() << ": " << value->m_containingScope->desc() << endl;
       }
       else {
         cout << "  " << iter.key()
@@ -1969,8 +1969,8 @@ Scope *Env::lookupOneQualifier_useArgs(
     }
 
     // the namespace becomes the active scope
-    xassert(qualVar->scope);
-    return qualVar->scope;
+    xassert(qualVar->m_containingScope);
+    return qualVar->m_containingScope;
   }
 }
 
@@ -2597,7 +2597,7 @@ Type *Env::type_info_const_ref()
   Variable *stdNS = scope->lookupVariable(str("std"), *this);
   if (stdNS && stdNS->isNamespace()) {
     // use that instead of the global scope
-    scope = stdNS->scope;
+    scope = stdNS->m_containingScope;
   }
 
   // look for 'type_info'
@@ -2782,7 +2782,9 @@ Variable *Env::makeUsingAliasFor(SourceLoc loc, Variable *origVar)
   // 7.3.3 paras 4 and 6: the original and alias must either both
   // be class members or neither is class member
   if (scope->isClassScope() !=
-      (origVar->scope? origVar->scope->isClassScope() : false)) {
+      (origVar->m_containingScope?
+         origVar->m_containingScope->isClassScope() :
+         false)) {
     error(stringc << "bad alias '" << name
                   << "': alias and original must both be class members or both not members");
     return NULL;
@@ -2817,7 +2819,7 @@ Variable *Env::makeUsingAliasFor(SourceLoc loc, Variable *origVar)
 
     // 7.3.3 para 4: the original member must be in a base class of
     // the class where the alias is put
-    if (!enclosingClass->hasBaseClass(origVar->scope->curCompound)) {
+    if (!enclosingClass->hasBaseClass(origVar->m_containingScope->curCompound)) {
       error(stringc << "bad alias '" << name
                     << "': original must be in a base class of alias' scope");
       return NULL;
@@ -2848,7 +2850,7 @@ Variable *Env::makeUsingAliasFor(SourceLoc loc, Variable *origVar)
   if (prior &&
       prior->getUsingAlias() &&
       !prior->hasFlag(DF_TYPEDEF) &&
-      !sameScopes(prior->skipAlias()->scope, scope)) {
+      !sameScopes(prior->skipAlias()->m_containingScope, scope)) {
     // 7.3.3 para 11 says it's ok for two aliases to conflict when
     // not in class scope; I assume they have to be functions for
     // this to be allowed
@@ -3455,7 +3457,7 @@ Variable *Env::createDeclaration(
     // one we're trying to declare here, we have a conflict (I'm trying
     // to implement 7.3.3 para 11); I try to determine whether they
     // are the same or different based on the scopes in which they appear
-    if (!prior->skipAlias()->scope &&
+    if (!prior->skipAlias()->m_containingScope &&
         !scope->isPermanentScope()) {
       // The previous decl is not in a named scope.. I *think* that
       // means that we could only have found it by looking in the same
@@ -3463,7 +3465,7 @@ Variable *Env::createDeclaration(
       // just allow this.  I don't know if it's really right.  In any
       // case, d0097.cc is a testcase.
     }
-    else if (!sameScopes(prior->skipAlias()->scope, scope)) {
+    else if (!sameScopes(prior->skipAlias()->m_containingScope, scope)) {
       error(type, stringc
             << "prior declaration of '" << name
             << "' at " << prior->loc
@@ -3501,7 +3503,8 @@ Variable *Env::createDeclaration(
         }
         // We need to propagate the anti-externness from the extern inline
         // definition, but it's already being deleted above
-      } else if (prior->scope && prior->scope->isGlobalScope()) {
+      } else if (prior->m_containingScope &&
+                 prior->m_containingScope->isGlobalScope()) {
         // kc: Illegal to declare or define a function or data variable
         // previously declared as static (?)  gcc-3.4 warns; gcc-4.0 errors.
         if ((dflags & DF_STATIC) && !prior->hasFlag(DF_STATIC)) {
@@ -3830,7 +3833,7 @@ E_addrOf *Env::build_E_addrOf(Expression *underlying)
     Variable *underVar = underlying->asE_variable()->var;
     if (underVar->hasFlag(DF_MEMBER) &&
         !underVar->hasFlag(DF_STATIC)) {
-      CompoundType *inClassNAT = underVar->scope->curCompound;
+      CompoundType *inClassNAT = underVar->m_containingScope->curCompound;
       xassert(inClassNAT);
       ret->type = tfac.makePointerToMemberType(inClassNAT, CV_NONE,
                                                underVar->type);
@@ -3879,7 +3882,7 @@ PseudoInstantiation *Env::createPseudoInstantiation
 void Env::pushDeclarationScopes(Variable *v, Scope *stop)
 {
   ObjListMutator<Scope> mut(scopes);
-  Scope *s = v->scope;
+  Scope *s = v->m_containingScope;
 
   while (s != stop) {
     // put in a piece of 'extendScope'; I can't call that directly
@@ -3891,7 +3894,7 @@ void Env::pushDeclarationScopes(Variable *v, Scope *stop)
     mut.adv();               // advance 'mut' past 's', so it points at orig obj
     s = s->parentScope;
     if (!s) {
-      // 'v->scope' must not have been inside 'stop'
+      // 'v->m_containingScope' must not have been inside 'stop'
       xfailure("pushDeclarationScopes: missed 'stop' scope");
     }
   }
@@ -3900,7 +3903,7 @@ void Env::pushDeclarationScopes(Variable *v, Scope *stop)
 // undo the effects of 'pushDeclarationScopes'
 void Env::popDeclarationScopes(Variable *v, Scope *stop)
 {
-  Scope *s = v->scope;
+  Scope *s = v->m_containingScope;
   while (s != stop) {
     retractScope(s);
     s = s->parentScope;
@@ -4307,8 +4310,8 @@ void Env::getAssociatedScopes(SObjList<Scope> &associated, Type *type)
           // bullet 3 (enum): definition scope
           EnumType *et = atomic->asEnumType();
           if (et->typedefVar &&        // ignore anonymous enumerations...
-              et->typedefVar->scope) {
-            associated.prependUnique(et->typedefVar->scope);
+              et->typedefVar->m_containingScope) {
+            associated.prependUnique(et->typedefVar->m_containingScope);
           }
           break;
         }
@@ -4750,8 +4753,8 @@ void Env::lookupPQ_withScope(LookupSet &set, PQName *name, LookupFlags flags,
             // because we may need to get a more precise type for
             // decl-defn matching
             if (sameArguments(qual->sargs, pi->args)) {
-              scope = svar->scope;    // selfname -> container
-              goto bottom_of_loop;    // ...
+              scope = svar->m_containingScope; // selfname -> container
+              goto bottom_of_loop;             // ...
             }
 
             svar = svar->type->asCVAtomicType()->atomic->
@@ -4762,8 +4765,8 @@ void Env::lookupPQ_withScope(LookupSet &set, PQName *name, LookupFlags flags,
         else {
           // 2005-05-24: (in/t0476.cc) self-name and not passing args:
           // just like we were passing args that matched the primary
-          scope = svar->scope;        // selfname -> container
-          goto bottom_of_loop;        // like above
+          scope = svar->m_containingScope;  // selfname -> container
+          goto bottom_of_loop;              // like above
         }
       }
 
@@ -5218,7 +5221,7 @@ Scope *Env::createNamespace(SourceLoc loc, StringRef name)
   s->namespaceVar = v;
 
   // point the variable at it so we can find it later
-  v->scope = s;
+  v->m_containingScope = s;
 
   // hook it into the scope tree; this must be done before the
   // using edge is added, for anonymous scopes

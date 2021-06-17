@@ -903,7 +903,7 @@ string STemplateArgument::toString() const
     case STA_POINTER:   xassert(value.v && "ed1f952c-dbf5-41bf-9778-d5b0c0bda5af");
                         return stringc << "/*ptr*/ &" << value.v->name;
     case STA_MEMBER:    return stringc
-      << "/*member*/ &" << value.v->scope->curCompound->name
+      << "/*member*/ &" << value.v->m_containingScope->curCompound->name
       << "::" << value.v->name;
     case STA_DEPEXPR:   return getDepExpr()->exprToString();
     case STA_TEMPLATE:  return string("template (?)");
@@ -2295,9 +2295,9 @@ void Env::instantiateDefaultArgs(Variable *instV, int neededDefaults)
   // declScope: the scope where the function declaration appeared
   Variable *baseV = instTI->instantiationOf;
   #if 0      // seems to be wrong
-    Scope *declScope = baseV->scope;
+    Scope *declScope = baseV->m_containingScope;
   #else      // fixes in/t0584.cc
-    Scope *declScope = instTI->var->scope;     // scope surrounding instantiation
+    Scope *declScope = instTI->var->m_containingScope;     // scope surrounding instantiation
 
     // I suspect the reason I originally wrote 'baseV->scope' is I was
     // thinking about template functions at global scope.  But for a
@@ -3308,7 +3308,7 @@ void Env::transferTemplateMemberInfo
       // that?)
       TemplateInfo *destTI = destVar->templateInfo();
       if (!destTI->defnScope) {
-        destTI->defnScope = destVar->scope;
+        destTI->defnScope = destVar->m_containingScope;
         xassert(destTI->defnScope);
 
         // arg.. I keep pushing this around.. maybe new strategy:
@@ -3399,7 +3399,7 @@ void Env::transferTemplateMemberInfo_typeSpec
     Variable *srcVar = srcTS->asTS_elaborated()->atype->typedefVar;
     Variable *destVar = destTS->asTS_elaborated()->atype->typedefVar;
 
-    if (srcVar->scope == sourceCT) {
+    if (srcVar->m_containingScope == sourceCT) {
       // just a forward decl, do the one element
       transferTemplateMemberInfo_one(instLoc, srcVar, destVar, sargs);
     }
@@ -3510,9 +3510,9 @@ void Env::transferTemplateMemberInfo_membert
     destVar->funcDefn = srcVar->funcDefn;
 
     // is it inline?
-    if (srcVar->scope == srcTI->defnScope) {
+    if (srcVar->m_containingScope == srcTI->defnScope) {
       // then the dest's defnScope should be similarly arranged
-      destTI->defnScope = destVar->scope;
+      destTI->defnScope = destVar->m_containingScope;
     }
     else {
       // for out of line, the defn scopes of src and dest are the same
@@ -3771,7 +3771,7 @@ bool Env::mergeParameterLists(Variable *prior,
       // copy a few other fields, including default value
       v->setValue(dest->value);
       v->defaultParamType = dest->defaultParamType;
-      v->scope = dest->scope;
+      v->m_containingScope = dest->m_containingScope;
       v->setScopeKind(dest->getScopeKind());
 
       // replace the old with the new
@@ -4444,7 +4444,7 @@ Variable *Env::makeInstantiationVariable(Variable *templ, Type *instType)
 {
   Variable *inst = makeVariable(templ->loc, templ->name, instType, templ->flags);
   inst->setAccess(templ->getAccess());
-  inst->scope = templ->scope;
+  inst->m_containingScope = templ->m_containingScope;
   inst->setScopeKind(templ->getScopeKind());
   return inst;
 }
@@ -4731,7 +4731,7 @@ Variable *Env::makeSpecializationVariable
   // make the Variable
   Variable *spec = makeVariable(loc, templ->name, type, dflags);
   spec->setAccess(templ->getAccess());
-  spec->scope = templ->scope;
+  spec->m_containingScope = templ->m_containingScope;
   spec->setScopeKind(templ->getScopeKind());
 
   // make & attach the TemplateInfo
