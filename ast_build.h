@@ -66,6 +66,11 @@ public:      // methods
   // properly express the type of 'var'.
   D_name *makeD_name(Variable *var);
 
+  // Stack a D_func on top of 'base' that expresses that 'base' has
+  // type 'ftype', except that the return type of 'ftype' is ignored
+  // because that is not part of the function declarator syntax.
+  D_func *makeD_func(FunctionType const *ftype, IDeclarator *base);
+
   // Given a base declarator (which should be a D_name), add more
   // IDeclarators on top of it in order to denote 'type'.  Stop when we
   // reach an atomic type, returning it.

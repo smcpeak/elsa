@@ -36,6 +36,47 @@ D_name *ElsaASTBuild::makeD_name(Variable *var)
 }
 
 
+D_func *ElsaASTBuild::makeD_func(FunctionType const *ftype, IDeclarator *base)
+{
+  // Build up the syntax for each destination parameter.  We will
+  // build it in reverse order initially.
+  FakeList<ASTTypeId> *destParams = FakeList<ASTTypeId>::emptyList();
+
+  // Iterate over the parameter types in the source.
+  SObjListIter<Variable> srcParamIter(ftype->params);
+
+  // Skip the receiver parameter.
+  if (ftype->isMethod()) {
+    xassert(!srcParamIter.isDone());
+    srcParamIter.adv();
+  }
+
+  for (; !srcParamIter.isDone(); srcParamIter.adv()) {
+    Variable const *srcParamVar = srcParamIter.data();
+
+    // Make a new Variable for this parameter.  At the moment, my
+    // only motivation for cloning rather than reusing is it means
+    // 'ftype' can continue to be 'const'.
+    Variable *destParamVar = m_typeFactory.makeVariable(
+      loc(), srcParamVar->name, srcParamVar->type, srcParamVar->flags);
+
+    // Recursively translate the parameter type to its syntax.
+    ASTTypeId *destParam = makeParameter(destParamVar);
+    destParams = fl_prepend(destParams, destParam);
+  }
+
+  // Reverse the constructed parameters.
+  destParams = fl_reverse(destParams);
+
+  // Get exception specification syntax.
+  ExceptionSpec *exnSpec = makeExceptionSpec(ftype->exnSpec);
+
+  // Package them as D_func.
+  return new D_func(loc(), base, destParams,
+                    ftype->getReceiverCV(), exnSpec);
+}
+
+
 CVAtomicType const *ElsaASTBuild::buildUpDeclarator(
   Type const *type, IDeclarator *&idecl)
 {
@@ -73,45 +114,7 @@ CVAtomicType const *ElsaASTBuild::buildUpDeclarator(
 
       case Type::T_FUNCTION: {
         FunctionType const *ftype = type->asFunctionTypeC();
-
-        // Build up the syntax for each destination parameter.  We will
-        // build it in reverse order initially.
-        FakeList<ASTTypeId> *destParams = FakeList<ASTTypeId>::emptyList();
-
-        // Iterate over the parameter types in the source.
-        SObjListIter<Variable> srcParamIter(ftype->params);
-
-        // Skip the receiver parameter.
-        if (ftype->isMethod()) {
-          xassert(!srcParamIter.isDone());
-          srcParamIter.adv();
-        }
-
-        for (; !srcParamIter.isDone(); srcParamIter.adv()) {
-          Variable const *srcParamVar = srcParamIter.data();
-
-          // Make a new Variable for this parameter.  At the moment, my
-          // only motivation for cloning rather than reusing is it means
-          // 'type' can continue to be 'const'.
-          Variable *destParamVar = m_typeFactory.makeVariable(
-            loc(), srcParamVar->name, srcParamVar->type, srcParamVar->flags);
-
-          // Recursively translate the parameter type to its syntax.
-          ASTTypeId *destParam = makeParameter(destParamVar);
-          destParams = fl_prepend(destParams, destParam);
-        }
-
-        // Reverse the constructed parameters.
-        destParams = fl_reverse(destParams);
-
-        // Get exception specification syntax.
-        ExceptionSpec *exnSpec = makeExceptionSpec(ftype->exnSpec);
-
-        // Package them as D_func.
-        idecl = new D_func(loc(), idecl, destParams,
-                           ftype->getReceiverCV(), exnSpec);
-
-        // Continue with the return type.
+        idecl = makeD_func(ftype, idecl);
         type = ftype->retType;
         break;
       }

@@ -154,36 +154,14 @@ Declaration *ElabVisitor::makeDeclaration(SourceLoc loc, Variable *var, Declarat
 
 // given a function declaration, make a Declarator containing
 // a D_func that refers to it
-//
-// TODO: This code is very similar to code in
-// ElsaASTBuild::makeASTTypeId.  They should be combined.
-Declarator *ElabVisitor::makeFuncDeclarator(SourceLoc loc, Variable *var, DeclaratorContext context)
+Declarator *ElabVisitor::makeFuncDeclarator(SourceLoc loc, Variable *var,
+                                            DeclaratorContext context)
 {
   RESTORER(SourceLoc, enclosingStmtLoc, loc);
   FunctionType *ft = var->type->asFunctionType();
 
-  // construct parameter list
-  FakeList<ASTTypeId> *params = FakeList<ASTTypeId>::emptyList();
-  {
-    // iterate over parameters other than the receiver object ("this")
-    SObjListIterNC<Variable> iter(ft->params);
-    if (ft->isMethod()) {
-      iter.adv();
-    }
-    for (; !iter.isDone(); iter.adv()) {
-      Variable *param = iter.data();
-      ASTTypeId *typeId = m_astBuild.makeParameter(param);
-      params = fl_prepend(params, typeId);
-    }
-    params = fl_reverse(params);     // fix prepend()-induced reversal
-  }
-
-  // build D_func
-  IDeclarator *funcIDecl = new D_func(loc,
-                                      makeD_name(loc, var),
-                                      params,
-                                      CV_NONE,
-                                      NULL /*exnSpec*/);
+  IDeclarator *funcIDecl =
+    m_astBuild.makeD_func(ft, m_astBuild.makeD_name(var));
 
   Declarator *funcDecl = new Declarator(funcIDecl, NULL /*init*/);
   funcDecl->var = var;
