@@ -266,13 +266,15 @@ S_compound *ElabVisitor::makeS_compound(SourceLoc loc)
 E_constructor *ElabVisitor::makeCtorExpr(
   SourceLoc loc,                    // where elaboration is occurring
   Expression *target,               // reference to object to construct
-  Type *type,                       // type of the constructed object
+  CVAtomicType *type,               // type of the constructed object
   Variable *ctor,                   // ctor function to call
   FakeList<ArgExpression> *args)    // arguments to ctor (tcheck'd)
 {
   xassert(target->type->isReference());
+  RESTORER(SourceLoc, enclosingStmtLoc, loc);
 
-  E_constructor *ector0 = new E_constructor(new TS_type(loc, type), args);
+  TypeSpecifier *typeSpecifier = m_astBuild.makeTypeSpecifier(type);
+  E_constructor *ector0 = new E_constructor(typeSpecifier, args);
   ector0->type = type;
   ector0->ctorVar = ctor;
   ector0->artificial = true;
@@ -289,7 +291,7 @@ E_constructor *ElabVisitor::makeCtorExpr(
 Statement *ElabVisitor::makeCtorStatement(
   SourceLoc loc,
   Expression *target,
-  Type *type,
+  CVAtomicType *type,
   Variable *ctor,
   FakeList<ArgExpression> *args)
 {
@@ -491,7 +493,7 @@ void Declarator::elaborateCDtors(ElabVisitor &env, DeclFlags dflags)
 
     env.push(fullexp);
     ctorStatement = env.makeCtorStatement(loc, env.makeE_variable(loc, var),
-                                          type, ctor, args0);
+                                          type->asCVAtomicType(), ctor, args0);
     env.pop(fullexp);
   }
 
@@ -509,7 +511,8 @@ void Declarator::elaborateCDtors(ElabVisitor &env, DeclFlags dflags)
       // call the no-arg ctor; for temporaries do nothing since this is
       // a temporary, it will be initialized later
       ctorStatement = env.makeCtorStatement(loc, env.makeE_variable(loc, var),
-                                            type, env.getDefaultCtor(ct),
+                                            type->asCVAtomicType(),
+                                            env.getDefaultCtor(ct),
                                             env.emptyArgs());
     }
   }
@@ -596,7 +599,7 @@ Variable *ElabVisitor::insertTempDeclaration(SourceLoc loc, Type *retType)
 // NOTE: the client is expected to clone _argExpr_ before passing it
 // in here *if* needed, since we don't clone it below
 Expression *ElabVisitor::elaborateCallByValue
-  (SourceLoc loc, Type *paramType, Expression *argExpr)
+  (SourceLoc loc, CVAtomicType *paramType, Expression *argExpr)
 {
   CompoundType *paramCt = paramType->asCompoundType();
 
@@ -688,7 +691,8 @@ Expression *ElabVisitor::elaborateCallSite(
         // a tree
         //
         // sm: I agree
-        arg->expr = elaborateCallByValue(loc, paramType, arg->expr);
+        arg->expr = elaborateCallByValue(loc, paramType->asCVAtomicType(),
+                                         arg->expr);
       }
 
       paramsIter.adv();
@@ -956,7 +960,7 @@ MemberInit *ElabVisitor::makeCopyCtorMemberInit(
     mi->ctorStatement = makeCtorStatement
       (loc,
        env.makeE_variable(loc, target),
-       target->type,
+       target->type->asCVAtomicType(),
        mi->ctorVar,
        mi->args);
   }
@@ -1392,7 +1396,7 @@ void Handler::elaborate(ElabVisitor &env)
       // function call
       if (typeIdType->isCompoundType()) {
         localArg = env.elaborateCallByValue
-          (loc, typeIdType,
+          (loc, typeIdType->asRval()->asCVAtomicType(),
            env.makeE_variable(loc, globalVar) // NOTE: elaborateCallByValue() won't clone this
            );
       }
@@ -1455,7 +1459,8 @@ bool E_throw::elaborate(ElabVisitor &env)
       expr = env.cloneExpr(expr);
 
       globalCtorStatement =
-        env.makeCtorStatement(loc, env.makeE_variable(loc, globalVar), exprType,
+        env.makeCtorStatement(loc, env.makeE_variable(loc, globalVar),
+                              exprType->asCVAtomicType(),
                               env.getCopyCtor(exprType->asCompoundType()),
                               env.m_astBuild.makeExprList1(origExpr));
 
@@ -1494,7 +1499,8 @@ bool E_new::elaborate(ElabVisitor &env)
       ctorArgs->list = env.cloneExprList(ctorArgs->list);
     }
 
-    ctorStatement = env.makeCtorStatement(loc, env.makeE_variable(loc, heapVar), t,
+    ctorStatement = env.makeCtorStatement(loc, env.makeE_variable(loc, heapVar),
+                                          t->asCVAtomicType(),
                                           ctorVar, args0);
     return false;    // SES
   }
@@ -1581,7 +1587,8 @@ bool S_return::elaborate(ElabVisitor &env)
 
       // make the constructor function
       env.push(expr->getAnnot());// e.g. in/d0049.cc breaks w/o this
-      ctorStatement = env.makeCtorStatement(loc, retVar, ft->retType,
+      ctorStatement = env.makeCtorStatement(loc, retVar,
+                                            ft->retType->asCVAtomicType(),
                                             env.getCopyCtor(retTypeCt), args0);
       env.pop(expr->getAnnot());
 
@@ -1693,7 +1700,8 @@ bool ElabVisitor::visitMemberInit(MemberInit *mi)
     if (mi->member) {
       // initializing a data member
       mi->ctorStatement = makeCtorStatement
-        (loc, makeE_variable(loc, mi->member), mi->member->type,
+        (loc, makeE_variable(loc, mi->member),
+         mi->member->type->asCVAtomicType(),
          mi->ctorVar, orig);
     }
 
@@ -1701,7 +1709,7 @@ bool ElabVisitor::visitMemberInit(MemberInit *mi)
       // initializing a base class subobject
 
       // need a Type for the eventual E_constructor...
-      Type *type = tfac.makeCVAtomicType(mi->base, CV_NONE);
+      CVAtomicType *type = tfac.makeCVAtomicType(mi->base, CV_NONE);
 
       mi->ctorStatement = makeCtorStatement
         (loc, makeE_variable(loc, func->receiver), type,

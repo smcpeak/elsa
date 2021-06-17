@@ -212,13 +212,13 @@ public:      // funcs
   E_constructor *makeCtorExpr(
     SourceLoc loc,
     Expression *target,
-    Type *type,
+    CVAtomicType *type,
     Variable *ctor,
     FakeList<ArgExpression> *args);
   Statement *makeCtorStatement(
     SourceLoc loc,
     Expression *target,
-    Type *type,
+    CVAtomicType *type,
     Variable *ctor,
     FakeList<ArgExpression> *args);
 
@@ -240,7 +240,7 @@ public:      // funcs
     (SourceLoc loc, Type *retType, Variable *&var /*OUT*/, DeclaratorContext context);
   Variable *insertTempDeclaration(SourceLoc loc, Type *retType);
   Expression *elaborateCallByValue
-    (SourceLoc loc, Type *paramType, Expression *argExpr);
+    (SourceLoc loc, CVAtomicType *paramType, Expression *argExpr);
   Expression *elaborateCallSite(
     SourceLoc loc,
     FunctionType *ft,
