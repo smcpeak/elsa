@@ -195,7 +195,6 @@ public:      // funcs
   D_name *makeD_name(SourceLoc loc, Variable *var);
   Declarator *makeDeclarator(SourceLoc loc, Variable *var, DeclaratorContext context);
   Declaration *makeDeclaration(SourceLoc loc, Variable *var, DeclaratorContext context);
-  Declarator *makeFuncDeclarator(SourceLoc loc, Variable *var, DeclaratorContext context);
   Function *makeFunction(SourceLoc loc, Variable *var,
                          FakeList<MemberInit> *inits,
                          S_compound *body);

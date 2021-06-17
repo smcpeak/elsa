@@ -152,45 +152,26 @@ Declaration *ElabVisitor::makeDeclaration(SourceLoc loc, Variable *var, Declarat
 }
 
 
-// given a function declaration, make a Declarator containing
-// a D_func that refers to it
-Declarator *ElabVisitor::makeFuncDeclarator(SourceLoc loc, Variable *var,
-                                            DeclaratorContext context)
-{
-  RESTORER(SourceLoc, enclosingStmtLoc, loc);
-  FunctionType *ft = var->type->asFunctionType();
-
-  IDeclarator *funcIDecl =
-    m_astBuild.makeD_func(ft, m_astBuild.makeD_name(var));
-
-  Declarator *funcDecl = new Declarator(funcIDecl, NULL /*init*/);
-  funcDecl->var = var;
-  funcDecl->type = var->type;
-  xassert(funcDecl->context == DC_UNKNOWN);
-  funcDecl->context = context;
-
-  return funcDecl;
-}
-
-
 // given a function declaration and a body, make a Function AST node
 Function *ElabVisitor::makeFunction(SourceLoc loc, Variable *var,
                                     FakeList<MemberInit> *inits,
                                     S_compound *body)
 {
+  RESTORER(SourceLoc, enclosingStmtLoc, loc);
   FunctionType *ft = var->type->asFunctionType();
 
-  Declarator *funcDecl = makeFuncDeclarator(loc, var, DC_FUNCTION);
+  std::pair<TypeSpecifier*, Declarator*> ts_and_decl =
+    m_astBuild.makeTSandDeclarator(var, DC_FUNCTION);
 
   Function *f = new Function(
     var->flags & DF_SOURCEFLAGS,
-    new TS_type(loc, ft->retType),
-    funcDecl,
+    ts_and_decl.first,
+    ts_and_decl.second,
     inits,
     body,
     NULL /*handlers*/
   );
-  f->funcType = var->type->asFunctionType();
+  f->funcType = ft;
 
   if (ft->isMethod()) {
     // f's receiver should match that of its funcType

@@ -82,18 +82,6 @@ CVAtomicType const *ElsaASTBuild::buildUpDeclarator(
 {
   // Loop until we hit an atomic type.
   while (!type->isCVAtomicType()) {
-    // Currently, my declarator printing code relies on the presence of
-    // D_grouping to know where to insert parens.  If the inner
-    // declarator is a function or array, then we need them since those
-    // use postfix rather than prefix syntax (although this means we
-    // will add parens in some cases we don't need them, like an array
-    // of arrays).
-    //
-    // TODO: Change the printing code to make this unnecessary.
-    if (idecl->isD_func() || idecl->isD_array()) {
-      idecl = new D_grouping(loc(), idecl);
-    }
-
     switch (type->getTag()) {
       default:
         xfailure("bad tag");
