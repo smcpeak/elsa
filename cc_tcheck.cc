@@ -4062,10 +4062,36 @@ static Type *normalizeParameterType(Env &env, SourceLoc loc, Type *t)
 }
 
 
+// Enforce rules about what types can be return types.  Specifically:
+//
+//   C11 6.7.6.3:
+//     A function declarator shall not specify a return type that is a
+//     function type or an array type.
+//
+//   C++14 8.3.5/10:
+//     Functions shall not have a return type of type array or function,
+//     although they may have a return type of type pointer or reference
+//     to such things.  [...]
+//
+static void checkFunctionReturnType(Env &env, Type const *retType)
+{
+  if (retType->isArrayType()) {
+    env.error(stringb("A function return type cannot be an array "
+                      "(but it can be a pointer to an array)."));
+  }
+
+  if (retType->isFunctionType()) {
+    env.error(stringb("A function return type cannot be a function "
+                      "(but it can be a pointer to a function)."));
+  }
+}
+
+
 void D_func::tcheck(Env &env, Declarator::Tcheck &dt)
 {
   env.setLoc(loc);
   possiblyConsumeFunctionType(env, dt);
+  checkFunctionReturnType(env, dt.type);
 
   FunctionFlags specialFunc = FF_NONE;
 

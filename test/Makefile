@@ -127,6 +127,7 @@ out/strlit/%.c.ok: strlit/%.c strlit/%.c.expect $(CCPARSE)
 # internal validation with internal testing hooks.
 
 TESTS += tcheck/expr-type.c
+TESTS += tcheck/func-ret-func.c
 
 # Run a C tcheck test
 out/tcheck/%.c.ok: tcheck/%.c $(CCPARSE)
