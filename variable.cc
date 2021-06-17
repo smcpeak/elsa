@@ -68,6 +68,7 @@ Variable::Variable(SourceLoc L, StringRef n, Type *t, DeclFlags f)
     overload(NULL),
     virtuallyOverride(NULL),
     m_containingScope(NULL),
+    m_denotedScope(NULL),
     usingAlias_or_parameterizedEntity(NULL),
     templInfo(NULL)
 {
@@ -402,11 +403,11 @@ string Variable::fullyQualifiedName0() const
 //   }
 
   if (isNamespace()) {
-    if (m_containingScope->isGlobalScope()) {
+    if (m_denotedScope->isGlobalScope()) {
       return "::";
     }
     else {
-      return m_containingScope->fullyQualifiedCName();
+      return m_denotedScope->fullyQualifiedCName();
     }
   }
 
@@ -773,7 +774,7 @@ int Variable::getBitfieldSize() const
 Scope *Variable::getDenotedScope() const
 {
   if (isNamespace()) {
-    return m_containingScope;
+    return m_denotedScope;
   }
 
   if (type->isCompoundType()) {

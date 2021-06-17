@@ -412,7 +412,7 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
     // make a Variable for it
     globalScopeVar = makeVariable(SL_INIT, str("<globalScope>"),
                                   NULL /*type*/, DF_NAMESPACE);
-    globalScopeVar->m_containingScope = s;
+    globalScopeVar->m_denotedScope = s;
     s->namespaceVar = globalScopeVar;
   }
 
@@ -1287,8 +1287,8 @@ void Env::gdbScopes()
       if (prefixEquals(iter.key(), "__")) continue;
 
       Variable *value = iter.value();
-      if (value->hasFlag(DF_NAMESPACE)) {
-        cout << "  " << iter.key() << ": " << value->m_containingScope->desc() << endl;
+      if (value->isNamespace()) {
+        cout << "  " << iter.key() << ": " << value->m_denotedScope->desc() << endl;
       }
       else {
         cout << "  " << iter.key()
@@ -1964,13 +1964,14 @@ Scope *Env::lookupOneQualifier_useArgs(
 
   // case 2: qualifier refers to a namespace
   else /*DF_NAMESPACE*/ {
+    xassert(qualVar->isNamespace());
     if (sargs.isNotEmpty()) {
       error(stringc << "namespace '" << qual << "' can't accept template args");
     }
 
     // the namespace becomes the active scope
-    xassert(qualVar->m_containingScope);
-    return qualVar->m_containingScope;
+    xassert(qualVar->m_denotedScope);
+    return qualVar->m_denotedScope;
   }
 }
 
@@ -2597,7 +2598,7 @@ Type *Env::type_info_const_ref()
   Variable *stdNS = scope->lookupVariable(str("std"), *this);
   if (stdNS && stdNS->isNamespace()) {
     // use that instead of the global scope
-    scope = stdNS->m_containingScope;
+    scope = stdNS->m_denotedScope;
   }
 
   // look for 'type_info'
@@ -5221,7 +5222,7 @@ Scope *Env::createNamespace(SourceLoc loc, StringRef name)
   s->namespaceVar = v;
 
   // point the variable at it so we can find it later
-  v->m_containingScope = s;
+  v->m_denotedScope = s;
 
   // hook it into the scope tree; this must be done before the
   // using edge is added, for anonymous scopes

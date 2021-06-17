@@ -106,14 +106,17 @@ public:    // data
   // name to directlyVirtuallyOverride if you do.
   SObjSet<Variable*> *virtuallyOverride;
 
-  // named scope in which the variable appears; this is only non-NULL
-  // if the scope has a name, i.e. it continues to be available for
-  // use even after it's lexically closed
+  // Named scope in which the variable appears.  This is only non-NULL
+  // if the scope is a namespace, a class, or is the global scope,
+  // meaning this Variable is a member of one of those.
+  Scope *m_containingScope;            // (nullable serf)
+
+  // If this Variable 'isNamespace()', then this is the Scope named by
+  // this Variable.  Otherwise it is NULL.
   //
-  // if this Variable isNamespace(), then 'scope' points at the
-  // namespace it names, rather than the containing scope; see
-  // getDenotedScope()
-  Scope *m_containingScope;           // (nullable serf)
+  // Note that multiple Variables can have the same 'm_denotedScope' due
+  // to namespace aliases.
+  Scope *m_denotedScope;               // (nullable serf)
 
   // total number of Variables created
   static size_t numVariables;
@@ -187,7 +190,11 @@ public:
   bool isNonStaticMember() const { return hasFlag(DF_MEMBER) && !hasFlag(DF_STATIC); }
   // bool isStatic() const { return hasFlag(DF_STATIC); }
   bool isMember() const { return hasFlag(DF_MEMBER); }
+
+  // True if this Variable represents a namespace.  For the purpose of
+  // this function, the global scope is considered a namespace.
   bool isNamespace() const { return hasFlag(DF_NAMESPACE); }
+
   bool isImplicitTypedef() const { return hasAllFlags(DF_IMPLICIT | DF_TYPEDEF); }
   bool isImplicitMemberFunc() const { return hasFlag(DF_IMPLICIT) && !hasFlag(DF_TYPEDEF); }
   bool isEnumerator() const { return hasFlag(DF_ENUMERATOR); }
@@ -346,7 +353,8 @@ public:
   void setBitfieldSize(int bits);      // must be bitfield
   int getBitfieldSize() const;         // must be bitfield
 
-  // this variable refers to a scope; get it
+  // This variable refers to a named scope (a namespace, the global
+  // scope, or a class); get it.
   Scope *getDenotedScope() const;
 
   // dsw: Variables are part of the type system at least for purposes

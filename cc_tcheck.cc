@@ -379,7 +379,7 @@ void TF_namespaceDefn::itcheck(Env &env)
   }
 
   // violation of 7.3.1 para 2?
-  if (existing && !existing->hasFlag(DF_NAMESPACE)) {
+  if (existing && !existing->isNamespace()) {
     env.error(loc, stringc
       << "attempt to redefine '" << name << "' as a namespace");
 
@@ -391,7 +391,7 @@ void TF_namespaceDefn::itcheck(Env &env)
   Scope *s;
   if (existing) {
     // extend existing scope
-    s = existing->m_containingScope;
+    s = existing->m_denotedScope;
   }
   else {
     // make new namespace
@@ -7487,7 +7487,7 @@ Type *E_fieldAcc::itcheck_fieldAcc_set(Env &env, LookupFlags flags,
         << "a class or namespace, not " << kindAndType(firstQVar1));
     }
     Scope *firstQScope1 = (!firstQVar1)?             NULL :
-                          firstQVar1->isNamespace()? firstQVar1->m_containingScope :
+                          firstQVar1->isNamespace()? firstQVar1->m_denotedScope :
                                                      firstQVar1->type->asCompoundType();
 
     // lookup of firstQ in scope of LHS class
@@ -9805,7 +9805,7 @@ void ND_alias::tcheck(Env &env)
     // 7.3.2 para 3: redefinitions are allowed only if they make it
     // refer to the same thing
     if (existing->isNamespace() &&
-        existing->m_containingScope == origVar->m_containingScope) {
+        existing->m_denotedScope == origVar->m_denotedScope) {
       return;     // ok; nothing needs to be done
     }
     else {
@@ -9821,7 +9821,7 @@ void ND_alias::tcheck(Env &env)
   env.addVariable(v);
 
   // make it refer to the same namespace as the original one
-  v->m_containingScope = origVar->m_containingScope;
+  v->m_denotedScope = origVar->m_denotedScope;
 
   // note that, if one cares to, the alias can be distinguished from
   // the original name in that the scope's 'namespaceVar' still points
@@ -9907,7 +9907,7 @@ void ND_usingDir::tcheck(Env &env)
     return;
   }
   xassert(targetVar->isNamespace());   // meaning of LF_ONLY_NAMESPACES
-  Scope *target = targetVar->m_containingScope;
+  Scope *target = targetVar->m_denotedScope;
 
   // to implement transitivity of 'using namespace', add a "using"
   // edge from the current scope to the target scope, if the current
