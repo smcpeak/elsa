@@ -1150,11 +1150,10 @@ string Scope::fullyQualifiedName()
     sb << "::";     // put this only *between* names, so none at start
   }
   else {
-    if (!immediateGlobalScopeChild()) {
-      // we didn't end up in the global scope; for example a function
-      // in a class in a function
-      xfailure("fullyQualifiedName called on scope that doesn't terminate in the global scope");
-    }
+    // We might not be in the global scope here, for example if this is
+    // the name of something defined locally to a function.  But for
+    // the purposes of this function, which is mostly heuristic anyway,
+    // that's fine.
   }
 
   xassert(hasName());
