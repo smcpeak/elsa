@@ -353,6 +353,7 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
     special_checkCalleeDefnLine(NULL),
     special_test_mtype(NULL),
     special_cause_xfailure(NULL),
+    special_checkMakeASTTypeId(NULL),
 
     string_realSelector(str("__real__")),
     string_imagSelector(str("__imag__")),
@@ -534,6 +535,7 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
   special_checkCalleeDefnLine = declareSpecialFunction("__checkCalleeDefnLine")->name;
   special_test_mtype = declareSpecialFunction("__test_mtype")->name;
   special_cause_xfailure = declareSpecialFunction("__cause_xfailure")->name;
+  special_checkMakeASTTypeId = declareSpecialFunction("__elsa_checkMakeASTTypeId")->name;
 
   setupOperatorOverloading();
 

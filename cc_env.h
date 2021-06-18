@@ -182,6 +182,7 @@ public:      // data
   StringRef special_checkCalleeDefnLine;
   StringRef special_test_mtype;
   StringRef special_cause_xfailure;
+  StringRef special_checkMakeASTTypeId;
   // ---- END: special names ----
 
   // gcc __complex__ support

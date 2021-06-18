@@ -7129,6 +7129,38 @@ static Type *internalTestingHooks
     xfailure("program contains __cause_xfailure");
   }
 
+  if (funcName == env.special_checkMakeASTTypeId) {
+    if (fl_count(args) == 2) {
+      Expression *e1 = fl_nth(args, 0)->expr;
+      Expression *e2 = fl_nth(args, 1)->expr;
+
+      if (e1->isE_cast() &&
+          e1->asE_cast()->ctype->spec->isTS_name() &&
+          e2->isE_stringLit()) {
+        Variable *typedefVar = e1->asE_cast()->ctype->spec->asTS_name()->var;
+        string expect = e2->asE_stringLitC()->m_stringData.toString();
+
+        // The purpose of this special function is to call
+        // 'makeASTTypeId' on a TypedefType.
+        TypedefType *tt = env.tfac.makeTypedefType(typedefVar);
+        ASTTypeId *newId =
+          env.m_astBuild.makeASTTypeId(tt, NULL /*name*/, DC_E_CAST);
+        string actual = printASTNodeToString(env.lang, newId);
+        delete newId;
+
+        if (actual != expect) {
+          env.error(stringb(
+            "checkMakeASTTypeId: expect=\"" << expect <<
+            "\" actual=\"" << actual << "\""));
+        }
+        return env.getSimpleType(ST_VOID);
+      }
+    }
+
+    env.error("invalid special function call");
+    return env.getSimpleType(ST_VOID);
+  }
+
   // E_funCall::itcheck should continue, and tcheck this normally
   return NULL;
 }
