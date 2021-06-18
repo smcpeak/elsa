@@ -1236,15 +1236,41 @@ DOWNCAST_IMPL(BaseType, ArrayType)
 DOWNCAST_IMPL(BaseType, PointerToMemberType)
 
 
+bool BaseType::isTypedefType() const
+{
+  return false;
+}
+
+DOWNCAST_IMPL(BaseType, TypedefType)
+
+
+static Type const *baseTypeToType(BaseType const *bt)
+{
+  // The constructor of BaseType is private, with Type as its only
+  // friend, therefore Type is the only possible derived class.
+  return static_cast<Type const *>(bt);
+}
+
+
+Type const *BaseType::skipTypedefsC() const
+{
+  int ct=0;
+  Type const *t = baseTypeToType(this);
+  while (TypedefType const *tt = t->ifTypedefTypeC()) {
+    t = tt->underlyingType();
+
+    // Catch an infinite loop.
+    xassert(++ct < 1000);
+  }
+  return t;
+}
+
+
 bool BaseType::equals(BaseType const *obj, MatchFlags flags) const
 {
   MType mtype;
-
-  // oy.. I think it's a fair assumption that the only direct subclass
-  // of BaseType is Type ...; in fact, I just made BaseType's ctor
-  // private to ensure this
-  return mtype.matchType(static_cast<Type const*>(this),
-                         static_cast<Type const*>(obj), flags);
+  return mtype.matchType(baseTypeToType(this),
+                         baseTypeToType(obj), flags);
 }
 
 unsigned BaseType::hashValue() const
@@ -2433,6 +2459,109 @@ void PointerToMemberType::traverse(TypeVisitor &vis)
 }
 
 
+
+// --------------------------- TypedefType -----------------------------
+TypedefType::TypedefType(Variable *typedefVar)
+  : m_typedefVar(typedefVar)
+{
+  xassert(typedefVar->isType());
+}
+
+
+Type *TypedefType::underlyingType() const
+{
+  return m_typedefVar->type;
+}
+
+
+Type::Tag TypedefType::getTag() const
+{
+  return underlyingType()->getTag();
+}
+
+
+#define TYPEDEFTYPE_DOWNCAST_IMPL(destType)            \
+  destType const *TypedefType::as##destType##C() const \
+  {                                                    \
+    return underlyingType()->as##destType##C();        \
+  }                                                    \
+  destType const *TypedefType::if##destType##C() const \
+  {                                                    \
+    return underlyingType()->if##destType##C();        \
+  }
+
+TYPEDEFTYPE_DOWNCAST_IMPL(CVAtomicType)
+TYPEDEFTYPE_DOWNCAST_IMPL(PointerType)
+TYPEDEFTYPE_DOWNCAST_IMPL(ReferenceType)
+TYPEDEFTYPE_DOWNCAST_IMPL(FunctionType)
+TYPEDEFTYPE_DOWNCAST_IMPL(ArrayType)
+TYPEDEFTYPE_DOWNCAST_IMPL(PointerToMemberType)
+
+#undef TYPEDEFTYPE_DOWNCAST_IMPL
+
+
+bool TypedefType::isTypedefType() const
+{
+  return true;
+}
+
+TypedefType const *TypedefType::asTypedefTypeC() const
+{
+  return static_cast<TypedefType const*>(this);
+}
+
+TypedefType const *TypedefType::ifTypedefTypeC() const
+{
+  return static_cast<TypedefType const*>(this);
+}
+
+
+unsigned      TypedefType::innerHashValue() const
+{
+  return underlyingType()->innerHashValue();
+}
+
+string        TypedefType::toMLString() const
+{
+  return underlyingType()->toMLString();
+}
+
+string        TypedefType::leftString(bool innerParen) const
+{
+  return underlyingType()->leftString(innerParen);
+}
+
+string        TypedefType::rightString(bool innerParen) const
+{
+  return underlyingType()->rightString(innerParen);
+}
+
+int           TypedefType::reprSize() const
+{
+  return underlyingType()->reprSize();
+}
+
+bool          TypedefType::anyCtorSatisfies(TypePred &pred) const
+{
+  return underlyingType()->anyCtorSatisfies(pred);
+}
+
+CVFlags       TypedefType::getCVFlags() const
+{
+  return underlyingType()->getCVFlags();
+}
+
+void          TypedefType::traverse(TypeVisitor &vis)
+{
+  return underlyingType()->traverse(vis);
+}
+
+Type *        TypedefType::getAtType() const
+{
+  return underlyingType()->getAtType();
+}
+
+
 // ---------------------- toMLString ---------------------
 // print out a type as an ML-style string
 
@@ -2943,6 +3072,12 @@ PointerToMemberType *BasicTypeFactory::makePointerToMemberType
   (NamedAtomicType *inClassNAT, CVFlags cv, Type *atType)
 {
   return new PointerToMemberType(inClassNAT, cv, atType);
+}
+
+
+TypedefType *BasicTypeFactory::makeTypedefType(Variable *typedefVar)
+{
+  return new TypedefType(typedefVar);
 }
 
 

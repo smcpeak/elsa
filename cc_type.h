@@ -67,6 +67,7 @@ class ReferenceType;
 class FunctionType;
 class ArrayType;
 class PointerToMemberType;
+class TypedefType;
 class Type;
 class TemplateInfo;
 class STemplateArgument;
@@ -637,8 +638,8 @@ private:    // disallowed
   BaseType(BaseType&);
 
 private:    // funcs
-  // the constructor of BaseType is private so the only subclass
-  // is Type, an assumption relied upon in BaseType::equals
+  // The constructor of BaseType is private so the only subclass
+  // is Type.  BaseType methods (such as 'equals') rely on this.
   BaseType();
   friend class Type;
 
@@ -660,9 +661,23 @@ public:     // funcs
   DOWNCAST_FN(ArrayType)
   DOWNCAST_FN(PointerToMemberType)
 
+  // TypedefType is a special case.  You can ask if something is a
+  // typedef, but when asking if it is anything else, it answers as if
+  // it is the underlying type.
+  virtual bool isTypedefType() const;
+  DOWNCAST_FN(TypedefType)
+
+  // Although normally not necessary, this can be used to skip past any
+  // TypedefTyps.  The returned Type is guaranteed to have
+  // 'isTypedefType()' return false.
+  Type const *skipTypedefsC() const;
+  Type *skipTypedefs() { return const_cast<Type*>(skipTypedefsC()); }
+
   // like above, this is (structural) equality, not coercibility;
   // internally, this calls the innerEquals() method on the two
   // objects, once their tags have been established to be equal
+  //
+  // TypedefTypes are ignored; only underlying types are compared.
   bool equals(BaseType const *obj, MatchFlags flags = MF_NONE) const;
 
   // compute a hash value: equal types (EF_EXACT) have the same hash
@@ -1121,6 +1136,64 @@ public:
 };
 
 
+// Represent a type that has a name via a 'typedef'.
+//
+// This class is intended to be "transparent" in the sense that, for
+// most purposes, a client will simply see it as the underlying type,
+// and only clients specificaly interested in typedefs will see the
+// typedef-ness.  For example, TypedefType does *not* have its own
+// tag; instead there is 'isTypedef()'.
+//
+// The rationale for this design is I do not want to force clients to
+// have to "skip typedefs" everywhere since that is error-prone.
+//
+// Currently (2021-06-18), TypedefType is never created by cc_tcheck.
+// Instead, I intend to create this in an Elsa client in order to get
+// synthesized AST to use it.  However, my hope is to eventually have
+// cc_tcheck create these.
+//
+class TypedefType : public Type {
+public:      // data
+  // The name of the typedef, along with the nominated Type
+  // (as typedefVar->type).
+  Variable *m_typedefVar;
+
+protected:   // funcs
+  friend class BasicTypeFactory;
+  TypedefType(Variable *typedefVar);
+
+public:      // methods
+  // Get the type from 'm_typedefVar'.
+  Type *underlyingType() const;
+
+  // Returns the tag of the underlying type.
+  Tag getTag() const override;
+
+  // Downcasts to the underlying type.
+  OVERRIDE_DOWNCAST_FN(CVAtomicType)
+  OVERRIDE_DOWNCAST_FN(PointerType)
+  OVERRIDE_DOWNCAST_FN(ReferenceType)
+  OVERRIDE_DOWNCAST_FN(FunctionType)
+  OVERRIDE_DOWNCAST_FN(ArrayType)
+  OVERRIDE_DOWNCAST_FN(PointerToMemberType)
+
+  // TypedefType will acknowledge itself.
+  bool isTypedefType() const override;
+  OVERRIDE_DOWNCAST_FN(TypedefType)
+
+  // These delegate to the underlying type.
+  unsigned innerHashValue() const                override;
+  string toMLString() const                      override;
+  string leftString(bool innerParen=true) const  override;
+  string rightString(bool innerParen=true) const override;
+  int reprSize() const                           override;
+  bool anyCtorSatisfies(TypePred &pred) const    override;
+  CVFlags getCVFlags() const                     override;
+  void traverse(TypeVisitor &vis)                override;
+  Type *getAtType() const                        override;
+};
+
+
 // moved into template.h:
 //   class TypeVariable
 //   class TemplateParams
@@ -1186,6 +1259,9 @@ public:
   virtual PointerToMemberType *makePointerToMemberType
     (NamedAtomicType *inClassNAT, CVFlags cv, Type *atType)=0;
 
+  // Here, it is required that 'typedefVar->isType()'.
+  virtual TypedefType *makeTypedefType(Variable *typedefVar)=0;
+
 
   // ---- create a type based on another one ----
   // NOTE: all 'syntax' pointers are nullable, since there are contexts
@@ -1195,7 +1271,11 @@ public:
   // Types, rather they return a new object if the desired Type is different
   // from the one passed-in.  (That is, they behave functionally.)
 
-  // do a shallow clone
+  // Do a shallow clone.
+  //
+  // For the moment at least, if 'baseType' is a TypedefType, that gets
+  // skipped by the cloning process, so the returned type is never a
+  // TypedefType.
   virtual Type *shallowCloneType(Type *baseType);
 
   // given a type, set its cv-qualifiers to 'cv'; return NULL if the
@@ -1309,6 +1389,7 @@ public:    // funcs
   virtual ArrayType *makeArrayType(Type *eltType, int size);
   virtual PointerToMemberType *makePointerToMemberType
     (NamedAtomicType *inClassNAT, CVFlags cv, Type *atType);
+  virtual TypedefType *makeTypedefType(Variable *typedefVar);
 
   virtual Variable *makeVariable(SourceLoc L, StringRef n, Type *t, DeclFlags f);
 };
