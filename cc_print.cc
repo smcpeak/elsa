@@ -748,19 +748,25 @@ void TF_namespaceDecl::print(PrintEnv &env) const
 
 
 // --------------------- Function -----------------
-static bool ideclaratorIsDestructor(IDeclarator const *id)
+static bool declaratorIsDestructor(Declarator const *declarator)
 {
-  // TODO: Ugly, just like the next function.
-  if (D_func const *df = id->ifD_funcC()) {
-    if (D_name const *dn = df->base->ifD_nameC()) {
-      if (dn->name) {
-        if (PQ_variable const *pqv = dn->name->ifPQ_variable()) {
-          if (pqv->var->name && pqv->var->name[0] == '~') {
-            return true;
-          }
-        }
-      }
-    }
+  // TODO: There should be a better way of recognizing these.
+  if (declarator->var &&
+      declarator->var->name &&
+      declarator->var->name[0] == '~') {
+    return true;
+  }
+
+  return false;
+}
+
+static bool declaratorIsConstructor(Declarator const *declarator)
+{
+  // TODO: There should be a better way of recognizing these.
+  if (declarator->var &&
+      declarator->var->name &&
+      streq(declarator->var->name, "constructor-special")) {
+    return true;
   }
 
   return false;
@@ -773,7 +779,7 @@ static bool ideclaratorWantsSpace(TypeSpecifier const *spec,
   if (TS_simple const *tss = spec->ifTS_simpleC()) {
     if (tss->id == ST_CDTOR) {
       // No space after the emptiness representing the "return type"
-      // of constructors.
+      // of conversion operators.
       return false;
     }
   }
@@ -784,21 +790,6 @@ static bool ideclaratorWantsSpace(TypeSpecifier const *spec,
     }
   }
 
-  // TODO: This is ugly and it breaks the idea that cc_elaborate.ast is
-  // not depended upon by the core.  Once I confirm this is what I want,
-  // I need to devise a better method of making this query.
-  if (D_func const *df = id->ifD_funcC()) {
-    if (D_name const *dn = df->base->ifD_nameC()) {
-      if (dn->name) {
-        if (PQ_variable const *pqv = dn->name->ifPQ_variable()) {
-          if (pqv->var->name && streq(pqv->var->name, "constructor-special")) {
-            return false;
-          }
-        }
-      }
-    }
-  }
-
   return true;
 }
 
@@ -806,13 +797,30 @@ static bool ideclaratorWantsSpace(TypeSpecifier const *spec,
 static void printTypeSpecifierAndDeclarator(
   PrintEnv &env, TypeSpecifier *spec, Declarator *declarator)
 {
-  if (!ideclaratorIsDestructor(declarator->decl)) {
+  if (declaratorIsConstructor(declarator)) {
+    // Print the type specifier,  The return type of a constructor says
+    // what we build, hence the name of the class.
+    spec->print(env);
+
+    // Now print the declarator.  The special constructor name will be
+    // omitted, but we need the parens and the param types.
+    declarator->print(env);
+  }
+
+  else if (declaratorIsDestructor(declarator)) {
+    // Print the declarator only.  It has the tilde we want to print,
+    // while the return type is 'void'.
+    declarator->print(env);
+  }
+
+  else {
+    // Print both, possibly with a space.
     spec->print(env);
     if (ideclaratorWantsSpace(spec, declarator->decl)) {
       env << " ";
     }
+    declarator->print(env);
   }
-  declarator->print(env);
 }
 
 void Function::print(PrintEnv &env, DeclFlags declFlagsMask) const
