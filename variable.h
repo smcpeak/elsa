@@ -1,4 +1,30 @@
 // variable.h                       see license.txt for copyright and terms of use
+// Class Variable.
+
+#ifndef VARIABLE_H
+#define VARIABLE_H
+
+#include "variable-fwd.h"      // forwards for this module
+
+#include "srcloc.h"            // SourceLoc
+#include "strtable.h"          // StringRef
+#include "cc_flags.h"          // DeclFlags, ScopeKind
+#include "sobjlist.h"          // SObjList
+#include "sobjset.h"           // SObjSet
+#include "serialno.h"          // INHERIT_SERIAL_BASE
+#include "packedword.h"        // PackedWord
+
+class Type;                    // cc_type.h
+class TypeVisitor;             // cc_type.h
+class FunctionType;            // cc_type.h
+class OverloadSet;             // below
+class Scope;                   // cc_scope.h
+class Expression;              // cc.ast
+class Function;                // cc.ast
+class BasicTypeFactory;        // cc_type.h
+class TemplateInfo;            // cc_type.h
+
+
 // information about a name
 // see Diagram 1 of doc/cpp_er.html
 //
@@ -29,30 +55,6 @@
 // dependencies extensively, including the TypeFactory.  So while
 // they are (and will remain) physically separate files, they
 // should be treated as their own subsystem.
-
-#ifndef VARIABLE_H
-#define VARIABLE_H
-
-#include "variable-fwd.h"      // forwards for this module
-
-#include "srcloc.h"            // SourceLoc
-#include "strtable.h"          // StringRef
-#include "cc_flags.h"          // DeclFlags, ScopeKind
-#include "sobjlist.h"          // SObjList
-#include "sobjset.h"           // SObjSet
-#include "serialno.h"          // INHERIT_SERIAL_BASE
-#include "packedword.h"        // PackedWord
-
-class Type;                    // cc_type.h
-class TypeVisitor;             // cc_type.h
-class FunctionType;            // cc_type.h
-class OverloadSet;             // below
-class Scope;                   // cc_scope.h
-class Expression;              // cc.ast
-class Function;                // cc.ast
-class BasicTypeFactory;        // cc_type.h
-class TemplateInfo;            // cc_type.h
-
 class Variable INHERIT_SERIAL_BASE {
 public:    // data
   // for now, there's only one location, and it's the definition
