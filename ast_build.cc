@@ -311,17 +311,89 @@ PQName *ElsaASTBuild::makePQName(Variable *var)
     return NULL;
   }
 
-  // TODO: This is only right when the name is unqualified.
-  //
-  // Now I'm sort of grasping at straws.  Notably, I see cases where
-  // 'var->scope' is set to the global scope.  Anyway, the goal is to
-  // get rid of PQ_variable so I'll push forward.
-  if (var->m_containingScope) {
-    return new PQ_variable(loc(), var);
+  return new PQ_variable(loc(), var);
+
+  // What follows has been tested in the non-template cases and is
+  // semi-satisfactory.  The template cases are incomplete and do not
+  // compile.  I'm leaving this here in case I decide to try again to
+  // construct syntactic PQNames.
+#if 0
+  // Build the innermost element of a possibly-qualified name.
+  PQName *ret = NULL;
+  TemplateInfo *templateInfo = var->templateInfo();
+  if (templateInfo) {
+    // Build 'destArgs' from 'templateInfo->arguments'.
+    TemplateArgument *destArgs = NULL;
+    FOREACH_OBJLIST(STemplateArgument, templateInfo->arguments, iter) {
+      STemplateArgument *srcArg = iter.data();
+      if (srcArg->isType()) {
+        destArgs = new TA_type(makeASTTypeId(srcArg->getType()), destArgs);
+      }
+      else {
+        destArgs = new TA_nontype(makeExpressionFromSTA(srcArg), destArgs);
+      }
+    }
+
+    // Reverse 'destArgs'.
+    if (destArgs) {
+      // 'TemplateArgument' satisfies the 'FakeList' constraints, so
+      // we will use 'fl_reverse'.
+      FakeList<TemplateArgument> *list =
+        FakeList<TemplateArgument>::makeList(destArgs);
+      list = fl_reverse(list);
+      destArgs = fl_first(lit);
+    }
+
+    ret = new PQ_template(var->name, destArgs);
   }
   else {
-    return new PQ_name(loc(), var->name);
+    ret = new PQ_name(loc(), var->name)
   }
+
+  // TODO: The way operators are recorded as Variables is they simply
+  // have particular names, such as "operator+".  Therefore to recognize
+  // an operator Variable, I need to examine the name (as a string) to
+  // see if it is one of the special names.  It would be preferable to
+  // have a more robust scheme like a field in Variable.  For now I'm
+  // going to ignore this problem and just use PQ_name.
+
+  while (var->m_containingScope) {
+    Scope *scope = var->m_containingScope;
+    if (scope->isGlobalScope()) {
+      // For now I'm going to not add the global scope qualifier.  Doing
+      // so would add significant clutter, and would make the result not
+      // usable with C.
+      return ret;
+    }
+
+    var = scope->namespaceVar;
+    if (!var) {
+      // TODO: This happens for a structure defined inside a function,
+      // for example test/pqname/pqname1.c.  This seems like it violates
+      // the stated constraints for 'm_containingScope'.  For the moment
+      // I'll bypass it here.
+      return ret;
+    }
+
+    StringRef qualifier = var->name;
+    if (!qualifier) {
+      // Happens for anonymous namespaces.  No qualification is
+      // possible, but the unqualified name should be in scope, so no
+      // qualifier should be required (unless there is a collision,
+      // which I'm not dealing with anyway).
+      return ret;
+    }
+
+    TemplateInfo *templateInfo = var->templateInfo();
+    if (templateInfo) {
+      xunimp("makePQName of a variable whose scope has template info");
+    }
+
+    ret = new PQ_qualifier(loc(), qualifier, NULL /*templArgs*/, ret);
+  }
+
+  return ret;
+#endif // 0
 }
 
 
