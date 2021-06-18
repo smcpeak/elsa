@@ -215,11 +215,19 @@ std::pair<TypeSpecifier*, Declarator*>
   // denotes 'var->type'.
   IDeclarator *idecl = makeD_name(var);
 
-  // Add type constructors on top of 'idecl'.
-  CVAtomicType const *atype = buildUpDeclarator(var->type, idecl /*INOUT*/);
+  TypeSpecifier *tspec = NULL;
+  if (var->type->isTypedefType()) {
+    // When the type is a TypedefType, we directly turn it into a type
+    // specifier and use 'idecl' as-is.
+    tspec = makeTS_name(var->type->asTypedefType()->m_typedefVar);
+  }
+  else {
+    // Add type constructors on top of 'idecl'.
+    CVAtomicType const *atype = buildUpDeclarator(var->type, idecl /*INOUT*/);
 
-  // Express the atomic type as a type specifier.
-  TypeSpecifier *tspec = makeTypeSpecifier(atype);
+    // Express the atomic type as a type specifier.
+    tspec = makeTypeSpecifier(atype);
+  }
 
   // Stack a Declarator on 'idecl', and annotate it with the given 'var'
   // so the declaration as a whole is seen as declaring that specific
