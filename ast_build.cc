@@ -157,6 +157,16 @@ CVAtomicType const *ElsaASTBuild::buildUpDeclarator(
 }
 
 
+TS_name *ElsaASTBuild::makeTS_name(Variable *typedefVar)
+{
+  xassert(typedefVar->isType());
+  TS_name *tsn = new TS_name(loc(),
+    makePQName(typedefVar), false /*typenameUsed*/);
+  tsn->var = typedefVar;
+  return tsn;
+}
+
+
 TypeSpecifier *ElsaASTBuild::makeTypeSpecifier(CVAtomicType const *atype)
 {
   TypeSpecifier *tspec = NULL;
@@ -176,10 +186,7 @@ TypeSpecifier *ElsaASTBuild::makeTypeSpecifier(CVAtomicType const *atype)
       //
       // TODO: Straighten this out.
       if (m_useTypedefsForNamedAtomics) {
-        TS_name *tsn = new TS_name(loc(),
-          makePQName(ntype->typedefVar), false /*typenameUsed*/);
-        tsn->var = ntype->typedefVar;
-        tspec = tsn;
+        tspec = makeTS_name(ntype->typedefVar);
       }
       else {
         TS_elaborated *tse = new TS_elaborated(loc(), ntype->getTypeIntr(),

@@ -90,6 +90,10 @@ public:      // methods
   CVAtomicType const *buildUpDeclarator(
     Type const *type, IDeclarator *&idecl /*INOUT*/);
 
+  // Given a Variable representing a typedef'd type, construct a type
+  // specifier that uses it.
+  TS_name *makeTS_name(Variable *typedefVar);
+
   // Express 'atype' as a type specifier.
   TypeSpecifier *makeTypeSpecifier(CVAtomicType const *atype);
 
