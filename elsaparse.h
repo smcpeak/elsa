@@ -73,7 +73,7 @@ public:      // methods
   // it is not found.
   Type *getGlobalType(char const *typeName) const;
 
-  // Same for variables.
+  // Same for variables, and also for typedefs.
   Variable *getGlobalVar(char const *varName) const;
 };
 
