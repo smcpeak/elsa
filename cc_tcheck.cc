@@ -4623,7 +4623,7 @@ char const *ON_conversion::getOperatorName() const
 {
   // this is the sketchy one..
   // update: but it seems to be fitting into the design just fine
-  return "conversion-operator";
+  return specialName_conversionOperator;
 }
 
 

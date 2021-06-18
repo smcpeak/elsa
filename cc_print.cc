@@ -765,7 +765,7 @@ static bool declaratorIsConstructor(Declarator const *declarator)
   // TODO: There should be a better way of recognizing these.
   if (declarator->var &&
       declarator->var->name &&
-      streq(declarator->var->name, "constructor-special")) {
+      streq(declarator->var->name, specialName_constructor)) {
     return true;
   }
 
@@ -967,8 +967,7 @@ void PQ_qualifier::print(PrintEnv &env) const
 
 void PQ_name::print(PrintEnv &env) const
 {
-  // TODO: Put this string into the string table.
-  if (streq(name, "constructor-special")) {
+  if (streq(name, specialName_constructor)) {
     // Do not print the name.
   }
   else {

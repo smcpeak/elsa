@@ -6,8 +6,17 @@
 #include "trace.h"         // tracingSys
 #include "mangle.h"        // mangle()
 
+
 // dsw: need this for Oink; we'll figure out how to make this non-global later
 bool variablesLinkerVisibleEvenIfNonStaticDataMember = false;
+
+// The main criterion for choosing the fake names is they have to be
+// untypable by the C++ programmer (i.e., if the programmer types one,
+// it won't be lexed as a single name).
+char const * const specialName_conversionOperator = "conversion-operator";
+
+char const * const specialName_constructor = "constructor-special";
+
 
 // ---------------------- SomeTypeVarNotInTemplParams_Pred --------------------
 

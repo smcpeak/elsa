@@ -1306,7 +1306,7 @@ static bool defaultCtorTest(CompoundType *ct, FunctionType *ft)
 
 Variable *ElabVisitor::getDefaultCtor(CompoundType *ct)
 {
-  return overloadSetFilter(ct, ct->rawLookupVariable(str("constructor-special")),
+  return overloadSetFilter(ct, ct->rawLookupVariable(str(specialName_constructor)),
                            defaultCtorTest);
 }
 
@@ -1337,7 +1337,7 @@ static bool copyCtorTest(CompoundType *ct, FunctionType *ft)
 
 Variable *ElabVisitor::getCopyCtor(CompoundType *ct)
 {
-  return overloadSetFilter(ct, ct->rawLookupVariable(str("constructor-special")),
+  return overloadSetFilter(ct, ct->rawLookupVariable(str(specialName_constructor)),
                            copyCtorTest);
 }
 
@@ -2043,7 +2043,7 @@ void PQ_variable::tcheck_pq(Env &env, Scope*, LookupFlags)
 void PQ_variable::print(PrintEnv &env) const
 {
   if (var->name) {
-    if (streq(var->name, "constructor-special")) {
+    if (streq(var->name, specialName_constructor)) {
       // Do not print.
     }
     else {

@@ -25,6 +25,14 @@ class BasicTypeFactory;        // cc_type.h
 class TemplateInfo;            // cc_type.h
 
 
+// This (after going through the string table) is used as Variable::name
+// for conversion operators.
+extern char const * const specialName_conversionOperator;
+
+// This is used as Variable::name for constructors.
+extern char const * const specialName_constructor;
+
+
 // information about a name
 // see Diagram 1 of doc/cpp_er.html
 //

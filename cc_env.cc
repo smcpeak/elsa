@@ -330,12 +330,9 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
 
     // some special names; pre-computed (instead of just asking the
     // string table for it each time) because in certain situations
-    // I compare against them frequently; the main criteria for
-    // choosing the fake names is they have to be untypable by the C++
-    // programmer (i.e. if the programmer types one it won't be
-    // lexed as a single name)
-    conversionOperatorName(str("conversion-operator")),
-    constructorSpecialName(str("constructor-special")),
+    // I compare against them frequently
+    conversionOperatorName(str(specialName_conversionOperator)),
+    constructorSpecialName(str(specialName_constructor)),
     functionOperatorName(str("operator()")),
     receiverName(str("__receiver")),
     otherName(str("__other")),
