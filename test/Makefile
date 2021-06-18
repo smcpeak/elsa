@@ -122,6 +122,31 @@ out/strlit/%.c.ok: strlit/%.c strlit/%.c.expect $(CCPARSE)
 	touch $@
 
 
+# ------------------------------ pqname --------------------------------
+# pqname tests run with -tr test-astbuild-pqname.
+
+TESTS += pqname/pqname1.c
+
+out/pqname/%.cc.ok: pqname/%.cc pqname/%.cc.expect $(CCPARSE)
+	@mkdir -p $(dir $@)
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/pqname/$*.cc.actual \
+	  --expect pqname/$*.cc.expect \
+	  $(CCPARSE) -tr test-astbuild-pqname $<
+	touch $@
+
+
+TESTS += pqname/pqname2.cc
+
+out/pqname/%.c.ok: pqname/%.c pqname/%.c.expect $(CCPARSE)
+	@mkdir -p $(dir $@)
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/pqname/$*.c.actual \
+	  --expect pqname/$*.c.expect \
+	  $(CCPARSE) -xc -tr test-astbuild-pqname $<
+	touch $@
+
+
 # ------------------------------ tcheck --------------------------------
 # Type-check tests simply run ccparse and expect it to do its own
 # internal validation with internal testing hooks.

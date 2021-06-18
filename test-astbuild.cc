@@ -34,17 +34,27 @@ public:
 };
 
 
+namespace {
+  // Print 'astNode' to a string.
+  template <class T>
+  string printNodeToString(ElsaParse &elsaParse, T *astNode)
+  {
+    CTypePrinter typePrinter(elsaParse.m_lang);
+    stringBuilder sb;
+    StringBuilderOutStream sbos(sb);
+    CodeOutStream cos(sbos);
+    PrintEnv env(typePrinter, &cos);
+
+    astNode->print(env);
+
+    return sb.str();
+  }
+}
+
+
 string TestASTBuildVisitor::astTypeIdToString(ASTTypeId *astTypeId)
 {
-  CTypePrinter typePrinter(m_elsaParse.m_lang);
-  stringBuilder sb;
-  StringBuilderOutStream sbos(sb);
-  CodeOutStream cos(sbos);
-  PrintEnv env(typePrinter, &cos);
-
-  astTypeId->print(env);
-
-  return sb.str();
+  return printNodeToString(m_elsaParse, astTypeId);
 }
 
 
@@ -60,6 +70,17 @@ bool TestASTBuildVisitor::visitDeclaration(Declaration *declaration)
     // Nullify the members of 'tmpId' so they do not get destroyed.
     tmpId.spec = NULL;
     tmpId.decl = NULL;
+
+    if (tracingSys("test-astbuild-pqname")) {
+      if (iter->var->name) {
+        // Convert the variable to a PQName and print that.
+        PQName *pqname = m_astBuild.makePQName(iter->var);
+        cout << "name=" << iter->var->toQualifiedString()
+             << " makePQName=" << printNodeToString(m_elsaParse, pqname)
+             << "\n";
+        delete pqname;
+      }
+    }
   }
   return true;
 }
