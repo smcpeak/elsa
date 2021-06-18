@@ -109,6 +109,11 @@ public:    // data
   // Named scope in which the variable appears.  This is only non-NULL
   // if the scope is a namespace, a class, or is the global scope,
   // meaning this Variable is a member of one of those.
+  //
+  // Actually, it looks like this is only set when the containing scope
+  // is a namespace or the global scope, *not* for members of classes.
+  // That seems like a bug, but for the moment I don't really need it
+  // fixed (I think).
   Scope *m_containingScope;            // (nullable serf)
 
   // If this Variable 'isNamespace()', then this is the Scope named by
@@ -238,8 +243,8 @@ public:
   // true if this is an instantiation of a template
   bool isInstantiation() const;
 
-  // templates (and specializations) and instantiatons have
-  // TemplateInfo
+  // Templates (and specializations) and instantiations have
+  // TemplateInfo.  For other entities, this is NULL.
   TemplateInfo *templateInfo() const;
   void setTemplateInfo(TemplateInfo *templInfo0);
 
