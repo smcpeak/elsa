@@ -34,27 +34,9 @@ public:
 };
 
 
-namespace {
-  // Print 'astNode' to a string.
-  template <class T>
-  string printNodeToString(ElsaParse &elsaParse, T *astNode)
-  {
-    CTypePrinter typePrinter(elsaParse.m_lang);
-    stringBuilder sb;
-    StringBuilderOutStream sbos(sb);
-    CodeOutStream cos(sbos);
-    PrintEnv env(typePrinter, &cos);
-
-    astNode->print(env);
-
-    return sb.str();
-  }
-}
-
-
 string TestASTBuildVisitor::astTypeIdToString(ASTTypeId *astTypeId)
 {
-  return printNodeToString(m_elsaParse, astTypeId);
+  return printASTNodeToString(m_elsaParse.m_lang, astTypeId);
 }
 
 
@@ -76,7 +58,8 @@ bool TestASTBuildVisitor::visitDeclaration(Declaration *declaration)
         // Convert the variable to a PQName and print that.
         PQName *pqname = m_astBuild.makePQName(iter->var);
         cout << "name=" << iter->var->toQualifiedString()
-             << " makePQName=" << printNodeToString(m_elsaParse, pqname)
+             << " makePQName="
+             << printASTNodeToString(m_elsaParse.m_lang, pqname)
              << "\n";
         delete pqname;
       }

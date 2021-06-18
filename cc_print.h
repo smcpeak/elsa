@@ -368,4 +368,21 @@ void printSTemplateArgument(PrintEnv &env, STemplateArgument const *sta);
     out0 << endl;                     \
   } while(0)
 
+
+// Print 'astNode' as a string.
+template <class T>
+string printASTNodeToString(CCLang const &lang, T *astNode)
+{
+  CTypePrinter typePrinter(lang);
+  stringBuilder sb;
+  StringBuilderOutStream sbos(sb);
+  CodeOutStream cos(sbos);
+  PrintEnv env(typePrinter, &cos);
+
+  astNode->print(env);
+
+  return sb.str();
+}
+
+
 #endif // CC_PRINT_H
