@@ -4,8 +4,6 @@
 void f()
 {
   __elsa_checkType(1, 1);
-
-  // Fails because "!1" is incorrectly called 'bool' in C.
   __elsa_checkType(1, !1);
 }
 
