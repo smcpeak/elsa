@@ -810,7 +810,7 @@ void ElabVisitor::completeNoArgMemberInits(Function *ctor, CompoundType *ct)
 
   // Iterate through the members in the declaration order (what is in
   // the CompoundType).  For each one, check to see if we have a
-  // MemberInit for it.  If so, append that (prepend and revese
+  // MemberInit for it.  If so, append that (prepend and reverse
   // later); otherwise, make one.  This has the effect of
   // canonicalizing the MemberInit call order even if none needed to
   // be added, which I think is in the spec; at least g++ does it (and
