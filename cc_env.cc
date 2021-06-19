@@ -4182,10 +4182,11 @@ SourceLoc getExprNameLoc(Expression const *e)
 
 
 // 'expr/info' is being passed to 'paramType'; if 'expr' is the
-// name of an overloaded function, resolve it
+// name of an overloaded function, resolve it and return true.
+// Otherwise (not an overloaded conversion), return false.
 //
 // part of the implementation of cppstd 13.4
-void Env::possiblySetOverloadedFunctionVar(Expression *expr, Type *paramType,
+bool Env::possiblySetOverloadedFunctionVar(Expression *expr, Type *paramType,
                                            LookupSet &set)
 {
   if (set.count() >= 2) {
@@ -4203,7 +4204,10 @@ void Env::possiblySetOverloadedFunctionVar(Expression *expr, Type *paramType,
         << paramType->toString() << "'; candidates:\n"
         << chomp(set.asString()));
     }
+    return true;
   }
+
+  return false;
 }
 
 
@@ -5418,8 +5422,12 @@ ASTTypeId *Env::buildASTTypeId(Type *type, DeclaratorContext context)
 
 // Elaboration: if 'ic' involves a user-defined conversion, then modify the
 // AST to make that explicit.
-Expression *Env::makeConvertedArg(Expression * const arg,
-                                  ImplicitConversion const &ic)
+//
+// If 'destType' is NULL, it means we are converting an argument to be
+// passed to a vararg function or a function without a prototype.
+Expression *Env::makeImplicitConversion(Type * /*nullable*/ destType,
+                                        Expression * const arg,
+                                        ImplicitConversion const &ic)
 {
   Expression *newarg = arg;
 
@@ -5451,6 +5459,13 @@ Expression *Env::makeConvertedArg(Expression * const arg,
       default:
         // No conversion, or TODO: one I have not handled.
         break;
+
+      case SC_PTR_CONV: {
+        newarg = new E_implicitStandardConversion(ic.scs, newarg);
+        xassert(destType);
+        newarg->type = destType;
+        break;
+      }
 
       case SC_INT_PROM: {
         // Record the entire conversion, not just SC_INT_PROM.  In
@@ -5509,7 +5524,7 @@ bool Env::elaborateImplicitConversionArgToParam(Type *paramType, Expression *&ar
 
   // Elaboration: if 'ic' involves a user-defined conversion, then
   // modify the AST to make that explicit
-  arg = env.makeConvertedArg(arg, ic);
+  arg = env.makeImplicitConversion(paramType, arg, ic);
 
   // at least note that we plan to use this conversion, so
   // if it involves template functions, instantiate them
@@ -5532,9 +5547,7 @@ bool Env::elaborateImplicitConversionArgToVararg(Expression *&arg)
   }
 
   // Insert the implicit conversion.
-  //
-  // TODO: 'makeConvertedArg' does nothing with promotions.
-  arg = env.makeConvertedArg(arg, ic);
+  arg = env.makeImplicitConversion(NULL /*destType*/, arg, ic);
   env.instantiateTemplatesInConversion(ic);
   return true;
 }

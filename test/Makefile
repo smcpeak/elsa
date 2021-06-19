@@ -77,6 +77,7 @@ out/pprint/%.cc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
 
 TESTS += pprint/func.c
 TESTS += pprint/funcptr.c
+TESTS += pprint/stdconv.c
 TESTS += pprint/typedef.c
 TESTS += pprint/vararg-promote.c
 
@@ -151,9 +152,11 @@ out/pqname/%.c.ok: pqname/%.c pqname/%.c.expect $(CCPARSE)
 # Type-check tests simply run ccparse and expect it to do its own
 # internal validation with internal testing hooks.
 
+TESTS += tcheck/conv-void-ptr.c
 TESTS += tcheck/expr-type.c
 TESTS += tcheck/func-ret-func.c
 TESTS += tcheck/make-typedef.c
+TESTS += tcheck/ptr-plus-equals.c
 
 # Run a C tcheck test
 out/tcheck/%.c.ok: tcheck/%.c $(CCPARSE)

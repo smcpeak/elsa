@@ -5,7 +5,7 @@ char *strtok(char *str, char *delim);
 
 int main()
 {
-  int tok;
+  char *tok;
   char *delim;
   tok = strtok(((char *)0) , delim);
 }

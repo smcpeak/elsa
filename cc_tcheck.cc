@@ -6144,7 +6144,8 @@ int compareArgsToParams(Env &env, FunctionType *ft, FakeList<ArgExpression> *arg
         ImplicitConversion ic;
         ic.kind = ImplicitConversion::IC_STANDARD;
         ic.scs = SC_FUNC_TO_PTR;
-        arg->expr = env.makeConvertedArg(arg->expr, ic);
+        arg->expr = env.makeImplicitConversion(NULL /*destType*/,
+                                               arg->expr, ic);
       }
     }
 
@@ -6184,7 +6185,7 @@ int compareArgsToParams(Env &env, FunctionType *ft, FakeList<ArgExpression> *arg
           Variable const *memb = memberIter.data();
 
           StandardConversion sc = getStandardConversion(NULL /*errorMsg*/,
-            SE_NONE, arg->expr->type, memb->type);
+            env.lang, SE_NONE, arg->expr->type, memb->type);
           if (sc != SC_ERROR) {
             // success
             TRACE("transparent_union", env.locStr() <<
@@ -8991,11 +8992,40 @@ Type *E_assign::itcheck_x(Env &env, Expression *&replacement)
     }
   }
 
-  // TODO: make sure 'target' and 'src' make sense together with 'op'
+  // This finalizes an overloaded function name if the RHS was the
+  // address of an overloaded function.
+  if (env.possiblySetOverloadedFunctionVar(src, target->type,
+                                           argInfo[1].overloadSet)) {
+    return target->type;
+  }
 
-  // this finalizes an overloaded function name if the use
-  // of '=' was not overloadable
-  env.possiblySetOverloadedFunctionVar(src, target->type, argInfo[1].overloadSet);
+  if (op == BIN_ASSIGN) {
+    // The LHS must be an lvalue (TODO: check that), but the conversion
+    // logic assumes that a reference target type means we are *binding*
+    // the reference, not updating the thing it points to.  So use the
+    // rvalue type.
+    Type *targetType = target->type->asRval();
+
+    // Get conversion from 'src' to 'target'.
+    ImplicitConversion ic = getImplicitConversion(env,
+      src->getSpecial(env.lang),
+      src->type,
+      targetType,
+      false /*destIsReceiver*/);
+    if (ic) {
+      // Record the conversion explicitly.
+      src = env.makeImplicitConversion(targetType, src, ic);
+    }
+    else {
+      env.error(src->type, stringb(
+        "cannot convert assignment RHS type '" << src->type->toString() <<
+        "' to type '" << targetType->toString() << "'"));
+    }
+  }
+  else {
+    // TODO: Handle compound operators.  This includes cases like
+    // 'char*' += 'int'.
+  }
 
   return target->type;
 }

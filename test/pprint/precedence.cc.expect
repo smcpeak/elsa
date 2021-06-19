@@ -174,7 +174,7 @@ void assign(int x, int y, int z, C c1, C c2)
   x += (y += z);
   x += (y += z);
   (x = y) += z;
-  x = y || z;
+  x = /*ISC:int*/y || z;
   ::operator||(c1, c2) = z;
   x += y || z;
   ::operator||(c1, c2) += z;

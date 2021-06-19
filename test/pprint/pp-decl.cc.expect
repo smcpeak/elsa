@@ -13,7 +13,7 @@ int g3 = 3, g4 = 4;
 void f()
 {
   int x = 1, y = 2;
-  int (*fnptr)(int, char) = 0;
+  int (*fnptr)(int, char) = /*ISC:int (*)(int , char )*/0;
 }
 class C {
 public:

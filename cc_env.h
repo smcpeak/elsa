@@ -719,7 +719,7 @@ public:      // funcs
   Variable *getOverloadedFunctionVar(Expression *e);
   void setOverloadedFunctionVar(Expression *e, Variable *selVar);
   Variable *pickMatchingOverloadedFunctionVar(LookupSet &set, Type *type);
-  void possiblySetOverloadedFunctionVar(Expression *expr, Type *paramType,
+  bool possiblySetOverloadedFunctionVar(Expression *expr, Type *paramType,
                                         LookupSet &set);
 
   // support for 3.4.2
@@ -742,8 +742,9 @@ public:      // funcs
   // If 't' was derived from an expression, it is passed as 'expr'.
   Type *sizeofType(Type *t, int &size, Expression * /*nullable*/ expr);
 
-  Expression *makeConvertedArg(Expression * const arg,
-                               ImplicitConversion const &ic);
+  Expression *makeImplicitConversion(Type * /*nullable*/ destType,
+                                     Expression * const arg,
+                                     ImplicitConversion const &ic);
 
   bool elaborateImplicitConversionArgToParam(Type *paramType, Expression *&arg);
   bool elaborateImplicitConversionArgToVararg(Expression *&arg);

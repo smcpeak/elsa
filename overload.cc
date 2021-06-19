@@ -875,7 +875,7 @@ Candidate * /*owner*/ OverloadResolver::makeCandidate
     if (flags & OF_NO_USER) {
       // only consider standard conversions
       StandardConversion scs =
-        getStandardConversion(NULL /*errorMsg*/,
+        getStandardConversion(NULL /*errorMsg*/, env.lang,
                               args[argIndex].special, args[argIndex].type,
                               paramIter.data()->type, destIsReceiver);
       if (scs != SC_ERROR) {
@@ -1082,9 +1082,9 @@ int OverloadResolver::compareCandidates(Candidate const *left, Candidate const *
   // look at the conversion sequences to the final destination type
   if (finalDestType) {
     StandardConversion leftSC = getStandardConversion(
-      NULL /*errorMsg*/, SE_NONE, leftFunc->retType, finalDestType);
+      NULL /*errorMsg*/, env.lang, SE_NONE, leftFunc->retType, finalDestType);
     StandardConversion rightSC = getStandardConversion(
-      NULL /*errorMsg*/, SE_NONE, rightFunc->retType, finalDestType);
+      NULL /*errorMsg*/, env.lang, SE_NONE, rightFunc->retType, finalDestType);
 
     ret = compareStandardConversions(
       ArgumentInfo(SE_NONE, leftFunc->retType), leftSC, finalDestType,
@@ -1630,7 +1630,7 @@ ImplicitConversion getConversionOperator(
     SFOREACH_OBJLIST_NC(Variable, ops, iter) {
       Variable *v = iter.data();
       Type *retType = v->type->asFunctionType()->retType->asRval();
-      if (SC_ERROR!=getStandardConversion(NULL /*errorMsg*/,
+      if (SC_ERROR!=getStandardConversion(NULL /*errorMsg*/, env.lang,
             SE_NONE, retType, destType)) {
         // it's a candidate
         resolver.processCandidate(v);
@@ -1679,7 +1679,7 @@ ImplicitConversion getConversionOperator(
   // compute the standard conversion that obtains the destination
   // type, starting from what the conversion function yields
   StandardConversion sc = getStandardConversion(
-    NULL /*errorMsg*/,
+    NULL /*errorMsg*/, env.lang,
     SE_NONE, winner->type->asFunctionType()->retType,   // conversion source
     destType                                            // conversion dest
   );

@@ -937,6 +937,13 @@ MemberInit *ElabVisitor::makeCopyCtorMemberInit(
     // expression: "__other.<member>"
     expr = makeE_fieldAcc(loc, expr, target);
   }
+  else {
+    // Normal type checking would insert a derived-to-base standard
+    // conversion, so to satisfy the idempotency check (and because it
+    // is the right thing for consistency), we must do the same.
+    expr = new E_implicitStandardConversion(SC_DERIVED_TO_BASE, expr);
+    expr->type = target->type;
+  }
 
   //           ArgExpression:
   ArgExpression *argExpr = new ArgExpression(expr);

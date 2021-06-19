@@ -11,9 +11,13 @@ namespace std {
 
 typedef char y;
 
+class C {};
+
 int main()
 {
-  int x, *p, *pp;
+  int x, *p;
+  int (*ptr_to_array_of_5_ints)[5];
+  C *c, *d;
 
   // E_constructor
   x = int(6);
@@ -27,16 +31,16 @@ int main()
   // E_new of an array of an array; this allocates
   // an array of objects, where each object has type
   // "int[5]", and 'x' objects are allocated
-  pp = new int[x][5];
+  ptr_to_array_of_5_ints = new int[x][5];
 
   // E_delete
   delete p;
 
   // E_keywordCast
-  x = const_cast<int>(x);
-  x = dynamic_cast<int>(x);
-  x = static_cast<int>(x);
-  x = reinterpret_cast<int>(x);
+  c = const_cast<C*>(d);
+  c = dynamic_cast<C*>(d);
+  c = static_cast<C*>(d);
+  c = reinterpret_cast<C*>(d);
 
   // E_typeidExpr
   typeid(x);

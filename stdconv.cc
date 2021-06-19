@@ -197,6 +197,7 @@ class Conversion {
 public:
   // original parameters to 'getStandardConversion'
   string *errorMsg;
+  CCLang const &lang;
   SpecialExpr srcSpecial;
   Type const *src;
   Type const *dest;
@@ -214,8 +215,10 @@ public:
   int ptrCtorsStripped;
 
 public:
-  Conversion(string *e, SpecialExpr sp, Type const *s, Type const *d, bool dir)
+  Conversion(string *e, CCLang const &L,
+             SpecialExpr sp, Type const *s, Type const *d, bool dir)
     : errorMsg(e),
+      lang(L),
       srcSpecial(sp),
       src(s),
       dest(d),
@@ -245,8 +248,8 @@ StandardConversion Conversion::error(char const *why)
   // dest of just 'T'.
   if (dest->isReference() &&
       dest->getAtType()->isConst()) {
-    return getStandardConversion(errorMsg, srcSpecial, src, dest->getAtType(),
-                                 destIsReceiver);
+    return getStandardConversion(errorMsg, lang, srcSpecial, src,
+                                 dest->getAtType(), destIsReceiver);
   }
 
   if (errorMsg) {
@@ -394,10 +397,11 @@ bool couldBeAnything(Type const *t)
 // without allocating, and if I can then that avoids interaction
 // problems with Type annotation systems
 StandardConversion getStandardConversion
-  (string *errorMsg, SpecialExpr srcSpecial, Type const *src, Type const *dest,
+  (string *errorMsg, CCLang const &lang,
+   SpecialExpr srcSpecial, Type const *src, Type const *dest,
    bool destIsReceiver)
 {
-  Conversion conv(errorMsg, srcSpecial, src, dest, destIsReceiver);
+  Conversion conv(errorMsg, lang, srcSpecial, src, dest, destIsReceiver);
 
   // --------------- group 1 ----------------
   if (src->isReference() &&
@@ -664,9 +668,18 @@ StandardConversion getStandardConversion
     return conv.ret;    // identical now
   }
 
-  if (conv.ptrCtorsStripped == 1 &&
-      dest->isSimple(ST_VOID)) {
-    return conv.ret | SC_PTR_CONV;      // converting T* to void*
+  if (conv.ptrCtorsStripped == 1) {
+    if (dest->isSimple(ST_VOID)) {
+      return conv.ret | SC_PTR_CONV;      // converting T* to void*
+    }
+
+    if (!lang.isCplusplus && src->isSimple(ST_VOID)) {
+      // In C, we can convert void* to T*.  I'm going to call this a
+      // "pointer conversion" as well, even though that is not among
+      // the things that term covers in C++ and I have not researched
+      // the proper terminology in C.
+      return conv.ret | SC_PTR_CONV;
+    }
   }
 
   // if both types have not arrived at CVAtomic, then they
@@ -740,7 +753,7 @@ StandardConversion getStandardConversion
         // just strip the reference part of the dest; this is like binding
         // the (const) reference, which is not an explicit part of the
         // "conversion"
-        return getStandardConversion(errorMsg, srcSpecial, conv.src,
+        return getStandardConversion(errorMsg, lang, srcSpecial, conv.src,
                                      conv.dest->asRvalC(), destIsReceiver);
       }
 
@@ -1102,7 +1115,8 @@ void test_getStandardConversion(
 {
   // run our function
   string errorMsg;
-  StandardConversion actual = getStandardConversion(&errorMsg, special, src, dest);
+  StandardConversion actual =
+    getStandardConversion(&errorMsg, env.lang, special, src, dest);
 
   // turn any resulting messags into warnings, so I can see their
   // results without causing the final exit status to be nonzero

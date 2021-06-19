@@ -22,6 +22,7 @@
 
 // fwd
 class AtomicType;      // cc_type.h
+class CCLang;          // cc_lang.h
 class Type;            // cc_type.h
 class Env;             // cc_env.h
 class TypeFactory;     // cc_type.h
@@ -98,6 +99,7 @@ SCRank getRank(StandardConversion scs);
 // if any, that will convert 'src' into 'dest'
 StandardConversion getStandardConversion(
   string *errorMsg,    // if non-null, failed conversion sets error message
+  CCLang const &lang,  // language rules
   SpecialExpr special, // properties of the source expression
   Type const *src,     // source type
   Type const *dest,    // destination type
