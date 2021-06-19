@@ -412,6 +412,18 @@ PQName *ElsaASTBuild::makePQName(Variable *var)
 }
 
 
+E_funCall *ElsaASTBuild::makeNamedFunCall1(
+  Variable *callee, Expression *arg1)
+{
+  FakeList<ArgExpression> *args = makeExprList1(arg1);
+  E_funCall *call = new E_funCall(
+    makeE_variable(callee),
+    args);
+  call->type = callee->type->asRval()->asFunctionType()->retType;
+  return call;
+}
+
+
 E_funCall *ElsaASTBuild::makeNamedFunCall2(
   Variable *callee, Expression *arg1, Expression *arg2)
 {

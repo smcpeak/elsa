@@ -128,6 +128,8 @@ public:      // methods
   PQName *makePQName(Variable *var);
 
   // Make an E_funCall invoking an unqualified name.
+  E_funCall *makeNamedFunCall1(
+    Variable *callee, Expression *arg1);
   E_funCall *makeNamedFunCall2(
     Variable *callee, Expression *arg1, Expression *arg2);
 
