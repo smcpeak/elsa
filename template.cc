@@ -2192,12 +2192,11 @@ void syncDefaultArgsWithDefinition(Variable *instV, TemplateInfo *instTI)
 
   D_func *dfunc = getD_func(instV->funcDefn);
 
-  // iterate over both parameter lists (syntactic and semantic)
+  // Iterate over both parameter lists (syntactic and semantic).  The
+  // receiver is skipped because it is never syntatcially present.
   FakeList<ASTTypeId> *syntactic(dfunc->params);
-  SObjListIterNC<Variable> semantic(instV->type->asFunctionType()->params);
-  if (instV->type->asFunctionType()->isMethod()) {
-    semantic.adv();   // the receiver is never syntactically present
-  }
+  SObjListIterNC<Variable> semantic(
+    instV->type->asFunctionType()->nonReceiverParamIterNC());
 
   int skipped = 0;
   for (; syntactic && !semantic.isDone();

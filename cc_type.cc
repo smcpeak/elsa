@@ -2098,6 +2098,28 @@ NamedAtomicType *FunctionType::getNATOfMember()
 }
 
 
+SObjListIter<Variable> FunctionType::nonReceiverParamIterC() const
+{
+  SObjListIter<Variable> ret(this->params);
+  if (this->isMethod()) {
+    xassert(!ret.isDone());
+    ret.adv();
+  }
+  return ret;
+}
+
+
+SObjListIterNC<Variable> FunctionType::nonReceiverParamIterNC()
+{
+  SObjListIterNC<Variable> ret(this->params);
+  if (this->isMethod()) {
+    xassert(!ret.isDone());
+    ret.adv();
+  }
+  return ret;
+}
+
+
 string FunctionType::leftString(bool innerParen) const
 {
   stringBuilder sb;

@@ -666,11 +666,7 @@ Expression *ElabVisitor::elaborateCallSite(
     // this slot and the ctor is the copy ctor, and b) E_variable for the
     // temporary
 
-    SObjListIterNC<Variable> paramsIter(ft->params);
-
-    if (ft->isMethod()) {
-      paramsIter.adv();
-    }
+    SObjListIterNC<Variable> paramsIter(ft->nonReceiverParamIterNC());
 
     FAKELIST_FOREACH_NC(ArgExpression, args, arg) {
       if (paramsIter.isDone()) {

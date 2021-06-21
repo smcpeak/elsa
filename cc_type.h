@@ -1031,9 +1031,15 @@ public:
   CVFlags getReceiverCV() const;         // dig down; or CV_NONE if !isMember
   CompoundType *getClassOfMember();      // 'isMember' must be true
 
-  // the above only works if the function is a member of a concrete
-  // class; if it's a member of a template class, this must be used
+  // 'getClassOfMember()' only works if the function is a member of a
+  // concrete class.  If it's a member of a template class, this must be
+  // used instead.
   NamedAtomicType *getNATOfMember();
+
+  // Get an iterator to the parameters, skipping the receiver parameter
+  // if there is one.
+  SObjListIter<Variable> nonReceiverParamIterC() const;
+  SObjListIterNC<Variable> nonReceiverParamIterNC();
 
   // more specialized printing, for Cqual++ syntax
   static string rightStringQualifiers(CVFlags cv);

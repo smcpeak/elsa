@@ -58,13 +58,7 @@ D_func *ElsaASTBuild::makeD_func(FunctionType const *ftype, IDeclarator *base)
   FakeList<ASTTypeId> *destParams = FakeList<ASTTypeId>::emptyList();
 
   // Iterate over the parameter types in the source.
-  SObjListIter<Variable> srcParamIter(ftype->params);
-
-  // Skip the receiver parameter.
-  if (ftype->isMethod()) {
-    xassert(!srcParamIter.isDone());
-    srcParamIter.adv();
-  }
+  SObjListIter<Variable> srcParamIter(ftype->nonReceiverParamIterC());
 
   for (; !srcParamIter.isDone(); srcParamIter.adv()) {
     Variable const *srcParamVar = srcParamIter.data();
