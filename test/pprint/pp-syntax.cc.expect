@@ -128,6 +128,50 @@ void test_for(int a, int b)
     b++;
   }
 }
+
+int test_switch(int a)
+{
+  int b;
+  switch (a) {
+    case 1:
+      b = 1;
+      break;
+    case 2:
+      b = 2;
+      break;
+    case 3:
+    case 4:
+      b = 34;
+      break;
+    default:
+      b = 0;
+      break;
+  }
+  switch (int x = a) {
+    case 1:
+      b = 11;
+  }
+  return b;
+}
+
+int test_goto(int a)
+{
+  a++;
+label1:
+  if (a < 4) {
+    goto label1;
+  }
+  else {
+  label2:
+    if (a > 9) {
+      goto label2;
+    }
+    else {
+      ;
+    }
+  }
+  return a;
+}
 ---- STOP ----
 ---- stderr ----
 ---- exit status ----

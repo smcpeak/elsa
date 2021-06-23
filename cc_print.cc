@@ -1300,6 +1300,23 @@ void Statement::print(PrintEnv &env) const
   //    env << ";\n";
 }
 
+namespace {
+  // Temporarily un-indent.
+  class Unindent {
+    PrintEnv &m_env;
+  public:
+    Unindent(PrintEnv &env)
+      : m_env(env)
+    {
+      m_env.out->up();
+    }
+    ~Unindent()
+    {
+      m_env.out->down();
+    }
+  };
+}
+
 // no-op
 void S_skip::iprint(PrintEnv &env) const
 {
@@ -1308,21 +1325,32 @@ void S_skip::iprint(PrintEnv &env) const
 
 void S_label::iprint(PrintEnv &env) const
 {
-  env << name << ':';
+  {
+    Unindent unindent(env);
+    env << name << ":\n";
+  }
   s->print(env);
 }
 
 void S_case::iprint(PrintEnv &env) const
 {
-  env << "case";
-  expr->print(env, OPREC_LOWEST);
-  env << ':';
+  {
+    Unindent unindent(env);
+
+    env << "case ";
+    expr->print(env, OPREC_LOWEST);
+    env << ":\n";
+  }
+
   s->print(env);
 }
 
 void S_default::iprint(PrintEnv &env) const
 {
-  env << "default:";
+  {
+    Unindent unindent(env);
+    env << "default:\n";
+  }
   s->print(env);
 }
 
@@ -1357,7 +1385,25 @@ void S_switch::iprint(PrintEnv &env) const
     PairDelim pair(env, "switch ", "(", ") ");
     cond->print(env);
   }
-  branches->print(env);
+
+  if (S_compound const *comp = branches->ifS_compoundC()) {
+    // In the common case of an S_compound, use my preferred style where
+    // labels are indented one level and everything else is indented two
+    // levels.
+
+    // We are bypassing Statement::print, so do what it would have done.
+    env.loc = comp->loc;
+
+    PairDelim pair(env, "", "{\n", "}\n");
+    env.out->down();
+    FOREACH_ASTLIST(Statement, comp->stmts, iter) {
+      iter.data()->print(env);
+    }
+    env.out->up();
+  }
+  else {
+    branches->print(env);
+  }
 }
 
 void S_while::iprint(PrintEnv &env) const
