@@ -1336,7 +1336,7 @@ void S_compound::iprint(PrintEnv &env) const
 void S_if::iprint(PrintEnv &env) const
 {
   {
-    PairDelim pair(env, "if ", "(", ")");
+    PairDelim pair(env, "if ", "(", ") ");
     cond->print(env);
   }
   thenBranch->print(env);
@@ -1347,7 +1347,7 @@ void S_if::iprint(PrintEnv &env) const
 void S_switch::iprint(PrintEnv &env) const
 {
   {
-    PairDelim pair(env, "switch ", "(", ")");
+    PairDelim pair(env, "switch ", "(", ") ");
     cond->print(env);
   }
   branches->print(env);
@@ -1356,7 +1356,7 @@ void S_switch::iprint(PrintEnv &env) const
 void S_while::iprint(PrintEnv &env) const
 {
   {
-    PairDelim pair(env, "while ", "(", ")");
+    PairDelim pair(env, "while ", "(", ") ");
     cond->print(env);
   }
   body->print(env);
@@ -1365,7 +1365,7 @@ void S_while::iprint(PrintEnv &env) const
 void S_doWhile::iprint(PrintEnv &env) const
 {
   {
-    PairDelim pair(env, "do");
+    PairDelim pair(env, "do ");
     body->print(env);
   }
   {
