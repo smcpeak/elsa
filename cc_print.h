@@ -135,6 +135,10 @@ class CodeOutStream : public OutStream {
   void printIndentation(int n);
   void finish();
 
+  // There is at least one buffered newline.  Remove it, and instead
+  // append a space.
+  void changePendingNewlineToSpace();
+
   // OutStream methods
   CodeOutStream & operator << (ostream& (*manipfunc)(ostream& outs));
   void flush() { out.flush(); }

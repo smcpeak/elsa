@@ -72,6 +72,13 @@ void CodeOutStream::finish()
   flush();
 }
 
+void CodeOutStream::changePendingNewlineToSpace()
+{
+  xassert(bufferedNewlines > 0);
+  bufferedNewlines--;
+  out << ' ';
+}
+
 CodeOutStream & CodeOutStream::operator << (ostream& (*manipfunc)(ostream& outs))
 {
   // sm: just assume it's "endl"; the only better thing I could
@@ -1378,12 +1385,17 @@ void S_doWhile::iprint(PrintEnv &env) const
 void S_for::iprint(PrintEnv &env) const
 {
   {
-    PairDelim pair(env, "for ", "(", ")");
+    PairDelim pair(env, "for ", "(", ") ");
     init->print(env);
+
+    // The 'init' will have printed itself like a normal statement,
+    // ending with a newline.  Use a space instead.
+    env.out->changePendingNewlineToSpace();
+
     // this one not needed as the declaration provides one
     //          env << ";";
     cond->print(env);
-    env << ';';
+    env << "; ";
     after->print(env);
   }
   body->print(env);

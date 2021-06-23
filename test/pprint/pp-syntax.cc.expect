@@ -121,12 +121,10 @@ void test_do_while(int a)
 
 void test_for(int a, int b)
 {
-  for (a = 0;
-  a < 10;a++){
+  for (a = 0; a < 10; a++) {
     b++;
   }
-  for (int i = 0;
-  i < 10;i++){
+  for (int i = 0; i < 10; i++) {
     b++;
   }
 }
