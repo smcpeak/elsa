@@ -137,6 +137,13 @@ public:      // methods
     Expression *e1, BinaryOp op, Expression *e2);
 
   E_variable *makeE_variable(Variable *var);
+
+  E_assign *makeE_assign(
+    Expression *target, BinaryOp op, Expression *src);
+
+  E_cast *makeE_cast(Type *type, Expression *src);
+
+  E_deref *makeE_deref(Expression *ptr);
 };
 
 

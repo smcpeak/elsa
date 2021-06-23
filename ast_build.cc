@@ -446,4 +446,32 @@ E_variable *ElsaASTBuild::makeE_variable(Variable *var)
 }
 
 
+E_assign *ElsaASTBuild::makeE_assign(
+  Expression *target, BinaryOp op, Expression *src)
+{
+  E_assign *assign = new E_assign(target, op, src);
+  assign->type = target->type;
+  return assign;
+}
+
+
+E_cast *ElsaASTBuild::makeE_cast(Type *type, Expression *src)
+{
+  E_cast *cast = new E_cast(
+    makeASTTypeId(type, NULL /*name*/, DC_E_CAST),
+    src);
+  cast->type = type;
+  return cast;
+}
+
+
+E_deref *ElsaASTBuild::makeE_deref(Expression *ptr)
+{
+  Type *atType = ptr->type->asRval()->asPointerType()->atType;
+  E_deref *deref = new E_deref(ptr);
+  deref->type = m_typeFactory.makeReferenceType(atType);
+  return deref;
+}
+
+
 // EOF
