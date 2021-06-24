@@ -87,15 +87,24 @@ public:      // methods
   // Given a base declarator (which should be a D_name), add more
   // IDeclarators on top of it in order to denote 'type'.  Stop when we
   // reach an atomic type, returning it.
-  CVAtomicType const *buildUpDeclarator(
+  //
+  // Although the returned value is known to be CVAtomicType, it could
+  // have TypedefType wrapped around that, which I do not want to lose,
+  // so it is declared as simply 'Type'.
+  //
+  // Ensures: 'return->isCVAtomicType()'.
+  Type const *buildUpDeclarator(
     Type const *type, IDeclarator *&idecl /*INOUT*/);
 
   // Given a Variable representing a typedef'd type, construct a type
   // specifier that uses it.
   TS_name *makeTS_name(Variable *typedefVar);
 
-  // Express 'atype' as a type specifier.
-  TypeSpecifier *makeTypeSpecifier(CVAtomicType const *atype);
+  // Express 'type' as a type specifier.
+  //
+  // Requires: 'type->isCVAtomicType()', but that could be by way of a
+  // TypedefType.
+  TypeSpecifier *makeTypeSpecifier(Type const *type);
 
   // Given 'var', return a TypeSpecifier and a Declarator (both as owner
   // pointers) that declares that variable.

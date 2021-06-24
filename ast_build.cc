@@ -86,7 +86,7 @@ D_func *ElsaASTBuild::makeD_func(FunctionType const *ftype, IDeclarator *base)
 }
 
 
-CVAtomicType const *ElsaASTBuild::buildUpDeclarator(
+Type const *ElsaASTBuild::buildUpDeclarator(
   Type const *type, IDeclarator *&idecl)
 {
   // Loop until we hit an atomic type.
@@ -146,8 +146,9 @@ CVAtomicType const *ElsaASTBuild::buildUpDeclarator(
     } // switch (tag)
   } // while (!atomic)
 
-  // Loop terminates when 'type' is atomic.
-  return type->asCVAtomicTypeC();
+  // 'type' is known to be a CVAtomicType, but it could have a
+  // TypedefType wrapped around it, and I want to preserve that.
+  return type;
 }
 
 
@@ -161,8 +162,15 @@ TS_name *ElsaASTBuild::makeTS_name(Variable *typedefVar)
 }
 
 
-TypeSpecifier *ElsaASTBuild::makeTypeSpecifier(CVAtomicType const *atype)
+TypeSpecifier *ElsaASTBuild::makeTypeSpecifier(Type const *type)
 {
+  if (type->isTypedefType()) {
+    // Currently at least, I do not have a notion of a cv-qualifier
+    // on TypedefType.
+    return makeTS_name(type->asTypedefTypeC()->m_typedefVar);
+  }
+
+  CVAtomicType const *atype = type->asCVAtomicTypeC();
   TypeSpecifier *tspec = NULL;
   switch (atype->atomic->getTag()) {
     case AtomicType::T_SIMPLE: {
@@ -217,7 +225,7 @@ std::pair<TypeSpecifier*, Declarator*>
   }
   else {
     // Add type constructors on top of 'idecl'.
-    CVAtomicType const *atype = buildUpDeclarator(var->type, idecl /*INOUT*/);
+    Type const *atype = buildUpDeclarator(var->type, idecl /*INOUT*/);
 
     // Express the atomic type as a type specifier.
     tspec = makeTypeSpecifier(atype);
