@@ -34,24 +34,23 @@
 //
 class PrintEnv : public BoxPrint {
 public:      // data
-  TypePrinter &typePrinter;
-  SourceLoc loc;
+  // How to print types.
+  TypePrinter &m_typePrinter;
 
 public:      // methods
-  PrintEnv(TypePrinter &typePrinter0)
-    : typePrinter(typePrinter0),
-      loc(SL_UNKNOWN)
+  PrintEnv(TypePrinter &typePrinter)
+    : m_typePrinter(typePrinter)
   {}
 
   TypeLike const *getTypeLike(Variable const *var)
-    { return typePrinter.getTypeLike(var); }
+    { return m_typePrinter.getTypeLike(var); }
 
   // Render the built BoxPrint tree to a string.  This internally
   // empties the tree, so a subsequent call would return the empty
   // string if no further printing happens.
   string getResult();
 
-  // Print 'type' using 'typePrinter'.
+  // Print 'type' using 'm_typePrinter'.
   void ptype(TypeLike const *type, char const *name = "");
 };
 

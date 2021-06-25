@@ -42,7 +42,7 @@ string PrintEnv::getResult()
 
 void PrintEnv::ptype(Type const *type, char const *name)
 {
-  *this << typePrinter.printType(type, name);
+  *this << m_typePrinter.printType(type, name);
 }
 
 
@@ -169,32 +169,27 @@ void TranslationUnit::print(PrintEnv &env) const
 // --------------------- TopForm ---------------------
 void TF_decl::print(PrintEnv &env) const
 {
-  env.loc = loc;
   decl->print(env);
 }
 
 void TF_func::print(PrintEnv &env) const
 {
-  env.loc = loc;
   f->print(env);
 }
 
 void TF_template::print(PrintEnv &env) const
 {
-  env.loc = loc;
   td->print(env);
 }
 
 void TF_explicitInst::print(PrintEnv &env) const
 {
-  env.loc = loc;
   env << "template ";
   d->print(env);
 }
 
 void TF_linkage::print(PrintEnv &env) const
 {
-  env.loc = loc;
   env << "extern " << linkageType << " ";
   BPBRACES;
   forms->print(env);
@@ -202,14 +197,12 @@ void TF_linkage::print(PrintEnv &env) const
 
 void TF_one_linkage::print(PrintEnv &env) const
 {
-  env.loc = loc;
   env << "extern " << linkageType << " ";
   form->print(env);
 }
 
 void TF_asm::print(PrintEnv &env) const
 {
-  env.loc = loc;
   env << "asm(";
   text->print(env, OPREC_LOWEST);
   env << ");";
@@ -217,7 +210,6 @@ void TF_asm::print(PrintEnv &env) const
 
 void TF_namespaceDefn::print(PrintEnv &env) const
 {
-  env.loc = loc;
   env << "namespace " << (name? name : "/*anon*/") << " ";
   BPBRACES;
   printTopFormList(env, forms);
@@ -225,7 +217,6 @@ void TF_namespaceDefn::print(PrintEnv &env) const
 
 void TF_namespaceDecl::print(PrintEnv &env) const
 {
-  env.loc = loc;
   decl->print(env);
 }
 
@@ -815,7 +806,6 @@ void ON_conversion::print(PrintEnv &env) const
 // ---------------------- Statement ---------------------
 void Statement::print(PrintEnv &env) const
 {
-  env.loc = loc;
   iprint(env);
 }
 
@@ -895,9 +885,6 @@ void S_switch::iprint(PrintEnv &env) const
     // In the common case of an S_compound, use my preferred style where
     // labels are indented one level and everything else is indented two
     // levels.
-
-    // We are bypassing Statement::print, so do what it would have done.
-    env.loc = comp->loc;
 
     BPBRACES;
     env.adjustIndent(1);   // Additional indentation.
@@ -1335,7 +1322,7 @@ OperatorPrecedence E_funCall::getPrecedence() const
 
 void E_constructor::iprint(PrintEnv &env) const
 {
-  TypeLike const *type0 = env.typePrinter.getE_constructorTypeLike(this);
+  TypeLike const *type0 = env.m_typePrinter.getE_constructorTypeLike(this);
 
   env.ptype(type0);
   printArgExprListWithParens(env, args);
