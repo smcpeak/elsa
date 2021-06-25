@@ -42,9 +42,6 @@ public:      // methods
     : m_typePrinter(typePrinter)
   {}
 
-  TypeLike const *getTypeLike(Variable const *var)
-    { return m_typePrinter.getTypeLike(var); }
-
   // Render the built BoxPrint tree to a string.  This internally
   // empties the tree, so a subsequent call would return the empty
   // string if no further printing happens.
