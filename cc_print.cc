@@ -116,23 +116,6 @@ CodeOutStream & CodeOutStream::operator << (char const *message)
   return *this;
 }
 
-// **** class TreeWalkOutStream
-
-void TreeWalkOutStream::indent() {
-  out << endl;
-  out.flush();
-  for(int i=0; i<depth; ++i) out << ' ';
-  out.flush();
-  out << ":::::";
-  out.flush();
-}
-
-TreeWalkOutStream & TreeWalkOutStream::operator << (ostream& (*manipfunc)(ostream& outs))
-{
-  if (on) out << manipfunc;
-  return *this;
-}
-
 // **************** class TypePrinter
 
 TypeLike const *TypePrinter::getTypeLike(Variable const *var)

@@ -170,56 +170,6 @@ public:      // methods
   #undef MAKE_INSERTER
 };
 
-// an output stream for printing comments that will indent them
-// according to the level of the tree walk
-class TreeWalkOutStream : public OutStream {
-  OutStream &out;
-  bool on;
-  int depth;
-
-  public:
-  TreeWalkOutStream(OutStream &out, bool on = true)
-    : out(out), on(on), depth(0)
-  {}
-
-  public:
-  // manipulate depth
-  virtual void down() {++depth;}
-  virtual void up()   {--depth;}
-
-  private:
-  // indentation and formatting support
-  void indent();
-
-  public:
-  // OutStream methods
-  virtual TreeWalkOutStream & operator << (ostream& (*manipfunc)(ostream& outs));
-  virtual void flush() { out.flush(); }
-
-  // special method to support rostring
-  virtual TreeWalkOutStream & operator << (rostring message) {return operator<< (message.c_str());}
-
-  // generic methods
-  #define MAKE_INSERTER(type)                     \
-    TreeWalkOutStream & operator << (type message) { \
-      if (on) {                                   \
-        indent();                                 \
-        out << message;                           \
-      }                                           \
-      return *this;                               \
-    }
-  MAKE_INSERTER(char const *)
-  MAKE_INSERTER(char)
-  MAKE_INSERTER(bool)
-  MAKE_INSERTER(int)
-  MAKE_INSERTER(unsigned int)
-  MAKE_INSERTER(long)
-  MAKE_INSERTER(unsigned long)
-  MAKE_INSERTER(double)
-  #undef MAKE_INSERTER
-};
-
-
 // In Oink, TypeLike is a superclass of Type but here we will just
 // make it synonymous with Type.  oink/cc_print.h.cpatch comments-out
 // this declaration.
