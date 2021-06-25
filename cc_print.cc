@@ -36,7 +36,7 @@ void PrintEnv::finish()
   string rendered = bpRender.sb.str();
   delete tree;
 
-  m_out << rendered.c_str();
+  m_out.insert(rendered.c_str());
 }
 
 void PrintEnv::ptype(Type const *type, char const *name)

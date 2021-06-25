@@ -29,28 +29,11 @@ class PrintEnv;
 // "superclass" for ostream, stringBuilder, and any other "output
 // stream" classes
 class OutStream {
-  public:
+public:      // methods
   virtual ~OutStream() {}
 
-  // special-case methods
-  virtual OutStream & operator << (ostream& (*manipfunc)(ostream& outs)) = 0;
-  virtual void flush() = 0;
-
-  // special method to support rostring
-  virtual OutStream & operator << (rostring message) = 0;
-
-  // generic methods
-  #define MAKE_INSERTER(type) \
-    virtual OutStream &operator << (type message) = 0;
-  MAKE_INSERTER(char const *)
-  MAKE_INSERTER(char)
-  MAKE_INSERTER(bool)
-  MAKE_INSERTER(int)
-  MAKE_INSERTER(unsigned int)
-  MAKE_INSERTER(long)
-  MAKE_INSERTER(unsigned long)
-  MAKE_INSERTER(double)
-  #undef MAKE_INSERTER
+  // Insert the given NUL-terminated string.
+  virtual void insert(char const *s) = 0;
 };
 
 class StringBuilderOutStream : public OutStream {
@@ -60,66 +43,19 @@ public:      // data
 public:      // methods
   StringBuilderOutStream(stringBuilder &buffer0) : buffer(buffer0) {}
 
-  // special-case methods
-  virtual StringBuilderOutStream & operator << (ostream& (*manipfunc)(ostream& outs)) {
-    buffer << "\n";             // assume that it is endl
-    return *this;
-  }
-  virtual void flush() {}       // no op
-
-  // special method to support rostring
-  virtual OutStream & operator << (rostring message) {return operator<< (message.c_str());}
-
-  // generic methods
-  #define MAKE_INSERTER(type)        \
-    virtual StringBuilderOutStream &operator << (type message) \
-    {                                \
-      buffer << message;             \
-      return *this;                  \
-    }
-  MAKE_INSERTER(char const *)
-  MAKE_INSERTER(char)
-  MAKE_INSERTER(bool)
-  MAKE_INSERTER(int)
-  MAKE_INSERTER(unsigned int)
-  MAKE_INSERTER(long)
-  MAKE_INSERTER(unsigned long)
-  MAKE_INSERTER(double)
-  #undef MAKE_INSERTER
+  void insert(char const *s) override
+    { buffer << s; }
 };
 
 class OStreamOutStream : public OutStream {
+public:      // data
   ostream &out;
 
-  public:
+public:      // methods
   OStreamOutStream(ostream &out0) : out(out0) {}
 
-  // special-case methods
-  virtual OStreamOutStream & operator << (ostream& (*manipfunc)(ostream& outs)) {
-    out << manipfunc;
-    return *this;
-  }
-  virtual void flush() { out.flush(); }
-
-  // special method to support rostring
-  virtual OutStream & operator << (rostring message) {return operator<< (message.c_str());}
-
-  // generic methods
-  #define MAKE_INSERTER(type)        \
-    virtual OStreamOutStream &operator << (type message) \
-    {                                \
-      out << message;                \
-      return *this;                  \
-    }
-  MAKE_INSERTER(char const *)
-  MAKE_INSERTER(char)
-  MAKE_INSERTER(bool)
-  MAKE_INSERTER(int)
-  MAKE_INSERTER(unsigned int)
-  MAKE_INSERTER(long)
-  MAKE_INSERTER(unsigned long)
-  MAKE_INSERTER(double)
-  #undef MAKE_INSERTER
+  void insert(char const *s) override
+    { out << s; }
 };
 
 // Context for a pretty-print.
