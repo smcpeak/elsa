@@ -1,15 +1,19 @@
 // cc_lang.h            see license.txt for copyright and terms of use
-// language options that the parser (etc.) is sensitive to
+// Class CCLang.
 
 // a useful reference:
 //   Incompatibilities Between ISO C and ISO C++
 //   David R. Tribble
 //   http://david.tribble.com/text/cdiffs.htm
 
-#ifndef CCLANG_H
-#define CCLANG_H
+#ifndef ELSA_CC_LANG_H
+#define ELSA_CC_LANG_H
 
-#include "str.h"                // string
+// elsa
+#include "type-sizes.h"                // TypeSizes
+
+// smbase
+#include "str.h"                       // string
 
 
 // This type is used for options that nominally either allow or
@@ -22,10 +26,12 @@ enum Bool3 {
 };
 
 
-// NOTE: be sure to add a line to the body of toString() if you add
-// another flag
+// Language options that the parser (etc.) is sensitive to.
 class CCLang {
-public:
+public:      // data
+  // Sizes of scalar types.
+  TypeSizes m_typeSizes;
+
   // catch-call for behaviors that are unique to C++ but aren't
   // enumerated above; these behaviors are candidates for being split
   // out as separate flags, but there currently is no need
@@ -238,7 +244,11 @@ private:     // funcs
   void setAllWarnings(bool enable);
 
 public:      // funcs
-  CCLang() { ANSI_C89(); }
+  CCLang()
+    : m_typeSizes()            // Initially matches host compiler.
+  {
+    ANSI_C89();
+  }
 
   // set any B3_TRUE to B3_WARN
   void enableAllWarnings() { setAllWarnings(true); }
@@ -281,4 +291,4 @@ public:      // funcs
 bool handleExternInline_asPrototype();
 bool handleExternInline_asWeakStaticInline();
 
-#endif // CCLANG_H
+#endif // ELSA_CC_LANG_H

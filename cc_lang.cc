@@ -42,9 +42,6 @@ void CCLang::setAllWarnings(bool enable)
 // ---------------------- ANSI and K&R C ----------------------
 void CCLang::ANSI_C89()
 {
-  // just in case I forget to initialize something....
-  memset(this, 0, sizeof(*this));
-
   isCplusplus = false;
   declareGNUBuiltins = false;
 
@@ -174,9 +171,6 @@ void CCLang::GNU2_KandR_C()
 // ---------------------------- C++ ----------------------------
 void CCLang::ANSI_Cplusplus()
 {
-  // just in case...
-  memset(this, 0, sizeof(*this));
-
   isCplusplus = true;
   declareGNUBuiltins = false;
 
@@ -280,7 +274,8 @@ bool handleExternInline_asWeakStaticInline() {
 
 string CCLang::toString() {
   stringBuilder str;
-#define PRINT(X) str << #X " " << X << '\n'
+  str << m_typeSizes.toString();
+#define PRINT(X) str << #X ": " << X << '\n'
   PRINT(isCplusplus);
   PRINT(declareGNUBuiltins);
   PRINT(tagsAreTypes);

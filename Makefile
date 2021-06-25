@@ -216,6 +216,7 @@ TOCLEAN += *.yy.cc *.yy.h lex.backup
 # ------------------------ tlexer -------------------
 LEXER_OBJS :=
 LEXER_OBJS += cc_lang.o
+LEXER_OBJS += type-sizes.o
 LEXER_OBJS += baselexer.o
 LEXER_OBJS += lexer.o
 LEXER_OBJS += lexer.yy.o
@@ -309,6 +310,7 @@ ELSA_OBJS += cc.ast.gen.o
 ELSA_OBJS += cc.gr.gen.o
 ELSA_OBJS += parssppt.o
 ELSA_OBJS += cc_flags.o
+ELSA_OBJS += type-sizes.o
 ELSA_OBJS += cc_print.o
 ELSA_OBJS += type-printer.o
 ELSA_OBJS += cc_ast_aux.o
