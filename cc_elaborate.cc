@@ -2050,7 +2050,7 @@ void PQ_variable::print(PrintEnv &env) const
       // Do not print.
     }
     else {
-      *env.out << var->name;
+      env << var->name;
     }
   }
 }

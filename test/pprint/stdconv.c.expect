@@ -1,11 +1,11 @@
 ---- stdout ----
 ---- START ----
 // -*-c++-*-
-
 void f(void *p)
 {
   p = /*ISC:void **/0;
 }
+
 ---- STOP ----
 ---- stderr ----
 ---- exit status ----

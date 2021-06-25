@@ -116,27 +116,6 @@ CodeOutStream & CodeOutStream::operator << (char const *message)
   return *this;
 }
 
-// **** class PairDelim
-
-PairDelim::PairDelim(PrintEnv &env, rostring message, rostring open, char const *close0)
-    : close(close0), out(*env.out)
-{
-  out << message;
-  out << open;
-  if (strchr(toCStr(open), '{')) out.down();
-}
-
-PairDelim::PairDelim(PrintEnv &env, rostring message)
-  : close(""), out(*env.out)
-{
-  out << message;
-}
-
-PairDelim::~PairDelim() {
-  if (strchr(close, '}')) out.up();
-  out << close;
-}
-
 // **** class TreeWalkOutStream
 
 void TreeWalkOutStream::indent() {
@@ -290,7 +269,7 @@ string CTypePrinter::print(PseudoInstantiation const *pseudoInst)
   }
   codeOut << '>';
 
-  codeOut.finish();
+  env.finish();
   return sb0;
 }
 
@@ -305,7 +284,7 @@ string CTypePrinter::print(DependentQType const *depType)
   codeOut << print(depType->first) << ':' << ':';
   depType->rest->print(env);
 
-  codeOut.finish();
+  env.finish();
   return sb0;
 }
 
@@ -640,9 +619,29 @@ string CTypePrinter::printAsParameter(Variable const *var)
 
 // **************** class PrintEnv
 
+void PrintEnv::finish()
+{
+  BPBox *tree = this->takeTree();
+  if (tracingSys("dumpPrintEnvTree")) {
+    tree->debugPrint(cout, 0);
+    cout << "\n";
+  }
+
+  BPRender bpRender;
+  tree->render(bpRender);
+  string rendered = bpRender.sb.str();
+  delete tree;
+
+  // Bypass the indentation logic in 'CodeOutStream'.
+  //
+  // TODO: Remove 'CodeOutStream' entirely.
+  m_out->out << rendered.c_str();
+  m_out->finish();
+}
+
 void PrintEnv::ptype(Type const *type, char const *name)
 {
-  typePrinter.print(*out, type, name);
+  typePrinter.print(*m_out, type, name);
 }
 
 
@@ -679,14 +678,82 @@ static void printDeclFlags(PrintEnv &env, DeclFlags dflags)
 
 // this is a prototype for a function down near E_funCall::iprint
 void printArgExprList(PrintEnv &env, FakeList<ArgExpression> *list);
+static void printArgExprListWithParens(PrintEnv &env, FakeList<ArgExpression> *list);
+
+
+// ------------------ BoxPrint helpers --------------------
+namespace {
+  // Begin and end a box with a scope.
+  class BPBeginEndBox {
+    BoxPrint &m_bp;
+  public:
+    BPBeginEndBox(BoxPrint &bp, BPKind kind)
+      : m_bp(bp)
+    {
+      m_bp << kind;
+    }
+    ~BPBeginEndBox()
+    {
+      m_bp << BoxPrint::end;
+    }
+  };
+
+  // Begin/end vertical or sequence boxes.
+  #define BPVERTICAL BPBeginEndBox bpBeginEndBox(env, BoxPrint::vert)
+  #define BPSEQUENCE BPBeginEndBox bpBeginEndBox(env, BoxPrint::seq)
+
+  // Print opening and closing braces.
+  class BPBraces {
+    PrintEnv &m_env;
+  public:
+    BPBraces(PrintEnv &env)
+      : m_env(env)
+    {
+      m_env << "{" << m_env.ind;
+    }
+    ~BPBraces()
+    {
+      m_env << m_env.und << "}";
+    }
+  };
+
+  #define BPBRACES BPBraces bpBraces(env)
+
+  // Temporarily un-indent.
+  class BPUnindent {
+    PrintEnv &m_env;
+  public:
+    BPUnindent(PrintEnv &env)
+      : m_env(env)
+    {
+      m_env << m_env.und;
+    }
+    ~BPUnindent()
+    {
+      m_env << m_env.ind;
+    }
+  };
+
+  #define BPUNINDENT BPUnindent bpUnindent(env)
+}
+
 
 
 // ------------------- TranslationUnit --------------------
-void TranslationUnit::print(PrintEnv &env) const
+static void printTopFormList(PrintEnv &env, ASTList<TopForm> const &topForms)
 {
   FOREACH_ASTLIST(TopForm, topForms, iter) {
     iter.data()->print(env);
+
+    // The first break puts a newline after the form.  The second
+    // puts a blank line after each TopForm.
+    env << env.br << env.br;
   }
+}
+
+void TranslationUnit::print(PrintEnv &env) const
+{
+  printTopFormList(env, topForms);
 }
 
 // --------------------- TopForm ---------------------
@@ -698,7 +765,6 @@ void TF_decl::print(PrintEnv &env) const
 
 void TF_func::print(PrintEnv &env) const
 {
-  env << "\n";
   env.loc = loc;
   f->print(env);
 }
@@ -719,8 +785,8 @@ void TF_explicitInst::print(PrintEnv &env) const
 void TF_linkage::print(PrintEnv &env) const
 {
   env.loc = loc;
-  env << "extern " << linkageType;
-  PairDelim pair(env, "", " {\n", "}\n");
+  env << "extern " << linkageType << " ";
+  BPBRACES;
   forms->print(env);
 }
 
@@ -734,17 +800,17 @@ void TF_one_linkage::print(PrintEnv &env) const
 void TF_asm::print(PrintEnv &env) const
 {
   env.loc = loc;
-  env << "asm(" << text << ");\n";
+  env << "asm(";
+  text->print(env, OPREC_LOWEST);
+  env << ");";
 }
 
 void TF_namespaceDefn::print(PrintEnv &env) const
 {
   env.loc = loc;
-  env << "namespace " << (name? name : "/*anon*/") << " {\n";
-  FOREACH_ASTLIST(TopForm, forms, iter) {
-    iter.data()->print(env);
-  }
-  env << "} /""* namespace " << (name? name : "(anon)") << " */\n";
+  env << "namespace " << (name? name : "/*anon*/") << " ";
+  BPBRACES;
+  printTopFormList(env, forms);
 }
 
 void TF_namespaceDecl::print(PrintEnv &env) const
@@ -832,21 +898,27 @@ static void printTypeSpecifierAndDeclarator(
 
 void Function::print(PrintEnv &env, DeclFlags declFlagsMask) const
 {
-  printDeclFlags(env, dflags & declFlagsMask);
-  printTypeSpecifierAndDeclarator(env, retspec, nameAndParams);
+  BPVERTICAL;
+
+  {
+    BPSEQUENCE;
+
+    printDeclFlags(env, dflags & declFlagsMask);
+    printTypeSpecifierAndDeclarator(env, retspec, nameAndParams);
+  }
 
   if (instButNotTchecked()) {
     // this is an unchecked instantiation
-    env << "; // not instantiated\n";
+    env << "; // not instantiated" << env.fbr;
     return;
   }
 
-  env << "\n";
+  env << env.fbr;
   if (handlers) {
     env << "try";
     if (inits) {
       // Newline before member inits.
-      env << "\n";
+      env << env.fbr;
     }
     else {
       // Space before opening brace.
@@ -855,23 +927,32 @@ void Function::print(PrintEnv &env, DeclFlags declFlagsMask) const
   }
 
   if (inits) {
+    BPVERTICAL;
+
     env << "  : ";
-    bool first_time = true;
+    int ct=0;      // Number of initializers printed.
     FAKELIST_FOREACH_NC(MemberInit, inits, iter) {
-      if (first_time) first_time = false;
-      else env << ",\n    ";
-      // NOTE: eventually will be able to figure out if we are
-      // initializing a base class or a member variable.  There will
-      // be a field added to class MemberInit that will say.
-      PairDelim pair(env, iter->name->toString(), "(", ")");
-      printArgExprList(env, iter->args);
+      if (ct > 0) {
+        env << "," << env.br;
+      }
+      if (ct == 1) {
+        env.adjustIndent(+2);
+      }
+
+      env << iter->name->toString();
+      printArgExprListWithParens(env, iter->args);
+      ct++;
     }
-    env << "\n";
+    env << env.br;
+    if (ct >= 2) {
+      // Undo the double-indent if we did it.
+      env.adjustIndent(-2);
+    }
   }
 
   if (body->stmts.isEmpty()) {
     // more concise
-    env << "{}\n";
+    env << "{}";
   }
   else {
     body->print(env);
@@ -879,9 +960,12 @@ void Function::print(PrintEnv &env, DeclFlags declFlagsMask) const
 
   if (handlers) {
     FAKELIST_FOREACH_NC(Handler, handlers, iter) {
+      // We put a break after the body, and after each handler.  The
+      // containing context is responsible for the break after the
+      // last handler.
+      env << env.br;
       iter->print(env);
     }
-    env << "\n";
   }
 }
 
@@ -891,20 +975,28 @@ void Function::print(PrintEnv &env, DeclFlags declFlagsMask) const
 // -------------------- Declaration -------------------
 void Declaration::print(PrintEnv &env) const
 {
+  // Check if the type specifier wants to print vertically.  I cannot
+  // wait until I am inside 'spec->print()' because the declaration
+  // flags get printed first.
+  bool isClassOrEnum = spec->isTS_classSpec() || spec->isTS_enumSpec();
+
+  BPBeginEndBox bpBeginEndBox(env,
+    isClassOrEnum? BoxPrint::vert : BoxPrint::seq);
+
   printDeclFlags(env, dflags);
 
   spec->print(env);
 
   FAKELIST_FOREACH_NC(Declarator, decllist, declarator) {
     if (declarator != fl_first(decllist)) {
-      env << ", ";
+      env << "," << env.br;
     }
     else if (ideclaratorWantsSpace(spec, declarator->decl)) {
       env << " ";
     }
     declarator->print(env);
   }
-  env << ";\n";
+  env << ";";
 }
 
 
@@ -919,13 +1011,14 @@ void printInitializerOpt(PrintEnv &env, Initializer /*nullable*/ *init)
         // Don't print anything.
       }
       else {
-        // dsw:Constructor arguments.
-        PairDelim pair(env, "", "(", ")");
-        ctor->print(env);       // NOTE: You can NOT factor this line out of the if!
+        // Constructor arguments.
+        env << "(";
+        ctor->print(env);
+        env << ")";
       }
     } else {
       env << " = ";
-      init->print(env);         // Don't pull this out!
+      init->print(env);
     }
   }
 }
@@ -944,7 +1037,7 @@ void printTemplateArgumentList
   while (args) {
     if (!args->isTA_templateUsed()) {
       if (ct++ > 0) {
-        env << ',' << ' ';
+        env << ',' << env.br;
       }
       args->print(env);
     }
@@ -1045,12 +1138,22 @@ void TS_classSpec::iprint(PrintEnv &env) const
       env << ' ' << ':' << ' ';
       first_time = false;
     }
-    else env << ',' << ' ';
+    else {
+      env << ',' << env.br;
+    }
     iter->print(env);
   }
-  PairDelim pair(env, " ", "{\n", "}");
+  env << " ";
+  BPBRACES;
   FOREACH_ASTLIST(Member, members->list, iter2) {
     iter2.data()->print(env);
+    if (iter2.data()->isMR_access()) {
+      // Hack: MR_access prints its own break as part of BPUNINDENT,
+      // so avoiding doing so here.
+    }
+    else {
+      env << env.br;
+    }
   }
 }
 
@@ -1060,11 +1163,23 @@ void TS_enumSpec::iprint(PrintEnv &env) const
   env << toString(ql);          // see string toString(class dummyType*) above
   env << toString(cv);
   env << "enum ";
-  if (name) env << name;
-  PairDelim pair(env, "", "{\n", "}");
+  if (name) {
+    env << name << ' ';
+  }
+  BPBRACES;
+
+  int ct=0;
   FAKELIST_FOREACH_NC(Enumerator, elts, iter) {
+    if (ct >= 1) {
+      env << ',' << env.br;
+    }
     iter->print(env);
-    env << "\n";
+    ct++;
+  }
+
+  // Break but no comma after the last enumerator.
+  if (ct >= 1) {
+    env << env.fbr;
   }
 }
 
@@ -1094,12 +1209,8 @@ void MR_func::print(PrintEnv &env) const
 
 void MR_access::print(PrintEnv &env) const
 {
-  // Print access specifiers un-intended.
-  env.out->up();
-
-  env << toString(k) << ":\n";
-
-  env.out->down();
+  BPUNINDENT;
+  env << toString(k) << ":";
 }
 
 void MR_usingDecl::print(PrintEnv &env) const
@@ -1118,10 +1229,9 @@ void Enumerator::print(PrintEnv &env) const
 {
   env << name;
   if (expr) {
-    env << '=';
+    env << " = ";
     expr->print(env, OPREC_ASSIGN);
   }
-  env << ',' << ' ';
 }
 
 // -------------------- Declarator --------------------
@@ -1196,7 +1306,7 @@ void D_func::print(PrintEnv &env) const
   FAKELIST_FOREACH_NC(ASTTypeId, params, param) {
     param->print(env);
     if (param->next) {
-      env << ", ";
+      env << "," << env.br;
     }
   }
 
@@ -1262,7 +1372,7 @@ void ExceptionSpec::print(PrintEnv &env) const
   env << "throw(";
   FAKELIST_FOREACH_NC(ASTTypeId, types, iter) {
     if (iter != fl_first(types)) {
-      env << ", ";
+      env << "," << env.br;
     }
     iter->print(env);
   }
@@ -1297,37 +1407,19 @@ void Statement::print(PrintEnv &env) const
 {
   env.loc = loc;
   iprint(env);
-  //    env << ";\n";
-}
-
-namespace {
-  // Temporarily un-indent.
-  class Unindent {
-    PrintEnv &m_env;
-  public:
-    Unindent(PrintEnv &env)
-      : m_env(env)
-    {
-      m_env.out->up();
-    }
-    ~Unindent()
-    {
-      m_env.out->down();
-    }
-  };
 }
 
 // no-op
 void S_skip::iprint(PrintEnv &env) const
 {
-  env << ";\n";
+  env << ";";
 }
 
 void S_label::iprint(PrintEnv &env) const
 {
   {
-    Unindent unindent(env);
-    env << name << ":\n";
+    BPUNINDENT;
+    env << name << ":";
   }
   s->print(env);
 }
@@ -1335,11 +1427,11 @@ void S_label::iprint(PrintEnv &env) const
 void S_case::iprint(PrintEnv &env) const
 {
   {
-    Unindent unindent(env);
+    BPUNINDENT;
 
     env << "case ";
     expr->print(env, OPREC_LOWEST);
-    env << ":\n";
+    env << ":";
   }
 
   s->print(env);
@@ -1348,8 +1440,8 @@ void S_case::iprint(PrintEnv &env) const
 void S_default::iprint(PrintEnv &env) const
 {
   {
-    Unindent unindent(env);
-    env << "default:\n";
+    BPUNINDENT;
+    env << "default:";
   }
   s->print(env);
 }
@@ -1357,34 +1449,37 @@ void S_default::iprint(PrintEnv &env) const
 void S_expr::iprint(PrintEnv &env) const
 {
   expr->print(env);
-  env << ";\n";
+  env << ";";
 }
 
 void S_compound::iprint(PrintEnv &env) const
 {
-  PairDelim pair(env, "", "{\n", "}\n");
+  BPBRACES;
   FOREACH_ASTLIST(Statement, stmts, iter) {
     iter.data()->print(env);
+    env << env.br;
   }
 }
 
 void S_if::iprint(PrintEnv &env) const
 {
-  {
-    PairDelim pair(env, "if ", "(", ") ");
-    cond->print(env);
-  }
+  BPVERTICAL;
+
+  env << "if (";
+  cond->print(env);
+  env << ") ";
   thenBranch->print(env);
-  env << "else ";
+  env << env.br << "else ";
   elseBranch->print(env);
 }
 
 void S_switch::iprint(PrintEnv &env) const
 {
-  {
-    PairDelim pair(env, "switch ", "(", ") ");
-    cond->print(env);
-  }
+  BPVERTICAL;
+
+  env << "switch (";
+  cond->print(env);
+  env << ") ";
 
   if (S_compound const *comp = branches->ifS_compoundC()) {
     // In the common case of an S_compound, use my preferred style where
@@ -1394,12 +1489,13 @@ void S_switch::iprint(PrintEnv &env) const
     // We are bypassing Statement::print, so do what it would have done.
     env.loc = comp->loc;
 
-    PairDelim pair(env, "", "{\n", "}\n");
-    env.out->down();
+    BPBRACES;
+    env.adjustIndent(1);   // Additional indentation.
     FOREACH_ASTLIST(Statement, comp->stmts, iter) {
       iter.data()->print(env);
+      env << env.br;
     }
-    env.out->up();
+    env.adjustIndent(-1);
   }
   else {
     branches->print(env);
@@ -1408,53 +1504,45 @@ void S_switch::iprint(PrintEnv &env) const
 
 void S_while::iprint(PrintEnv &env) const
 {
-  {
-    PairDelim pair(env, "while ", "(", ") ");
-    cond->print(env);
-  }
+  env << "while (";
+  cond->print(env);
+  env << ") ";
   body->print(env);
 }
 
 void S_doWhile::iprint(PrintEnv &env) const
 {
-  {
-    PairDelim pair(env, "do ");
-    body->print(env);
-  }
-  {
-    PairDelim pair(env, "while ", "(", ")");
-    expr->print(env);
-  }
-  env << ";\n";
+  env << "do ";
+  body->print(env);
+  env << " while (";
+  expr->print(env);
+  env << ");";
 }
 
 void S_for::iprint(PrintEnv &env) const
 {
+  env << "for (";
   {
-    PairDelim pair(env, "for ", "(", ") ");
+    BPSEQUENCE;
+
     init->print(env);
-
-    // The 'init' will have printed itself like a normal statement,
-    // ending with a newline.  Use a space instead.
-    env.out->changePendingNewlineToSpace();
-
-    // this one not needed as the declaration provides one
-    //          env << ";";
+    env << env.br;
     cond->print(env);
     env << "; ";
     after->print(env);
   }
+  env << ") ";
   body->print(env);
 }
 
 void S_break::iprint(PrintEnv &env) const
 {
-  env << "break;\n";
+  env << "break;";
 }
 
 void S_continue::iprint(PrintEnv &env) const
 {
-  env << "continue;\n";
+  env << "continue;";
 }
 
 void S_return::iprint(PrintEnv &env) const
@@ -1464,22 +1552,19 @@ void S_return::iprint(PrintEnv &env) const
     env << " ";
     expr->print(env);
   }
-  env << ";\n";
+  env << ";";
 }
 
 void S_goto::iprint(PrintEnv &env) const
 {
-  // dsw: When doing a control-flow pass, keep a current function so
-  // we know where to look for the label.
   env << "goto ";
   env << target;
-  env << ";\n";
+  env << ";";
 }
 
 void S_decl::iprint(PrintEnv &env) const
 {
   decl->print(env);
-  //      env << ";\n";
 }
 
 void S_try::iprint(PrintEnv &env) const
@@ -1493,7 +1578,9 @@ void S_try::iprint(PrintEnv &env) const
 
 void S_asm::iprint(PrintEnv &env) const
 {
-  env << "asm(" << text << ");\n";
+  env << "asm(";
+  text->print(env, OPREC_LOWEST);
+  env << ");";
 }
 
 void S_namespaceDecl::iprint(PrintEnv &env) const
@@ -1521,15 +1608,14 @@ void CN_decl::print(PrintEnv &env) const
 // catch clause
 void Handler::print(PrintEnv &env) const
 {
-  {
-    PairDelim pair(env, "catch ", "(", ") ");
-    if (isEllipsis()) {
-      env << "...";
-    }
-    else {
-      typeId->print(env);
-    }
+  env << "catch (";
+  if (isEllipsis()) {
+    env << "...";
   }
+  else {
+    typeId->print(env);
+  }
+  env << ") ";
   body->print(env);
 }
 
@@ -1564,8 +1650,9 @@ void Expression::print(PrintEnv &env, OperatorPrecedence parentPrec) const
 {
   OperatorPrecedence thisPrec = this->getPrecedence();
   if (thisPrec >= parentPrec) {
-    PairDelim pair(env, "", "(", ")");
+    env << "(";
     iprint(env);
+    env << ")";
   }
   else {
     // 'this' expression has higher precedence than its parent, so does
@@ -1591,7 +1678,7 @@ string Expression::exprToString() const
   PrintEnv env(typePrinter, &codeOut);
 
   this->print(env, OPREC_LOWEST);
-  codeOut.flush();
+  env.finish();
 
   return sb;
 }
@@ -1663,7 +1750,7 @@ void E_stringLit::iprint(PrintEnv &env) const
     env << p->text;
     p = p->continuation;
     if (p) {
-      env << ' ';
+      env << env.br;
     }
   }
 }
@@ -1776,7 +1863,7 @@ void printTemplateArgs(PrintEnv &env, Variable *var)
   int ct=0;
   for (; !iter.isDone(); iter.adv()) {
     if (ct++ > 0) {
-      env << ',' << ' ';
+      env << ',' << env.br;
     }
     printSTemplateArgument(env, iter.data());
   }
@@ -1808,19 +1895,32 @@ OperatorPrecedence E_variable::getPrecedence() const
 
 void printArgExprList(PrintEnv &env, FakeList<ArgExpression> *list)
 {
+  BPSEQUENCE;
+
   bool first_time = true;
   FAKELIST_FOREACH_NC(ArgExpression, list, iter) {
-    if (first_time) first_time = false;
-    else env << ',' << ' ';
+    if (first_time) {
+      first_time = false;
+    }
+    else {
+      env << ',' << env.br;
+    }
     iter->expr->print(env, OPREC_COMMA);
   }
+}
+
+static void printArgExprListWithParens(PrintEnv &env,
+                                       FakeList<ArgExpression> *list)
+{
+  env << "(";
+  printArgExprList(env, list);
+  env << ")";
 }
 
 void E_funCall::iprint(PrintEnv &env) const
 {
   func->print(env, this->getPrecedence());
-  PairDelim pair(env, "", "(", ")");
-  printArgExprList(env, args);
+  printArgExprListWithParens(env, args);
 }
 
 OperatorPrecedence E_funCall::getPrecedence() const
@@ -1834,8 +1934,7 @@ void E_constructor::iprint(PrintEnv &env) const
   TypeLike const *type0 = env.typePrinter.getE_constructorTypeLike(this);
 
   env.ptype(type0);
-  PairDelim pair(env, "", "(", ")");
-  printArgExprList(env, args);
+  printArgExprListWithParens(env, args);
 }
 
 OperatorPrecedence E_constructor::getPrecedence() const
@@ -2135,10 +2234,9 @@ OperatorPrecedence E_deref::getPrecedence() const
 // C-style cast
 void E_cast::iprint(PrintEnv &env) const
 {
-  {
-    PairDelim pair(env, "", "(", ")");
-    ctype->print(env);
-  }
+  env << "(";
+  ctype->print(env);
+  env << ")";
   expr->print(env, this->getPrecedence());
 }
 
@@ -2174,8 +2272,9 @@ OperatorPrecedence E_cond::getPrecedence() const
 
 void E_sizeofType::iprint(PrintEnv &env) const
 {
-  PairDelim pair(env, "sizeof", "(", ")"); // NOTE yes, you do want the parens because argument is a type.
+  env << "sizeof(";
   atype->print(env);
+  env << ")";
 }
 
 OperatorPrecedence E_sizeofType::getPrecedence() const
@@ -2208,8 +2307,7 @@ void E_new::iprint(PrintEnv &env) const
   if (colonColon) env << "::";
   env << "new ";
   if (placementArgs) {
-    PairDelim pair(env, "", "(", ")");
-    printArgExprList(env, placementArgs);
+    printArgExprListWithParens(env, placementArgs);
   }
 
   if (!arraySize) {
@@ -2236,8 +2334,7 @@ void E_new::iprint(PrintEnv &env) const
   }
 
   if (ctorArgs) {
-    PairDelim pair(env, "", "(", ")");
-    printArgExprList(env, ctorArgs->list);
+    printArgExprListWithParens(env, ctorArgs->list);
   }
 }
 
@@ -2285,13 +2382,11 @@ OperatorPrecedence E_throw::getPrecedence() const
 // C++-style cast
 void E_keywordCast::iprint(PrintEnv &env) const
 {
-  env << toString(key);
-  {
-    PairDelim pair(env, "", "<", ">");
-    ctype->print(env);
-  }
-  PairDelim pair(env, "", "(", ")");
+  env << toString(key) << "<";
+  ctype->print(env);
+  env << ">(";
   expr->print(env, this->getPrecedence());
+  env << ")";
 }
 
 OperatorPrecedence E_keywordCast::getPrecedence() const
@@ -2306,8 +2401,9 @@ OperatorPrecedence E_keywordCast::getPrecedence() const
 // RTTI: typeid(expression)
 void E_typeidExpr::iprint(PrintEnv &env) const
 {
-  PairDelim pair(env, "typeid", "(", ")");
+  env << "typeid(";
   expr->print(env, this->getPrecedence());
+  env << ")";
 }
 
 OperatorPrecedence E_typeidExpr::getPrecedence() const
@@ -2320,8 +2416,9 @@ OperatorPrecedence E_typeidExpr::getPrecedence() const
 // RTTI: typeid(type)
 void E_typeidType::iprint(PrintEnv &env) const
 {
-  PairDelim pair(env, "typeid", "(", ")");
+  env << "typeid(";
   ttype->print(env);
+  env << ")";
 }
 
 OperatorPrecedence E_typeidType::getPrecedence() const
@@ -2373,13 +2470,29 @@ void IN_expr::print(PrintEnv &env) const
 //           ^^^^^^^^^ only
 void IN_compound::print(PrintEnv &env) const
 {
-  PairDelim pair(env, "", "{\n", "\n}");
-  bool first_time = true;
-  FOREACH_ASTLIST(Initializer, inits, iter) {
-    if (first_time) first_time = false;
-    else env << ",\n";
-    iter.data()->print(env);
+  // This does not print quite how I would like it to, as shown by
+  // test/pprint/longlines.cc, but I'm not sure how much more effort I
+  // want to put into it.  I think BoxPrint would need to be made
+  // significantly more flexible.
+
+  BPBRACES;
+
+  {
+    BPSEQUENCE;
+
+    bool first_time = true;
+    FOREACH_ASTLIST(Initializer, inits, iter) {
+      if (first_time) {
+        first_time = false;
+      }
+      else {
+        env << "," << env.br;
+      }
+      iter.data()->print(env);
+    }
   }
+
+  env << env.br;
 }
 
 void IN_ctor::print(PrintEnv &env) const
@@ -2396,11 +2509,11 @@ void TemplateDeclaration::print(PrintEnv &env) const
   int ct=0;
   for (TemplateParameter *iter = params; iter; iter = iter->next) {
     if (ct++ > 0) {
-      env << ", ";
+      env << "," << env.br;
     }
     iter->print(env);
   }
-  env << ">\n";
+  env << ">" << env.fbr;
 
   iprint(env);
 }
@@ -2414,7 +2527,7 @@ void printFuncInstantiations(PrintEnv &env, Variable const *var)
       inst->funcDefn->print(env);
     }
     else {
-      env << inst->toQualifiedString() << ";    // decl but not defn\n";
+      env << inst->toQualifiedString() << ";    // decl but not defn" << env.fbr;
     }
   }
 }
@@ -2432,7 +2545,7 @@ void TD_func::iprint(PrintEnv &env) const
 
     TypeLike const *type0 = env.getTypeLike(var);
     env.ptype(type0, (var->name? var->name : "/*anon*/"));
-    env << var->namePrintSuffix() << "\n";
+    env << var->namePrintSuffix() << env.fbr;
     printFuncInstantiations(env, var);
 
     TemplateInfo *varTI = var->templateInfo();
@@ -2449,7 +2562,7 @@ void TD_func::iprint(PrintEnv &env) const
       }
     }
 
-    env << "#endif   // instantiations of " << var->name << "\n\n";
+    env << "#endif   // instantiations of " << var->name << env.fbr << env.fbr;
   }
 }
 
@@ -2462,7 +2575,7 @@ void TD_decl::iprint(PrintEnv &env) const
     CompoundType *ct = d->spec->asTS_classSpec()->ctype;
     TemplateInfo *ti = ct->typedefVar->templateInfo();
     if (!ti->isCompleteSpec()) {
-      env << "#if 0    // instantiations of " << ct->name << "\n";
+      env << "#if 0    // instantiations of " << ct->name << env.fbr;
 
       SFOREACH_OBJLIST(Variable, ti->instantiations, iter) {
         Variable const *instV = iter.data();
@@ -2472,15 +2585,15 @@ void TD_decl::iprint(PrintEnv &env) const
         env.ptype(type0);
         CompoundType *instCT = instV->type->asCompoundType();
         if (instCT->syntax) {
-          env << "\n";
+          env << env.fbr;
           instCT->syntax->print(env);
-          env << ";\n";
+          env << ";" << env.fbr;
         }
         else {
-          env << ";     // body not instantiated\n";
+          env << ";     // body not instantiated" << env.fbr;
         }
       }
-      env << "#endif   // instantiations of " << ct->name << "\n\n";
+      env << "#endif   // instantiations of " << ct->name << env.fbr << env.fbr;
     }
   }
   else {
@@ -2538,21 +2651,21 @@ void ND_alias::print(PrintEnv &env) const
 {
   env << "namespace " << alias << " = ";
   original->print(env);
-  env << ";\n";
+  env << ";" << env.fbr;
 }
 
 void ND_usingDecl::print(PrintEnv &env) const
 {
   env << "using ";
   name->print(env);
-  env << ";\n";
+  env << ";" << env.fbr;
 }
 
 void ND_usingDir::print(PrintEnv &env) const
 {
   env << "using namespace ";
   name->print(env);
-  env << ";\n";
+  env << ";" << env.fbr;
 }
 
 

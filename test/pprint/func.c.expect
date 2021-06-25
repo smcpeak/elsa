@@ -7,6 +7,7 @@ Int f(void *q)
 {
   return 1;
 }
+
 ---- STOP ----
 ---- stderr ----
 ---- exit status ----

@@ -10,6 +10,7 @@ int main()
 
 void f(Foo *)
 {}
+
 class Foo {
 public:
   int x;
@@ -29,6 +30,7 @@ public:
 
 void f(Foo *, int)
 {}
+
 ---- STOP ----
 ---- stderr ----
 ---- exit status ----

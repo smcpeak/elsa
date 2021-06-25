@@ -24,7 +24,13 @@ public:      // data
 
 public:      // methods
   C(int x);
+  C(int x, int y);
 };
+
+C::C(int x, int y)
+  : m_x(x),
+    m_y(y)
+{}
 
 C::C(int x)
 try
@@ -36,6 +42,9 @@ try
 catch (int y) {
   y++;
   // Implicitly re-throws.
+}
+catch (char c) {
+  c--;
 }
 
 int h(C &c, int x)

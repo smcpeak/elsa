@@ -28,6 +28,7 @@ public:
   ~C()
   {}
 };
+
 void g(int);
 
 void scope_qualifier()
@@ -164,6 +165,7 @@ void logical(int x, int y, int z)
   x && (y || z);
   (x || y) && z;
 }
+
 int &operator||(C const &c1, C const &c2);
 
 void assign(int x, int y, int z, C c1, C c2)
@@ -213,6 +215,7 @@ void test_throw(int x, int y)
   x, throw y;
   throw x, y;
 }
+
 ---- STOP ----
 ---- stderr ----
 ---- exit status ----

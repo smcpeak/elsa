@@ -7,6 +7,7 @@ int foo() throw()
 {
   return 3;
 }
+
 class Exc {
   Exc()
   {}
@@ -19,6 +20,7 @@ class Exc {
   ~Exc()
   {}
 };
+
 class Exc2 {
   Exc2()
   {}
@@ -31,8 +33,11 @@ class Exc2 {
   ~Exc2()
   {}
 };
+
 void bar() throw(Exc);
+
 void bar2() throw(Exc, Exc2);
+
 ---- STOP ----
 ---- stderr ----
 ---- exit status ----

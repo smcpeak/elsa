@@ -514,7 +514,7 @@ void ElsaParse::parse(char const *inputFname)
     cout << "---- START ----" << endl;
     cout << "// -*-c++-*-" << endl;
     m_translationUnit->print(env);
-    codeOut.finish();
+    env.finish();
     cout << "---- STOP ----" << endl;
   }
 
@@ -546,7 +546,7 @@ void ElsaParse::parse(char const *inputFname)
         PrintEnv penv(typePrinter, &codeOut);
         cout << "---- cloned pretty print ----" << endl;
         u2->print(penv);
-        codeOut.finish();
+        penv.finish();
       }
     }
   }

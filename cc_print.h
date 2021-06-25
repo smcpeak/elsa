@@ -12,6 +12,7 @@
 #include "cc_ast.h"             // C++ AST; this module
 #include "str.h"                // stringBuilder
 
+#include "boxprint.h"           // BoxPrint
 #include "sm-iostream.h"        // ostream
 
 
@@ -116,14 +117,19 @@ class OStreamOutStream : public OutStream {
 };
 
 // indents the source code sent to it
+//
+// TODO: This class is effectively not used.  Remove it.
 class CodeOutStream : public OutStream {
+public:      // data
   OutStream &out;               // output to here
   int depth;                    // depth of indentation
   int bufferedNewlines;         // number of buffered trailing newlines
 
-  public:
+public:      // methods
   CodeOutStream(OutStream &out0)
-    : out(out0), depth(0), bufferedNewlines(0)
+    : out(out0),
+      depth(0),
+      bufferedNewlines(0)
   {}
   virtual ~CodeOutStream();
 
@@ -161,18 +167,6 @@ class CodeOutStream : public OutStream {
   MAKE_INSERTER(unsigned long)
   MAKE_INSERTER(double)
   #undef MAKE_INSERTER
-};
-
-// print paired delimiters, the second one is delayed until the end of
-// the stack frame; that is, it is printed in the destructor.
-class PairDelim {
-  char const *close;            // FIX: why can't I use an rostring?
-  CodeOutStream &out;
-
-public:      // methods
-  PairDelim(PrintEnv &env, rostring message, rostring open, char const *close);
-  PairDelim(PrintEnv &env, rostring message);
-  ~PairDelim();
 };
 
 // an output stream for printing comments that will indent them
@@ -304,40 +298,37 @@ protected:   // methods
   string printAsParameter(Variable const *var);
 };
 
-// global context for a pretty-print
-class PrintEnv {
-  public:
+// Context for a pretty-print.
+//
+// When printing, we accumulate in BoxPrint a tree that describes the
+// intended syntax structure.  Then, 'finish()' renders it to a string,
+// which is sent to 'm_out'.
+//
+// Printing is somewhat delicate because it's easy to have too many or
+// too few line breaks.  The general strategy used in cc_print is that
+// breaks are always and only inserted by code that prints *lists*.
+// That is, we put breaks exactly in those places where we are aware of
+// what is being printed on both sides of the break.  Individual
+// elements do *not* insert breaks on their own.
+//
+class PrintEnv : public BoxPrint {
+public:      // data
   TypePrinter &typePrinter;
-  CodeOutStream *out;
+  CodeOutStream *m_out;
   SourceLoc loc;
 
-  public:
+public:      // methods
   PrintEnv(TypePrinter &typePrinter0, CodeOutStream *out0)
     : typePrinter(typePrinter0)
-    , out(out0)
+    , m_out(out0)
     , loc(SL_UNKNOWN)
   {}
 
   TypeLike const *getTypeLike(Variable const *var)
     { return typePrinter.getTypeLike(var); }
 
-  void finish() { out->finish(); }
-
-  #define MAKE_INSERTER(type)                    \
-    PrintEnv& operator << (type message) {       \
-      *out << message;                           \
-      return *this;                              \
-    }
-  MAKE_INSERTER(char const *)
-  MAKE_INSERTER(char)
-  MAKE_INSERTER(bool)
-  MAKE_INSERTER(int)
-  MAKE_INSERTER(unsigned int)
-  MAKE_INSERTER(long)
-  MAKE_INSERTER(unsigned long)
-  MAKE_INSERTER(double)
-  MAKE_INSERTER(rostring)
-  #undef MAKE_INSERTER
+  // Render the built BoxPrint tree to a string and write it to 'm_out'.
+  void finish();
 
   // Print 'type' using 'typePrinter'.
   void ptype(TypeLike const *type, char const *name = "");
@@ -364,11 +355,12 @@ void printSTemplateArgument(PrintEnv &env, STemplateArgument const *sta);
 
 #define PRINT_AST(AST)                \
   do {                                \
-    OutStream out0(cout);         \
+    OutStream out0(cout);             \
     TypePrinter typePrinter0;         \
     PrintEnv penv0(typePrinter0);     \
     if (AST) AST->print(penv0, out0); \
     else out0 << "(PRINT_AST:null)";  \
+    penv0.finish();                   \
     out0 << endl;                     \
   } while(0)
 
@@ -384,6 +376,7 @@ string printASTNodeToString(CCLang const &lang, T *astNode)
   PrintEnv env(typePrinter, &cos);
 
   astNode->print(env);
+  env.finish();
 
   return sb.str();
 }

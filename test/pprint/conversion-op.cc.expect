@@ -15,6 +15,7 @@ public:
   ~B()
   {}
 };
+
 ---- STOP ----
 ---- stderr ----
 ---- exit status ----

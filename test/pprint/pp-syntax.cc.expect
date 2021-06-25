@@ -1,7 +1,6 @@
 ---- stdout ----
 ---- START ----
 // -*-c++-*-
-
 int f()
 {
   return 1;
@@ -24,6 +23,7 @@ public:
   int m_y;
 public:
   C(int x);
+  C(int x, int y);
   C(C const &__other)
     : m_x(__other.m_x),
       m_y(__other.m_y)
@@ -38,6 +38,11 @@ public:
   {}
 };
 
+C::C(int x, int y)
+  : m_x(x),
+    m_y(y)
+{}
+
 C::C(int x)
 try
   : m_x(x),
@@ -48,7 +53,9 @@ try
 catch (int y) {
   y++;
 }
-
+catch (char c) {
+  c--;
+}
 
 int h(C &c, int x)
 {
@@ -115,8 +122,7 @@ void test_do_while(int a)
 {
   do {
     a--;
-  }
-  while (a);
+  } while (a);
 }
 
 void test_for(int a, int b)
@@ -172,6 +178,7 @@ label1:
   }
   return a;
 }
+
 ---- STOP ----
 ---- stderr ----
 ---- exit status ----

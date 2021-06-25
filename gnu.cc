@@ -1069,7 +1069,7 @@ bool E_gnuCond::extHasUnparenthesizedGT()
 // ------------------------ print --------------------------
 void TS_typeof::iprint(PrintEnv &env) const
 {
-  *env.out << "typeof(";
+  env << "typeof(";
 
   ASTSWITCH(ASTTypeof, atype) {
     ASTCASE(TS_typeof_expr, e) {
@@ -1083,7 +1083,7 @@ void TS_typeof::iprint(PrintEnv &env) const
     ASTENDCASED
   }
 
-  *env.out << ")";
+  env << ")";
 }
 
 
@@ -1115,28 +1115,29 @@ void S_function::iprint(PrintEnv &env) const
 
 void S_rangeCase::iprint(PrintEnv &env) const
 {
-  *env.out << "case";
+  env << "case";
   exprLo->print(env, OPREC_LOWEST);
-  *env.out << "...";
+  env << "...";
   exprHi->print(env, OPREC_LOWEST);
-  *env.out << ":";
+  env << ":";
   s->print(env);
 }
 
 
 void S_computedGoto::iprint(PrintEnv &env) const
 {
-  *env.out << "goto *";
+  env << "goto *";
   target->print(env, OPREC_PREFIX);
-  *env.out << ";\n";
+  env << ";";
 }
 
 
 void E_compoundLit::iprint(PrintEnv &env) const
 {
   {
-    PairDelim pair(env, "", "(", ")");
+    env << "(";
     stype->print(env);
+    env << ")";
   }
   init->print(env);
 }
@@ -1150,8 +1151,9 @@ OperatorPrecedence E_compoundLit::getPrecedence() const
 
 void E___builtin_constant_p::iprint(PrintEnv &env) const
 {
-  PairDelim pair(env, "__builtin_constant_p", "(", ")");
+  env << "__builtin_constant_p(";
   expr->print(env, OPREC_LOWEST);
+  env << ")";
 }
 
 OperatorPrecedence E___builtin_constant_p::getPrecedence() const
@@ -1162,10 +1164,11 @@ OperatorPrecedence E___builtin_constant_p::getPrecedence() const
 
 void E___builtin_va_arg::iprint(PrintEnv &env) const
 {
-  PairDelim pair(env, "__builtin_va_arg", "(", ")");
+  env << "__builtin_va_arg(";
   expr->print(env, OPREC_LOWEST);
-  *env.out << ", ";
+  env << ", ";
   atype->print(env);
+  env << ")";
 }
 
 OperatorPrecedence E___builtin_va_arg::getPrecedence() const
@@ -1176,8 +1179,9 @@ OperatorPrecedence E___builtin_va_arg::getPrecedence() const
 
 void E_alignofType::iprint(PrintEnv &env) const
 {
-  PairDelim pair(env, "__alignof__", "(", ")");
+  env << "__alignof__(";
   atype->print(env);
+  env << ")";
 }
 
 OperatorPrecedence E_alignofType::getPrecedence() const
@@ -1188,8 +1192,9 @@ OperatorPrecedence E_alignofType::getPrecedence() const
 
 void E_alignofExpr::iprint(PrintEnv &env) const
 {
-  PairDelim pair(env, "__alignof__", "(", ")");
+  env << "__alignof__(";
   expr->print(env, OPREC_LOWEST);
+  env << ")";
 }
 
 OperatorPrecedence E_alignofExpr::getPrecedence() const
@@ -1200,16 +1205,18 @@ OperatorPrecedence E_alignofExpr::getPrecedence() const
 
 // void E_offsetof:iprint(PrintEnv &env) const
 // {
-//   PairDelim pair(env, "__offsetof__", "(", ")");
+//   env << "__offsetof__(";
 //   atype->print(env);
 //   fieldName->print(env);
+//   env << ")";
 // }
 
 
 void E_statement::iprint(PrintEnv &env) const
 {
-  PairDelim pair(env, "", "(", ")");
+  env << "(";
   s->iprint(env);
+  env << ")";
 }
 
 OperatorPrecedence E_statement::getPrecedence() const
@@ -1221,7 +1228,7 @@ OperatorPrecedence E_statement::getPrecedence() const
 void E_gnuCond::iprint(PrintEnv &env) const
 {
   cond->print(env, this->getPrecedence());
-  *env.out << " ?: ";
+  env << " ?: ";
   el->print(env, this->getPrecedence());
 }
 
@@ -1233,7 +1240,7 @@ OperatorPrecedence E_gnuCond::getPrecedence() const
 
 void E_addrOfLabel::iprint(PrintEnv &env) const
 {
-  *env.out << "&&" << labelName;
+  env << "&&" << labelName;
 }
 
 OperatorPrecedence E_addrOfLabel::getPrecedence() const
@@ -1249,7 +1256,7 @@ static void print_DesignatorList(PrintEnv &env, FakeList<Designator> *dl) {
   FAKELIST_FOREACH_NC(Designator, dl, d) {
     d->print(env);
   }
-  *env.out << "=";
+  env << "=";
 }
 
 void IN_designated::print(PrintEnv &env) const
@@ -1263,18 +1270,19 @@ void IN_designated::print(PrintEnv &env) const
 void FieldDesignator::print(PrintEnv &env) const
 {
   xassert(id);
-  *env.out << "." << id;
+  env << "." << id;
 }
 
 void SubscriptDesignator::print(PrintEnv &env) const
 {
   xassert(idx_expr);
-  PairDelim pair(env, "", "[", "]");
+  env << "[";
   idx_expr->print(env, OPREC_LOWEST);
   if (idx_expr2) {
-    *env.out << " ... ";
+    env << " ... ";
     idx_expr2->print(env, OPREC_LOWEST);
   }
+  env << "]";
 }
 
 

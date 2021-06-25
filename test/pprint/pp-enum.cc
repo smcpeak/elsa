@@ -1,0 +1,47 @@
+// pp-enum.cc
+// Printing of enums.
+
+enum E0 {
+};
+
+enum E1 {
+  E1_a
+};
+
+enum E1v {
+  E1v_a = 1
+};
+
+enum E2 {
+  E2_a,
+  E2_b
+};
+
+enum E2va {
+  E2va_a = 1,
+  E2va_b
+};
+
+enum E2vb {
+  E2vb_a,
+  E2vb_b = 2
+};
+
+enum E2vab {
+  E2vab_a = 1,
+  E2vab_b = 2
+};
+
+enum E3 {
+  E3_a,
+  E3_b,
+  E3_c
+};
+
+enum E3vabc {
+  E3vabc_a = 1,
+  E3vabc_b = 2,
+  E3vabc_c = 3
+};
+
+// EOF
