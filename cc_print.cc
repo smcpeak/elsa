@@ -1935,7 +1935,7 @@ void TD_func::iprint(PrintEnv &env) const
         << "#if 0    // instantiations of ";
     // NOTE: inlined from Variable::toCString()
 
-    TypeLike const *type0 = env.m_typePrinter.getTypeLike(var);
+    TypeLike const *type0 = env.m_typePrinter.getVariableTypeLike(var);
     env.ptype(type0, (var->name? var->name : "/*anon*/"));
     env << var->namePrintSuffix() << env.fbr;
     printFuncInstantiations(env, var);
@@ -1974,7 +1974,7 @@ void TD_decl::iprint(PrintEnv &env) const
         Variable const *instV = iter.data();
 
         env << "// ";
-        TypeLike const *type0 = env.m_typePrinter.getTypeLike(instV);
+        TypeLike const *type0 = env.m_typePrinter.getVariableTypeLike(instV);
         env.ptype(type0);
         CompoundType *instCT = instV->type->asCompoundType();
         if (instCT->syntax) {

@@ -8,7 +8,7 @@
 
 // **************** class TypePrinter
 
-TypeLike const *TypePrinter::getTypeLike(Variable const *var)
+TypeLike const *TypePrinter::getVariableTypeLike(Variable const *var)
 {
   return var->type;
 }

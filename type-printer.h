@@ -28,7 +28,7 @@ public:
 
   // retrieve the TypeLike to print for a Variable; in Elsa, this
   // just gets Variable::type, but Oink does something else
-  virtual TypeLike const *getTypeLike(Variable const *var);
+  virtual TypeLike const *getVariableTypeLike(Variable const *var);
 
   // retrieve for a Function, nominally Function::funcType
   virtual TypeLike const *getFunctionTypeLike(Function const *func);
