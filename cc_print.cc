@@ -3,15 +3,13 @@
 
 // Adapted from cc_tcheck.cc by Daniel Wilkerson dsw@cs.berkeley.edu
 
-#include "cc_print.h"           // this module
+#include "cc_print.h"                  // this module
 
-#include "cc_lang.h"            // CCLang
+// elsa
+#include "cc_lang.h"                   // CCLang
 
-#include "trace.h"              // trace
-#include "strutil.h"            // string utilities
-
-#include <ctype.h>              // isalnum
-#include <stdlib.h>             // getenv
+// smbase
+#include "trace.h"                     // trace
 
 
 // This is a dummy global so that this file will compile both in
@@ -23,9 +21,12 @@ string toString(class dummyType*) {return "";}
 
 // **************** class PrintEnv
 
-void PrintEnv::finish()
+string PrintEnv::getResult()
 {
   BPBox *tree = this->takeTree();
+
+  // Dumping the BoxPrint tree can be useful for diagnosing bad
+  // formatting.
   if (tracingSys("dumpPrintEnvTree")) {
     tree->debugPrint(cout, 0);
     cout << "\n";
@@ -36,7 +37,7 @@ void PrintEnv::finish()
   string rendered = bpRender.sb.str();
   delete tree;
 
-  m_out.insert(rendered.c_str());
+  return rendered;
 }
 
 void PrintEnv::ptype(Type const *type, char const *name)
@@ -45,17 +46,10 @@ void PrintEnv::ptype(Type const *type, char const *name)
 }
 
 
-// ------------------------- StringPrintEnv ----------------------------
-string StringPrintEnv::getResult()
-{
-  finish();
-  return m_sbos.buffer.str();
-}
-
-
 string printTypeToString(CCLang const &lang, Type const *type)
 {
-  StringPrintEnv env(lang);
+  CTypePrinter typePrinter(lang);
+  PrintEnv env(typePrinter);
   env.ptype(type, "" /*do not print "anon"*/);
   return env.getResult();
 }
@@ -1080,9 +1074,6 @@ void Expression::print(PrintEnv &env, OperatorPrecedence parentPrec) const
 
 string Expression::exprToString() const
 {
-  stringBuilder sb;
-  StringBuilderOutStream out0(sb);
-
   // TODO: This is not right since we're just conjuring a new language
   // object rather than passing down the one created at the top level.
   // But for the moment it's not causing me problems so I'll avoid the
@@ -1090,12 +1081,10 @@ string Expression::exprToString() const
   CCLang lang;
 
   CTypePrinter typePrinter(lang);
-  PrintEnv env(typePrinter, out0);
+  PrintEnv env(typePrinter);
 
   this->print(env, OPREC_LOWEST);
-  env.finish();
-
-  return sb;
+  return env.getResult();
 }
 
 string renderExpressionAsString(char const *prefix, Expression const *e)

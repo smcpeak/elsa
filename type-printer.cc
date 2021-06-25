@@ -119,16 +119,10 @@ string CTypePrinter::print(TypeVariable const *typeVar)
 
 string CTypePrinter::print(PseudoInstantiation const *pseudoInst)
 {
-  stringBuilder sb0;
-  StringBuilderOutStream out0(sb0);
-  PrintEnv env(*this, out0); // Yuck!
-  // FIX: what about the env.loc?
+  PrintEnv env(*this);
 
   env << pseudoInst->name;
 
-  // NOTE: This was inlined from sargsToString; it would read as
-  // follows:
-//    codeOut << sargsToString(pseudoInst->args);
   env << '<';
   int ct=0;
   FOREACH_OBJLIST(STemplateArgument, pseudoInst->args, iter) {
@@ -139,22 +133,17 @@ string CTypePrinter::print(PseudoInstantiation const *pseudoInst)
   }
   env << '>';
 
-  env.finish();
-  return sb0;
+  return env.getResult();
 }
 
 string CTypePrinter::print(DependentQType const *depType)
 {
-  stringBuilder sb0;
-  StringBuilderOutStream out0(sb0);
-  PrintEnv env(*this, out0); // Yuck!
-  // FIX: what about the env.loc?
+  PrintEnv env(*this);
 
   env << print(depType->first) << ':' << ':';
   depType->rest->print(env);
 
-  env.finish();
-  return sb0;
+  return env.getResult();
 }
 
 

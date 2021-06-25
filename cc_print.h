@@ -17,46 +17,7 @@
 
 // smbase
 #include "boxprint.h"                  // BoxPrint
-#include "sm-iostream.h"               // ostream
-#include "str.h"                       // stringBuilder
 
-
-// Forward in this file.
-class PrintEnv;
-
-
-// this virtual semi-abstract class is intended to act as a
-// "superclass" for ostream, stringBuilder, and any other "output
-// stream" classes
-class OutStream {
-public:      // methods
-  virtual ~OutStream() {}
-
-  // Insert the given NUL-terminated string.
-  virtual void insert(char const *s) = 0;
-};
-
-class StringBuilderOutStream : public OutStream {
-public:      // data
-  stringBuilder &buffer;
-
-public:      // methods
-  StringBuilderOutStream(stringBuilder &buffer0) : buffer(buffer0) {}
-
-  void insert(char const *s) override
-    { buffer << s; }
-};
-
-class OStreamOutStream : public OutStream {
-public:      // data
-  ostream &out;
-
-public:      // methods
-  OStreamOutStream(ostream &out0) : out(out0) {}
-
-  void insert(char const *s) override
-    { out << s; }
-};
 
 // Context for a pretty-print.
 //
@@ -74,42 +35,24 @@ public:      // methods
 class PrintEnv : public BoxPrint {
 public:      // data
   TypePrinter &typePrinter;
-  OutStream &m_out;
   SourceLoc loc;
 
 public:      // methods
-  PrintEnv(TypePrinter &typePrinter0, OutStream &out0)
-    : typePrinter(typePrinter0)
-    , m_out(out0)
-    , loc(SL_UNKNOWN)
+  PrintEnv(TypePrinter &typePrinter0)
+    : typePrinter(typePrinter0),
+      loc(SL_UNKNOWN)
   {}
 
   TypeLike const *getTypeLike(Variable const *var)
     { return typePrinter.getTypeLike(var); }
 
-  // Render the built BoxPrint tree to a string and write it to 'm_out'.
-  void finish();
+  // Render the built BoxPrint tree to a string.  This internally
+  // empties the tree, so a subsequent call would return the empty
+  // string if no further printing happens.
+  string getResult();
 
   // Print 'type' using 'typePrinter'.
   void ptype(TypeLike const *type, char const *name = "");
-};
-
-// Version of PrintEnv that prints to a string.
-class StringPrintEnv : public PrintEnv {
-private:      // data
-  stringBuilder m_sb;
-  StringBuilderOutStream m_sbos;
-  CTypePrinter m_typePrinter;
-
-public:      // code
-  StringPrintEnv(CCLang const &lang)
-    : PrintEnv(m_typePrinter, m_sbos),
-      m_sbos(m_sb),
-      m_typePrinter(lang)
-  {}
-
-  // Get the string.  This calls 'finish()'.
-  string getResult();
 };
 
 // Print 'type' to a string using the rules of 'lang'.
@@ -123,14 +66,9 @@ template <class T>
 string printASTNodeToString(CCLang const &lang, T *astNode)
 {
   CTypePrinter typePrinter(lang);
-  stringBuilder sb;
-  StringBuilderOutStream sbos(sb);
-  PrintEnv env(typePrinter, sbos);
-
+  PrintEnv env(typePrinter);
   astNode->print(env);
-  env.finish();
-
-  return sb.str();
+  return env.getResult();
 }
 
 

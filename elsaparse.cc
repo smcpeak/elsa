@@ -507,13 +507,12 @@ void ElsaParse::parse(char const *inputFname)
   }
 
   if (m_prettyPrint) {
-    OStreamOutStream out0(cout);
     CTypePrinter typePrinter(m_lang);
-    PrintEnv env(typePrinter, out0);
+    PrintEnv env(typePrinter);
     cout << "---- START ----" << endl;
     cout << "// -*-c++-*-" << endl;
     m_translationUnit->print(env);
-    env.finish();
+    cout << env.getResult();
     cout << "---- STOP ----" << endl;
   }
 
@@ -539,12 +538,11 @@ void ElsaParse::parse(char const *inputFname)
       }
 
       if (tracingSys("clonePrint")) {
-        OStreamOutStream out0(cout);
         CTypePrinter typePrinter(m_lang);
-        PrintEnv penv(typePrinter, out0);
+        PrintEnv penv(typePrinter);
         cout << "---- cloned pretty print ----" << endl;
         u2->print(penv);
-        penv.finish();
+        cout << penv.getResult();
       }
     }
   }
