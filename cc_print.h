@@ -256,17 +256,6 @@ string printTypeToString(CCLang const &lang, Type const *type);
 
 void printSTemplateArgument(PrintEnv &env, STemplateArgument const *sta);
 
-#define PRINT_AST(AST)                \
-  do {                                \
-    OutStream out0(cout);             \
-    TypePrinter typePrinter0;         \
-    PrintEnv penv0(typePrinter0);     \
-    if (AST) AST->print(penv0, out0); \
-    else out0 << "(PRINT_AST:null)";  \
-    penv0.finish();                   \
-    out0 << endl;                     \
-  } while(0)
-
 
 // Print 'astNode' as a string.
 template <class T>
