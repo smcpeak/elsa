@@ -39,7 +39,7 @@ TypeLike const *TypePrinter::getE_constructorTypeLike(E_constructor const *c)
 
 // **************** class CTypePrinter
 
-void CTypePrinter::print(PrintEnv &env, TypeLike const *type, char const *name)
+void CTypePrinter::printType(PrintEnv &env, TypeLike const *type, char const *name)
 {
   // see the note at the interface TypePrinter::print()
   Type const *type0 = static_cast<Type const *>(type);
@@ -520,7 +520,7 @@ void PrintEnv::finish()
 
 void PrintEnv::ptype(Type const *type, char const *name)
 {
-  typePrinter.print(*this, type, name);
+  typePrinter.printType(*this, type, name);
 }
 
 

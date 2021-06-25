@@ -130,7 +130,7 @@ public:
   // Print 'type'.  'name' is printed among the type syntax in a way
   // that would declare a variable of that name.  If it is NULL, then
   // "/*anon*/" is printed.
-  virtual void print(PrintEnv &env, TypeLike const *type, char const *name) = 0;
+  virtual void printType(PrintEnv &env, TypeLike const *type, char const *name) = 0;
 
   // retrieve the TypeLike to print for a Variable; in Elsa, this
   // just gets Variable::type, but Oink does something else
@@ -156,7 +156,7 @@ public:      // methods
   virtual ~CTypePrinter() {}
 
   // satisfy the interface to TypePrinter
-  void print(PrintEnv &env, TypeLike const *type, char const *name) override;
+  void printType(PrintEnv &env, TypeLike const *type, char const *name) override;
 
 protected:   // methods
   // **** AtomicType
