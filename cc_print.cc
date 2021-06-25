@@ -528,15 +528,14 @@ void PrintEnv::ptype(Type const *type, char const *name)
 string StringPrintEnv::getResult()
 {
   finish();
-  return sbos.buffer.str();
+  return m_sbos.buffer.str();
 }
 
 
 string printTypeToString(CCLang const &lang, Type const *type)
 {
-  stringBuilder sb;
-  StringPrintEnv env(lang, sb);
-  env.tpc.print(env, type, "" /*do not print "anon"*/);
+  StringPrintEnv env(lang);
+  env.ptype(type, "" /*do not print "anon"*/);
   return env.getResult();
 }
 

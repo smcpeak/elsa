@@ -232,19 +232,18 @@ public:      // methods
   void ptype(TypeLike const *type, char const *name = "");
 };
 
-// version of PrintEnv that prints to a string in the default syntax
-//
-// TODO: I think the 'stringBuilder' should be a private member here.
+// Version of PrintEnv that prints to a string.
 class StringPrintEnv : public PrintEnv {
-public:      // data
-  StringBuilderOutStream sbos;
-  CTypePrinter tpc;
+private:      // data
+  stringBuilder m_sb;
+  StringBuilderOutStream m_sbos;
+  CTypePrinter m_typePrinter;
 
 public:      // code
-  StringPrintEnv(CCLang const &lang, stringBuilder &sb)
-    : PrintEnv(tpc, sbos),
-      sbos(sb),
-      tpc(lang)
+  StringPrintEnv(CCLang const &lang)
+    : PrintEnv(m_typePrinter, m_sbos),
+      m_sbos(m_sb),
+      m_typePrinter(lang)
   {}
 
   // Get the string.  This calls 'finish()'.
