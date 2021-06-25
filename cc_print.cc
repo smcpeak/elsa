@@ -152,13 +152,11 @@ TypeLike const *TypePrinter::getE_constructorTypeLike(E_constructor const *c)
 
 // **************** class CTypePrinter
 
-void CTypePrinter::print(OutStream &out, TypeLike const *type, char const *name)
+void CTypePrinter::print(PrintEnv &env, TypeLike const *type, char const *name)
 {
   // see the note at the interface TypePrinter::print()
   Type const *type0 = static_cast<Type const *>(type);
-  out << print(type0, name);
-  // old way
-//    out << type->toCString(name);
+  env << print(type0, name);
 }
 
 
@@ -641,7 +639,24 @@ void PrintEnv::finish()
 
 void PrintEnv::ptype(Type const *type, char const *name)
 {
-  typePrinter.print(*m_out, type, name);
+  typePrinter.print(*this, type, name);
+}
+
+
+// ------------------------- StringPrintEnv ----------------------------
+string StringPrintEnv::getResult()
+{
+  finish();
+  return sbos.buffer.str();
+}
+
+
+string printTypeToString(CCLang const &lang, Type const *type)
+{
+  stringBuilder sb;
+  StringPrintEnv env(lang, sb);
+  env.tpc.print(env, type, "" /*do not print "anon"*/);
+  return env.getResult();
 }
 
 
@@ -2540,7 +2555,8 @@ void TD_func::iprint(PrintEnv &env) const
   Variable *var = f->nameAndParams->var;
   if (var->isTemplate() &&      // for complete specializations, don't print
       !var->templateInfo()->isPartialInstantiation()) {     // nor partial inst
-    env << "#if 0    // instantiations of ";
+    env << env.br
+        << "#if 0    // instantiations of ";
     // NOTE: inlined from Variable::toCString()
 
     TypeLike const *type0 = env.getTypeLike(var);
@@ -2562,7 +2578,8 @@ void TD_func::iprint(PrintEnv &env) const
       }
     }
 
-    env << "#endif   // instantiations of " << var->name << env.fbr << env.fbr;
+    env << env.br
+        << "#endif   // instantiations of " << var->name;
   }
 }
 

@@ -60,6 +60,7 @@ TESTS += pprint/pp-decl.cc
 TESTS += pprint/pp-enum.cc
 TESTS += pprint/pp-syntax.cc
 TESTS += pprint/precedence.cc
+TESTS += pprint/template1.cc
 TESTS += pprint/throwspec.cc
 TESTS += pprint/vararg-promote.cc
 
@@ -70,7 +71,9 @@ out/pprint/%.cc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
 	  --actual out/pprint/$*.cc.actual \
 	  --expect pprint/$*.cc.expect \
 	  $(CCPARSE) --prettyPrint $<
-	../chop_out < out/pprint/$*.cc.actual > out/pprint/$*.cc.trimmed
+#	The 'cpp' here is to get rid of the template instantiations,
+#	which are bracketed by #if 0/#endif.
+	../chop_out < out/pprint/$*.cc.actual | cpp > out/pprint/$*.cc.trimmed
 	$(CCPARSE) out/pprint/$*.cc.trimmed
 	g++ -c -oout/pprint/$*.cc.trimmed.o -xc++ out/pprint/$*.cc.trimmed
 	../idemcheck --elsadir .. -d $(dir $@)idem -q $<

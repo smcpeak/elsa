@@ -49,9 +49,10 @@ class OutStream {
 };
 
 class StringBuilderOutStream : public OutStream {
+public:      // data
   stringBuilder &buffer;
 
-  public:
+public:      // methods
   StringBuilderOutStream(stringBuilder &buffer0) : buffer(buffer0) {}
 
   // special-case methods
@@ -226,13 +227,13 @@ typedef Type TypeLike;
 
 // Interface for classes that know how to print out types
 class TypePrinter {
-  public:
+public:
   virtual ~TypePrinter() {}
 
   // Print 'type'.  'name' is printed among the type syntax in a way
   // that would declare a variable of that name.  If it is NULL, then
   // "/*anon*/" is printed.
-  virtual void print(OutStream &out, TypeLike const *type, char const *name) = 0;
+  virtual void print(PrintEnv &env, TypeLike const *type, char const *name) = 0;
 
   // retrieve the TypeLike to print for a Variable; in Elsa, this
   // just gets Variable::type, but Oink does something else
@@ -258,7 +259,7 @@ public:      // methods
   virtual ~CTypePrinter() {}
 
   // satisfy the interface to TypePrinter
-  virtual void print(OutStream &out, TypeLike const *type, char const *name);
+  void print(PrintEnv &env, TypeLike const *type, char const *name) override;
 
 protected:   // methods
   // **** AtomicType
@@ -335,6 +336,8 @@ public:      // methods
 };
 
 // version of PrintEnv that prints to a string in the default syntax
+//
+// TODO: I think the 'stringBuilder' should be a private member here.
 class StringPrintEnv : public PrintEnv {
 public:      // data
   StringBuilderOutStream sbos;
@@ -348,8 +351,13 @@ public:      // code
       cos(sbos),
       tpc(lang)
   {}
+
+  // Get the string.  This calls 'finish()'.
+  string getResult();
 };
 
+// Print 'type' to a string using the rules of 'lang'.
+string printTypeToString(CCLang const &lang, Type const *type);
 
 void printSTemplateArgument(PrintEnv &env, STemplateArgument const *sta);
 

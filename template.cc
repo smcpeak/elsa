@@ -891,11 +891,7 @@ string STemplateArgument::toString() const
       // lying around to be printed here so we just print what we
       // have
       CCLang lang;
-      CTypePrinter typePrinter0(lang);
-      stringBuilder sb;
-      StringBuilderOutStream sbout0(sb);
-      typePrinter0.print(sbout0, value.t, "" /*do not print "anon"*/);
-      return sb;
+      return printTypeToString(lang, value.t);
     }
     case STA_INT:       return stringc << "/*int*/ " << value.i;
     case STA_ENUMERATOR:return stringc << "/*enum*/ " << value.v->name;

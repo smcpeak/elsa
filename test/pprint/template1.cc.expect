@@ -1,0 +1,33 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+template <class T>
+int f(T t)
+{
+  T z;
+  int q = T(z);
+  return q;
+}
+#if 0    // instantiations of int f(T t)
+int f(T t)
+{
+  T z;
+  int q = (T)z;
+  return q;
+}
+#endif   // instantiations of f
+
+template <class T>
+void g(T t, int);
+
+int main()
+{
+  f<int>(9);
+  f<int>(8);
+  return 0;
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0
