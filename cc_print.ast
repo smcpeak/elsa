@@ -4,7 +4,6 @@
 
 verbatim {
   class PrintEnv;                      // cc_print.h
-  class CodeOutStream;                 // cc_print.h
 
   #include "cc_precedence.h"           // OperatorPrecedence
 }

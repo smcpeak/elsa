@@ -117,59 +117,6 @@ class OStreamOutStream : public OutStream {
   #undef MAKE_INSERTER
 };
 
-// indents the source code sent to it
-//
-// TODO: This class is effectively not used.  Remove it.
-class CodeOutStream : public OutStream {
-public:      // data
-  OutStream &out;               // output to here
-  int depth;                    // depth of indentation
-  int bufferedNewlines;         // number of buffered trailing newlines
-
-public:      // methods
-  CodeOutStream(OutStream &out0)
-    : out(out0),
-      depth(0),
-      bufferedNewlines(0)
-  {}
-  virtual ~CodeOutStream();
-
-  // manipulate depth
-  virtual void up()   {depth--;}
-  virtual void down() {depth++;}
-
-  // indentation and formatting support
-  void printIndentation(int n);
-  void finish();
-
-  // There is at least one buffered newline.  Remove it, and instead
-  // append a space.
-  void changePendingNewlineToSpace();
-
-  // OutStream methods
-  CodeOutStream & operator << (ostream& (*manipfunc)(ostream& outs));
-  void flush() { out.flush(); }
-  CodeOutStream & operator << (char const *message);
-
-  // special method to support rostring
-  virtual CodeOutStream & operator << (rostring message) {return operator<< (message.c_str());}
-
-  // generic methods
-  #define MAKE_INSERTER(type)                     \
-    CodeOutStream & operator << (type message) {  \
-      out << message;                             \
-      return *this;                               \
-    }
-  MAKE_INSERTER(char)
-  MAKE_INSERTER(bool)
-  MAKE_INSERTER(int)
-  MAKE_INSERTER(unsigned int)
-  MAKE_INSERTER(long)
-  MAKE_INSERTER(unsigned long)
-  MAKE_INSERTER(double)
-  #undef MAKE_INSERTER
-};
-
 // In Oink, TypeLike is a superclass of Type but here we will just
 // make it synonymous with Type.  oink/cc_print.h.cpatch comments-out
 // this declaration.
@@ -265,11 +212,11 @@ protected:   // methods
 class PrintEnv : public BoxPrint {
 public:      // data
   TypePrinter &typePrinter;
-  CodeOutStream *m_out;
+  OutStream &m_out;
   SourceLoc loc;
 
 public:      // methods
-  PrintEnv(TypePrinter &typePrinter0, CodeOutStream *out0)
+  PrintEnv(TypePrinter &typePrinter0, OutStream &out0)
     : typePrinter(typePrinter0)
     , m_out(out0)
     , loc(SL_UNKNOWN)
@@ -291,14 +238,12 @@ public:      // methods
 class StringPrintEnv : public PrintEnv {
 public:      // data
   StringBuilderOutStream sbos;
-  CodeOutStream cos;
   CTypePrinter tpc;
 
 public:      // code
   StringPrintEnv(CCLang const &lang, stringBuilder &sb)
-    : PrintEnv(tpc, &cos),
+    : PrintEnv(tpc, sbos),
       sbos(sb),
-      cos(sbos),
       tpc(lang)
   {}
 
@@ -330,8 +275,7 @@ string printASTNodeToString(CCLang const &lang, T *astNode)
   CTypePrinter typePrinter(lang);
   stringBuilder sb;
   StringBuilderOutStream sbos(sb);
-  CodeOutStream cos(sbos);
-  PrintEnv env(typePrinter, &cos);
+  PrintEnv env(typePrinter, sbos);
 
   astNode->print(env);
   env.finish();

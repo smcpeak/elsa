@@ -20,102 +20,6 @@ class dummyType;                // This does nothing.
 dummyType *ql;
 string toString(class dummyType*) {return "";}
 
-// **** class CodeOutStream
-
-CodeOutStream::~CodeOutStream()
-{
-  if (bufferedNewlines) {
-    cout << "**************** ERROR.  "
-         << "You called my destructor before making sure all the buffered newlines\n"
-         << "were flushed (by, say, calling finish())\n";
-  }
-}
-
-// // write N spaces to OUT.
-// static inline
-// void writeSpaces(OutStream &out, size_t n)
-// {
-//   static char const spaces[] =
-//     "                                                  "
-//     "                                                  "
-//     "                                                  "
-//     "                                                  ";
-
-//   static size_t const max_spaces = sizeof spaces - 1;
-
-//   // If we're printing more than this many spaces it's pretty useless anyway,
-//   // since it's only for human viewing pleasure!
-//   while (n > max_spaces) {
-//     out.write(spaces, max_spaces);
-//     n -= max_spaces;
-//   }
-//   out.write(spaces, n);
-// }
-
-// TODO: add write(char*,int len) methods to OutStream et al so we can do
-// 'printIndentation' efficiently
-void CodeOutStream::printIndentation(int n) {
-  // writeSpaces(out, n);
-  for (int i=0; i<n; ++i) {
-    out << ' ' << ' ';
-  }
-}
-
-void CodeOutStream::finish()
-{
-  // Empty the buffered newlines.
-  while (bufferedNewlines > 0) {
-    out << '\n';
-    bufferedNewlines--;
-  }
-
-  flush();
-}
-
-void CodeOutStream::changePendingNewlineToSpace()
-{
-  xassert(bufferedNewlines > 0);
-  bufferedNewlines--;
-  out << ' ';
-}
-
-CodeOutStream & CodeOutStream::operator << (ostream& (*manipfunc)(ostream& outs))
-{
-  // sm: just assume it's "endl"; the only better thing I could
-  // imagine doing is pointer comparisons with some other well-known
-  // omanips, since we certainly can't execute it...
-  this->operator<<("\n");
-
-  out.flush();
-  return *this;
-}
-
-CodeOutStream & CodeOutStream::operator << (char const *message)
-{
-  for (; *message; message++) {
-    if (*message != '\n') {
-      // Non-newline: Empty the buffered newlines.
-      if (bufferedNewlines > 0) {
-        while (bufferedNewlines > 0) {
-          out << '\n';
-          bufferedNewlines--;
-        }
-
-        // We are about to print a non-newline, so indent.
-        printIndentation(depth);
-      }
-
-      out << *message;
-    }
-    else {
-      // Newline: accumulate in buffer.
-      bufferedNewlines++;
-    }
-  }
-
-  return *this;
-}
-
 // **************** class TypePrinter
 
 TypeLike const *TypePrinter::getTypeLike(Variable const *var)
@@ -231,24 +135,23 @@ string CTypePrinter::print(PseudoInstantiation const *pseudoInst)
 {
   stringBuilder sb0;
   StringBuilderOutStream out0(sb0);
-  CodeOutStream codeOut(out0);
-  PrintEnv env(*this, &codeOut); // Yuck!
+  PrintEnv env(*this, out0); // Yuck!
   // FIX: what about the env.loc?
 
-  codeOut << pseudoInst->name;
+  env << pseudoInst->name;
 
   // NOTE: This was inlined from sargsToString; it would read as
   // follows:
 //    codeOut << sargsToString(pseudoInst->args);
-  codeOut << '<';
+  env << '<';
   int ct=0;
   FOREACH_OBJLIST(STemplateArgument, pseudoInst->args, iter) {
     if (ct++ > 0) {
-      codeOut << ',' << ' ';
+      env << ',' << ' ';
     }
     printSTemplateArgument(env, iter.data());
   }
-  codeOut << '>';
+  env << '>';
 
   env.finish();
   return sb0;
@@ -258,11 +161,10 @@ string CTypePrinter::print(DependentQType const *depType)
 {
   stringBuilder sb0;
   StringBuilderOutStream out0(sb0);
-  CodeOutStream codeOut(out0);
-  PrintEnv env(*this, &codeOut); // Yuck!
+  PrintEnv env(*this, out0); // Yuck!
   // FIX: what about the env.loc?
 
-  codeOut << print(depType->first) << ':' << ':';
+  env << print(depType->first) << ':' << ':';
   depType->rest->print(env);
 
   env.finish();
@@ -613,11 +515,7 @@ void PrintEnv::finish()
   string rendered = bpRender.sb.str();
   delete tree;
 
-  // Bypass the indentation logic in 'CodeOutStream'.
-  //
-  // TODO: Remove 'CodeOutStream' entirely.
-  m_out->out << rendered.c_str();
-  m_out->finish();
+  m_out << rendered.c_str();
 }
 
 void PrintEnv::ptype(Type const *type, char const *name)
@@ -1664,7 +1562,6 @@ string Expression::exprToString() const
 {
   stringBuilder sb;
   StringBuilderOutStream out0(sb);
-  CodeOutStream codeOut(out0);
 
   // TODO: This is not right since we're just conjuring a new language
   // object rather than passing down the one created at the top level.
@@ -1673,7 +1570,7 @@ string Expression::exprToString() const
   CCLang lang;
 
   CTypePrinter typePrinter(lang);
-  PrintEnv env(typePrinter, &codeOut);
+  PrintEnv env(typePrinter, out0);
 
   this->print(env, OPREC_LOWEST);
   env.finish();
