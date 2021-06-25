@@ -310,6 +310,7 @@ ELSA_OBJS += cc.gr.gen.o
 ELSA_OBJS += parssppt.o
 ELSA_OBJS += cc_flags.o
 ELSA_OBJS += cc_print.o
+ELSA_OBJS += type-printer.o
 ELSA_OBJS += cc_ast_aux.o
 ELSA_OBJS += variable.o
 ELSA_OBJS += lookupset.o

@@ -48,4 +48,5 @@ test-astbuild.o: cc.gr.gen.h
 test-astbuild.o: cc_tokens.h
 tlexer.o: cc_tokens.h
 tlexer.o: lexer.yy.h
+type-printer.o: cc.ast.gen.h
 typelistiter.o: cc.ast.gen.h

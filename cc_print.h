@@ -2,18 +2,23 @@
 
 // This is a tree walk that prints out a functionally equivalent C++
 // program to the original.  The AST entry points are declared in
-// cc.ast
+// cc_print.ast.
 
-// Adapted from cc_tcheck.cc by Daniel Wilkerson dsw@cs.berkeley.edu
+// Originally adapted from cc_tcheck.cc by Daniel Wilkerson
+// dsw@cs.berkeley.edu, but substantially modified afterward by Scott
+// McPeak.
 
-#ifndef CC_PRINT_H
-#define CC_PRINT_H
+#ifndef ELSA_CC_PRINT_H
+#define ELSA_CC_PRINT_H
 
-#include "cc_ast.h"             // C++ AST; this module
-#include "str.h"                // stringBuilder
+// elsa
+#include "cc_ast.h"                    // C++ AST
+#include "type-printer.h"              // TypePrinter, CTypePrinter
 
-#include "boxprint.h"           // BoxPrint
-#include "sm-iostream.h"        // ostream
+// smbase
+#include "boxprint.h"                  // BoxPrint
+#include "sm-iostream.h"               // ostream
+#include "str.h"                       // stringBuilder
 
 
 // Forward in this file.
@@ -117,85 +122,6 @@ class OStreamOutStream : public OutStream {
   #undef MAKE_INSERTER
 };
 
-// In Oink, TypeLike is a superclass of Type but here we will just
-// make it synonymous with Type.  oink/cc_print.h.cpatch comments-out
-// this declaration.
-typedef Type TypeLike;
-
-// Interface for classes that know how to print out types
-class TypePrinter {
-public:
-  virtual ~TypePrinter() {}
-
-  // Print 'type'.  'name' is printed among the type syntax in a way
-  // that would declare a variable of that name.  If it is NULL, then
-  // "/*anon*/" is printed.
-  virtual string printType(TypeLike const *type, char const *name) = 0;
-
-  // retrieve the TypeLike to print for a Variable; in Elsa, this
-  // just gets Variable::type, but Oink does something else
-  virtual TypeLike const *getTypeLike(Variable const *var);
-
-  // retrieve for a Function, nominally Function::funcType
-  virtual TypeLike const *getFunctionTypeLike(Function const *func);
-
-  // and for an E_constructor, nominally Expression::type
-  virtual TypeLike const *getE_constructorTypeLike(E_constructor const *c);
-};
-
-// This class knows how to print out Types in C syntax
-class CTypePrinter : public TypePrinter {
-public:      // instance data
-  CCLang const &m_lang;
-
-public:      // methods
-  CTypePrinter(CCLang const &lang)
-    : m_lang(lang)
-  {}
-
-  virtual ~CTypePrinter() {}
-
-  // Implement TypePrinter interface.
-  string printType(TypeLike const *type, char const *name) override;
-
-protected:   // methods
-  // **** AtomicType
-  string print(AtomicType const *atomic);
-
-  string print(SimpleType const *);
-  string print(CompoundType const *);
-  string print(EnumType const *);
-  string print(TypeVariable const *);
-  string print(PseudoInstantiation const *);
-  string print(DependentQType const *);
-
-  // **** [Compound]Type
-  string print(Type const *type);
-  string print(Type const *type, char const *name);
-  string printRight(Type const *type, bool innerParen = true);
-  string printLeft(Type const *type, bool innerParen = true);
-
-  string printLeft(CVAtomicType const *type, bool innerParen = true);
-  string printRight(CVAtomicType const *type, bool innerParen = true);
-  string printLeft(PointerType const *type, bool innerParen = true);
-  string printRight(PointerType const *type, bool innerParen = true);
-  string printLeft(ReferenceType const *type, bool innerParen = true);
-  string printRight(ReferenceType const *type, bool innerParen = true);
-  string printLeft(FunctionType const *type, bool innerParen = true);
-  string printRight(FunctionType const *type, bool innerParen = true);
-  string printRightUpToQualifiers(FunctionType const *type, bool innerParen);
-  string printRightQualifiers(FunctionType const *type, CVFlags cv);
-  string printRightAfterQualifiers(FunctionType const *type);
-  void   printExtraRightmostSyntax(FunctionType const *type, stringBuilder &);
-  string printLeft(ArrayType const *type, bool innerParen = true);
-  string printRight(ArrayType const *type, bool innerParen = true);
-  string printLeft(PointerToMemberType const *type, bool innerParen = true);
-  string printRight(PointerToMemberType const *type, bool innerParen = true);
-
-  // **** Variable
-  string printAsParameter(Variable const *var);
-};
-
 // Context for a pretty-print.
 //
 // When printing, we accumulate in BoxPrint a tree that describes the
@@ -272,4 +198,4 @@ string printASTNodeToString(CCLang const &lang, T *astNode)
 }
 
 
-#endif // CC_PRINT_H
+#endif // ELSA_CC_PRINT_H
