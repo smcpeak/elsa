@@ -13,12 +13,15 @@
 #ifndef MANGLE_H
 #define MANGLE_H
 
-#include "str.h"             // string, stringBuilder
+// elsa
+#include "variable-fwd.h"    // Variable
+
+// smbase
 #include "objlist.h"         // ObjList
+#include "str.h"             // string, stringBuilder
 
 class Type;                  // cc-type.h
 class AtomicType;            // cc-type.h
-class Variable;              // variable.h
 class TemplateInfo;          // template.h
 class STemplateArgument;     // template.h
 

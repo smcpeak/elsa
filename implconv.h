@@ -9,9 +9,8 @@
 #ifndef IMPLCONV_H
 #define IMPLCONV_H
 
-#include "stdconv.h"     // StandardConversion
-
-class Variable;          // variable.h
+#include "stdconv.h"                   // StandardConversion
+#include "variable-fwd.h"              // Variable
 
 
 class ImplicitConversion {

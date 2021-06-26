@@ -15,11 +15,11 @@
 #include "serialno.h"     // INHERIT_SERIAL_BASE
 #include "strmap.h"       // StringRefMap
 #include "lookupset.h"    // LookupSet
+#include "variable-fwd.h" // Variable
 
 // NOTE: We cannot #include cc-type.h b/c cc-type.h #includes cc_scope.h.
 
 class Env;                // cc_env.h
-class Variable;           // variable.h
 class TypeVisitor;        // cc-type.h
 class CompoundType;       // cc-type.h
 class BaseClassSubobj;    // cc-type.h

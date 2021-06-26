@@ -4,11 +4,13 @@
 #ifndef CONST_EVAL_H
 #define CONST_EVAL_H
 
-#include "str.h"         // string
-#include "cc_flags.h"    // SimpleTypeId
-#include "xassert.h"     // xassert
+// elsa
+#include "cc_flags.h"                  // SimpleTypeId
+#include "variable-fwd.h"              // Variable
 
-class Variable;          // variable.h
+// smbase
+#include "str.h"                       // string
+#include "xassert.h"                   // xassert
 
 
 // represent a value during constant evaluation; in essence, the

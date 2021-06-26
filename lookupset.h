@@ -4,10 +4,13 @@
 #ifndef LOOKUPSET_H
 #define LOOKUPSET_H
 
-#include "sobjlist.h"        // SObjList
-#include "str.h"             // string
+// elsa
+#include "variable-fwd.h"              // Variable
 
-class Variable;              // variable.h
+// smbase
+#include "sobjlist.h"                  // SObjList
+#include "str.h"                       // string
+
 
 
 // variable lookup sometimes has complicated exceptions or

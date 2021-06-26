@@ -42,8 +42,8 @@
 #include "template-fwd.h" // STemplateArgument, etc.
 #include "cc-ast-fwd.h"   // Expression, Declaration, etc.
 #include "mtype-fwd.h"    // MType
+#include "variable-fwd.h" // Variable
 
-class Variable;           // variable.h
 class Env;                // cc_env.h
 
 
