@@ -2,7 +2,7 @@
 // code for lexer.h
 
 #include "lexer.h"       // this module
-#include "cc_lang.h"     // CCLang
+#include "cc-lang.h"     // CCLang
 
 #include <ctype.h>       // isdigit
 #include <stdlib.h>      // atoi

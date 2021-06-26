@@ -1,4 +1,4 @@
-// cc_lang.h            see license.txt for copyright and terms of use
+// cc-lang.h            see license.txt for copyright and terms of use
 // Class CCLang.
 
 // a useful reference:

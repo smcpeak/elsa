@@ -11,7 +11,7 @@
 #include "cc_flags.h"      // UberModifiers, SimpleTypeId
 #include "cc-ast.h"        // C++ AST classes, needed for the action function signatures
 #include "srcloc.h"        // SourceLoc
-#include "cc_lang.h"       // CCLang, Bool3
+#include "cc-lang.h"       // CCLang, Bool3
 
 // parsing action state
 class ParseEnv {

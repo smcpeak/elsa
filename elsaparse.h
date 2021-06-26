@@ -8,7 +8,7 @@
 
 // elsa
 #include "cc.gr.gen.h"                 // TranslationUnit, Function
-#include "cc_lang.h"                   // CCLang
+#include "cc-lang.h"                   // CCLang
 
 // smbase
 #include "strtable.h"                  // StringTable

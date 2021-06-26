@@ -6,7 +6,7 @@
 #include "trace.h"         // tracingSys
 #include "ckheap.h"        // heapCheck
 #include "strtable.h"      // StringTable
-#include "cc_lang.h"       // CCLang
+#include "cc-lang.h"       // CCLang
 #include "strutil.h"       // suffixEquals, prefixEquals
 #include "overload.h"      // OVERLOADTRACE
 #include "mtype.h"         // MType

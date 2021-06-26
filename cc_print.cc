@@ -6,7 +6,7 @@
 #include "cc_print.h"                  // this module
 
 // elsa
-#include "cc_lang.h"                   // CCLang
+#include "cc-lang.h"                   // CCLang
 
 // smbase
 #include "trace.h"                     // trace

@@ -78,7 +78,7 @@ verbatim {
   #include "cc_flags.h"         // CVFlags, DeclFlags, etc. (r)
   #include "stdconv.h"          // StandardConversion
 
-  class CCLang;                 // cc_lang.h
+  class CCLang;                 // cc-lang.h
 }
 
 // use a new astgen feature: make a visitor!

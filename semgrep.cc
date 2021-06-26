@@ -8,7 +8,7 @@
 #include "srcloc.h"       // SourceLocManager
 #include "cc-env.h"       // Env
 #include "cc-ast.h"       // C++ AST (r)
-#include "cc_lang.h"      // CCLang
+#include "cc-lang.h"      // CCLang
 #include "parsetables.h"  // ParseTables
 #include "cc.gr.gen.h"    // CCParse
 #include "strtokp.h"      // StrtokParse

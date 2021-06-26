@@ -8,7 +8,7 @@
 %{
 
 #include "lexer.h"       // Lexer class
-#include "cc_lang.h"     // CCLang (actually gnu.lex needs CCLang, but can't add the #include by itself due to the way lexer extensions work ...)
+#include "cc-lang.h"     // CCLang (actually gnu.lex needs CCLang, but can't add the #include by itself due to the way lexer extensions work ...)
 
 // this works around a problem with cygwin & fileno
 #define YY_NEVER_INTERACTIVE 1

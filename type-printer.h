@@ -5,7 +5,7 @@
 #define ELSA_TYPE_PRINTER_H
 
 #include "cc-ast.h"                    // C++ AST
-#include "cc_lang.h"                   // CCLang
+#include "cc-lang.h"                   // CCLang
 #include "cc-type.h"                   // Type, etc.
 
 

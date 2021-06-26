@@ -70,7 +70,7 @@ verbatim {
 #include "cc_tokens.h"    // lexer's token ids for classify()
 #include "trace.h"        // trace
 #include "cc-ast.h"       // C++ abstract syntax
-#include "cc_lang.h"      // CCLang
+#include "cc-lang.h"      // CCLang
 #include "ccparse.h"      // ParseEnv, the parser context class
 
 #define D(msg) \

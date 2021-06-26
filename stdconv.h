@@ -26,7 +26,7 @@
 #include "str.h"                       // string
 
 // fwd
-class CCLang;          // cc_lang.h
+class CCLang;          // cc-lang.h
 
 
 // The kinds of Standard Conversions.  Any given pair of convertible

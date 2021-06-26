@@ -1,7 +1,7 @@
-// cc_lang.cc            see license.txt for copyright and terms of use
-// code for cc_lang.h
+// cc-lang.cc            see license.txt for copyright and terms of use
+// code for cc-lang.h
 
-#include "cc_lang.h"     // this module
+#include "cc-lang.h"     // this module
 #include "trace.h"       // tracingSys
 #include "xassert.h"     // xfailure
 

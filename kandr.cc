@@ -3,7 +3,7 @@
 
 #include "kandr.h"          // this module
 #include "generic_aux.h"    // genericSetNext
-#include "cc_lang.h"        // CCLang
+#include "cc-lang.h"        // CCLang
 
 
 // implemented in implint.cc

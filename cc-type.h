@@ -1048,7 +1048,7 @@ public:       // data
   int size;                    // specified size (>=0), or NO_SIZE or DYN_SIZE
 
   // Note that whether a size of 0 is legal depends on the current
-  // language settings (cc_lang.h), so most code should adapt itself
+  // language settings (cc-lang.h), so most code should adapt itself
   // to that possibility.
 
 private:      // funcs
