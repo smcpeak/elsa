@@ -25,6 +25,8 @@
 #ifndef CC_TYPE_H
 #define CC_TYPE_H
 
+#include "cc-type-fwd.h"  // forwards for this module
+
 #include "str.h"          // string
 #include "objlist.h"      // ObjList
 #include "sobjlist.h"     // SObjList
@@ -53,27 +55,6 @@ class TypeVariable;       // template.h
 class PseudoInstantiation;// template.h
 class DependentQType;     // template.h
 class MType;              // mtype.h
-
-// fwd in this file
-class AtomicType;
-class SimpleType;
-class NamedAtomicType;
-class CompoundType;
-class BaseClass;
-class EnumType;
-class CVAtomicType;
-class PointerType;
-class ReferenceType;
-class FunctionType;
-class ArrayType;
-class PointerToMemberType;
-class TypedefType;
-class Type;
-class TemplateInfo;
-class STemplateArgument;
-class TypeFactory;
-class BasicTypeFactory;
-class TypePred;
 
 
 // --------------------- type visitor -----------------------
