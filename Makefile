@@ -186,7 +186,7 @@ CC_AST_MODS += cc_print.ast
 CC_AST_MODS += cfg.ast
 
 # elaboration pass
-CC_AST_MODS += cc_elaborate.ast
+CC_AST_MODS += cc-elaborate.ast
 
 
 # optional: GNU language extension
@@ -292,7 +292,7 @@ ELSA_OBJS += const_eval.o
 ELSA_OBJS += implint.o
 ELSA_OBJS += serialno.o
 ELSA_OBJS += cc-scope.o
-ELSA_OBJS += cc_elaborate.o
+ELSA_OBJS += cc-elaborate.o
 ELSA_OBJS += ast_build.o
 ELSA_OBJS += $(LEXER_OBJS)
 ELSA_OBJS += $(EXT_OBJS)

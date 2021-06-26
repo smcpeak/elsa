@@ -1,6 +1,6 @@
-// cc_elaborate.h            see license.txt for copyright and terms of use
+// cc-elaborate.h            see license.txt for copyright and terms of use
 // semantic elaboration pass
-// see also cc_elaborate.ast
+// see also cc-elaborate.ast
 
 #ifndef CC_ELABORATE_H
 #define CC_ELABORATE_H
@@ -99,7 +99,7 @@ enum ElabActivities {
 
   // Note that a number of the above activities create temporary
   // objects.  To support their deletion at the proper time,
-  // cc_elaborate.ast adds FullExpressionAnnot objects to some AST
+  // cc-elaborate.ast adds FullExpressionAnnot objects to some AST
   // nodes, and elaboration registers the temporaries with them
   // accordingly.  An analysis should pay attention to the
   // FullExpressionAnnot objects so it can properly track temporary

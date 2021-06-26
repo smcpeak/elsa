@@ -697,7 +697,7 @@ class Expression {
 class FullExpression (Expression expr) {
   // We do not make lists of FullExpressions.
 
-  // nothing is needed here beyond the 'expr'; cc_elaborate.cc adds
+  // nothing is needed here beyond the 'expr'; cc-elaborate.cc adds
   // a FullExpressionAnnot object, however
 }
 

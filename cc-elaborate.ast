@@ -1,6 +1,6 @@
-// cc_elaborate.ast            see license.txt for copyright and terms of use
+// cc-elaborate.ast            see license.txt for copyright and terms of use
 // extension to cc.ast defining data for an elaboration pass
-// see also cc_elaborate.h
+// see also cc-elaborate.h
 
 
 // IMPORTANT: If you add elaboration fields here, then you must also
@@ -8,7 +8,7 @@
 
 
 verbatim {
-  class ElabVisitor;             // cc_elaborate.h
+  class ElabVisitor;             // cc-elaborate.h
   string refersTo(Variable *v);  // cc-ast-aux.cc
 }
 
@@ -128,7 +128,7 @@ class FullExpression {
 class Expression {
   // All of the 'elaborate()' functions of Expression return a visitor
   // boolean: true to elaborate the children automatically, false to
-  // skip the children.  See the SES in cc_elaborate.cc.
+  // skip the children.  See the SES in cc-elaborate.cc.
 
   -> E_funCall {
     // Return by value (for class-valued objects) is elaborated by saying there

@@ -6,7 +6,7 @@ digraph "Elsa AST Build Process" {
   "cc.ast" -> "astgen";
   "cc_tcheck.ast" -> "astgen";
   "cc_print.ast" -> "astgen";
-  "cc_elaborate.ast" -> "astgen";
+  "cc-elaborate.ast" -> "astgen";
   "gnu.ast" -> "astgen";
   "cfg.ast" -> "astgen";
 

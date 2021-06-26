@@ -1,5 +1,5 @@
-// cc_elaborate.cc            see license.txt for copyright and terms of use
-// code for cc_elaborate.h
+// cc-elaborate.cc            see license.txt for copyright and terms of use
+// code for cc-elaborate.h
 
 
 // Subtree cloning strategy (SCS):
@@ -35,7 +35,7 @@
 // don't want to elaborate clones.)
 
 
-#include "cc_elaborate.h"      // this module
+#include "cc-elaborate.h"      // this module
 #include "cc-ast.h"            // Declaration
 #include "trace.h"             // TRACE
 #include "cc_print.h"          // PrintEnv

@@ -7,7 +7,7 @@
 #include "cc.gr.gen.h"                 // CCParse
 #include "cc-ast.h"                    // C++ AST (r)
 #include "cc-ast-aux.h"                // class LoweredASTVisitor
-#include "cc_elaborate.h"              // ElabVisitor
+#include "cc-elaborate.h"              // ElabVisitor
 #include "cc-env.h"                    // Env
 #include "cc-lang.h"                   // CCLang
 #include "cc_print.h"                  // PrintEnv

@@ -812,14 +812,14 @@ void MemberInit::tcheck(Env &env, CompoundType *enclosing)
 
       // TODO: make sure that we only initialize each member once.
       // dsw: update: see below; do this in
-      // cc_elaborate.cc:completeNoArgMemberInits()
+      // cc-elaborate.cc:completeNoArgMemberInits()
 
       // TODO: provide a warning if the order in which the
       // members are initialized is different from their
       // declaration order, since the latter determines the
       // order of side effects.
       // dsw: update: this would have to be done in
-      // cc_elaborate.cc:completeNoArgMemberInits(), since I re-order
+      // cc-elaborate.cc:completeNoArgMemberInits(), since I re-order
       // the MemberInits there.
 
       return;
