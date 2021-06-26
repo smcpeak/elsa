@@ -2,10 +2,10 @@ ast_build.o: cc.ast.gen.h
 astvisit.o: cc.ast.gen.h
 baselexer.o: lexer.yy.h
 builtinops.o: cc.ast.gen.h
+cc-ast-aux.o: cc.ast.gen.h
 cc-type.o: cc.ast.gen.h
 cc.gr.gen.o: cc.ast.gen.h
 cc.gr.gen.o: cc_tokens.h
-cc_ast_aux.o: cc.ast.gen.h
 cc_elaborate.o: cc.ast.gen.h
 cc_env.o: cc.ast.gen.h
 cc_print.o: cc.ast.gen.h

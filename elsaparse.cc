@@ -6,7 +6,7 @@
 // elsa
 #include "cc.gr.gen.h"                 // CCParse
 #include "cc_ast.h"                    // C++ AST (r)
-#include "cc_ast_aux.h"                // class LoweredASTVisitor
+#include "cc-ast-aux.h"                // class LoweredASTVisitor
 #include "cc_elaborate.h"              // ElabVisitor
 #include "cc_env.h"                    // Env
 #include "cc_lang.h"                   // CCLang

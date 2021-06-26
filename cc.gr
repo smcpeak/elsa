@@ -44,7 +44,7 @@
 //       and Declarator), additional measures are taken to ensure
 //       the consistency of interaction with the ambiguity links.
 //       (See Expression::addAmbiguity and Expression::setNext in
-//       cc_ast_aux.cc.)
+//       cc-ast-aux.cc.)
 //
 // Every place there's a destructive modification which isn't handled
 // by FakeLists is marked by the phrase 'destructive action'.

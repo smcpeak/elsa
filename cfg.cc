@@ -3,7 +3,7 @@
 
 #include "cfg.h"           // this module
 #include "cc_ast.h"        // C++ AST, including cfg.ast's contributions
-#include "cc_ast_aux.h"    // class LoweredASTVisitor
+#include "cc-ast-aux.h"    // class LoweredASTVisitor
 #include "sobjset.h"       // SObjSet
 
 #include "sm-iostream.h"   // cout

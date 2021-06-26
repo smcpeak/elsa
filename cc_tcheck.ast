@@ -4,7 +4,7 @@
 // for the type checker, and the annotations it produces
 
 // the implementations for the functions declared here are in
-// cc_tcheck.cc and cc_ast_aux.cc
+// cc_tcheck.cc and cc-ast-aux.cc
 
 
 // extension modules' first "verbatim" section goes after

@@ -15,7 +15,7 @@
 
 #include "cc_ast.h"       // AST components, etc.
 #include "sm-macros.h"    // ENUM_BITWISE_OPS
-#include "cc_ast_aux.h"   // class LoweredASTVisitor
+#include "cc-ast-aux.h"   // class LoweredASTVisitor
 #include "ast_build.h"    // ElsaASTBuild
 
 // moved FullExpressionAnnot into fullexp.h to reduce dependencies

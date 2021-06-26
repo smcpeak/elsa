@@ -1,9 +1,9 @@
-// cc_ast_aux.cc            see license.txt for copyright and terms of use
+// cc-ast-aux.cc            see license.txt for copyright and terms of use
 // auxilliary code (debug printing, etc.) for cc.ast
 
 #include "strutil.h"        // plural
 #include "generic_aux.h"    // C++ AST, and genericPrintAmbiguities, etc.
-#include "cc_ast_aux.h"     // class LoweredASTVisitor
+#include "cc-ast-aux.h"     // class LoweredASTVisitor
 
 
 // ---------------------- LoweredASTVisitorHelper ----------------------

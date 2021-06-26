@@ -659,7 +659,7 @@ and type-checked only when it is instantiated.  One consequence of this
 design is that analyses (usually) need to avoid looking at such uninstantiated
 members; one way to do this is by using
 <span class="variable">ASTTemplVisitor</span>
-(<a href="../cc_ast_aux.h">cc_ast_aux</a>) to do the traversal, as it
+(<a href="../cc-ast-aux.h">cc-ast-aux</a>) to do the traversal, as it
 automatically skips such methods.
 
 <h3 id="dependent_names">3.5.3 Dependent Types and Names</h3>
@@ -910,7 +910,7 @@ some simple processing at each Expression node.  Note that your visitor
 can traverse the full AST by inheriting from ASTVisitor, or traverse
 only the "lowered" AST (e.g., skipping templates and only looking at
 the instantiations) by inheriting from LoweredASTVisitor
-(<a href="../cc_ast_aux.h"><code>cc_ast_aux.h</code></a>).
+(<a href="../cc-ast-aux.h"><code>cc-ast-aux.h</code></a>).
 Flaws: visitors are simple, but make context dependence difficult
 to achieve.
 

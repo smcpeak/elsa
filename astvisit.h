@@ -1,6 +1,6 @@
 // astvisit.h
 // extension to the default ASTVisitor; this is an experimental
-// replacement for the visitor classes in cc_ast_aux.h, so for
+// replacement for the visitor classes in cc-ast-aux.h, so for
 // now only I (Scott) will use this
 
 #ifndef ASTVISIT_H

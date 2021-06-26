@@ -1,5 +1,5 @@
 // generic_aux.h
-// some templatized routines that used to be in cc_ast_aux.cc,
+// some templatized routines that used to be in cc-ast-aux.cc,
 // but gnu.cc wants to use them too
 
 #include "cc_ast.h"         // C++ AST
@@ -19,7 +19,7 @@ void setAmbiguity(NODE *n, NODE *newAmbig)
 }
 
 
-// get/set 'ambiguity' for PQName (implemented in cc_ast_aux.cc)
+// get/set 'ambiguity' for PQName (implemented in cc-ast-aux.cc)
 PQName *getAmbiguity(PQName const *n);
 void setAmbiguity(PQName *n, PQName *newAmbig);
 

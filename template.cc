@@ -11,7 +11,7 @@
 #include "strutil.h"       // pluraln
 #include "overload.h"      // selectBestCandidate_templCompoundType
 #include "typelistiter.h"  // TypeListIter
-#include "cc_ast_aux.h"    // LoweredASTVisitor
+#include "cc-ast-aux.h"    // LoweredASTVisitor
 #include "mtype.h"         // MType
 #include "pair.h"          // pair
 

@@ -1,4 +1,4 @@
-// cc_ast_aux.h
+// cc-ast-aux.h
 // dsw: stuff I would like to put into cc.ast but I can't
 
 #ifndef CC_AST_AUX_H

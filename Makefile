@@ -313,7 +313,7 @@ ELSA_OBJS += cc_flags.o
 ELSA_OBJS += type-sizes.o
 ELSA_OBJS += cc_print.o
 ELSA_OBJS += type-printer.o
-ELSA_OBJS += cc_ast_aux.o
+ELSA_OBJS += cc-ast-aux.o
 ELSA_OBJS += variable.o
 ELSA_OBJS += lookupset.o
 ELSA_OBJS += ccparse.o
@@ -416,7 +416,7 @@ gendoc/dependencies.dot:
 	$(PERL) $(SMBASE)/scan-depends.pl -r \
 	  -Xcc_env.h=1 -Xcc-type.h=1 -Xcc_flags.h=1 -Xcc_ast.h=1 -Xvariable.h=1 \
           -Xcc_print.h -Xsprint.h \
-	  -Xgeneric_aux.h -Xcc_ast_aux.h -Xcc_lang.h=1 \
+	  -Xgeneric_aux.h -Xcc-ast-aux.h -Xcc_lang.h=1 \
 	  main.cc cc_tcheck.cc >$@
 
 gendoc/3.4.5.dot: ccparse.exe in/std/3.4.5.cc
