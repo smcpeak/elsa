@@ -17,6 +17,7 @@
 #define STDCONV_H
 
 // elsa
+#include "cc-env-fwd.h"                // Env
 #include "cc-type-fwd.h"               // AtomicType, Type, TypeFactory
 #include "cc_flags.h"                  // SpecialExpr
 
@@ -26,7 +27,6 @@
 
 // fwd
 class CCLang;          // cc_lang.h
-class Env;             // cc-env.h
 
 
 // The kinds of Standard Conversions.  Any given pair of convertible

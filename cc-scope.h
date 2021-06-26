@@ -10,6 +10,7 @@
 #include "cc-scope-fwd.h" // forwards for this module
 
 #include "cc-ast-fwd.h"   // Function, PQName, TranslationUnit
+#include "cc-env-fwd.h"   // Env
 #include "cc-type-fwd.h"  // TypeVisitor, CompoundType, etc.
 #include "cc_flags.h"     // AccessKeyword
 #include "srcloc.h"       // SourceLoc
@@ -21,8 +22,6 @@
 #include "template-fwd.h" // TemplateParams
 #include "lookupset.h"    // LookupSet
 #include "variable-fwd.h" // Variable
-
-class Env;                // cc-env.h
 
 
 // information about a single scope: the names defined in it,

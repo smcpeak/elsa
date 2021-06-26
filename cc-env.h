@@ -4,6 +4,8 @@
 #ifndef CC_ENV_H
 #define CC_ENV_H
 
+#include "cc-env-fwd.h"   // forwards for this module
+
 #include "cc-type.h"      // Type, AtomicType, etc. (r)
 #include "strobjdict.h"   // StrObjDict
 #include "owner.h"        // Owner
@@ -22,13 +24,12 @@
 #include "mflags.h"       // MatchFlags
 #include "ast_build.h"    // ElsaASTBuild
 #include "mtype-fwd.h"    // MType
+#include "template-fwd.h" // DelayedFuncInst
 
 class StringTable;        // strtable.h
 class CCLang;             // cc_lang.h
 class TypeListIter;       // typelistiter.h
-class SavedScopePair;     // fwd in this file
 class ImplicitConversion; // implconv.h
-class DelayedFuncInst;    // template.h
 
 
 // type of collection to hold a sequence of scopes

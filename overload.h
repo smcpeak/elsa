@@ -10,14 +10,14 @@
 #include "implconv.h"      // ImplicitConversion, StandardConversion
 #include "srcloc.h"        // SourceLoc
 #include "cc-ast.h"        // PQName, ArgExpression, etc.
+#include "cc-env-fwd.h"    // Env
+#include "cc-type-fwd.h"   // Type
 #include "lookupset.h"     // LookupSet
+#include "template-fwd.h"  // TemplCandidates
+#include "variable-fwd.h"  // Variable
 
 // fwds
-class Env;
-class Variable;
-class Type;
-class ErrorList;
-class TemplCandidates;
+class ErrorList;           // cc_err.h
 
 
 // debugging output support

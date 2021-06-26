@@ -10,9 +10,8 @@
 #include "objmap.h"             // ObjMap
 #include "cc-type.h"            // Type
 #include "cc-ast.h"             // C++ AST
+#include "cc-env-fwd.h"         // Env
 #include "template.h"           // STemplateArgument
-
-class Env;                      // cc-env.h
 
 
 // Internal MType: the core of the MType implementation, separated

@@ -4,12 +4,12 @@
 #ifndef BUILTINOPS_H
 #define BUILTINOPS_H
 
+#include "cc-env-fwd.h"    // Env
 #include "cc-type-fwd.h"   // Type
 #include "cc_flags.h"      // BinaryOp
 #include "okhashtbl.h"     // OwnerKHashTable
 #include "variable-fwd.h"  // Variable
 
-class Env;                 // cc-env.h
 class OverloadResolver;    // overload.h
 class ArgumentInfo;        // overload.h
 

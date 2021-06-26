@@ -41,10 +41,9 @@
 #include "mflags.h"       // MatchFlags
 #include "template-fwd.h" // STemplateArgument, etc.
 #include "cc-ast-fwd.h"   // Expression, Declaration, etc.
+#include "cc-env-fwd.h"   // Env
 #include "mtype-fwd.h"    // MType
 #include "variable-fwd.h" // Variable
-
-class Env;                // cc-env.h
 
 
 // --------------------- type visitor -----------------------
