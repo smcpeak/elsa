@@ -16,7 +16,7 @@
 #include "cc-ast.h"       // C++ ast components
 #include "variable.h"     // Variable (r)
 #include "cc-scope.h"     // Scope
-#include "cc_err.h"       // ErrorList
+#include "cc-err.h"       // ErrorList
 #include "array.h"        // ArrayStack, ArrayStackEmbed
 #include "builtinops.h"   // CandidateSet
 #include "cc_lang.h"      // Bool3

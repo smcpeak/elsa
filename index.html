@@ -157,8 +157,8 @@ Env, the type checking environment.  Fundamentally just a stack of
 Scopes (<a href="cc-scope.h">cc-scope.h</a>), plus some global
 type checking state.
 
-<li><a href="cc_err.h">cc_err.h</a>,
-    <a href="cc_err.cc">cc_err.cc</a>:
+<li><a href="cc-err.h">cc-err.h</a>,
+    <a href="cc-err.cc">cc-err.cc</a>:
 ErrorMsg, an object for representing type checking errors.  For now
 it's just an error string plus some metadata (like source location),
 but I plan to evolve it to include more structured data like pointers

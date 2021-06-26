@@ -17,7 +17,7 @@
 #include "variable-fwd.h"  // Variable
 
 // fwds
-class ErrorList;           // cc_err.h
+class ErrorList;           // cc-err.h
 
 
 // debugging output support

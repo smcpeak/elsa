@@ -1,7 +1,7 @@
-// cc_err.cc            see license.txt for copyright and terms of use
-// code for cc_err.h
+// cc-err.cc            see license.txt for copyright and terms of use
+// code for cc-err.h
 
-#include "cc_err.h"      // this module
+#include "cc-err.h"      // this module
 #include "trace.h"       // tracingSys
 #include "strutil.h"     // trimWhitespace
 
