@@ -16,8 +16,40 @@ static void if_malloc_stats()
 }
 
 
+enum TargetPlatform {
+  TF_BUILD,
+  TF_LINUX64,
+  TF_WIN64,
+  TF_WIN32,
+};
+
+// Platform to emulate.
+static TargetPlatform targetPlatform = TF_BUILD;
+
 // When true, print the count of warnings and errors, and the phase times.
 static bool verboseOutput = false;
+
+
+// Decode the --target argument.
+static TargetPlatform decodeTargetPlatform(char const *target)
+{
+  if (streq(target, "build")) {
+    return TF_BUILD;
+  }
+  else if (streq(target, "linux64")) {
+    return TF_LINUX64;
+  }
+  else if (streq(target, "win64")) {
+    return TF_WIN64;
+  }
+  else if (streq(target, "win32")) {
+    return TF_WIN32;
+  }
+  else {
+    xfatal("Unknown target \"" << target << "\".");
+    return TF_BUILD;     // Not reached.
+  }
+}
 
 
 // this is a dumb way to organize argument processing...
@@ -64,6 +96,14 @@ static char *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
       argv++;
       argc--;
     }
+    else if (streq(argv[1], "--target")) {
+      if (argc == 2) {
+        xfatal("--target option requires an argument");
+      }
+      targetPlatform = decodeTargetPlatform(argv[2]);
+      argv += 2;
+      argc -= 2;
+    }
     else {
       break;     // didn't find any more options
     }
@@ -74,6 +114,7 @@ static char *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
             "  options:\n"
             "    -tr <flags>:           turn on given tracing flags (comma-separated)\n"
             "    -xc                    parse input as C rather than C++\n"
+            "    --target <target>:     options: build (default), linux64, win64, win32\n"
             "    -w                     disable warnings\n"
             "    --verbose              print error/warn counts and times\n"
             "    --quiet                opposite of --verbose (and the default)\n"
@@ -190,6 +231,16 @@ static int doit(int argc, char **argv)
     #ifndef KANDR_EXTENSION
       xfatal("gnu2_kandr_c_lang option requires the K&R module (./configure -kandr=yes)");
     #endif
+  }
+
+  if (targetPlatform == TF_LINUX64) {
+    lang.m_typeSizes.set_linux_x86_64();
+  }
+  else if (targetPlatform == TF_WIN64) {
+    lang.m_typeSizes.set_windows_x86_64();
+  }
+  else if (targetPlatform == TF_WIN32) {
+    lang.m_typeSizes.set_windows_x86();
   }
 
   if (tracingSys("test_xfatal")) {

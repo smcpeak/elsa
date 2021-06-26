@@ -29,7 +29,7 @@ public:
   virtual Tag getTag() const { return T_TYPEVAR; }
   virtual string toCString() const;
   virtual string toMLString() const;
-  virtual int reprSize() const;
+  virtual int reprSize(TypeSizes const &typeSizes) const;
   virtual void traverse(TypeVisitor &vis);
 
   // true if this template parameter has been associated with
@@ -62,7 +62,7 @@ public:      // funcs
   virtual Tag getTag() const { return T_PSEUDOINSTANTIATION; }
   virtual string toCString() const;
   virtual string toMLString() const;
-  virtual int reprSize() const;
+  virtual int reprSize(TypeSizes const &typeSizes) const;
   virtual void traverse(TypeVisitor &vis);
 };
 
@@ -92,7 +92,7 @@ public:      // data
   virtual Tag getTag() const { return T_DEPENDENTQTYPE; }
   virtual string toCString() const;
   virtual string toMLString() const;
-  virtual int reprSize() const;
+  virtual int reprSize(TypeSizes const &typeSizes) const;
   virtual void traverse(TypeVisitor &vis);
 };
 

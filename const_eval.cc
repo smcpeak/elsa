@@ -151,12 +151,12 @@ void CValue::setDependent()
 }
 
 
-void CValue::performIntegralPromotions()
+void CValue::performIntegralPromotions(ConstEval &env)
 {
-  convertToType(applyIntegralPromotions(type));
+  convertToType(env, applyIntegralPromotions(type));
 }
 
-void CValue::convertToType(SimpleTypeId newType)
+void CValue::convertToType(ConstEval &env, SimpleTypeId newType)
 {
   Kind oldKind = classify(type);
   Kind newKind = classify(newType);
@@ -202,7 +202,7 @@ void CValue::convertToType(SimpleTypeId newType)
   type = newType;
 
   // truncate the value based on the final type
-  int reprSize = simpleTypeReprSize(type);
+  int reprSize = simpleTypeReprSize(env.m_typeSizes, type);
   if (reprSize >= 4) {
     // do no truncation
   }
@@ -223,7 +223,7 @@ void CValue::convertToType(SimpleTypeId newType)
 }
 
 
-void CValue::applyUnary(UnaryOp op)
+void CValue::applyUnary(ConstEval &env, UnaryOp op)
 {
   if (isSticky()) { return; }
 
@@ -232,12 +232,12 @@ void CValue::applyUnary(UnaryOp op)
 
     case UNY_PLUS:
       // 5.3.1p6
-      performIntegralPromotions();
+      performIntegralPromotions(env);
       break;
 
     case UNY_MINUS:
       // 5.3.1p7
-      performIntegralPromotions();
+      performIntegralPromotions(env);
       switch (kind()) {
         default: // silence warning
         case K_SIGNED:    si = -si;   break;
@@ -254,7 +254,7 @@ void CValue::applyUnary(UnaryOp op)
 
     case UNY_BITNOT:
       // 5.3.1p9
-      performIntegralPromotions();
+      performIntegralPromotions(env);
       switch (kind()) {
         default: // silence warning
         case K_SIGNED:    si = ~si;   break;
@@ -265,11 +265,11 @@ void CValue::applyUnary(UnaryOp op)
 }
 
 
-void CValue::applyUsualArithmeticConversions(CValue &other)
+void CValue::applyUsualArithmeticConversions(ConstEval &env, CValue &other)
 {
   SimpleTypeId finalType = usualArithmeticConversions(type, other.type);
-  this->convertToType(finalType);
-  other.convertToType(finalType);
+  this->convertToType(env, finalType);
+  other.convertToType(env, finalType);
 }
 
 
@@ -290,7 +290,7 @@ void CValue::addOffset(int offset)
 }
 
 
-void CValue::applyBinary(BinaryOp op, CValue other)
+void CValue::applyBinary(ConstEval &env, BinaryOp op, CValue other)
 {
   if (isSticky()) { return; }
 
@@ -307,7 +307,7 @@ void CValue::applyBinary(BinaryOp op, CValue other)
 
     // ---- 5.6 ----
     case BIN_MULT:
-      applyUsualArithmeticConversions(other);
+      applyUsualArithmeticConversions(env, other);
       switch (kind()) {
         default: // silence warning
         case K_SIGNED:     si = si * other.si;    break;
@@ -317,7 +317,7 @@ void CValue::applyBinary(BinaryOp op, CValue other)
       break;
 
     case BIN_DIV:
-      applyUsualArithmeticConversions(other);
+      applyUsualArithmeticConversions(env, other);
       if (other.isZero()) {
         setError("division by zero");
         return;
@@ -331,7 +331,7 @@ void CValue::applyBinary(BinaryOp op, CValue other)
       break;
 
     case BIN_MOD:
-      applyUsualArithmeticConversions(other);
+      applyUsualArithmeticConversions(env, other);
       if (other.isZero()) {
         setError("mod by zero");
         return;
@@ -346,7 +346,7 @@ void CValue::applyBinary(BinaryOp op, CValue other)
 
     // ---- 5.7 ----
     case BIN_PLUS:
-      applyUsualArithmeticConversions(other);
+      applyUsualArithmeticConversions(env, other);
       switch (kind()) {
         default: // silence warning
         case K_SIGNED:     si = si + other.si;    break;
@@ -356,7 +356,7 @@ void CValue::applyBinary(BinaryOp op, CValue other)
       break;
 
     case BIN_MINUS:
-      applyUsualArithmeticConversions(other);
+      applyUsualArithmeticConversions(env, other);
       switch (kind()) {
         default: // silence warning
         case K_SIGNED:     si = si - other.si;    break;
@@ -369,7 +369,7 @@ void CValue::applyBinary(BinaryOp op, CValue other)
     // guessing that <? and >? behave approximately like '+' in
     // terms of the types
     case BIN_MINIMUM:
-      applyUsualArithmeticConversions(other);
+      applyUsualArithmeticConversions(env, other);
       switch (kind()) {
         default: // silence warning
         case CValue::K_SIGNED:     si = ((si < other.si) ? si : other.si);   break;
@@ -379,7 +379,7 @@ void CValue::applyBinary(BinaryOp op, CValue other)
       break;
 
     case BIN_MAXIMUM:
-      applyUsualArithmeticConversions(other);
+      applyUsualArithmeticConversions(env, other);
       switch (kind()) {
         default: // silence warning
         case CValue::K_SIGNED:     si = ((si > other.si) ? si : other.si);   break;
@@ -391,8 +391,8 @@ void CValue::applyBinary(BinaryOp op, CValue other)
     // ---- 5.8 ----
     case BIN_LSHIFT:
     case BIN_RSHIFT: {
-      this->performIntegralPromotions();
-      other.performIntegralPromotions();
+      this->performIntegralPromotions(env);
+      other.performIntegralPromotions(env);
 
       if (kind() == K_FLOAT || other.kind() == K_FLOAT) {
         setError("cannot shift with float types");
@@ -414,7 +414,8 @@ void CValue::applyBinary(BinaryOp op, CValue other)
         return;
       }
 
-      int leftOperandBits = simpleTypeReprSize(type) * ELSA_CHAR_BIT;
+      int leftOperandBits =
+        simpleTypeReprSize(env.m_typeSizes, type) * ELSA_CHAR_BIT;
       if (shamt >= leftOperandBits) {
         // C++14 5.8/1
         setError(stringb(
@@ -488,7 +489,7 @@ void CValue::applyBinary(BinaryOp op, CValue other)
 
     // ---- 5.9 ----
     case BIN_LESS:
-      applyUsualArithmeticConversions(other);
+      applyUsualArithmeticConversions(env, other);
       switch (kind()) {
         default: // silence warning
         case K_SIGNED:     ui = si < other.si;    break;
@@ -499,7 +500,7 @@ void CValue::applyBinary(BinaryOp op, CValue other)
       break;
 
     case BIN_GREATER:
-      applyUsualArithmeticConversions(other);
+      applyUsualArithmeticConversions(env, other);
       switch (kind()) {
         default: // silence warning
         case K_SIGNED:     ui = si > other.si;    break;
@@ -510,7 +511,7 @@ void CValue::applyBinary(BinaryOp op, CValue other)
       break;
 
     case BIN_LESSEQ:
-      applyUsualArithmeticConversions(other);
+      applyUsualArithmeticConversions(env, other);
       switch (kind()) {
         default: // silence warning
         case K_SIGNED:     ui = si <= other.si;    break;
@@ -521,7 +522,7 @@ void CValue::applyBinary(BinaryOp op, CValue other)
       break;
 
     case BIN_GREATEREQ:
-      applyUsualArithmeticConversions(other);
+      applyUsualArithmeticConversions(env, other);
       switch (kind()) {
         default: // silence warning
         case K_SIGNED:     ui = si >= other.si;    break;
@@ -533,7 +534,7 @@ void CValue::applyBinary(BinaryOp op, CValue other)
 
     // ---- 5.10 ----
     case BIN_EQUAL:
-      applyUsualArithmeticConversions(other);
+      applyUsualArithmeticConversions(env, other);
       switch (kind()) {
         default: // silence warning
         case K_SIGNED:     ui = si == other.si;    break;
@@ -544,7 +545,7 @@ void CValue::applyBinary(BinaryOp op, CValue other)
       break;
 
     case BIN_NOTEQUAL:
-      applyUsualArithmeticConversions(other);
+      applyUsualArithmeticConversions(env, other);
       switch (kind()) {
         default: // silence warning
         case K_SIGNED:     ui = si != other.si;    break;
@@ -556,7 +557,7 @@ void CValue::applyBinary(BinaryOp op, CValue other)
 
     // ---- 5.11 ----
     case BIN_BITAND:
-      applyUsualArithmeticConversions(other);
+      applyUsualArithmeticConversions(env, other);
       switch (kind()) {
         default: // silence warning
         case K_SIGNED:     si = si & other.si;    break;
@@ -567,7 +568,7 @@ void CValue::applyBinary(BinaryOp op, CValue other)
 
     // ---- 5.12 ----
     case BIN_BITXOR:
-      applyUsualArithmeticConversions(other);
+      applyUsualArithmeticConversions(env, other);
       switch (kind()) {
         default: // silence warning
         case K_SIGNED:     si = si ^ other.si;    break;
@@ -578,7 +579,7 @@ void CValue::applyBinary(BinaryOp op, CValue other)
 
     // ---- 5.13 ----
     case BIN_BITOR:
-      applyUsualArithmeticConversions(other);
+      applyUsualArithmeticConversions(env, other);
       switch (kind()) {
         default: // silence warning
         case K_SIGNED:     si = si | other.si;    break;
@@ -592,15 +593,15 @@ void CValue::applyBinary(BinaryOp op, CValue other)
       // Note: short-circuit behavior is handled by the caller of
       // this function; by the time we get here, both args have
       // already been evaluated
-      this->convertToType(ST_BOOL);
-      other.convertToType(ST_BOOL);
+      this->convertToType(env, ST_BOOL);
+      other.convertToType(env, ST_BOOL);
       ui = ui && other.ui;
       break;
 
     // ---- 5.15 ----
     case BIN_OR:
-      this->convertToType(ST_BOOL);
-      other.convertToType(ST_BOOL);
+      this->convertToType(env, ST_BOOL);
+      other.convertToType(env, ST_BOOL);
       ui = ui || other.ui;
       break;
   }
@@ -621,8 +622,9 @@ string CValue::asString() const
 
 
 // ----------------------- ConstEval ------------------------
-ConstEval::ConstEval(Variable *d)
-  : dependentVar(d)
+ConstEval::ConstEval(TypeSizes const &typeSizes, Variable *d)
+  : m_typeSizes(typeSizes),
+    dependentVar(d)
 {}
 
 ConstEval::~ConstEval()
@@ -722,7 +724,7 @@ CValue Expression::iconstEval(ConstEval &env) const
 
     ASTNEXTC(E_unary, u)
       CValue ret = u->expr->constEval(env);
-      ret.applyUnary(u->op);
+      ret.applyUnary(env, u->op);
       return ret;
 
     ASTNEXTC(E_binary, b)
@@ -745,7 +747,7 @@ CValue Expression::iconstEval(ConstEval &env) const
 
       CValue v2 = b->e2->constEval(env);
 
-      v1.applyBinary(b->op, v2);
+      v1.applyBinary(env, b->op, v2);
       return v1;
 
     ASTNEXTC(E_cast, c)
@@ -856,7 +858,7 @@ CValue Expression::constEvalAddr(ConstEval &env) const
         // probably something weird like a template
       }
       else {
-        val.addOffset(ct->getDataMemberOffset(e->field));
+        val.addOffset(ct->getDataMemberOffset(env.m_typeSizes, e->field));
       }
       return val;
     }
@@ -902,11 +904,11 @@ CValue Expression::constEvalCast(ConstEval &env, ASTTypeId const *ctype,
 
   Type *t = ctype->getType();
   if (t->isSimpleType()) {
-    ret.convertToType(t->asSimpleTypeC()->type);
+    ret.convertToType(env, t->asSimpleTypeC()->type);
   }
   else if (t->isEnumType() ||
            t->isPointer()) {        // for Linux kernel
-    ret.convertToType(ST_INT);
+    ret.convertToType(env, ST_INT);
   }
   else {
     // TODO: this is probably not the right rule..

@@ -246,6 +246,11 @@ testparse_special() {
   runTest perl ./multitest.pl ./ccparse.exe -tr $1 in/$2
 }
 
+# Run with win32 target settings.
+testparse_win32() {
+  runTest perl ./multitest.pl ./ccparse.exe --target win32 in/$1
+}
+
 failparse() {
   if [ "$2" = "" ]; then
     echo "failparse $1: failparse takes two arguments"
@@ -1014,7 +1019,7 @@ testparse k0006.cc #"error: E_alignofType is not constEval'able"
 testparse k0007.cc
 # renamed k0008.cc to gnu/g0022.cc because it is a GNU feature
 testparse k0009.cc #"clash between function and instantiated template parameter member"
-testparse k0010.cc # requires that certain types have certain sizes
+testparse_win32 k0010.cc # requires that certain types have certain sizes
 
 # This test currently passes for me on linux64, although I'm not sure it
 # is passing for the right reasons.  I'm enabling it to get more data.

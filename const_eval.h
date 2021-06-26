@@ -4,8 +4,11 @@
 #ifndef CONST_EVAL_H
 #define CONST_EVAL_H
 
+#include "const-eval-fwd.h"            // forwards for this module
+
 // elsa
 #include "cc-flags.h"                  // SimpleTypeId
+#include "type-sizes.h"                // TypeSizes
 #include "variable-fwd.h"              // Variable
 
 // smbase
@@ -92,19 +95,19 @@ public:      // funcs
     { setUnsigned(ST_BOOL, (unsigned)b); }
 
   // *this = <op> *this;
-  void applyUnary(UnaryOp op);
+  void applyUnary(ConstEval &env, UnaryOp op);
 
   // *this = *this <op> other;
-  void applyBinary(BinaryOp op, CValue other);
+  void applyBinary(ConstEval &env, BinaryOp op, CValue other);
 
   // convert this value to 'newType', carrying along the value
-  void convertToType(SimpleTypeId newType);
+  void convertToType(ConstEval &env, SimpleTypeId newType);
 
   // promote and convert
-  void performIntegralPromotions();
+  void performIntegralPromotions(ConstEval &env);
 
   // convert *this and 'other' to a common type
-  void applyUsualArithmeticConversions(CValue &other);
+  void applyUsualArithmeticConversions(ConstEval &env, CValue &other);
 
   // add 'offset' to the current value
   void addOffset(int offset);
@@ -122,11 +125,15 @@ public:      // funcs
 // added the 'CValue' concept.  So be it.
 class ConstEval {
 public:      // data
+  // Type size information.
+  TypeSizes const &m_typeSizes;
+
   // needed to tell when an expression is value-dependent...
   Variable * /*nullable*/ dependentVar;
 
 public:
-  ConstEval(Variable * /*nullable*/ dependentVar);
+  ConstEval(TypeSizes const &typeSizes,
+            Variable * /*nullable*/ dependentVar);
   ~ConstEval();
 
   // evaluation of a Variable is exposed so that it can be

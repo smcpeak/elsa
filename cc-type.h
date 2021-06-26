@@ -36,6 +36,7 @@
 #include "mflags.h"                    // MatchFlags
 #include "mtype-fwd.h"                 // MType
 #include "template-fwd.h"              // STemplateArgument, etc.
+#include "type-sizes-fwd.h"            // TypeSizes
 #include "variable-fwd.h"              // Variable
 
 // smbase
@@ -111,7 +112,7 @@ public:     // funcs
 
   // size this type's representation occupies in memory; this
   // might throw XReprSize, see below
-  virtual int reprSize() const = 0;
+  virtual int reprSize(TypeSizes const &typeSizes) const = 0;
 
   // invoke 'vis.visitAtomicType(this)', and then traverse subtrees
   //
@@ -149,7 +150,7 @@ public:     // funcs
   virtual Tag getTag() const { return T_SIMPLE; }
   virtual string toCString() const;
   virtual string toMLString() const;
-  virtual int reprSize() const;
+  virtual int reprSize(TypeSizes const &typeSizes) const;
   virtual void traverse(TypeVisitor &vis);
 };
 
@@ -347,7 +348,7 @@ public:      // funcs
   virtual Tag getTag() const { return T_COMPOUND; }
   virtual string toCString() const;
   virtual string toMLString() const;
-  virtual int reprSize() const;
+  virtual int reprSize(TypeSizes const &typeSizes) const;
   virtual void traverse(TypeVisitor &vis);
 
   string toStringWithFields() const;
@@ -376,7 +377,8 @@ public:      // funcs
   // take a Variable* and the previous one a StringRef?  I'm not
   // sure, I think Variable* is better, but don't want to mess with
   // the other one right now)
-  int getDataMemberOffset(Variable *dataMember) const;
+  int getDataMemberOffset(
+    TypeSizes const &typeSizes, Variable *dataMember) const;
 
   // add to 'bases'; incrementally maintains 'virtualBases'
   virtual void addBaseClass(BaseClass * /*owner*/ newBase);
@@ -460,7 +462,7 @@ public:     // funcs
   virtual Tag getTag() const { return T_ENUM; }
   virtual string toCString() const;
   virtual string toMLString() const;
-  virtual int reprSize() const;
+  virtual int reprSize(TypeSizes const &typeSizes) const;
   virtual void traverse(TypeVisitor &vis);
 
   Value *addValue(StringRef name, int value, /*nullable*/ Variable *d);
@@ -600,9 +602,8 @@ public:     // funcs
   virtual string leftString(bool innerParen=true) const = 0;
   virtual string rightString(bool innerParen=true) const;    // default: returns ""
 
-  // size of representation at run-time; for now uses nominal 32-bit
-  // values
-  virtual int reprSize() const = 0;
+  // size of representation at run-time
+  virtual int reprSize(TypeSizes const &typeSizes) const = 0;
 
   // filter on all constructed types that appear in the type,
   // *including* parameter types; return true if any constructor
@@ -772,7 +773,7 @@ public:
   unsigned innerHashValue() const;
   virtual string toMLString() const;
   virtual string leftString(bool innerParen=true) const;
-  virtual int reprSize() const;
+  virtual int reprSize(TypeSizes const &typeSizes) const;
   virtual bool anyCtorSatisfies(TypePred &pred) const;
   virtual CVFlags getCVFlags() const;
   virtual void traverse(TypeVisitor &vis);
@@ -799,7 +800,7 @@ public:
   virtual string toMLString() const;
   virtual string leftString(bool innerParen=true) const;
   virtual string rightString(bool innerParen=true) const;
-  virtual int reprSize() const;
+  virtual int reprSize(TypeSizes const &typeSizes) const;
   virtual bool anyCtorSatisfies(TypePred &pred) const;
   virtual CVFlags getCVFlags() const;
   virtual void traverse(TypeVisitor &vis);
@@ -825,7 +826,7 @@ public:
   virtual string toMLString() const;
   virtual string leftString(bool innerParen=true) const;
   virtual string rightString(bool innerParen=true) const;
-  virtual int reprSize() const;
+  virtual int reprSize(TypeSizes const &typeSizes) const;
   virtual bool anyCtorSatisfies(TypePred &pred) const;
   virtual CVFlags getCVFlags() const;
   virtual void traverse(TypeVisitor &vis);
@@ -951,7 +952,7 @@ public:
   virtual string toMLString() const;
   virtual string leftString(bool innerParen=true) const;
   virtual string rightString(bool innerParen=true) const;
-  virtual int reprSize() const;
+  virtual int reprSize(TypeSizes const &typeSizes) const;
   virtual bool anyCtorSatisfies(TypePred &pred) const;
   virtual void traverse(TypeVisitor &vis);
 };
@@ -991,7 +992,7 @@ public:
   virtual string toMLString() const;
   virtual string leftString(bool innerParen=true) const;
   virtual string rightString(bool innerParen=true) const;
-  virtual int reprSize() const;
+  virtual int reprSize(TypeSizes const &typeSizes) const;
   virtual bool anyCtorSatisfies(TypePred &pred) const;
   virtual void traverse(TypeVisitor &vis);
 };
@@ -1027,7 +1028,7 @@ public:
   virtual string toMLString() const;
   virtual string leftString(bool innerParen=true) const;
   virtual string rightString(bool innerParen=true) const;
-  virtual int reprSize() const;
+  virtual int reprSize(TypeSizes const &typeSizes) const;
   virtual bool anyCtorSatisfies(TypePred &pred) const;
   virtual CVFlags getCVFlags() const;
   virtual void traverse(TypeVisitor &vis);
@@ -1087,7 +1088,7 @@ public:      // methods
   string toMLString() const                      override;
   string leftString(bool innerParen=true) const  override;
   string rightString(bool innerParen=true) const override;
-  int reprSize() const                           override;
+  int reprSize(TypeSizes const &typeSizes) const override;
   bool anyCtorSatisfies(TypePred &pred) const    override;
   CVFlags getCVFlags() const                     override;
   void traverse(TypeVisitor &vis)                override;

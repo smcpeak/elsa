@@ -70,7 +70,7 @@ string TypeVariable::toCString() const
                  << name;
 }
 
-int TypeVariable::reprSize() const
+int TypeVariable::reprSize(TypeSizes const &typeSizes) const
 {
   //xfailure("you can't ask a type variable for its size");
 
@@ -103,7 +103,7 @@ string PseudoInstantiation::toCString() const
   return stringc << name << sargsToString(args);
 }
 
-int PseudoInstantiation::reprSize() const
+int PseudoInstantiation::reprSize(TypeSizes const &typeSizes) const
 {
   // it shouldn't matter what we say here, since the query will only
   // be made in the context of checking (but not instantiating) a
@@ -145,7 +145,7 @@ string DependentQType::toMLString() const
   return stringc << "dependentqtype-" << toCString();
 }
 
-int DependentQType::reprSize() const
+int DependentQType::reprSize(TypeSizes const &typeSizes) const
 {
   return 4;    // should not matter
 }
@@ -2981,7 +2981,7 @@ void Env::setSTemplArgFromExpr(STemplateArgument &sarg, Expression *expr)
       rvalType->isBool() ||
       rvalType->isEnumType()) {
     // attempt to const-eval this expression
-    ConstEval cenv(env.dependentVar);
+    ConstEval cenv(env.lang.m_typeSizes, env.dependentVar);
     CValue val = expr->constEval(cenv);
     if (val.isDependent()) {
       sarg.setDepExpr(expr);
@@ -3084,7 +3084,7 @@ STemplateArgument Env::variableToSTemplateArgument(Variable *var)
   STemplateArgument ret;
 
   // try to evaluate to an integer
-  ConstEval cenv(env.dependentVar);
+  ConstEval cenv(env.lang.m_typeSizes, env.dependentVar);
   CValue val = cenv.evaluateVariable(var);
   if (val.isIntegral()) {
     ret.setInt(val.getIntegralValue());

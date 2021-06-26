@@ -756,7 +756,7 @@ Type *E___builtin_constant_p::itcheck_x(Env &env, Expression *&replacement)
 //    // size of a variable of template-type-parameter type..
 //    // dsw: If this is turned back on, be sure to catch the possible
 //    // XReprSize exception and add its message to the env.error-s
-//    size = expr->type->asRval()->reprSize();
+//    size = expr->type->asRval()->reprSize(env.lang.m_typeSizes);
 //    TRACE("sizeof", "sizeof(" << expr->exprToString() <<
 //                    ") is " << size);
 

@@ -223,60 +223,65 @@ bool isValid(SimpleTypeId id)
 
 
 #define S(x) ((SimpleTypeFlags)(x))    // work around bitwise-OR in initializers..
+#define STS(x) TypeSizes::STS_##x
 static SimpleTypeInfo const simpleTypeInfoArray[] = {
-  //name                   size,    flags
-  { "char",                   1,    S(STF_INTEGER                          ) },
-  { "unsigned char",          1,    S(STF_INTEGER | STF_UNSIGNED           ) },
-  { "signed char",            1,    S(STF_INTEGER                          ) },
-  { "bool",                   4,    S(STF_INTEGER                          ) },
-  { "int",                    4,    S(STF_INTEGER | STF_PROM               ) },
-  { "unsigned int",           4,    S(STF_INTEGER | STF_PROM | STF_UNSIGNED) },
-  { "long int",               4,    S(STF_INTEGER | STF_PROM               ) },
-  { "unsigned long int",      4,    S(STF_INTEGER | STF_PROM | STF_UNSIGNED) },
-  { "long long int",          8,    S(STF_INTEGER | STF_PROM               ) },
-  { "unsigned long long int", 8,    S(STF_INTEGER | STF_PROM | STF_UNSIGNED) },
-  { "short int",              2,    S(STF_INTEGER                          ) },
-  { "unsigned short int",     2,    S(STF_INTEGER | STF_UNSIGNED           ) },
-  { "wchar_t",                2,    S(STF_INTEGER                          ) },
-  { "float",                  4,    S(STF_FLOAT                            ) },
-  { "double",                 8,    S(STF_FLOAT | STF_PROM                 ) },
-  { "long double",           10,    S(STF_FLOAT                            ) },
-  { "float _Complex",         8,    S(STF_FLOAT                            ) },
-  { "double _Complex",       16,    S(STF_FLOAT                            ) },
-  { "long double _Complex",  20,    S(STF_FLOAT                            ) },
-  { "float _Imaginary",       4,    S(STF_FLOAT                            ) },
-  { "double _Imaginary",      8,    S(STF_FLOAT                            ) },
-  { "long double _Imaginary",10,    S(STF_FLOAT                            ) },
-  { "void",                   1,    S(STF_NONE                             ) },    // gnu: sizeof(void) is 1
+  //name                      sts,                      flags
+  { "char",                   STS(CHAR),                S(STF_INTEGER                          ) },
+  { "unsigned char",          STS(CHAR),                S(STF_INTEGER | STF_UNSIGNED           ) },
+  { "signed char",            STS(CHAR),                S(STF_INTEGER                          ) },
+  { "bool",                   STS(BOOL),                S(STF_INTEGER                          ) },
+  { "int",                    STS(INT),                 S(STF_INTEGER | STF_PROM               ) },
+  { "unsigned",               STS(INT),                 S(STF_INTEGER | STF_PROM | STF_UNSIGNED) },
+  { "long",                   STS(LONG),                S(STF_INTEGER | STF_PROM               ) },
+  { "unsigned long",          STS(LONG),                S(STF_INTEGER | STF_PROM | STF_UNSIGNED) },
+  { "long long",              STS(LONG_LONG),           S(STF_INTEGER | STF_PROM               ) },
+  { "unsigned long long",     STS(LONG_LONG),           S(STF_INTEGER | STF_PROM | STF_UNSIGNED) },
+  { "short",                  STS(SHORT),               S(STF_INTEGER                          ) },
+  { "unsigned short",         STS(SHORT),               S(STF_INTEGER | STF_UNSIGNED           ) },
+  { "wchar_t",                STS(WCHAR),               S(STF_INTEGER                          ) },
+  { "float",                  STS(FLOAT),               S(STF_FLOAT                            ) },
+  { "double",                 STS(DOUBLE),              S(STF_FLOAT | STF_PROM                 ) },
+  { "long double",            STS(LONG_DOUBLE),         S(STF_FLOAT                            ) },
+  { "float _Complex",         STS(FLOAT_COMPLEX),       S(STF_FLOAT                            ) },
+  { "double _Complex",        STS(DOUBLE_COMPLEX),      S(STF_FLOAT                            ) },
+  { "long double _Complex",   STS(LONG_DOUBLE_COMPLEX), S(STF_FLOAT                            ) },
+  { "float _Imaginary",       STS(FLOAT),               S(STF_FLOAT                            ) },
+  { "double _Imaginary",      STS(DOUBLE),              S(STF_FLOAT                            ) },
+  { "long double _Imaginary", STS(LONG_DOUBLE),         S(STF_FLOAT                            ) },
+
+  // gnu: sizeof(void) is 1
+  { "void",                   STS(CHAR),                S(STF_NONE                             ) },
 
   // these should go away early on in typechecking
-  { "...",                    0,    S(STF_NONE                             ) },
-  { "/*cdtor*/",              0,    S(STF_NONE                             ) },    // dsw: don't want to print <cdtor>
-  { "(error)",                0,    S(STF_NONE                             ) },
-  { "(dependent)",            0,    S(STF_NONE                             ) },
-  { "(implicit-int)",         0,    S(STF_NONE                             ) },
-  { "(notfound)",             0,    S(STF_NONE                             ) },
+  #define STI_DEGEN(name) \
+    { name, STS(EMPTY), S(STF_NONE) },
+  STI_DEGEN("...")
+  STI_DEGEN("/*cdtor*/")
+  STI_DEGEN("(error)")
+  STI_DEGEN("(dependent)")
+  STI_DEGEN("(implicit-int)")
+  STI_DEGEN("(notfound)")
 
+  STI_DEGEN("(prom_int)")
+  STI_DEGEN("(prom_arith)")
+  STI_DEGEN("(integral)")
+  STI_DEGEN("(arith)")
+  STI_DEGEN("(arith_nobool)")
+  STI_DEGEN("(any_obj)")
+  STI_DEGEN("(non_void)")
+  STI_DEGEN("(any_type)")
 
-  { "(prom_int)",             0,    S(STF_NONE                             ) },
-  { "(prom_arith)",           0,    S(STF_NONE                             ) },
-  { "(integral)",             0,    S(STF_NONE                             ) },
-  { "(arith)",                0,    S(STF_NONE                             ) },
-  { "(arith_nobool)",         0,    S(STF_NONE                             ) },
-  { "(any_obj)",              0,    S(STF_NONE                             ) },
-  { "(non_void)",             0,    S(STF_NONE                             ) },
-  { "(any_type)",             0,    S(STF_NONE                             ) },
-
-
-  { "(pret_strip_ref)",       0,    S(STF_NONE                             ) },
-  { "(pret_ptm)",             0,    S(STF_NONE                             ) },
-  { "(pret_arith_conv)",      0,    S(STF_NONE                             ) },
-  { "(pret_first)",           0,    S(STF_NONE                             ) },
-  { "(pret_first_ptr2ref)",   0,    S(STF_NONE                             ) },
-  { "(pret_second)",          0,    S(STF_NONE                             ) },
-  { "(pret_second_ptr2ref)",  0,    S(STF_NONE                             ) },
+  STI_DEGEN("(pret_strip_ref)")
+  STI_DEGEN("(pret_ptm)")
+  STI_DEGEN("(pret_arith_conv)")
+  STI_DEGEN("(pret_first)")
+  STI_DEGEN("(pret_first_ptr2ref)")
+  STI_DEGEN("(pret_second)")
+  STI_DEGEN("(pret_second_ptr2ref)")
+  #undef STS_DEGEN
 };
 #undef S
+#undef STS
 
 SimpleTypeInfo const &simpleTypeInfo(SimpleTypeId id)
 {
@@ -289,6 +294,12 @@ SimpleTypeInfo const &simpleTypeInfo(SimpleTypeId id)
 bool isComplexOrImaginary(SimpleTypeId id)
 {
   return ST_FLOAT_COMPLEX <= id && id <= ST_DOUBLE_IMAGINARY;
+}
+
+
+int simpleTypeReprSize(TypeSizes const &typeSizes, SimpleTypeId id)
+{
+  return typeSizes.getSize(simpleTypeSTS(id));
 }
 
 

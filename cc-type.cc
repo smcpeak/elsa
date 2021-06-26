@@ -163,9 +163,9 @@ string SimpleType::toCString() const
 }
 
 
-int SimpleType::reprSize() const
+int SimpleType::reprSize(TypeSizes const &typeSizes) const
 {
-  return simpleTypeReprSize(type);
+  return simpleTypeReprSize(typeSizes, type);
 }
 
 
@@ -406,7 +406,7 @@ string CompoundType::toCString() const
 }
 
 
-int CompoundType::reprSize() const
+int CompoundType::reprSize(TypeSizes const &typeSizes) const
 {
   int total = 0;
 
@@ -419,7 +419,7 @@ int CompoundType::reprSize() const
         // skip my own subobject, as that will be accounted for below
       }
       else {
-        total += iter.data()->ct->reprSize();
+        total += iter.data()->ct->reprSize(typeSizes);
       }
     }
   }
@@ -452,7 +452,7 @@ int CompoundType::reprSize() const
 
     if (keyword == K_UNION) {
       // representation size is max over field sizes
-      total = max(total, v->type->reprSize());
+      total = max(total, v->type->reprSize(typeSizes));
       continue;
     }
 
@@ -488,7 +488,7 @@ int CompoundType::reprSize() const
       continue;
     }
 
-    int membSize = v->type->reprSize();
+    int membSize = v->type->reprSize(typeSizes);
 
     if (membSize >= align) {
       // increase alignment if necessary, up to 4 bytes;
@@ -575,14 +575,17 @@ int CompoundType::getDataMemberPosition(StringRef name) const
 
 // TODO: Does this handle members of base classes correctly?  What
 // about virtual inheritance?
-int CompoundType::getDataMemberOffset(Variable *dataMember) const
+int CompoundType::getDataMemberOffset(
+  TypeSizes const &typeSizes, Variable *dataMember) const
 {
   int offset = 0;
   SFOREACH_OBJLIST(Variable, dataMembers, iter) {
     if (iter.data() == dataMember) {
       return offset;
     }
-    offset += iter.data()->type->reprSize();
+
+    // TODO: This does not take padding for alignment into account.
+    offset += iter.data()->type->reprSize(typeSizes);
   }
 
   xfailure(stringc << "getDataMemberOffset: no such member: "
@@ -979,10 +982,10 @@ string EnumType::toCString() const
 }
 
 
-int EnumType::reprSize() const
+int EnumType::reprSize(TypeSizes const &typeSizes) const
 {
   // this is the usual choice
-  return simpleTypeReprSize(ST_INT);
+  return simpleTypeReprSize(typeSizes, ST_INT);
 }
 
 
@@ -1574,9 +1577,9 @@ string CVAtomicType::leftString(bool /*innerParen*/) const
 }
 
 
-int CVAtomicType::reprSize() const
+int CVAtomicType::reprSize(TypeSizes const &typeSizes) const
 {
-  return atomic->reprSize();
+  return atomic->reprSize(typeSizes);
 }
 
 
@@ -1658,10 +1661,9 @@ string PointerType::rightString(bool /*innerParen*/) const
 }
 
 
-int PointerType::reprSize() const
+int PointerType::reprSize(TypeSizes const &typeSizes) const
 {
-  // a typical value .. (architecture-dependent)
-  return 4;
+  return typeSizes.getSize(TypeSizes::STS_POINTER);
 }
 
 
@@ -1718,9 +1720,9 @@ string ReferenceType::rightString(bool /*innerParen*/) const
   return s;
 }
 
-int ReferenceType::reprSize() const
+int ReferenceType::reprSize(TypeSizes const &typeSizes) const
 {
-  return 4;
+  return typeSizes.getSize(TypeSizes::STS_POINTER);
 }
 
 
@@ -2035,7 +2037,7 @@ string FunctionType::toString_withCV(CVFlags cv) const
 }
 
 
-int FunctionType::reprSize() const
+int FunctionType::reprSize(TypeSizes const &typeSizes) const
 {
   // thinking here about how this works when we're summing
   // the fields of a class with member functions ..
@@ -2108,13 +2110,14 @@ string ArrayType::rightString(bool /*innerParen*/) const
 }
 
 
-int ArrayType::reprSize() const
+int ArrayType::reprSize(TypeSizes const &typeSizes) const
 {
   if (!hasSize()) {
     throw_XReprSize(size == DYN_SIZE /*isDynamic*/);
   }
 
-  return eltType->reprSize() * size;
+  // TODO: This does not take alignment into account.
+  return eltType->reprSize(typeSizes) * size;
 }
 
 
@@ -2187,10 +2190,9 @@ string PointerToMemberType::rightString(bool /*innerParen*/) const
 }
 
 
-int PointerToMemberType::reprSize() const
+int PointerToMemberType::reprSize(TypeSizes const &typeSizes) const
 {
-  // a typical value .. (architecture-dependent)
-  return 4;
+  return typeSizes.getSize(TypeSizes::STS_POINTER_TO_MEMBER);
 }
 
 
@@ -2292,9 +2294,9 @@ string        TypedefType::rightString(bool innerParen) const
   return underlyingType()->rightString(innerParen);
 }
 
-int           TypedefType::reprSize() const
+int           TypedefType::reprSize(TypeSizes const &typeSizes) const
 {
-  return underlyingType()->reprSize();
+  return underlyingType()->reprSize(typeSizes);
 }
 
 bool          TypedefType::anyCtorSatisfies(TypePred &pred) const

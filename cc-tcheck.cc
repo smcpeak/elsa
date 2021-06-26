@@ -4390,7 +4390,7 @@ void D_array::tcheck(Env &env, Declarator::Tcheck &dt)
     if (size) {
       // try to evaluate the size to a constant
       int sz = 1;
-      ConstEval cenv(env.dependentVar);
+      ConstEval cenv(env.lang.m_typeSizes, env.dependentVar);
       CValue val = size->constEval(cenv);
       if (val.isError()) {
         // size didn't evaluate to a constant
@@ -6866,7 +6866,7 @@ static Type *internalTestingHooks
 
   if (funcName == env.special_constEval) {
     if (fl_count(args) == 2) {
-      ConstEval cenv(env.dependentVar);
+      ConstEval cenv(env.lang.m_typeSizes, env.dependentVar);
       CValue v1 = fl_nth(args, 0)->constEval(cenv);
       CValue v2 = fl_nth(args, 1)->constEval(cenv);
       if (v1 == v2) {
@@ -9200,7 +9200,7 @@ bool Expression::constEval(Env &env, int &result, bool &dependent) const
 {
   dependent = false;
 
-  ConstEval cenv(env.dependentVar);
+  ConstEval cenv(env.lang.m_typeSizes, env.dependentVar);
 
   CValue val = constEval(cenv);
   if (val.isError()) {
