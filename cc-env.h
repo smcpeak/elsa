@@ -25,9 +25,9 @@
 #include "ast_build.h"    // ElsaASTBuild
 #include "mtype-fwd.h"    // MType
 #include "template-fwd.h" // DelayedFuncInst
+#include "typelistiter-fwd.h"          // TypeListIter
 
 class StringTable;        // strtable.h
-class TypeListIter;       // typelistiter.h
 class ImplicitConversion; // implconv.h
 
 

@@ -5,8 +5,14 @@
 #ifndef TYPELISTITER_H
 #define TYPELISTITER_H
 
-#include "overload.h"        // Type, GrowArray, ArgumentInfo, etc.
-#include "fakelist.h"        // FakeList
+#include "typelistiter-fwd.h"          // forwards for this module
+
+// elsa
+#include "overload.h"                  // Type, GrowArray, ArgumentInfo, etc.
+
+// ast
+#include "fakelist.h"                  // FakeList
+
 
 // unifies the process of iterating over a list of types
 class TypeListIter {
