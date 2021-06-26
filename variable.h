@@ -4,20 +4,23 @@
 #ifndef VARIABLE_H
 #define VARIABLE_H
 
-#include "variable-fwd.h"      // forwards for this module
+#include "variable-fwd.h"              // forwards for this module
 
-#include "cc-ast-fwd.h"        // Expression, Function
-#include "cc-scope-fwd.h"      // Scope
-#include "cc-type-fwd.h"       // Type, etc.
+// elsa
+#include "cc-ast-fwd.h"                // Expression, Function
+#include "cc-flags.h"                  // DeclFlags, ScopeKind
+#include "cc-scope-fwd.h"              // Scope
+#include "cc-type-fwd.h"               // Type, etc.
 #include "cc-type-visitor-fwd.h"       // TypeVisitor
-#include "srcloc.h"            // SourceLoc
-#include "strtable.h"          // StringRef
-#include "cc-flags.h"          // DeclFlags, ScopeKind
-#include "sobjlist.h"          // SObjList
-#include "sobjset.h"           // SObjSet
-#include "serialno.h"          // INHERIT_SERIAL_BASE
-#include "packedword.h"        // PackedWord
-#include "template-fwd.h"      // TemplateInfo
+#include "packedword.h"                // PackedWord
+#include "template-fwd.h"              // TemplateInfo
+
+// smbase
+#include "serialno.h"                  // INHERIT_SERIAL_BASE
+#include "sobjlist.h"                  // SObjList
+#include "sobjset.h"                   // SObjSet
+#include "srcloc.h"                    // SourceLoc
+#include "strtable.h"                  // StringRef
 
 
 // This (after going through the string table) is used as Variable::name
