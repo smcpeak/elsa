@@ -19,7 +19,7 @@
 #include "cc-err.h"       // ErrorList
 #include "array.h"        // ArrayStack, ArrayStackEmbed
 #include "builtinops.h"   // CandidateSet
-#include "cc-lang.h"      // Bool3
+#include "cc-lang.h"      // CCLang, Bool3
 #include "ptrmap.h"       // PtrMap
 #include "mflags.h"       // MatchFlags
 #include "ast_build.h"    // ElsaASTBuild
@@ -27,7 +27,6 @@
 #include "template-fwd.h" // DelayedFuncInst
 
 class StringTable;        // strtable.h
-class CCLang;             // cc-lang.h
 class TypeListIter;       // typelistiter.h
 class ImplicitConversion; // implconv.h
 

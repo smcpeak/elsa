@@ -9,6 +9,8 @@
 #ifndef ELSA_CC_LANG_H
 #define ELSA_CC_LANG_H
 
+#include "cc-lang-fwd.h"               // forwards for this module
+
 // elsa
 #include "type-sizes.h"                // TypeSizes
 

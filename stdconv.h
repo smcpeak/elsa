@@ -18,15 +18,13 @@
 
 // elsa
 #include "cc-env-fwd.h"                // Env
+#include "cc-lang-fwd.h"               // CCLang
 #include "cc-type-fwd.h"               // AtomicType, Type, TypeFactory
 #include "cc_flags.h"                  // SpecialExpr
 
 // smbase
 #include "sm-macros.h"                 // ENUM_BITWISE_AND,OR
 #include "str.h"                       // string
-
-// fwd
-class CCLang;          // cc-lang.h
 
 
 // The kinds of Standard Conversions.  Any given pair of convertible

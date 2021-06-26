@@ -5,10 +5,8 @@
 #define LEXER_H
 
 #include "baselexer.h"      // BaseLexer
+#include "cc-lang-fwd.h"    // CCLang
 #include "cc_tokens.h"      // TokenType
-
-// fwd decls
-class CCLang;               // cc-lang.h
 
 
 // bounds-checking functional interfaces to tables declared in cc_tokens.h
