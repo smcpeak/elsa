@@ -38,7 +38,7 @@
 #include "cc-elaborate.h"      // this module
 #include "cc-ast.h"            // Declaration
 #include "trace.h"             // TRACE
-#include "cc_print.h"          // PrintEnv
+#include "cc-print.h"          // PrintEnv
 
 // cc-type.h
 Type *makeLvalType(TypeFactory &tfac, Type *underlying);

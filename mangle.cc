@@ -5,7 +5,7 @@
 #include "mangle.h"     // this module
 #include "template.h"   // Type, TemplateInfo, etc.
 #include "variable.h"   // Variable
-#include "cc_print.h"   // PrintEnv
+#include "cc-print.h"   // PrintEnv
 
 
 

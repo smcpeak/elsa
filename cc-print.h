@@ -1,8 +1,8 @@
-// cc_print.h            see license.txt for copyright and terms of use
+// cc-print.h            see license.txt for copyright and terms of use
 
 // This is a tree walk that prints out a functionally equivalent C++
 // program to the original.  The AST entry points are declared in
-// cc_print.ast.
+// cc-print.ast.
 
 // Originally adapted from cc_tcheck.cc by Daniel Wilkerson
 // dsw@cs.berkeley.edu, but substantially modified afterward by Scott
@@ -26,7 +26,7 @@
 // which is sent to 'm_out'.
 //
 // Printing is somewhat delicate because it's easy to have too many or
-// too few line breaks.  The general strategy used in cc_print is that
+// too few line breaks.  The general strategy used in cc-print is that
 // breaks are always and only inserted by code that prints *lists*.
 // That is, we put breaks exactly in those places where we are aware of
 // what is being printed on both sides of the break.  Individual

@@ -3,7 +3,7 @@
 
 #include "type-printer.h"              // this module
 
-#include "cc_print.h"                  // PrintEnv
+#include "cc-print.h"                  // PrintEnv
 
 
 // **************** class TypePrinter

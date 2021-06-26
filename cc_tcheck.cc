@@ -14,7 +14,7 @@
 #include "cc-ast-aux.h"     // class LoweredASTVisitor
 #include "cc-env.h"         // Env
 #include "trace.h"          // trace
-#include "cc_print.h"       // PrintEnv
+#include "cc-print.h"       // PrintEnv
 #include "strutil.h"        // decodeEscapes
 #include "cc-lang.h"        // CCLang
 #include "stdconv.h"        // test_getStandardConversion

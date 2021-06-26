@@ -180,7 +180,7 @@ EXT_OBJS    :=
 CC_AST_MODS += cc_tcheck.ast
 
 # pretty printer
-CC_AST_MODS += cc_print.ast
+CC_AST_MODS += cc-print.ast
 
 # control flow graph
 CC_AST_MODS += cfg.ast
@@ -311,7 +311,7 @@ ELSA_OBJS += cc.gr.gen.o
 ELSA_OBJS += parssppt.o
 ELSA_OBJS += cc-flags.o
 ELSA_OBJS += type-sizes.o
-ELSA_OBJS += cc_print.o
+ELSA_OBJS += cc-print.o
 ELSA_OBJS += type-printer.o
 ELSA_OBJS += cc-ast-aux.o
 ELSA_OBJS += variable.o
@@ -415,7 +415,7 @@ gendoc/configure.txt: configure
 gendoc/dependencies.dot:
 	$(PERL) $(SMBASE)/scan-depends.pl -r \
 	  -Xcc-env.h=1 -Xcc-type.h=1 -Xcc-flags.h=1 -Xcc-ast.h=1 -Xvariable.h=1 \
-          -Xcc_print.h -Xsprint.h \
+          -Xcc-print.h -Xsprint.h \
 	  -Xgeneric_aux.h -Xcc-ast-aux.h -Xcc-lang.h=1 \
 	  main.cc cc_tcheck.cc >$@
 

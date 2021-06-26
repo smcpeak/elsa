@@ -1,9 +1,9 @@
-// cc_print.cc            see license.txt for copyright and terms of use
-// code for cc_print.h
+// cc-print.cc            see license.txt for copyright and terms of use
+// code for cc-print.h
 
 // Adapted from cc_tcheck.cc by Daniel Wilkerson dsw@cs.berkeley.edu
 
-#include "cc_print.h"                  // this module
+#include "cc-print.h"                  // this module
 
 // elsa
 #include "cc-lang.h"                   // CCLang

@@ -10,7 +10,7 @@
 #include "cc-elaborate.h"              // ElabVisitor
 #include "cc-env.h"                    // Env
 #include "cc-lang.h"                   // CCLang
-#include "cc_print.h"                  // PrintEnv
+#include "cc-print.h"                  // PrintEnv
 #include "integrity.h"                 // IntegrityVisitor
 #include "parssppt.h"                  // ParseTreeAndTokens, treeMain
 #include "sprint.h"                    // structurePrint

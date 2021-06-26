@@ -5,11 +5,11 @@ builtinops.o: cc.ast.gen.h
 cc-ast-aux.o: cc.ast.gen.h
 cc-elaborate.o: cc.ast.gen.h
 cc-env.o: cc.ast.gen.h
+cc-print.o: cc.ast.gen.h
 cc-scope.o: cc.ast.gen.h
 cc-type.o: cc.ast.gen.h
 cc.gr.gen.o: cc.ast.gen.h
 cc.gr.gen.o: cc_tokens.h
-cc_print.o: cc.ast.gen.h
 cc_tcheck.o: cc.ast.gen.h
 ccparse.o: cc.ast.gen.h
 cfg.o: cc.ast.gen.h

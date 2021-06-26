@@ -4,7 +4,7 @@
 #include "ast_build.h"                 // module under test
 
 #include "cc-ast.h"                    // ModificationASTVisitor
-#include "cc_print.h"                  // PrintEnv, etc.
+#include "cc-print.h"                  // PrintEnv, etc.
 #include "elsaparse.h"                 // ElsaParse
 #include "integrity.h"                 // IntegrityVisitor
 

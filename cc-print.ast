@@ -1,9 +1,9 @@
-// cc_print.ast            see license.txt for copyright and terms of use
+// cc-print.ast            see license.txt for copyright and terms of use
 // extension module for cc.ast that supports printing C++
 // syntax from the AST
 
 verbatim {
-  class PrintEnv;                      // cc_print.h
+  class PrintEnv;                      // cc-print.h
 
   #include "cc-precedence.h"           // OperatorPrecedence
 }

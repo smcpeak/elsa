@@ -4,7 +4,7 @@
 
 #include "template.h"      // this module
 #include "cc-env.h"        // also kind of this module
-#include "cc_print.h"      // CTypePrinter
+#include "cc-print.h"      // CTypePrinter
 #include "trace.h"         // tracingSys
 #include "strtable.h"      // StringTable
 #include "cc-lang.h"       // CCLang
@@ -877,7 +877,7 @@ void STemplateArgument::traverse(TypeVisitor &vis)
 
 
 // NOTE: if you change this function, also change
-// printSTemplateArgument() in cc_print.cc
+// printSTemplateArgument() in cc-print.cc
 string STemplateArgument::toString() const
 {
   switch (kind) {
