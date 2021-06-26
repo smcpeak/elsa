@@ -796,17 +796,6 @@ Scope *Variable::getDenotedScope() const
 }
 
 
-void Variable::traverse(TypeVisitor &vis) {
-  if (!vis.visitVariable(this)) {
-    return;
-  }
-  if (type) {
-    type->traverse(vis);
-  }
-  vis.postvisitVariable(this);
-}
-
-
 // --------------------- OverloadSet -------------------
 OverloadSet::OverloadSet()
   : set()

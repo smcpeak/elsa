@@ -4,8 +4,6 @@
 #ifndef ELSA_CC_TYPE_FWD_H
 #define ELSA_CC_TYPE_FWD_H
 
-class TypeVisitor;
-
 class AtomicType;
 class SimpleType;
 class NamedAtomicType;

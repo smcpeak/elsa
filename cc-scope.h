@@ -11,7 +11,8 @@
 
 #include "cc-ast-fwd.h"   // Function, PQName, TranslationUnit
 #include "cc-env-fwd.h"   // Env
-#include "cc-type-fwd.h"  // TypeVisitor, CompoundType, etc.
+#include "cc-type-fwd.h"  // CompoundType, etc.
+#include "cc-type-visitor-fwd.h"       // TypeVisitor
 #include "cc-flags.h"     // AccessKeyword
 #include "srcloc.h"       // SourceLoc
 #include "strtable.h"     // StringRef

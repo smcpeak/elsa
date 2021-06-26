@@ -8,6 +8,7 @@ cc-env.o: cc.ast.gen.h
 cc-print.o: cc.ast.gen.h
 cc-scope.o: cc.ast.gen.h
 cc-tcheck.o: cc.ast.gen.h
+cc-type-visitor.o: cc.ast.gen.h
 cc-type.o: cc.ast.gen.h
 cc.gr.gen.o: cc-tokens.h
 cc.gr.gen.o: cc.ast.gen.h

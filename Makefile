@@ -302,6 +302,7 @@ ELSA_OBJS += sprint.o
 ELSA_OBJS += mangle.o
 ELSA_OBJS += cc-err.o
 ELSA_OBJS += cc-type.o
+ELSA_OBJS += cc-type-visitor.o
 ELSA_OBJS += stdconv.o
 ELSA_OBJS += implconv.o
 ELSA_OBJS += overload.o

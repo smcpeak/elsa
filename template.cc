@@ -81,15 +81,6 @@ int TypeVariable::reprSize() const
 }
 
 
-void TypeVariable::traverse(TypeVisitor &vis)
-{
-  if (!vis.visitAtomicType(this)) {
-    return;
-  }
-  vis.postvisitAtomicType(this);
-}
-
-
 bool TypeVariable::isAssociated() const
 {
   return typedefVar->getParameterizedEntity() != NULL;
@@ -118,29 +109,6 @@ int PseudoInstantiation::reprSize() const
   // be made in the context of checking (but not instantiating) a
   // template definition body
   return 4;
-}
-
-
-void PseudoInstantiation::traverse(TypeVisitor &vis)
-{
-  if (!vis.visitAtomicType(this)) {
-    return;
-  }
-
-  primary->traverse(vis);
-
-  if (vis.visitPseudoInstantiation_args(args)) {
-    FOREACH_OBJLIST_NC(STemplateArgument, args, iter) {
-      STemplateArgument *arg = iter.data();
-      if (vis.visitPseudoInstantiation_args_item(arg)) {
-        arg->traverse(vis);
-        vis.postvisitPseudoInstantiation_args_item(arg);
-      }
-    }
-    vis.postvisitPseudoInstantiation_args(args);
-  }
-
-  vis.postvisitAtomicType(this);
 }
 
 
@@ -180,44 +148,6 @@ string DependentQType::toMLString() const
 int DependentQType::reprSize() const
 {
   return 4;    // should not matter
-}
-
-
-void traverseTargs(TypeVisitor &vis, ObjList<STemplateArgument> &list)
-{
-  if (vis.visitDependentQTypePQTArgsList(list)) {
-    FOREACH_OBJLIST_NC(STemplateArgument, list, iter) {
-      STemplateArgument *sta = iter.data();
-      if (vis.visitDependentQTypePQTArgsList_item(sta)) {
-        sta->traverse(vis);
-        vis.postvisitDependentQTypePQTArgsList_item(sta);
-      }
-    }
-    vis.postvisitDependentQTypePQTArgsList(list);
-  }
-}
-
-void DependentQType::traverse(TypeVisitor &vis)
-{
-  if (!vis.visitAtomicType(this)) {
-    return;
-  }
-
-  first->traverse(vis);
-
-  PQName *name = rest;
-  while (name->isPQ_qualifier()) {
-    PQ_qualifier *qual = name->asPQ_qualifier();
-
-    traverseTargs(vis, qual->sargs);
-    name = qual->rest;
-  }
-
-  if (name->isPQ_template()) {
-    traverseTargs(vis, name->asPQ_template()->sargs);
-  }
-
-  vis.postvisitAtomicType(this);
 }
 
 
@@ -681,14 +611,6 @@ string TemplateInfo::templateName() const
 }
 
 
-void TemplateInfo::traverseArguments(TypeVisitor &vis)
-{
-  FOREACH_OBJLIST_NC(STemplateArgument, arguments, iter) {
-    iter.data()->traverse(vis);
-  }
-}
-
-
 void TemplateInfo::gdb()
 {
   debugPrint(0);
@@ -849,30 +771,6 @@ bool STemplateArgument::containsVariables(MType *map) const
 bool STemplateArgument::isomorphic(STemplateArgument const *obj) const
 {
   return equals(obj, MF_ISOMORPHIC|MF_MATCH);
-}
-
-
-void STemplateArgument::traverse(TypeVisitor &vis)
-{
-  if (!vis.visitSTemplateArgument(this)) {
-    return;
-  }
-
-  switch (kind) {
-    case STA_TYPE:
-      value.t->traverse(vis);
-      break;
-
-    case STA_DEPEXPR:
-      // TODO: at some point I will have to store actual expressions,
-      // and then I should traverse the expr
-      break;
-
-    default:
-      break;
-  }
-
-  vis.postvisitSTemplateArgument(this);
 }
 
 

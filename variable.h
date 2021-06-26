@@ -8,7 +8,8 @@
 
 #include "cc-ast-fwd.h"        // Expression, Function
 #include "cc-scope-fwd.h"      // Scope
-#include "cc-type-fwd.h"       // Type, TypeVisitor, etc.
+#include "cc-type-fwd.h"       // Type, etc.
+#include "cc-type-visitor-fwd.h"       // TypeVisitor
 #include "srcloc.h"            // SourceLoc
 #include "strtable.h"          // StringRef
 #include "cc-flags.h"          // DeclFlags, ScopeKind
