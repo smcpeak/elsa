@@ -4,6 +4,8 @@
 #ifndef MTYPE_H
 #define MTYPE_H
 
+#include "mtype-fwd.h"          // forwards for this module
+
 #include "mflags.h"             // MatchFlags
 #include "objmap.h"             // ObjMap
 #include "cc-type.h"            // Type
@@ -11,8 +13,6 @@
 #include "template.h"           // STemplateArgument
 
 class Env;                      // cc_env.h
-
-class MType;                    // this file
 
 
 // Internal MType: the core of the MType implementation, separated

@@ -21,12 +21,12 @@
 #include "ptrmap.h"       // PtrMap
 #include "mflags.h"       // MatchFlags
 #include "ast_build.h"    // ElsaASTBuild
+#include "mtype-fwd.h"    // MType
 
 class StringTable;        // strtable.h
 class CCLang;             // cc_lang.h
 class TypeListIter;       // typelistiter.h
 class SavedScopePair;     // fwd in this file
-class MType;              // mtype.h
 class ImplicitConversion; // implconv.h
 class DelayedFuncInst;    // template.h
 
