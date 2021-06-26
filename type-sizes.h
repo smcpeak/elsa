@@ -34,6 +34,7 @@ public:      // types
 
     STS_BOOL,                // C++ bool, C _Bool
     STS_CHAR,                // char, signed char, unsigned char
+    STS_WCHAR,               // C++ wchar_t
     STS_SHORT,               // short, unsigned short
     STS_INT,                 // int, unsigned int
     STS_LONG,                // long, unsigned long
@@ -50,7 +51,7 @@ public:      // types
     NUM_SCALAR_TYPE_SETS
   };
 
-public:      // data
+private:     // data
   // Size for each set.
   int m_stsSize[NUM_SCALAR_TYPE_SETS];
 
@@ -59,13 +60,18 @@ public:      // class methods
   static char const *stsName(ScalarTypeSet sts);
 
 public:      // methods
-  TypeSizes() { set_host_compiler(); }
+  TypeSizes() { set_build_compiler(); }
+
+  // Get the size of 'sts'.
+  int getSize(ScalarTypeSet sts) const;
 
   // Use the sizes that the compiler used to compie Elsa uses.
-  void set_host_compiler();
+  void set_build_compiler();
 
-  // Configure to emulate Linux/x86_64.
+  // Configure to emulate specific platforms.
   void set_linux_x86_64();
+  void set_windows_x86_64();
+  void set_windows_x86();
 
   // Return a string where each line specifies one of the sizes.  This
   // is meant for debugging purposes.
