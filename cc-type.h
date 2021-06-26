@@ -40,18 +40,10 @@
 #include "serialno.h"     // INHERIT_SERIAL_BASE
 #include "mflags.h"       // MatchFlags
 #include "template-fwd.h" // STemplateArgument, etc.
+#include "cc-ast-fwd.h"   // Expression, Declaration, etc.
 
 class Variable;           // variable.h
 class Env;                // cc_env.h
-class TS_classSpec;       // cc.ast
-class Expression;         // cc.ast
-class TemplateArgument;   // cc.ast
-class D_pointer;          // cc.ast
-class D_reference;        // cc.ast
-class D_func;             // cc.ast
-class D_ptrToMember;      // cc.ast
-class TypeSpecifier;      // cc.ast
-class Declaration;        // cc.ast
 class MType;              // mtype.h
 
 
