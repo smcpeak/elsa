@@ -5,7 +5,7 @@
 verbatim {
   class PrintEnv;                      // cc_print.h
 
-  #include "cc_precedence.h"           // OperatorPrecedence
+  #include "cc-precedence.h"           // OperatorPrecedence
 }
 
 

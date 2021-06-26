@@ -1,4 +1,4 @@
-// cc_precedence.h
+// cc-precedence.h
 // OperatorPrecedence enum.
 
 #ifndef ELSA_CC_PRECEDENCE_H
