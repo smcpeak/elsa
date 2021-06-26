@@ -8,10 +8,8 @@
 #include "cc-type-fwd.h"   // Type
 #include "cc_flags.h"      // BinaryOp
 #include "okhashtbl.h"     // OwnerKHashTable
+#include "overload-fwd.h"  // OverloadResolver, ArgumentInfo
 #include "variable-fwd.h"  // Variable
-
-class OverloadResolver;    // overload.h
-class ArgumentInfo;        // overload.h
 
 
 // a set of candidates, usually one line of 13.6; since many of the

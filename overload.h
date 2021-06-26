@@ -5,6 +5,8 @@
 #ifndef OVERLOAD_H
 #define OVERLOAD_H
 
+#include "overload-fwd.h"  // forwards for this module
+
 #include "sobjlist.h"      // SObjList
 #include "array.h"         // ArrayStack
 #include "implconv.h"      // ImplicitConversion, StandardConversion
