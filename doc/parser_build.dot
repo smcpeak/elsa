@@ -3,7 +3,7 @@
 
 digraph "Elsa Parser Build Process" {
 
-  "cc_tokens.ids" -> "Elkhound";
+  "cc-tokens.ids" -> "Elkhound";
   "cc.gr" -> "Elkhound";
   "gnu.gr" -> "Elkhound";
 

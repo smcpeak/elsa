@@ -26,28 +26,28 @@ digraph "Elsa Lexer Build Process" {
   "flex" -> "lexer.yy.cc";
 
 
-  // ------- right half: produce cc_tokens.* -------
+  // ------- right half: produce cc-tokens.* -------
 
-  "cc_tokens.tok" -> "make-token-files";
+  "cc-tokens.tok" -> "make-token-files";
   "gnu_ext.tok" -> "make-token-files";
 
   "make-token-files" [
     shape = rectangle
   ];
 
-  "make-token-files" -> "cc_tokens.h";
-  "make-token-files" -> "cc_tokens.cc";
-  "make-token-files" -> "cc_tokens.ids";
+  "make-token-files" -> "cc-tokens.h";
+  "make-token-files" -> "cc-tokens.cc";
+  "make-token-files" -> "cc-tokens.ids";
 
 
   // ------- extra --------
 
-  "cc_tokens.h" -> "lexer.yy.cc" [
+  "cc-tokens.h" -> "lexer.yy.cc" [
     style = dashed
     constraint = false
   ];
 
-  "cc_tokens.ids" -> "cc.gr" [
+  "cc-tokens.ids" -> "cc.gr" [
     style = dashed
   ];
 

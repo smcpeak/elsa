@@ -195,14 +195,14 @@ add type checking entry points and annotations, and an implementation
 of all of those type checking functions.  It's the most complicated
 part of the parser.
 
-<li><a href="cc_tokens.tok">cc_tokens.tok</a>:
+<li><a href="cc-tokens.tok">cc-tokens.tok</a>:
 This file lists all of the kinds of tokens the lexer recognizes.  It's
 designed to be extended simply by appending.  The script
 <a href="make-token-files">make-token-files</a>
 takes this as input, and generates
-<a href="cc_tokens.h">cc_tokens.h</a>,
-<a href="cc_tokens.cc">cc_tokens.cc</a> and
-<a href="cc_tokens.ids">cc_tokens.ids</a>.  This last file is then
+<a href="cc-tokens.h">cc-tokens.h</a>,
+<a href="cc-tokens.cc">cc-tokens.cc</a> and
+<a href="cc-tokens.ids">cc-tokens.ids</a>.  This last file is then
 included into <a href="cc.gr">cc.gr</a> (the others participate in
 compilation in the obvious way).
 

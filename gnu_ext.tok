@@ -1,5 +1,5 @@
 // gnu_ext.tok  -*- c++ -*-
-// extension to cc_tokens.tok, for GNU language extensions
+// extension to cc-tokens.tok, for GNU language extensions
 
 // flags:
 //   MS(m): token has multiple spellings

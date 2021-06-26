@@ -14,9 +14,9 @@
 *.log
 *.o
 .gdbinit
-cc_tokens.cc
-cc_tokens.h
-cc_tokens.ids
+cc-tokens.cc
+cc-tokens.h
+cc-tokens.ids
 config.mk
 in/*.error*.cc
 in/big/*.i

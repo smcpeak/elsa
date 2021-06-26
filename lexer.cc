@@ -55,7 +55,7 @@
 
 
 // -------------------- TokenType ---------------------
-// these aren't emitted into cc_tokens.cc because doing so would
+// these aren't emitted into cc-tokens.cc because doing so would
 // make that output dependent on smbase/xassert.h
 char const *toString(TokenType type)
 {

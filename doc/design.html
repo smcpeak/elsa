@@ -198,7 +198,7 @@ does not automatically choose the mapping from lexer token codes
 Elsa build process uses a script called
 <a href="../make-token-files">make-token-files</a> to assign the mapping.
 It uses the token descriptions supplied by
-<a href="../cc_tokens.tok">cc_tokens.tok</a> and
+<a href="../cc-tokens.tok">cc-tokens.tok</a> and
 <a href="../gnu_ext.tok">gnu_ext.tok</a>.
 
 
@@ -256,7 +256,7 @@ defined, while the reduction actions associated with the productions
 are written in C++.  The parser description is a combination of three
 files:
 <ul>
-<li><a href="../cc_tokens.ids">cc_tokens.ids</a>: assigns token codes
+<li><a href="../cc-tokens.ids">cc-tokens.ids</a>: assigns token codes
     (automatically produced, as described above)
 <li><a href="../cc.gr">cc.gr</a>: base C++ grammar
 <li><a href="../gnu.gr">gnu.gr</a>: extensions for gcc and C99

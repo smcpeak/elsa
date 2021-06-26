@@ -67,7 +67,7 @@ option unreachable_terminals 6;
 verbatim {
 
 #include "cc-type.h"      // type identifiers like ST_CHAR (r)
-#include "cc_tokens.h"    // lexer's token ids for classify()
+#include "cc-tokens.h"    // lexer's token ids for classify()
 #include "trace.h"        // trace
 #include "cc-ast.h"       // C++ abstract syntax
 #include "cc-lang.h"      // CCLang
@@ -176,7 +176,7 @@ public:
 
 terminals {
   // grab token list
-  include("cc_tokens.ids")
+  include("cc-tokens.ids")
 
   // all literals are yielded as their syntax strings
   token(StringRef) TOK_INT_LITERAL ;

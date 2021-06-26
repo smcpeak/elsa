@@ -171,7 +171,7 @@ validate-extradep: all
 # --------------------- extension modules ----------------------
 # base modules
 LEXER_MODS  := cc.lex
-TOK_MODS    := cc_tokens.tok
+TOK_MODS    := cc-tokens.tok
 CC_AST_MODS := cc.ast
 CC_GR_MODS  := cc.gr
 EXT_OBJS    :=
@@ -220,7 +220,7 @@ LEXER_OBJS += type-sizes.o
 LEXER_OBJS += baselexer.o
 LEXER_OBJS += lexer.o
 LEXER_OBJS += lexer.yy.o
-LEXER_OBJS += cc_tokens.o
+LEXER_OBJS += cc-tokens.o
 
 # program to test the lexer alone
 tlexer.exe: tlexer.o $(LEXER_OBJS) $(LIBS)
@@ -246,12 +246,12 @@ lexer.lex: $(LEXER_MODS) merge-lexer-exts.pl
 #
 # This is written as a pattern rule because multi-target non-pattern
 # rules are broken.  It is only to be used when "%" is "cc".
-TOCLEAN += cc_tokens.h cc_tokens.cc cc_tokens.ids
-%_tokens.h %_tokens.cc %_tokens.ids: %_dummy.txt $(TOK_MODS) make-token-files
+TOCLEAN += cc-tokens.h cc-tokens.cc cc-tokens.ids
+%-tokens.h %-tokens.cc %-tokens.ids: %-dummy.txt $(TOK_MODS) make-token-files
 	test "x$*" = "xcc"
-	rm -f cc_tokens.h cc_tokens.cc cc_tokens.ids
+	rm -f cc-tokens.h cc-tokens.cc cc-tokens.ids
 	$(PERL) make-token-files $(TOK_MODS)
-	chmod a-w cc_tokens.h cc_tokens.cc cc_tokens.ids
+	chmod a-w cc-tokens.h cc-tokens.cc cc-tokens.ids
 
 
 # Run astgen to generate the AST implementation.
@@ -259,7 +259,7 @@ TOCLEAN += cc_tokens.h cc_tokens.cc cc_tokens.ids
 # This is written as a pattern rule because multi-target non-pattern
 # rules are broken.  It is only to be used when "%" is "cc".
 TOCLEAN += *.ast.gen.h *.ast.gen.cc
-%.ast.gen.h %.ast.gen.cc: %_dummy.txt $(CC_AST_MODS) $(AST)/astgen.exe
+%.ast.gen.h %.ast.gen.cc: %-dummy.txt $(CC_AST_MODS) $(AST)/astgen.exe
 	test "x$*" = "xcc"
 	rm -f cc.ast.gen.h cc.ast.gen.cc
 	$(AST)/astgen.exe -occ.ast.gen $(CC_AST_MODS)
@@ -271,7 +271,7 @@ TOCLEAN += *.ast.gen.h *.ast.gen.cc
 # This is written as a pattern rule because multi-target non-pattern
 # rules are broken.  It is only to be used when "%" is "cc".
 TOCLEAN += cc.gr.gen.h cc.gr.gen.cc cc.gr.gen.out
-%.gr.gen.h %.gr.gen.cc %.gr.gen.out: $(CC_GR_MODS) %_tokens.ids $(ELKHOUND)/elkhound.exe
+%.gr.gen.h %.gr.gen.cc %.gr.gen.out: $(CC_GR_MODS) %-tokens.ids $(ELKHOUND)/elkhound.exe
 	test "x$*" = "xcc"
 	rm -f cc.gr.gen.h cc.gr.gen.cc cc.gr.gen.out
 	$(ELKHOUND)/elkhound.exe -v -tr lrtable -o cc.gr.gen $(CC_GR_MODS)
@@ -468,10 +468,10 @@ doc: gendoc gendoc/configure.txt gendoc/dependencies.png gendoc/3.4.5.png
 # since we filter the generated files.
 #
 # sm: I haven't carefully inspected the set of files counted,
-# and it appears to not count cc_tokens.tok (which it should).
+# and it appears to not count cc-tokens.tok (which it should).
 # I don't care about fixing right now it though.
 
-GENREGEX := '\.gen\.\|lexer\.yy\|cc_tokens'
+GENREGEX := '\.gen\.\|lexer\.yy\|cc-tokens'
 .PHONY: count-loc
 count-loc:
 	@echo

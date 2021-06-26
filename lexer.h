@@ -6,10 +6,10 @@
 
 #include "baselexer.h"      // BaseLexer
 #include "cc-lang-fwd.h"    // CCLang
-#include "cc_tokens.h"      // TokenType
+#include "cc-tokens.h"      // TokenType
 
 
-// bounds-checking functional interfaces to tables declared in cc_tokens.h
+// bounds-checking functional interfaces to tables declared in cc-tokens.h
 char const *toString(TokenType type);
 TokenFlag tokenFlags(TokenType type);
 
