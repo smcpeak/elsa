@@ -1,7 +1,7 @@
 // cc-print.cc            see license.txt for copyright and terms of use
 // code for cc-print.h
 
-// Adapted from cc_tcheck.cc by Daniel Wilkerson dsw@cs.berkeley.edu
+// Adapted from cc-tcheck.cc by Daniel Wilkerson dsw@cs.berkeley.edu
 
 #include "cc-print.h"                  // this module
 

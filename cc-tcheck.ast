@@ -1,10 +1,10 @@
 // -*- c++ -*-
-// cc_tcheck.ast            see license.txt for copyright and terms of use
+// cc-tcheck.ast            see license.txt for copyright and terms of use
 // extension module for cc.ast that defines the entry points
 // for the type checker, and the annotations it produces
 
 // the implementations for the functions declared here are in
-// cc_tcheck.cc and cc-ast-aux.cc
+// cc-tcheck.cc and cc-ast-aux.cc
 
 
 // extension modules' first "verbatim" section goes after
@@ -190,7 +190,7 @@ class PQName {
   // LF_DECLARATOR if this PQName is the name of a declarator.
   //
   // 2005-03-14: Do not call this directly if the name might be
-  // ambiguous; use 'tcheckPQName' (in cc_tcheck.cc) instead.
+  // ambiguous; use 'tcheckPQName' (in cc-tcheck.cc) instead.
   pure_virtual void tcheck_pq(Env &env, Scope *scope = NULL,
                               LookupFlags lflags = LF_NONE);
 
@@ -222,7 +222,7 @@ class TypeSpecifier {
 
   // since several of the type specifiers use names, and names are
   // scoped, but we don't want later analyses to have to know about
-  // scopes, for those specifiers that use names cc_tcheck writes down
+  // scopes, for those specifiers that use names cc-tcheck writes down
   // which type it refers to
 
   -> TS_name {
@@ -453,7 +453,7 @@ class IDeclarator {
   -> D_array {
        // client analyses find it difficult to know whether this
        // D_array means "array" or "new[] size", so I'm going to
-       // write down in cc_tcheck which one this is
+       // write down in cc-tcheck which one this is
        public bool isNewSize = false;
      }
 
@@ -665,7 +665,7 @@ class Expression {
      }
 
   // extended tcheck interface for lookups that yield sets; see
-  // tcheckExpression_set() in cc_tcheck.cc
+  // tcheckExpression_set() in cc-tcheck.cc
   -> E_addrOf {
        public Type *itcheck_addrOf_set(Env &env, Expression *&replacement,
                                        LookupFlags flags, LookupSet &set);

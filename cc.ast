@@ -6,7 +6,7 @@
 
 
 // Note that the description in this file is not the whole AST, just
-// the base level of it.  Other files, such as cc_tcheck.ast and
+// the base level of it.  Other files, such as cc-tcheck.ast and
 // gnu.ast, extend the description here by adding additional fields,
 // methods and even AST node types.  The astgen tool (driven by a
 // Makefile rule) combines the various descriptions into one before

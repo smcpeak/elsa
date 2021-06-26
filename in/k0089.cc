@@ -2,7 +2,7 @@
 
 // originally found in package 'fluxbox_0.9.11-1sarge0'
 
-// Assertion failed: vfd == this, file cc_tcheck.cc line 694
+// Assertion failed: vfd == this, file cc-tcheck.cc line 694
 // Failure probably related to code near a.ii:7:24
 // current location stack:
 //   a.ii:7:24

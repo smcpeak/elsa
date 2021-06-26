@@ -23,7 +23,7 @@ private:     // funcs
 
 public:      // funcs
   // The integrity checks depend on whether we are in an uninstantiated
-  // template (see comments on 'm_inTemplate' in cc_tcheck.ast for
+  // template (see comments on 'm_inTemplate' in cc-tcheck.ast for
   // exactly what that means), which must be passed as the 'inTemplate'
   // parameter.
   //

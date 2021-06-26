@@ -2,7 +2,7 @@
 
 // originally found in package aplus-fsf
 
-// Assertion failed: dt.funcSyntax, file cc_tcheck.cc line 2228
+// Assertion failed: dt.funcSyntax, file cc-tcheck.cc line 2228
 
 // ERR-MATCH: Assertion failed: dt.funcSyntax
 

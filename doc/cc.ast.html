@@ -35,8 +35,8 @@ One way to walk over the AST is to write a set of mutually-recursive
 functions that manually traverse the AST edges.  This works well for
 analyses that are sensitive to context, and/or use results from
 subtrees in nontrivial ways.  The type checker
-(<a href="../cc_tcheck.ast">cc_tcheck.ast</a>,
-<a href="../cc_tcheck.cc">cc_tcheck.cc</a>) is such an analysis.
+(<a href="../cc-tcheck.ast">cc-tcheck.ast</a>,
+<a href="../cc-tcheck.cc">cc-tcheck.cc</a>) is such an analysis.
 
 <p>
 An alternative, which is less work if the analysis is mostly
@@ -161,7 +161,7 @@ Now, what really makes them screwy is that they're inside out!  Taking
 the last example above, <tt>func</tt> is being declared to be a
 pointer to a function which returns a pointer to pointer to an
 integer--you read it from right to left.  The type checker
-(<a href="../cc_tcheck.cc">cc_tcheck.cc</a>) sorts the types out into
+(<a href="../cc-tcheck.cc">cc-tcheck.cc</a>) sorts the types out into
 a more usable representation
 (<a href="cc-type.html">cc-type</a>), but they start as above.
 

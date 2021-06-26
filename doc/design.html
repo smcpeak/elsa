@@ -286,7 +286,7 @@ The AST is described by a language that is input to the
 comprised of several files:
 <ul>
 <li><a href="../cc.ast">cc.ast</a>: base C++ language AST
-<li><a href="../cc_tcheck.ast">cc_tcheck.ast</a>: declares AST node methods
+<li><a href="../cc-tcheck.ast">cc-tcheck.ast</a>: declares AST node methods
     and annotation fields for use by the type checker
 <li><a href="../cc-print.ast">cc-print.ast</a>: methods for pretty printing
 <li><a href="../cc-elaborate.ast">cc-elaborate.ast</a>: elaboration methods
@@ -363,7 +363,7 @@ the actual reduction actions.
 <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 <h1 id="typechecking">3. Type Checking</h1>
 
-<p>The type checker (<a href="../cc_tcheck.cc">cc_tcheck.cc</a>) does
+<p>The type checker (<a href="../cc-tcheck.cc">cc-tcheck.cc</a>) does
 five major jobs:
 <ul>
   <li><a class="toc" href="#disambiguation">3.1 AST disambiguation</a>
@@ -902,7 +902,7 @@ each other.  Flaws: analysis must fit into the framework.
 <p>
 For implementing an analysis, programmers are of course free to simply
 write a custom traversal similar to the type checker
-(<a href="../cc_tcheck.cc"><code>cc_tcheck.cc</code></a>).  However,
+(<a href="../cc-tcheck.cc"><code>cc-tcheck.cc</code></a>).  However,
 for many analyses it is convenient to extend the ASTVisitor, a class
 created automatically by <code>astgen</code>.  A simple example is the
 NameChecker in <a href="../main.cc"><code>main.cc</code></a>, which does
@@ -1129,7 +1129,7 @@ This approach ensures we can write robust tests for any feature, even those
 not directly connected to accepting or rejecting the input.
 The set of all such special functions is defined in the
 <code>internalTestingHooks()</code> function in
-<a href="../cc_tcheck.cc"><code>cc_tcheck.cc</code></a>.
+<a href="../cc-tcheck.cc"><code>cc-tcheck.cc</code></a>.
 
 <h3 id="large_packages">7.1.4 Running Elsa on large software packages</h3>
 

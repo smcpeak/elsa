@@ -71,7 +71,7 @@ SMFLEX  = $(SMFLEXDIR)/smflex -b
 
 
 # ---- Options within this Makefile ----
-# Modules to compile with coverage info, for example 'cc_tcheck'.
+# Modules to compile with coverage info, for example 'cc-tcheck'.
 #
 # I do not build them all with coverage info because it takes about 25%
 # longer to compile for each module with coverage info.
@@ -177,7 +177,7 @@ CC_GR_MODS  := cc.gr
 EXT_OBJS    :=
 
 # type checker
-CC_AST_MODS += cc_tcheck.ast
+CC_AST_MODS += cc-tcheck.ast
 
 # pretty printer
 CC_AST_MODS += cc-print.ast
@@ -287,7 +287,7 @@ ELSA_OBJS += integrity.o
 ELSA_OBJS += astvisit.o
 ELSA_OBJS += template.o
 ELSA_OBJS += cc-env.o
-ELSA_OBJS += cc_tcheck.o
+ELSA_OBJS += cc-tcheck.o
 ELSA_OBJS += const_eval.o
 ELSA_OBJS += implint.o
 ELSA_OBJS += serialno.o
@@ -417,7 +417,7 @@ gendoc/dependencies.dot:
 	  -Xcc-env.h=1 -Xcc-type.h=1 -Xcc-flags.h=1 -Xcc-ast.h=1 -Xvariable.h=1 \
           -Xcc-print.h -Xsprint.h \
 	  -Xgeneric_aux.h -Xcc-ast-aux.h -Xcc-lang.h=1 \
-	  main.cc cc_tcheck.cc >$@
+	  main.cc cc-tcheck.cc >$@
 
 gendoc/3.4.5.dot: ccparse.exe in/std/3.4.5.cc
 	./ccparse.exe -tr printHierarchies in/std/3.4.5.cc | \

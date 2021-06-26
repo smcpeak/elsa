@@ -266,7 +266,7 @@ template instantiations.  It's not used right now.
 
 <p>
 When the type checker
-(<a href="../cc_tcheck.cc">cc_tcheck.cc</a>)
+(<a href="../cc-tcheck.cc">cc-tcheck.cc</a>)
 constructs types, it actually does so via the
 <b>TypeFactory</b> interface.  This is to make it possible for someone
 to build annotations on top of my Types, instead of going in and
@@ -279,7 +279,7 @@ in terms of the core functions.
 The present form of TypeFactory is driven by the existence of one
 project that has such an annotation system.  As new analyses arise
 that may need to customize the way types are built, I'll add new entry
-points to TypeFactory and modify cc_tcheck.cc to use them.
+points to TypeFactory and modify cc-tcheck.cc to use them.
 
 <p>
 I consider the presence of the SourceLoc parameter in most of the

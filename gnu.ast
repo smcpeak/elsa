@@ -3,7 +3,7 @@
 
 // sm: this contains both the representation language and the
 // annotations used by the type checker, unlike the cc.ast
-// vs. cc_tcheck.ast split, since there seemed little profit in that
+// vs. cc-tcheck.ast split, since there seemed little profit in that
 // split for this file
 
 verbatim {

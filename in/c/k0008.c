@@ -7,7 +7,7 @@
 // a.i:10:25: error: variable name `func' used as if it were a type
 // a.i:10:13: error: variable name `func' used as if it were a type
 // a.i:10:19: error: variable name `func' used as if it were a type
-// Assertion failed: unexpected ASTTypeId ambiguity, file cc_tcheck.cc line 864
+// Assertion failed: unexpected ASTTypeId ambiguity, file cc-tcheck.cc line 864
 
 // ERR-MATCH: as if it were a type
 

@@ -1,5 +1,5 @@
-// cc_tcheck.cc            see license.txt for copyright and terms of use
-// C++ typechecker, implemented as methods declared in cc_tcheck.ast
+// cc-tcheck.cc            see license.txt for copyright and terms of use
+// C++ typechecker, implemented as methods declared in cc-tcheck.ast
 
 // Throughout, references are made to the ISO C++ Standard:
 //
@@ -6420,7 +6420,7 @@ void E_funCall::inner1_itcheck(Env &env, LookupSet &candidates)
   //
   // sm: No!  That defeats the entire purpose of inner1/2.  See the
   // comments above the block that calls inner1/2, and the comments
-  // near the declarations of inner1/2 in cc_tcheck.ast.
+  // near the declarations of inner1/2 in cc-tcheck.ast.
   //args = tcheckArgExprList(args, env);
 
   // 2005-02-11: Doing this simplifies a number of things.  In general

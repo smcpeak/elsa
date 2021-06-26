@@ -431,7 +431,7 @@ STATICDEF char const *CompoundType::keywordName(Keyword k)
 }
 
 
-// Elsewhere (cc_tcheck.cc), we rely on TypeIntr and Keyword having
+// Elsewhere (cc-tcheck.cc), we rely on TypeIntr and Keyword having
 // compatible numeric values.  I do not want to continue that.
 STATICDEF TypeIntr CompoundType::toTypeIntr(Keyword k)
 {
@@ -1993,7 +1993,7 @@ FunctionType::~FunctionType()
 
 
 // sm: I moved 'isCopyConstructorFor' and 'isCopyAssignOpFor' out into
-// cc_tcheck.cc since the rules are fairly specific to the analysis
+// cc-tcheck.cc since the rules are fairly specific to the analysis
 // being performed there
 
 

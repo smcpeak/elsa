@@ -1,5 +1,5 @@
 // generic_amb.h
-// generic ambiguity resolution; was in cc_tcheck.cc, but gnu.cc
+// generic ambiguity resolution; was in cc-tcheck.cc, but gnu.cc
 // wants to use it too
 
 #ifndef GENERIC_AMB_H
@@ -11,7 +11,7 @@
 #include "trace.h"          // TRACE
 
 
-// defined in cc_tcheck.cc
+// defined in cc-tcheck.cc
 bool noDisambErrors(ErrorList const &list);
 
 
@@ -24,7 +24,7 @@ string ambiguousNodeName(NODE const *n)
   return n->kindName();
 }
 
-// definitions in cc_tcheck.cc
+// definitions in cc-tcheck.cc
 string ambiguousNodeName(Declarator const *n);
 string ambiguousNodeName(Expression const *e);
 

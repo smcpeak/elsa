@@ -4,7 +4,7 @@
 // program to the original.  The AST entry points are declared in
 // cc-print.ast.
 
-// Originally adapted from cc_tcheck.cc by Daniel Wilkerson
+// Originally adapted from cc-tcheck.cc by Daniel Wilkerson
 // dsw@cs.berkeley.edu, but substantially modified afterward by Scott
 // McPeak.
 

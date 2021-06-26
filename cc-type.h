@@ -1123,10 +1123,10 @@ public:
 // The rationale for this design is I do not want to force clients to
 // have to "skip typedefs" everywhere since that is error-prone.
 //
-// Currently (2021-06-18), TypedefType is never created by cc_tcheck.
+// Currently (2021-06-18), TypedefType is never created by cc-tcheck.
 // Instead, I intend to create this in an Elsa client in order to get
 // synthesized AST to use it.  However, my hope is to eventually have
-// cc_tcheck create these.
+// cc-tcheck create these.
 //
 class TypedefType : public Type {
 public:      // data
@@ -1432,7 +1432,7 @@ char *type_toString(Type const *t);
 //   f(a);
 //
 // the argument 'a' has type 'int' and is an lvalue according to the
-// standard, whereas cc_tcheck.cc just says it's an 'int &'.
+// standard, whereas cc-tcheck.cc just says it's an 'int &'.
 
 
 #endif // CC_TYPE_H

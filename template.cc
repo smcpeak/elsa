@@ -2773,7 +2773,7 @@ Variable *Env::instantiateClassTemplate
 }
 
 
-// defined in cc_tcheck.cc
+// defined in cc-tcheck.cc
 void tcheckDeclaratorPQName(Env &env, ScopeSeq &qualifierScopes,
                             PQName *name, LookupFlags lflags);
 

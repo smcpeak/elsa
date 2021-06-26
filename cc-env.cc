@@ -3804,7 +3804,7 @@ E_intLit *Env::build_E_intLit(int i)
 }
 
 
-// implemented in cc_tcheck.cc
+// implemented in cc-tcheck.cc
 Type *makeLvalType(TypeFactory &tfac, Type *underlying);
 
 E_variable *Env::build_E_variable(Variable *var)
@@ -5660,7 +5660,7 @@ DisambiguationErrorTrapper::~DisambiguationErrorTrapper()
 // type checking.
 
 // make a address-of operator.  This is not a method because it's used in
-// cc_tcheck to elaborate implicit conversions
+// cc-tcheck to elaborate implicit conversions
 E_addrOf *makeAddr(TypeFactory &tfac, SourceLoc loc, Expression *e)
 {
   // "&e"

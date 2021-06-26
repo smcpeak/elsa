@@ -116,7 +116,7 @@ public:      // funcs
 
 // this is a container for the evaluation state; the actual
 // evaluation methods are associated with the AST nodes,
-// and declared in cc_tcheck.ast
+// and declared in cc-tcheck.ast
 //
 // 2005-03-30: It's become almost an empty container since I
 // added the 'CValue' concept.  So be it.

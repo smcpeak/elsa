@@ -2,7 +2,7 @@
 
 // originally found in package buildtool
 
-// Assertion failed: env.disambiguationNestingLevel == 0, file cc_tcheck.cc
+// Assertion failed: env.disambiguationNestingLevel == 0, file cc-tcheck.cc
 // line 1836
 
 // ERR-MATCH: env.disambiguationNestingLevel == 0

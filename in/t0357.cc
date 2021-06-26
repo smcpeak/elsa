@@ -14,7 +14,7 @@ void C::bar()
 
   (foo)();
 
-  // this syntax causes a segfault with cc_tcheck.cc version 1.475
+  // this syntax causes a segfault with cc-tcheck.cc version 1.475
   ((((foo))))();
 }
 

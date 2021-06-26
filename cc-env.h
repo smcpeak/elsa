@@ -653,7 +653,7 @@ public:      // funcs
   // points of extension: These functions do nothing in the base
   // Elsa parser, but can be overridden in client analyses to
   // hook into the type checking process.  See their call sites in
-  // cc_tcheck.cc for more info on when they're called.
+  // cc-tcheck.cc for more info on when they're called.
 
   virtual void checkFuncAnnotations(FunctionType *ft, D_func *syntax);
 

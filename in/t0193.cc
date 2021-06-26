@@ -1,5 +1,5 @@
 // t0193.cc
-// Assertion failed: ctor0, file cc_tcheck.cc line 1488
+// Assertion failed: ctor0, file cc-tcheck.cc line 1488
 // from ostream.i, around line 7010
 
 // one problem: a disambiguating error in one place prevents all
