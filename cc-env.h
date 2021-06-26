@@ -4,31 +4,34 @@
 #ifndef CC_ENV_H
 #define CC_ENV_H
 
-#include "cc-env-fwd.h"   // forwards for this module
+#include "cc-env-fwd.h"                // forwards for this module
 
-#include "cc-type.h"      // Type, AtomicType, etc. (r)
-#include "strobjdict.h"   // StrObjDict
-#include "owner.h"        // Owner
-#include "exc.h"          // xBase
-#include "sobjlist.h"     // SObjList
-#include "objstack.h"     // ObjStack
-#include "sobjstack.h"    // SObjStack
-#include "cc-ast.h"       // C++ ast components
-#include "variable.h"     // Variable (r)
-#include "cc-scope.h"     // Scope
-#include "cc-err.h"       // ErrorList
-#include "array.h"        // ArrayStack, ArrayStackEmbed
-#include "builtinops.h"   // CandidateSet
-#include "cc-lang.h"      // CCLang, Bool3
-#include "ptrmap.h"       // PtrMap
-#include "mflags.h"       // MatchFlags
-#include "ast_build.h"    // ElsaASTBuild
-#include "mtype-fwd.h"    // MType
-#include "template-fwd.h" // DelayedFuncInst
+// elsa
+#include "ast_build.h"                 // ElsaASTBuild
+#include "builtinops.h"                // CandidateSet
+#include "cc-ast.h"                    // C++ ast components
+#include "cc-err.h"                    // ErrorList
+#include "cc-lang.h"                   // CCLang, Bool3
+#include "cc-scope.h"                  // Scope
+#include "cc-type.h"                   // Type, AtomicType, etc. (r)
+#include "mflags.h"                    // MatchFlags
+#include "mtype-fwd.h"                 // MType
+#include "template-fwd.h"              // DelayedFuncInst
 #include "typelistiter-fwd.h"          // TypeListIter
+#include "variable.h"                  // Variable (r)
 
-class StringTable;        // strtable.h
-class ImplicitConversion; // implconv.h
+// smbase
+#include "array.h"                     // ArrayStack, ArrayStackEmbed
+#include "exc.h"                       // xBase
+#include "objstack.h"                  // ObjStack
+#include "owner.h"                     // Owner
+#include "ptrmap.h"                    // PtrMap
+#include "sobjlist.h"                  // SObjList
+#include "sobjstack.h"                 // SObjStack
+#include "strobjdict.h"                // StrObjDict
+
+class ImplicitConversion;              // implconv.h
+class StringTable;                     // strtable.h
 
 
 // type of collection to hold a sequence of scopes
