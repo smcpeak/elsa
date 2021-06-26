@@ -56,7 +56,7 @@ protected:  // funcs
   void pp_err(char const *msg);
 
   // The core scanner method.
-  int yym_lex();
+  int yym_lex() override;
 
 public:     // funcs
   // make a lexer to scan the given file
@@ -69,9 +69,10 @@ public:     // funcs
   static void c_tokenFunc(LexerInterface *lex);
 
   // LexerInterface funcs
-  virtual NextTokenFunc getTokenFunc() const;
-  virtual string tokenDesc() const;
-  virtual string tokenKindDesc(int kind) const;
+  virtual NextTokenFunc getTokenFunc() const override;
+  virtual string tokenDesc() const override;
+  virtual string tokenKindDesc(int kind) const override;
+
   string tokenKindDescV(int kind) const;
 };
 

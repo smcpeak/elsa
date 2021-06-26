@@ -32,7 +32,7 @@ public:      // funcs
 
   // ASTVisitor functions
   #define DECL(type) \
-    virtual bool visit##type(type *obj) /*user ;*/
+    virtual bool visit##type(type *obj) override /*user ;*/
   DECL(TopForm);
   DECL(Function);
   DECL(ASTTypeId);

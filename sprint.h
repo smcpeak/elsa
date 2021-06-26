@@ -38,12 +38,12 @@ public:      // funcs
     //begins.push(0);    // depth 0 starts at 0
   }
 
-  virtual bool visitTopForm(TopForm *tf)      ;//{ return in(tf->loc); }
-  virtual void postvisitTopForm(TopForm*)     { out(); }
-  virtual bool visitStatement(Statement *s)   ;//{ return in(s->loc); }
-  virtual void postvisitStatement(Statement*) { out(); }
-  virtual bool visitMember(Member *m)         { return in(m->loc); }
-  virtual void postvisitMember(Member*)       { out(); }
+  bool visitTopForm(TopForm *tf)      override ;//{ return in(tf->loc); }
+  void postvisitTopForm(TopForm*)     override { out(); }
+  bool visitStatement(Statement *s)   override ;//{ return in(s->loc); }
+  void postvisitStatement(Statement*) override { out(); }
+  bool visitMember(Member *m)         override { return in(m->loc); }
+  void postvisitMember(Member*)       override { out(); }
 };
 
 

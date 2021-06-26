@@ -81,7 +81,7 @@ public:     // funcs
   static void tokenFunc(LexerInterface *lex);
 
   // LexerInterface funcs
-  virtual NextTokenFunc getTokenFunc() const;
+  virtual NextTokenFunc getTokenFunc() const override;
 };
 
 

@@ -81,26 +81,26 @@ class Expression {
   // alignment inquiry
   // http://gcc.gnu.org/onlinedocs/gcc-3.1/gcc/Alignment.html
   -> E_alignofType(ASTTypeId atype) {
-       public virtual CValue extConstEval(ConstEval &env) const;
+       public virtual CValue extConstEval(ConstEval &env) const override;
        public int alignment = 0; // set by tcheck
      }
 
   -> E_alignofExpr(Expression expr) {
-       public virtual CValue extConstEval(ConstEval &env) const;
+       public virtual CValue extConstEval(ConstEval &env) const override;
        public int alignment = 0;
      }
 
   // conditional with no middle operand
   // http://gcc.gnu.org/onlinedocs/gcc-3.1/gcc/Conditionals.html
   -> E_gnuCond(Expression cond, Expression el) {
-       public virtual CValue extConstEval(ConstEval &env) const;
-       public virtual bool extHasUnparenthesizedGT();
+       public virtual CValue extConstEval(ConstEval &env) const override;
+       public virtual bool extHasUnparenthesizedGT() override;
      }
 
   // // quarl 2006-07-12
   // //    Handle __offsetof__ (gcc-3.4), __builtin_offsetof (gcc-4.x)
   // -> E_offsetof(ASTTypeId atype, PQName fieldName) {
-  //      public virtual CValue extConstEval(ConstEval &env) const;
+  //      public virtual CValue extConstEval(ConstEval &env) const override;
   //    }
 }
 
@@ -312,12 +312,12 @@ verbatim {
                 AttributeSpecifierList *alist);
     virtual ~D_attribute();
 
-    virtual void debugPrint(ostream &os, int indent, char const *subtreeName = "tree") const;
-    virtual void traverse(ASTVisitor &vis);
+    virtual void debugPrint(ostream &os, int indent, char const *subtreeName = "tree") const override;
+    virtual void traverse(ASTVisitor &vis) override;
 
-    virtual D_attribute *clone() const;
+    virtual D_attribute *clone() const override;
 
-    virtual void tcheck(Env &env, Declarator::Tcheck &dt);
+    virtual void tcheck(Env &env, Declarator::Tcheck &dt) override;
   };
 }
 // TODO: IDeclarator::isD_attribute(), asD_attribute(), ifD_attribute()

@@ -37,7 +37,7 @@ public:      // funcs
   PolymorphicCandidateSet(Variable *v);
 
   virtual void instantiateBinary(Env &env, OverloadResolver &resolver,
-    OverloadableOp op, ArgumentInfo &lhsInfo, ArgumentInfo &rhsInfo);
+    OverloadableOp op, ArgumentInfo &lhsInfo, ArgumentInfo &rhsInfo) override;
 };
 
 
@@ -117,20 +117,20 @@ public:      // funcs
   ~PredicateCandidateSet();
 
   virtual void instantiateBinary(Env &env, OverloadResolver &resolver,
-    OverloadableOp op, ArgumentInfo &lhsInfo, ArgumentInfo &rhsInfo);
+    OverloadableOp op, ArgumentInfo &lhsInfo, ArgumentInfo &rhsInfo) override;
 };
 
 
 // a variant of the predicate set for assignment operators
 class AssignmentCandidateSet : public PredicateCandidateSet {
 protected:   // funcs
-  virtual Variable *makeNewCandidate(Env &env, OverloadableOp op, Type *T);
+  virtual Variable *makeNewCandidate(Env &env, OverloadableOp op, Type *T) override;
 
 public:      // funcs
   AssignmentCandidateSet(SimpleTypeId retId, PreFilter pre, PostFilter post);
 
   virtual void instantiateBinary(Env &env, OverloadResolver &resolver,
-    OverloadableOp op, ArgumentInfo &lhsInfo, ArgumentInfo &rhsInfo);
+    OverloadableOp op, ArgumentInfo &lhsInfo, ArgumentInfo &rhsInfo) override;
 };
 
 
@@ -191,7 +191,7 @@ public:     // funcs
   ~ArrowStarCandidateSet();
 
   virtual void instantiateBinary(Env &env, OverloadResolver &resolver,
-    OverloadableOp op, ArgumentInfo &lhsInfo, ArgumentInfo &rhsInfo);
+    OverloadableOp op, ArgumentInfo &lhsInfo, ArgumentInfo &rhsInfo) override;
 };
 
 

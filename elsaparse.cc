@@ -55,7 +55,7 @@ public:
   {}
   virtual ~DeclTypeChecker() {}
 
-  virtual bool visitDeclarator(Declarator *obj);
+  virtual bool visitDeclarator(Declarator *obj) override;
 };
 
 bool DeclTypeChecker::visitDeclarator(Declarator *obj)
@@ -82,7 +82,7 @@ public:
 public:
   NameChecker() {}
 
-  virtual bool visitExpression(Expression *obj)
+  virtual bool visitExpression(Expression *obj) override
   {
     Variable *v = NULL;
     if (obj->isE_variable()) {
@@ -112,7 +112,7 @@ public:
 
 class PrintStringLiteralsVisitor : public ASTVisitor {
 public:
-  virtual bool visitExpression(Expression *expr);
+  virtual bool visitExpression(Expression *expr) override;
 };
 
 bool PrintStringLiteralsVisitor::visitExpression(Expression *expr)

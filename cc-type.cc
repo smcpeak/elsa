@@ -1460,7 +1460,7 @@ private:     // funcs
 public:      // funcs
   ContainsVariablesPred(MType *m) : map(m) {}
 
-  virtual bool operator() (Type const *t);
+  virtual bool operator() (Type const *t) override;
   bool atomicTypeHasVariable(AtomicType const *t);
   bool nameContainsVariables(PQName const *name);
 };

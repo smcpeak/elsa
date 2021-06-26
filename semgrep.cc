@@ -31,8 +31,8 @@ public:      // funcs
   bool matches(Variable *var);
   void tryHit(Variable *var, SourceLoc refLoc, char const *use);
 
-  virtual bool visitExpression(Expression *obj);
-  virtual bool visitDeclarator(Declarator *obj);
+  virtual bool visitExpression(Expression *obj) override;
+  virtual bool visitDeclarator(Declarator *obj) override;
 };
 
 

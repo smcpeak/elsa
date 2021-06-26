@@ -38,10 +38,12 @@ public:      // funcs
     , primariesAndPartials(primariesAndPartials0)
   {}
 
-  virtual bool visitDeclarator(Declarator *decltor);
-  virtual bool visitTypeSpecifier(TypeSpecifier *spec);
-  virtual bool visitFunction(Function *func);
+  // ASTVisitor overrides.
+  virtual bool visitDeclarator(Declarator *decltor) override;
+  virtual bool visitTypeSpecifier(TypeSpecifier *spec) override;
+  virtual bool visitFunction(Function *func) override;
 
+  // New overrideable behavior.
   virtual bool subvisitTS_classSpec(TS_classSpec *spec);
 
   void oneTempl(Variable *var0);
@@ -97,17 +99,17 @@ public:      // funcs
   {}
   virtual ~LoweredASTVisitor() {}
 
-  virtual bool visitFullExpressionAnnot(FullExpressionAnnot *fea);
-  virtual bool visitDeclarator(Declarator *decltor);
-  virtual bool visitTypeSpecifier(TypeSpecifier *spec);
-  virtual bool visitTemplateDeclaration(TemplateDeclaration *templDecl);
-  virtual bool visitFunction(Function *func);
-  virtual bool visitMemberInit(MemberInit *mInit);
-  virtual bool visitStatement(Statement *stmt);
-  virtual bool visitExpression(Expression *expr);
-  virtual bool visitHandler(Handler *handler);
-  virtual bool visitFullExpression(FullExpression *fexpr);
-  virtual bool visitInitializer(Initializer *initializer);
+  virtual bool visitFullExpressionAnnot(FullExpressionAnnot *fea) override;
+  virtual bool visitDeclarator(Declarator *decltor) override;
+  virtual bool visitTypeSpecifier(TypeSpecifier *spec) override;
+  virtual bool visitTemplateDeclaration(TemplateDeclaration *templDecl) override;
+  virtual bool visitFunction(Function *func) override;
+  virtual bool visitMemberInit(MemberInit *mInit) override;
+  virtual bool visitStatement(Statement *stmt) override;
+  virtual bool visitExpression(Expression *expr) override;
+  virtual bool visitHandler(Handler *handler) override;
+  virtual bool visitFullExpression(FullExpression *fexpr) override;
+  virtual bool visitInitializer(Initializer *initializer) override;
 
   virtual bool subvisitTS_classSpec(TS_classSpec *spec);
 
@@ -204,19 +206,19 @@ class RealVarAndTypeASTVisitor : private ASTVisitor {
   virtual void visitVariable(Variable *var);
   virtual void visitType(Type *type);
 
-  virtual bool visitTranslationUnit(TranslationUnit *obj);
-  virtual bool visitFunction(Function *obj);
-  virtual bool visitPQName(PQName *obj);
-  virtual bool visitHandler(Handler *obj);
-  virtual bool visitExpression(Expression *obj);
-  virtual bool visitMemberInit(MemberInit *obj);
-  virtual bool visitTypeSpecifier(TypeSpecifier *obj);
-  virtual bool visitEnumerator(Enumerator *obj);
-  virtual bool visitDeclarator(Declarator *obj);
-  virtual bool visitInitializer(Initializer *obj);
-  virtual bool visitTemplateParameter(TemplateParameter *obj);
+  virtual bool visitTranslationUnit(TranslationUnit *obj) override;
+  virtual bool visitFunction(Function *obj) override;
+  virtual bool visitPQName(PQName *obj) override;
+  virtual bool visitHandler(Handler *obj) override;
+  virtual bool visitExpression(Expression *obj) override;
+  virtual bool visitMemberInit(MemberInit *obj) override;
+  virtual bool visitTypeSpecifier(TypeSpecifier *obj) override;
+  virtual bool visitEnumerator(Enumerator *obj) override;
+  virtual bool visitDeclarator(Declarator *obj) override;
+  virtual bool visitInitializer(Initializer *obj) override;
+  virtual bool visitTemplateParameter(TemplateParameter *obj) override;
 #ifdef GNU_EXTENSION
-  virtual bool visitASTTypeof(ASTTypeof *obj);
+  virtual bool visitASTTypeof(ASTTypeof *obj) override;
 #endif // GNU_EXTENSION
 };
 
@@ -241,7 +243,7 @@ class ReachableVarsTypePred : public TypePred {
   virtual ~ReachableVarsTypePred() {}
 
   // methods
-  virtual bool operator() (Type const *t);
+  virtual bool operator() (Type const *t) override;
 };
 
 class ReachableVarsTypeVisitor : public RealVarAndTypeASTVisitor::TypeVisitor {
@@ -263,11 +265,11 @@ class ReachableVarsTypeVisitor : public RealVarAndTypeASTVisitor::TypeVisitor {
   virtual ~ReachableVarsTypeVisitor() {}
 
   // methods
-  virtual void visitType(Type *type);
-  virtual void visitCompoundType(CompoundType *ct);
+  virtual void visitType(Type *type) override;
+  virtual void visitCompoundType(CompoundType *ct) override;
   // FIX: should this be in its own visitor?
-  virtual void visitScope(Scope *scope);
-  virtual void visitTypeIdem(Type *type) {}; // only visits each Type once
+  virtual void visitScope(Scope *scope) override;
+  virtual void visitTypeIdem(Type *type) {} // only visits each Type once
 };
 
 class ReachableVarsVariableVisitor : public RealVarAndTypeASTVisitor::VariableVisitor {
@@ -284,9 +286,9 @@ class ReachableVarsVariableVisitor : public RealVarAndTypeASTVisitor::VariableVi
   virtual ~ReachableVarsVariableVisitor() {}
 
   // methods
-  virtual bool shouldVisitVariable(Variable *var);
-  virtual void visitVariable(Variable *var);
-  virtual void visitVariableIdem(Variable *var) {}; // only visits each Variable once
+  virtual bool shouldVisitVariable(Variable *var) override;
+  virtual void visitVariable(Variable *var) override;
+  virtual void visitVariableIdem(Variable *var) {} // only visits each Variable once
 };
 
 // visit all the real vars
@@ -307,7 +309,7 @@ class VisitRealVars : public ReachableVarsVariableVisitor {
   {}
 
   // methods
-  virtual void visitVariableIdem(Variable *var); // only visits each Variable once
+  virtual void visitVariableIdem(Variable *var) override; // only visits each Variable once
 };
 
 // mark reachable vars as real; NOTE: do NOT make this inherit from
@@ -321,7 +323,7 @@ class MarkRealVars : public VisitRealVars {
     : VisitRealVars(NULL)
   {}
   // methods
-  virtual void visitVariableIdem(Variable *var); // only visits each Variable once
+  virtual void visitVariableIdem(Variable *var) override; // only visits each Variable once
 };
 
 // Visit vars (whether real or not)

@@ -40,9 +40,9 @@ class TypeListIter_FakeList : public TypeListIter {
 //      xassert(isDone());
   }
 
-  virtual bool isDone() const;
-  virtual void adv();
-  virtual Type *data() const;
+  virtual bool isDone() const override;
+  virtual void adv() override;
+  virtual Type *data() const override;
 };
 
 class TypeListIter_GrowArray : public TypeListIter {
@@ -59,9 +59,9 @@ class TypeListIter_GrowArray : public TypeListIter {
 //      xassert(isDone());
   }
 
-  virtual bool isDone() const;
-  virtual void adv();
-  virtual Type *data() const;
+  virtual bool isDone() const override;
+  virtual void adv() override;
+  virtual Type *data() const override;
 };
 
 #endif // TYPELISTITER_H

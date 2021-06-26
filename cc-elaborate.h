@@ -293,22 +293,22 @@ public:
   virtual ~ElabVisitor();
 
   // ASTVisitor funcs
-  bool visitTopForm(TopForm *tf);
-  bool visitFunction(Function *f);
-  void postvisitFunction(Function *f);
-  bool visitMemberInit(MemberInit *mi);
-  void postvisitMemberInit(MemberInit *mi);
-  bool visitTypeSpecifier(TypeSpecifier *ts);
-  bool visitMember(Member *m);
-  bool visitStatement(Statement *s);
-  bool visitCondition(Condition *c);
-  bool visitHandler(Handler *h);
-  void postvisitHandler(Handler *h);
-  bool visitExpression(Expression *e);
-  bool visitFullExpression(FullExpression *fe);
-  void postvisitFullExpression(FullExpression *fe);
-  bool visitInitializer(Initializer *in);
-  void postvisitInitializer(Initializer *in);
+  bool visitTopForm(TopForm *tf) override;
+  bool visitFunction(Function *f) override;
+  void postvisitFunction(Function *f) override;
+  bool visitMemberInit(MemberInit *mi) override;
+  void postvisitMemberInit(MemberInit *mi) override;
+  bool visitTypeSpecifier(TypeSpecifier *ts) override;
+  bool visitMember(Member *m) override;
+  bool visitStatement(Statement *s) override;
+  bool visitCondition(Condition *c) override;
+  bool visitHandler(Handler *h) override;
+  void postvisitHandler(Handler *h) override;
+  bool visitExpression(Expression *e) override;
+  bool visitFullExpression(FullExpression *fe) override;
+  void postvisitFullExpression(FullExpression *fe) override;
+  bool visitInitializer(Initializer *in) override;
+  void postvisitInitializer(Initializer *in) override;
 };
 
 

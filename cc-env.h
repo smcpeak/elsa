@@ -499,7 +499,7 @@ public:      // funcs
 
 
   // this is for ErrorList clients
-  virtual void addError(ErrorMsg * /*owner*/ obj);
+  virtual void addError(ErrorMsg * /*owner*/ obj) override;
 
   // diagnostic reports; all return ST_ERROR type
   Type *error(SourceLoc L, rostring msg, ErrorFlags eflags = EF_NONE);
@@ -1098,8 +1098,8 @@ public:
   DefaultArgumentChecker(Env &e, bool i)
     : env(e), isInstantiation(i) {}
 
-  virtual bool visitIDeclarator(IDeclarator *obj);
-  virtual bool visitTypeSpecifier(TypeSpecifier *obj);
+  virtual bool visitIDeclarator(IDeclarator *obj) override;
+  virtual bool visitTypeSpecifier(TypeSpecifier *obj) override;
 };
 
 

@@ -1389,7 +1389,7 @@ D_attribute *D_attribute::clone() const
 
 class AttributeDisambiguator : public ASTVisitorEx {
 public:
-  virtual void foundAmbiguous(void *obj, void **ambig, char const *kind);
+  virtual void foundAmbiguous(void *obj, void **ambig, char const *kind) override;
 };
 
 void AttributeDisambiguator::foundAmbiguous(void *obj, void **ambig, char const *kind)

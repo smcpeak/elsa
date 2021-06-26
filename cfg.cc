@@ -566,7 +566,7 @@ public:
   {}
   virtual ~CFGVisitor() {}
 
-  virtual bool visitFunction(Function *obj);
+  virtual bool visitFunction(Function *obj) override;
 };
 
 bool CFGVisitor::visitFunction(Function *obj)

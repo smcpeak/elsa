@@ -79,7 +79,7 @@ bool toplevelParse(ParseTreeAndTokens &ptree, char const *inputFname)
 // hack: need classifier to act like the one for Bison
 class SimpleActions : public TrivialUserActions {
 public:
-  virtual ReclassifyFunc getReclassifier();
+  virtual ReclassifyFunc getReclassifier() override;
   static int reclassifyToken(UserActions *ths,
     int oldTokenType, SemanticValue sval);
 };

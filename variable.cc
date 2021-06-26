@@ -26,7 +26,7 @@ class SomeTypeVarNotInTemplParams_Pred : public TypePred {
   TemplateInfo *ti;
   public:
   SomeTypeVarNotInTemplParams_Pred(TemplateInfo *ti0) : ti(ti0) {}
-  virtual bool operator() (Type const *t);
+  virtual bool operator() (Type const *t) override;
   virtual ~SomeTypeVarNotInTemplParams_Pred() {}
 };
 

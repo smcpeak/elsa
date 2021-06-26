@@ -33,7 +33,7 @@ public:      // funcs
   explicit IntegrityVisitor(bool inTemplate);
 
   // ASTVisitorEx functions
-  virtual void foundAmbiguous(void *obj, void **ambig, char const *kind);
+  void foundAmbiguous(void *obj, void **ambig, char const *kind) override;
 
   // ASTVisitor functions
   bool visitTypeSpecifier(TypeSpecifier *typeSpecifier) override;
