@@ -9,7 +9,7 @@
 // elsa
 #include "cc-ast-fwd.h"                // Expression
 #include "cc-scope-fwd.h"              // Scope
-#include "cc-type-fwd.h"               // Type, etc.
+#include "cc-type.h"                   // Type, etc.
 #include "strmap.h"                    // StringRefMap
 #include "template-fwd.h"              // STemplateArgument, etc.
 #include "variable-fwd.h"              // Variable
@@ -45,14 +45,8 @@ public:
   // call it manually.  However, the existance of these methods allows
   // you to organize your code in the same way as you would for the
   // other classes.
-  //
-  // Also, please note that I cannot forward declare EnumType::Value,
-  // so unless I move this class until after class Enum, I have to
-  // make the argument type 'void*'!
-  //
-  // TODO: Change to EnumType::Value.
-  virtual bool visitEnumType_Value(void /*EnumType::Value*/ *obj);
-  virtual void postvisitEnumType_Value(void /*EnumType::Value*/ *obj);
+  virtual bool visitEnumType_Value(EnumType::Value *obj);
+  virtual void postvisitEnumType_Value(EnumType::Value *obj);
 
   virtual bool visitScope(Scope *obj);
   virtual void postvisitScope(Scope *obj);

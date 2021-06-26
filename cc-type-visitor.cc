@@ -35,9 +35,9 @@ bool TypeVisitor::visitAtomicType(AtomicType *obj)
 void TypeVisitor::postvisitAtomicType(AtomicType *obj)
   {  }
 
-bool TypeVisitor::visitEnumType_Value(void /*EnumType::Value*/ *obj)
+bool TypeVisitor::visitEnumType_Value(EnumType::Value *obj)
   { return true; }
-void TypeVisitor::postvisitEnumType_Value(void /*EnumType::Value*/ *obj)
+void TypeVisitor::postvisitEnumType_Value(EnumType::Value *obj)
   {  }
 
 bool TypeVisitor::visitScope(Scope *obj)
