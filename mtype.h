@@ -1,12 +1,5 @@
 // mtype.h
-// new implementation of type matcher
-
-// 2005-07-24: The plan for this module is it will eventually replace
-// the 'matchtype' module, and also Type::equals.  However, right now
-// it is still being put through its paces and so just exists on the
-// side as an auxiliary module, only reachable via the __test_mtype
-// internal testing hook function, exercised for the moment only by
-// in/t0511.cc.
+// type matcher
 
 #ifndef MTYPE_H
 #define MTYPE_H
