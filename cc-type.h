@@ -147,11 +147,11 @@ public:     // funcs
   SimpleType(SimpleTypeId t) : type(t) {}
 
   // AtomicType interface
-  virtual Tag getTag() const { return T_SIMPLE; }
-  virtual string toCString() const;
-  virtual string toMLString() const;
-  virtual int reprSize(TypeSizes const &typeSizes) const;
-  virtual void traverse(TypeVisitor &vis);
+  Tag getTag() const override { return T_SIMPLE; }
+  string toCString() const override;
+  string toMLString() const override;
+  int reprSize(TypeSizes const &typeSizes) const override;
+  void traverse(TypeVisitor &vis) override;
 };
 
 
@@ -166,7 +166,7 @@ public:
   NamedAtomicType(StringRef name);
   ~NamedAtomicType();
 
-  virtual bool isNamedAtomicType() const;       // returns true
+  bool isNamedAtomicType() const override;       // returns true
 
   // Get the syntactic introduction keyword.
   TypeIntr getTypeIntr() const;
@@ -315,7 +315,7 @@ protected:   // funcs
   friend class TypeFactory;
 
   // override no-op implementation in Scope
-  virtual void afterAddVariable(Variable *v);
+  void afterAddVariable(Variable *v) override;
 
 public:      // funcs
   virtual ~CompoundType();
@@ -345,11 +345,11 @@ public:      // funcs
   static TypeIntr toTypeIntr(Keyword k);
 
   // AtomicType interface
-  virtual Tag getTag() const { return T_COMPOUND; }
-  virtual string toCString() const;
-  virtual string toMLString() const;
-  virtual int reprSize(TypeSizes const &typeSizes) const;
-  virtual void traverse(TypeVisitor &vis);
+  Tag getTag() const override { return T_COMPOUND; }
+  string toCString() const override;
+  string toMLString() const override;
+  int reprSize(TypeSizes const &typeSizes) const override;
+  void traverse(TypeVisitor &vis) override;
 
   string toStringWithFields() const;
   string keywordAndName() const { return toCString(); }
@@ -459,11 +459,11 @@ public:     // funcs
   ~EnumType();
 
   // AtomicType interface
-  virtual Tag getTag() const { return T_ENUM; }
-  virtual string toCString() const;
-  virtual string toMLString() const;
-  virtual int reprSize(TypeSizes const &typeSizes) const;
-  virtual void traverse(TypeVisitor &vis);
+  Tag getTag() const override { return T_ENUM; }
+  string toCString() const override;
+  string toMLString() const override;
+  int reprSize(TypeSizes const &typeSizes) const override;
+  void traverse(TypeVisitor &vis) override;
 
   Value *addValue(StringRef name, int value, /*nullable*/ Variable *d);
   Value const *getValue(StringRef name) const;
@@ -492,7 +492,7 @@ class StatelessTypePred : public TypePred {
   TypePredFunc const f;
 public:
   StatelessTypePred(TypePredFunc f0) : f(f0) {}
-  virtual bool operator() (Type const *t);
+  bool operator() (Type const *t) override;
 };
 
 
@@ -769,14 +769,14 @@ public:
   bool isVolatile() const { return !!(cv & CV_VOLATILE); }
 
   // Type interface
-  virtual Tag getTag() const { return T_ATOMIC; }
-  unsigned innerHashValue() const;
-  virtual string toMLString() const;
-  virtual string leftString(bool innerParen=true) const;
-  virtual int reprSize(TypeSizes const &typeSizes) const;
-  virtual bool anyCtorSatisfies(TypePred &pred) const;
-  virtual CVFlags getCVFlags() const;
-  virtual void traverse(TypeVisitor &vis);
+  Tag getTag() const override { return T_ATOMIC; }
+  unsigned innerHashValue() const override;
+  string toMLString() const override;
+  string leftString(bool innerParen=true) const override;
+  int reprSize(TypeSizes const &typeSizes) const override;
+  bool anyCtorSatisfies(TypePred &pred) const override;
+  CVFlags getCVFlags() const override;
+  void traverse(TypeVisitor &vis) override;
 };
 
 
@@ -795,15 +795,15 @@ public:
   bool isVolatile() const { return !!(cv & CV_VOLATILE); }
 
   // Type interface
-  virtual Tag getTag() const { return T_POINTER; }
-  unsigned innerHashValue() const;
-  virtual string toMLString() const;
-  virtual string leftString(bool innerParen=true) const;
-  virtual string rightString(bool innerParen=true) const;
-  virtual int reprSize(TypeSizes const &typeSizes) const;
-  virtual bool anyCtorSatisfies(TypePred &pred) const;
-  virtual CVFlags getCVFlags() const;
-  virtual void traverse(TypeVisitor &vis);
+  Tag getTag() const override { return T_POINTER; }
+  unsigned innerHashValue() const override;
+  string toMLString() const override;
+  string leftString(bool innerParen=true) const override;
+  string rightString(bool innerParen=true) const override;
+  int reprSize(TypeSizes const &typeSizes) const override;
+  bool anyCtorSatisfies(TypePred &pred) const override;
+  CVFlags getCVFlags() const override;
+  void traverse(TypeVisitor &vis) override;
 };
 
 
@@ -821,15 +821,15 @@ public:
   bool isVolatile() const { return false; }
 
   // Type interface
-  virtual Tag getTag() const { return T_REFERENCE; }
-  unsigned innerHashValue() const;
-  virtual string toMLString() const;
-  virtual string leftString(bool innerParen=true) const;
-  virtual string rightString(bool innerParen=true) const;
-  virtual int reprSize(TypeSizes const &typeSizes) const;
-  virtual bool anyCtorSatisfies(TypePred &pred) const;
-  virtual CVFlags getCVFlags() const;
-  virtual void traverse(TypeVisitor &vis);
+  Tag getTag() const override { return T_REFERENCE; }
+  unsigned innerHashValue() const override;
+  string toMLString() const override;
+  string leftString(bool innerParen=true) const override;
+  string rightString(bool innerParen=true) const override;
+  int reprSize(TypeSizes const &typeSizes) const override;
+  bool anyCtorSatisfies(TypePred &pred) const override;
+  CVFlags getCVFlags() const override;
+  void traverse(TypeVisitor &vis) override;
 };
 
 
@@ -947,14 +947,14 @@ public:
   virtual void extraRightmostSyntax(stringBuilder &sb) const;
 
   // Type interface
-  virtual Tag getTag() const { return T_FUNCTION; }
-  unsigned innerHashValue() const;
-  virtual string toMLString() const;
-  virtual string leftString(bool innerParen=true) const;
-  virtual string rightString(bool innerParen=true) const;
-  virtual int reprSize(TypeSizes const &typeSizes) const;
-  virtual bool anyCtorSatisfies(TypePred &pred) const;
-  virtual void traverse(TypeVisitor &vis);
+  Tag getTag() const override { return T_FUNCTION; }
+  unsigned innerHashValue() const override;
+  string toMLString() const override;
+  string leftString(bool innerParen=true) const override;
+  string rightString(bool innerParen=true) const override;
+  int reprSize(TypeSizes const &typeSizes) const override;
+  bool anyCtorSatisfies(TypePred &pred) const override;
+  void traverse(TypeVisitor &vis) override;
 };
 
 
@@ -987,14 +987,14 @@ public:
   bool hasSize() const { return size >= 0; }
 
   // Type interface
-  virtual Tag getTag() const { return T_ARRAY; }
-  unsigned innerHashValue() const;
-  virtual string toMLString() const;
-  virtual string leftString(bool innerParen=true) const;
-  virtual string rightString(bool innerParen=true) const;
-  virtual int reprSize(TypeSizes const &typeSizes) const;
-  virtual bool anyCtorSatisfies(TypePred &pred) const;
-  virtual void traverse(TypeVisitor &vis);
+  Tag getTag() const override { return T_ARRAY; }
+  unsigned innerHashValue() const override;
+  string toMLString() const override;
+  string leftString(bool innerParen=true) const override;
+  string rightString(bool innerParen=true) const override;
+  int reprSize(TypeSizes const &typeSizes) const override;
+  bool anyCtorSatisfies(TypePred &pred) const override;
+  void traverse(TypeVisitor &vis) override;
 };
 
 
@@ -1023,15 +1023,15 @@ public:
   CompoundType *inClass() const;
 
   // Type interface
-  virtual Tag getTag() const { return T_POINTERTOMEMBER; }
-  unsigned innerHashValue() const;
-  virtual string toMLString() const;
-  virtual string leftString(bool innerParen=true) const;
-  virtual string rightString(bool innerParen=true) const;
-  virtual int reprSize(TypeSizes const &typeSizes) const;
-  virtual bool anyCtorSatisfies(TypePred &pred) const;
-  virtual CVFlags getCVFlags() const;
-  virtual void traverse(TypeVisitor &vis);
+  Tag getTag() const override { return T_POINTERTOMEMBER; }
+  unsigned innerHashValue() const override;
+  string toMLString() const override;
+  string leftString(bool innerParen=true) const override;
+  string rightString(bool innerParen=true) const override;
+  int reprSize(TypeSizes const &typeSizes) const override;
+  bool anyCtorSatisfies(TypePred &pred) const override;
+  CVFlags getCVFlags() const override;
+  void traverse(TypeVisitor &vis) override;
 };
 
 
@@ -1282,18 +1282,18 @@ private:   // data
 
 public:    // funcs
   // TypeFactory funcs
-  virtual CVAtomicType *makeCVAtomicType(AtomicType *atomic, CVFlags cv);
-  virtual PointerType *makePointerType(CVFlags cv, Type *atType);
-  virtual Type *makeReferenceType(Type *atType);
-  virtual FunctionType *makeFunctionType(Type *retType);
-  virtual void doneParams(FunctionType *ft);
+  CVAtomicType *makeCVAtomicType(AtomicType *atomic, CVFlags cv) override;
+  PointerType *makePointerType(CVFlags cv, Type *atType) override;
+  Type *makeReferenceType(Type *atType) override;
+  FunctionType *makeFunctionType(Type *retType) override;
+  void doneParams(FunctionType *ft) override;
 
-  virtual ArrayType *makeArrayType(Type *eltType, int size);
-  virtual PointerToMemberType *makePointerToMemberType
-    (NamedAtomicType *inClassNAT, CVFlags cv, Type *atType);
-  virtual TypedefType *makeTypedefType(Variable *typedefVar);
+  ArrayType *makeArrayType(Type *eltType, int size) override;
+  PointerToMemberType *makePointerToMemberType
+    (NamedAtomicType *inClassNAT, CVFlags cv, Type *atType) override;
+  TypedefType *makeTypedefType(Variable *typedefVar) override;
 
-  virtual Variable *makeVariable(SourceLoc L, StringRef n, Type *t, DeclFlags f);
+  Variable *makeVariable(SourceLoc L, StringRef n, Type *t, DeclFlags f) override;
 };
 
 

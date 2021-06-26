@@ -26,11 +26,11 @@ public:
   ~TypeVariable();
 
   // AtomicType interface
-  virtual Tag getTag() const { return T_TYPEVAR; }
-  virtual string toCString() const;
-  virtual string toMLString() const;
-  virtual int reprSize(TypeSizes const &typeSizes) const;
-  virtual void traverse(TypeVisitor &vis);
+  Tag getTag() const override { return T_TYPEVAR; }
+  string toCString() const override;
+  string toMLString() const override;
+  int reprSize(TypeSizes const &typeSizes) const override;
+  void traverse(TypeVisitor &vis) override;
 
   // true if this template parameter has been associated with
   // a specific template
@@ -59,11 +59,11 @@ public:      // funcs
   ~PseudoInstantiation();
 
   // AtomicType interface
-  virtual Tag getTag() const { return T_PSEUDOINSTANTIATION; }
-  virtual string toCString() const;
-  virtual string toMLString() const;
-  virtual int reprSize(TypeSizes const &typeSizes) const;
-  virtual void traverse(TypeVisitor &vis);
+  Tag getTag() const override { return T_PSEUDOINSTANTIATION; }
+  string toCString() const override;
+  string toMLString() const override;
+  int reprSize(TypeSizes const &typeSizes) const override;
+  void traverse(TypeVisitor &vis) override;
 };
 
 
@@ -89,11 +89,11 @@ public:      // data
   ~DependentQType();
 
   // AtomicType interface
-  virtual Tag getTag() const { return T_DEPENDENTQTYPE; }
-  virtual string toCString() const;
-  virtual string toMLString() const;
-  virtual int reprSize(TypeSizes const &typeSizes) const;
-  virtual void traverse(TypeVisitor &vis);
+  Tag getTag() const override { return T_DEPENDENTQTYPE; }
+  string toCString() const override;
+  string toMLString() const override;
+  int reprSize(TypeSizes const &typeSizes) const override;
+  void traverse(TypeVisitor &vis) override;
 };
 
 
