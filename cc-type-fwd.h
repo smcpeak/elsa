@@ -31,8 +31,4 @@ class BasicTypeFactory;
 
 class XReprSize;
 
-// TODO: Move into new template-fwd.h.
-class TemplateInfo;
-class STemplateArgument;
-
 #endif // ELSA_CC_TYPE_FWD_H

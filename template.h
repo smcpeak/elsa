@@ -13,7 +13,10 @@
 #ifndef TEMPLATE_H
 #define TEMPLATE_H
 
-#include "cc-type.h"         // non-template parts of type system
+#include "template-fwd.h"              // forwards for this module
+
+// elsa
+#include "cc-type.h"                   // Type, etc.
 
 
 // used for (abstract) template parameter types

@@ -39,6 +39,7 @@
 #include "exc.h"          // xBase
 #include "serialno.h"     // INHERIT_SERIAL_BASE
 #include "mflags.h"       // MatchFlags
+#include "template-fwd.h" // STemplateArgument, etc.
 
 class Variable;           // variable.h
 class Env;                // cc_env.h
@@ -51,9 +52,6 @@ class D_func;             // cc.ast
 class D_ptrToMember;      // cc.ast
 class TypeSpecifier;      // cc.ast
 class Declaration;        // cc.ast
-class TypeVariable;       // template.h
-class PseudoInstantiation;// template.h
-class DependentQType;     // template.h
 class MType;              // mtype.h
 
 
