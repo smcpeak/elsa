@@ -4,21 +4,21 @@ name=int f(int ) makePQName=f
 name=GlobalStruct_struct makePQName=GlobalStruct
 name=int GlobalStruct_struct::x makePQName=x
 name=int GlobalStruct_struct::y makePQName=y
-name=GlobalStruct_struct gs1 makePQName=gs1
+name=/*GlobalStruct*/GlobalStruct_struct gs1 makePQName=gs1
 name=GlobalStruct_struct gs2 makePQName=gs2
 name=int d makePQName=d
 name=int e makePQName=e
 name=LocalStruct_struct makePQName=LocalStruct
 name=int LocalStruct_struct::h makePQName=h
 name=int LocalStruct_struct::i makePQName=i
-name=LocalStruct_struct ls1 makePQName=ls1
+name=/*LocalStruct*/LocalStruct_struct ls1 makePQName=ls1
 name=LocalStruct_struct ls2 makePQName=ls2
 name=int NS1::ns1_memb makePQName=ns1_memb
 name=int anonymous@pqname/pqname2.cc:34:1::anon_ns_memb makePQName=anon_ns_memb
-name=T C<T>::t makePQName=t
-name=U C<T>::D<U>::u makePQName=u
-name=C<int> c makePQName=c
-name=C<int>::D<int> d makePQName=d
+name=/*T*/T C<T>::t makePQName=t
+name=/*U*/U C<T>::D<U>::u makePQName=u
+name=/*C*/C<int> c makePQName=c
+name=/*D*/C<int>::D<int> d makePQName=d
 ---- stderr ----
 ---- exit status ----
 Exit 0

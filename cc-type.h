@@ -1045,15 +1045,18 @@ public:
 // The rationale for this design is I do not want to force clients to
 // have to "skip typedefs" everywhere since that is error-prone.
 //
-// Currently (2021-06-18), TypedefType is never created by cc-tcheck.
-// Instead, I intend to create this in an Elsa client in order to get
-// synthesized AST to use it.  However, my hope is to eventually have
-// cc-tcheck create these.
-//
 class TypedefType : public Type {
+public:      // class data
+  // When true (the default), 'toCString()' prints the name of the
+  // typedef in comments.
+  static bool s_printTypedefComments;
+
 public:      // data
   // The name of the typedef, along with the nominated Type
-  // (as typedefVar->type).
+  // (as 'm_typedefVar->type').
+  //
+  // The nominated Type might also be a TypedefType, but it cannot be
+  // 'this' TypedefType because that would be circular.
   Variable *m_typedefVar;
 
 protected:   // funcs

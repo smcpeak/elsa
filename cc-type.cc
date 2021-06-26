@@ -2208,6 +2208,9 @@ CVFlags PointerToMemberType::getCVFlags() const
 
 
 // --------------------------- TypedefType -----------------------------
+bool TypedefType::s_printTypedefComments = true;
+
+
 TypedefType::TypedefType(Variable *typedefVar)
   : m_typedefVar(typedefVar)
 {
@@ -2273,9 +2276,15 @@ string        TypedefType::toMLString() const
   return underlyingType()->toMLString();
 }
 
-string        TypedefType::leftString(bool innerParen) const
+string TypedefType::leftString(bool innerParen) const
 {
-  return underlyingType()->leftString(innerParen);
+  if (s_printTypedefComments) {
+    return stringb("/*" << m_typedefVar->name << "*/" <<
+                   underlyingType()->leftString(innerParen));
+  }
+  else {
+    return underlyingType()->leftString(innerParen);
+  }
 }
 
 string        TypedefType::rightString(bool innerParen) const

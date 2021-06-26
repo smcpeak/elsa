@@ -1534,7 +1534,7 @@ Type *TS_name::itcheck(Env &env, DeclFlags dflags)
   Variable *v = maybeReuseNondependent(env, loc, lflags, nondependentVar);
   if (v) {
     var = v;
-    return var->type;
+    return env.tfac.makeTypedefType(var);
   }
 
   if (typenameUsed) {
@@ -1638,7 +1638,12 @@ do_lookup:
 
   // there used to be a call to applyCV here, but that's redundant
   // since the caller (tcheck) calls it too
-  return var->type;
+
+  // This is the key place we make TypedefType: the program uses TS_name
+  // to name a type, so we wrap up the nominated Variable as a Type,
+  // thereby conveying 'var->type' to all typdef-unaware consumers, and
+  // 'var' to all typedef-aware consumers.
+  return env.tfac.makeTypedefType(var);
 }
 
 
