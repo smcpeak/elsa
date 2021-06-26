@@ -9,6 +9,8 @@
 #ifndef IMPLCONV_H
 #define IMPLCONV_H
 
+#include "implconv-fwd.h"              // forwards for this module
+
 #include "stdconv.h"                   // StandardConversion
 #include "variable-fwd.h"              // Variable
 

@@ -14,6 +14,7 @@
 #include "cc-lang.h"                   // CCLang, Bool3
 #include "cc-scope.h"                  // Scope
 #include "cc-type.h"                   // Type, AtomicType, etc. (r)
+#include "implconv-fwd.h"              // ImplicitConversion
 #include "mflags.h"                    // MatchFlags
 #include "mtype-fwd.h"                 // MType
 #include "template-fwd.h"              // DelayedFuncInst
@@ -30,7 +31,6 @@
 #include "sobjstack.h"                 // SObjStack
 #include "strobjdict.h"                // StrObjDict
 
-class ImplicitConversion;              // implconv.h
 class StringTable;                     // strtable.h
 
 
