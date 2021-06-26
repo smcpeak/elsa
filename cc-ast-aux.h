@@ -4,6 +4,8 @@
 #ifndef CC_AST_AUX_H
 #define CC_AST_AUX_H
 
+#include "cc-ast-aux-fwd.h"     // forwards for this module
+
 #include "sobjset.h"            // class SObjSet
 #include "sm-macros.h"          // ENUM_BITWISE_OPS
 #include "cc-ast.h"             // ASTVisitor
@@ -15,8 +17,6 @@
 // cc.ast because the class I inherit from, ASTVisitor, is generated
 // at the end of cc.ast.gen.h
 
-// forward
-class LoweredASTVisitor;
 
 // this class helps LoweredASTVisitor turn off visitation during
 // uninstantiated templated bodies
