@@ -7,6 +7,8 @@
 #ifndef CC_SCOPE_H
 #define CC_SCOPE_H
 
+#include "cc-ast-fwd.h"   // Function, PQName, TranslationUnit
+#include "cc-type-fwd.h"  // TypeVisitor, CompoundType, etc.
 #include "cc_flags.h"     // AccessKeyword
 #include "srcloc.h"       // SourceLoc
 #include "strtable.h"     // StringRef
@@ -14,20 +16,11 @@
 #include "array.h"        // ArrayStack
 #include "serialno.h"     // INHERIT_SERIAL_BASE
 #include "strmap.h"       // StringRefMap
+#include "template-fwd.h" // TemplateParams
 #include "lookupset.h"    // LookupSet
 #include "variable-fwd.h" // Variable
 
-// NOTE: We cannot #include cc-type.h b/c cc-type.h #includes cc_scope.h.
-
 class Env;                // cc_env.h
-class TypeVisitor;        // cc-type.h
-class CompoundType;       // cc-type.h
-class BaseClassSubobj;    // cc-type.h
-class EnumType;           // cc-type.h
-class Function;           // cc.ast
-class TemplateParams;     // cc-type.h
-class PQName;             // cc.ast
-class TranslationUnit;    // cc.ast.gen.h
 
 
 // information about a single scope: the names defined in it,

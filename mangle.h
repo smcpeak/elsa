@@ -14,16 +14,13 @@
 #define MANGLE_H
 
 // elsa
+#include "cc-type-fwd.h"     // Type, AtomicType
+#include "template-fwd.h"    // TemplateInfo, STemplateArgument
 #include "variable-fwd.h"    // Variable
 
 // smbase
 #include "objlist.h"         // ObjList
 #include "str.h"             // string, stringBuilder
-
-class Type;                  // cc-type.h
-class AtomicType;            // cc-type.h
-class TemplateInfo;          // template.h
-class STemplateArgument;     // template.h
 
 
 // main entry point

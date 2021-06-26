@@ -16,16 +16,18 @@
 #ifndef STDCONV_H
 #define STDCONV_H
 
-#include "sm-macros.h" // ENUM_BITWISE_AND,OR
-#include "str.h"       // string
-#include "cc_flags.h"  // SpecialExpr
+// elsa
+#include "cc-type-fwd.h"               // AtomicType, Type, TypeFactory
+#include "cc_flags.h"                  // SpecialExpr
+
+// smbase
+#include "sm-macros.h"                 // ENUM_BITWISE_AND,OR
+#include "str.h"                       // string
 
 // fwd
-class AtomicType;      // cc-type.h
 class CCLang;          // cc_lang.h
-class Type;            // cc-type.h
 class Env;             // cc_env.h
-class TypeFactory;     // cc-type.h
+
 
 // The kinds of Standard Conversions.  Any given pair of convertible
 // types will be related by the conversions permitted as one or more
