@@ -31,7 +31,7 @@
 #include "objlist.h"      // ObjList
 #include "sobjlist.h"     // SObjList
 #include "astlist.h"      // ASTList
-#include "cc_flags.h"     // CVFlags, DeclFlags, SimpleTypeId
+#include "cc-flags.h"     // CVFlags, DeclFlags, SimpleTypeId
 #include "strtable.h"     // StringRef
 #include "strobjdict.h"   // StringObjDict
 #include "cc-scope.h"     // Scope
@@ -301,7 +301,7 @@ public:
 // compound are whatever has been entered in the Scope
 class CompoundType : public NamedAtomicType, public Scope {
 public:      // types
-  // NOTE: keep these consistent with TypeIntr (in file cc_flags.h)
+  // NOTE: keep these consistent with TypeIntr (in file cc-flags.h)
   enum Keyword { K_STRUCT, K_CLASS, K_UNION, NUM_KEYWORDS };
 
 public:      // data

@@ -11,7 +11,7 @@
 #include "cc-type-fwd.h"       // Type, TypeVisitor, etc.
 #include "srcloc.h"            // SourceLoc
 #include "strtable.h"          // StringRef
-#include "cc_flags.h"          // DeclFlags, ScopeKind
+#include "cc-flags.h"          // DeclFlags, ScopeKind
 #include "sobjlist.h"          // SObjList
 #include "sobjset.h"           // SObjSet
 #include "serialno.h"          // INHERIT_SERIAL_BASE

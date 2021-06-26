@@ -5,7 +5,7 @@
 #define CONST_EVAL_H
 
 // elsa
-#include "cc_flags.h"                  // SimpleTypeId
+#include "cc-flags.h"                  // SimpleTypeId
 #include "variable-fwd.h"              // Variable
 
 // smbase

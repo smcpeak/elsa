@@ -1,7 +1,7 @@
-// cc_flags.cc            see license.txt for copyright and terms of use
-// code for cc_flags.h
+// cc-flags.cc            see license.txt for copyright and terms of use
+// code for cc-flags.h
 
-#include "cc_flags.h"     // this module
+#include "cc-flags.h"     // this module
 #include "sm-macros.h"    // STATIC_ASSERT
 #include "xassert.h"      // xassert
 #include "trace.h"        // tracingSys

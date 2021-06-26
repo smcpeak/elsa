@@ -4,7 +4,7 @@
 #include "lookupset.h"        // this module
 #include "variable.h"         // Variable, sameEntity
 #include "template.h"         // TemplateInfo
-#include "cc_flags.h"         // bitmapString
+#include "cc-flags.h"         // bitmapString
 
 
 char const * const lookupFlagNames[NUM_LOOKUPFLAGS] = {

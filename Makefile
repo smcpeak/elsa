@@ -309,7 +309,7 @@ ELSA_OBJS += typelistiter.o
 ELSA_OBJS += cc.ast.gen.o
 ELSA_OBJS += cc.gr.gen.o
 ELSA_OBJS += parssppt.o
-ELSA_OBJS += cc_flags.o
+ELSA_OBJS += cc-flags.o
 ELSA_OBJS += type-sizes.o
 ELSA_OBJS += cc_print.o
 ELSA_OBJS += type-printer.o
@@ -414,7 +414,7 @@ gendoc/configure.txt: configure
 .PHONY: gendoc/dependencies.dot
 gendoc/dependencies.dot:
 	$(PERL) $(SMBASE)/scan-depends.pl -r \
-	  -Xcc-env.h=1 -Xcc-type.h=1 -Xcc_flags.h=1 -Xcc-ast.h=1 -Xvariable.h=1 \
+	  -Xcc-env.h=1 -Xcc-type.h=1 -Xcc-flags.h=1 -Xcc-ast.h=1 -Xvariable.h=1 \
           -Xcc_print.h -Xsprint.h \
 	  -Xgeneric_aux.h -Xcc-ast-aux.h -Xcc-lang.h=1 \
 	  main.cc cc_tcheck.cc >$@

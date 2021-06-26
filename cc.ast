@@ -75,7 +75,7 @@
 
 // emitted verbatim into generated header (cc.ast.gen.h)
 verbatim {
-  #include "cc_flags.h"         // CVFlags, DeclFlags, etc. (r)
+  #include "cc-flags.h"         // CVFlags, DeclFlags, etc. (r)
   #include "stdconv.h"          // StandardConversion
 
   class CCLang;                 // cc-lang.h

@@ -8,7 +8,7 @@
 #include "strtable.h"      // StringTable
 #include "objlist.h"       // ObjList
 #include "array.h"         // ArrayStack
-#include "cc_flags.h"      // UberModifiers, SimpleTypeId
+#include "cc-flags.h"      // UberModifiers, SimpleTypeId
 #include "cc-ast.h"        // C++ AST classes, needed for the action function signatures
 #include "srcloc.h"        // SourceLoc
 #include "cc-lang.h"       // CCLang, Bool3

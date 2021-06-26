@@ -208,7 +208,7 @@ class Designator (SourceLoc loc) {
 
 
 // ----------- C99 restrict keyword -----------
-// (no AST extensions required b/c cc_flags.h already has *_RESTRICT)
+// (no AST extensions required b/c cc-flags.h already has *_RESTRICT)
 
 
 // ----------- C99 qualifiers in array brackets -----------

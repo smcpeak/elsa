@@ -6,7 +6,7 @@
 
 #include "cc-env-fwd.h"    // Env
 #include "cc-type-fwd.h"   // Type
-#include "cc_flags.h"      // BinaryOp
+#include "cc-flags.h"      // BinaryOp
 #include "okhashtbl.h"     // OwnerKHashTable
 #include "overload-fwd.h"  // OverloadResolver, ArgumentInfo
 #include "variable-fwd.h"  // Variable

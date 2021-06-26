@@ -12,7 +12,7 @@
 #include "cc-ast-fwd.h"   // Function, PQName, TranslationUnit
 #include "cc-env-fwd.h"   // Env
 #include "cc-type-fwd.h"  // TypeVisitor, CompoundType, etc.
-#include "cc_flags.h"     // AccessKeyword
+#include "cc-flags.h"     // AccessKeyword
 #include "srcloc.h"       // SourceLoc
 #include "strtable.h"     // StringRef
 #include "sobjlist.h"     // SObjList

@@ -1,4 +1,4 @@
-// cc_flags.h            see license.txt for copyright and terms of use
+// cc-flags.h            see license.txt for copyright and terms of use
 // enumerated flags for parsing C, C++
 
 // Basically, this module is a set of enums that are used by at
@@ -72,7 +72,7 @@ inline bool operator>= (CVFlags cv1, CVFlags cv2)
 // close to using all 32 bits, so it might need to be split.
 //
 // NOTE: Changes to this enumeration must be accompanied by
-// updates to 'declFlagNames' in cc_flags.cc.
+// updates to 'declFlagNames' in cc-flags.cc.
 enum DeclFlags {
   DF_NONE        = 0x00000000,
 
