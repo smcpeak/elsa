@@ -549,7 +549,7 @@ The type checker computes this type, and stores it in the
 
 <p>
 Types themselves have internal structure, which is explained in
-<a href="cc_type.html">cc_type.html</a>.
+<a href="cc-type.html">cc-type.html</a>.
 
 
 <h2 id="implicit_conversion">3.4 Insertion of Implicit Conversions</h2>
@@ -850,7 +850,7 @@ per se, but <code>astgen</code> in general).
 
 <p>
 New Type classes can be added by creating new subclasses of AtomicType
-and Type (<a href="../cc_type.h"><code>cc_type.h</code></a>), and implementing
+and Type (<a href="../cc-type.h"><code>cc-type.h</code></a>), and implementing
 the appropriate virtual methods.  Operations on the new types can be defined
 by creating a subclass of Env (<a href="../cc_env.h"><code>cc_env.h</code></a>)
 and overriding some of its methods.  Flaws: not very powerful; you can
@@ -865,7 +865,7 @@ new nodes.  Flaws: hard to do context-dependent behaviors.
 <p>
 New fields and methods can be added to the Type superclass by replacing
 the definition of Type by defining the <code>TYPE_CLASS_FILE</code> macro.
-See <a href="cc_type.html#basetype">cc_type.html, Section 6</a> for
+See <a href="cc-type.html#basetype">cc-type.html, Section 6</a> for
 more information.  Flaws: can only change the Type class, not others.
 
 <p>
@@ -1328,7 +1328,7 @@ some module interrelationships.
 
 <p>
 Further, some modules have their own documentation pages,
-such as <a href="cc_type.html">cc_type.html</a> and
+such as <a href="cc-type.html">cc-type.html</a> and
 <a href="cc.ast.html">cc.ast.html</a>.  These pages explain
 high-level aspects of the module's design and interaction with
 other modules.  They are also linked from the index.html page

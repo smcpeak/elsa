@@ -4,7 +4,7 @@
 #include "cc_scope.h"     // this module
 #include "trace.h"        // trace
 #include "variable.h"     // Variable
-#include "cc_type.h"      // CompoundType
+#include "cc-type.h"      // CompoundType
 #include "cc_env.h"       // doh.  Env::error
 #include "mangle.h"       // mangle
 #include "exc.h"          // unwinding

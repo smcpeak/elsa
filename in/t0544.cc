@@ -32,7 +32,7 @@ B b[] = {
 
 
 
-// ------- fragment from cc_type.cc -------
+// ------- fragment from cc-type.cc -------
 enum SimpleTypeId {
   ST_CHAR, ST_UNSIGNED_CHAR,
 };

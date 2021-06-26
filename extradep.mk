@@ -2,6 +2,7 @@ ast_build.o: cc.ast.gen.h
 astvisit.o: cc.ast.gen.h
 baselexer.o: lexer.yy.h
 builtinops.o: cc.ast.gen.h
+cc-type.o: cc.ast.gen.h
 cc.gr.gen.o: cc.ast.gen.h
 cc.gr.gen.o: cc_tokens.h
 cc_ast_aux.o: cc.ast.gen.h
@@ -10,7 +11,6 @@ cc_env.o: cc.ast.gen.h
 cc_print.o: cc.ast.gen.h
 cc_scope.o: cc.ast.gen.h
 cc_tcheck.o: cc.ast.gen.h
-cc_type.o: cc.ast.gen.h
 ccparse.o: cc.ast.gen.h
 cfg.o: cc.ast.gen.h
 const_eval.o: cc.ast.gen.h

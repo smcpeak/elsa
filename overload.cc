@@ -9,7 +9,7 @@
 #include "overload.h"      // this module
 #include "cc_env.h"        // Env
 #include "variable.h"      // Variable
-#include "cc_type.h"       // Type, etc.
+#include "cc-type.h"       // Type, etc.
 #include "trace.h"         // TRACE
 #include "typelistiter.h"  // TypeListIter
 #include "strtokp.h"       // StrtokParse

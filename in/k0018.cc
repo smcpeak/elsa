@@ -1,6 +1,6 @@
 // member function taking an array argument with default value __null
 
-// Assertion failed: isArrayType(), file cc_type.cc line 870
+// Assertion failed: isArrayType(), file cc-type.cc line 870
 
 // originally found in package anjuta
 

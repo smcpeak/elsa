@@ -66,7 +66,7 @@ option unreachable_terminals 6;
 
 verbatim {
 
-#include "cc_type.h"      // type identifiers like ST_CHAR (r)
+#include "cc-type.h"      // type identifiers like ST_CHAR (r)
 #include "cc_tokens.h"    // lexer's token ids for classify()
 #include "trace.h"        // trace
 #include "cc_ast.h"       // C++ abstract syntax

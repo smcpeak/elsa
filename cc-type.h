@@ -1,6 +1,6 @@
-// cc_type.h            see license.txt for copyright and terms of use
+// cc-type.h            see license.txt for copyright and terms of use
 // compile-type representation of C++ types
-// see doc/cc_type.html
+// see doc/cc-type.html
 // and Diagram 1 of doc/cpp_er.html
 
 // The original design intent was that type representation would be
@@ -162,11 +162,11 @@ public:
 
 // --------------------- atomic types --------------------------
 // interface to types that are atomic in the sense that no
-// modifiers can be stripped away; see cc_type.html
+// modifiers can be stripped away; see cc-type.html
 class AtomicType {
 public:     // types
   enum Tag {
-    // these are defined in cc_type.h
+    // these are defined in cc-type.h
     T_SIMPLE,                // int, char, float, etc.
     T_COMPOUND,              // struct/class/union
     T_ENUM,                  // enum
@@ -836,7 +836,7 @@ string cvToString(CVFlags cv);
 // this 'undef' is rather important
 #undef CC_TYPE_INCLUDE_CLASS_FILE
 #else
-  // please see cc_type.html, section 6, "BaseType and Type", for more
+  // please see cc-type.html, section 6, "BaseType and Type", for more
   // information about this class
   class Type : public BaseType {
   protected:   // funcs
@@ -1343,7 +1343,7 @@ public:
   //   - Every application I can think of will want to define both
   //     or neither.
   //   - Variable is used by Type and vice-versa.. they could have
-  //     both been defined in cc_type.h
+  //     both been defined in cc-type.h
   virtual Variable *makeVariable(SourceLoc L, StringRef n, Type *t, DeclFlags f)=0;
 
 

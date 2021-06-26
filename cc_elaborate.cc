@@ -40,7 +40,7 @@
 #include "trace.h"             // TRACE
 #include "cc_print.h"          // PrintEnv
 
-// cc_type.h
+// cc-type.h
 Type *makeLvalType(TypeFactory &tfac, Type *underlying);
 
 

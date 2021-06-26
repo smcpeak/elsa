@@ -14,15 +14,15 @@
 #include "serialno.h"          // INHERIT_SERIAL_BASE
 #include "packedword.h"        // PackedWord
 
-class Type;                    // cc_type.h
-class TypeVisitor;             // cc_type.h
-class FunctionType;            // cc_type.h
+class Type;                    // cc-type.h
+class TypeVisitor;             // cc-type.h
+class FunctionType;            // cc-type.h
 class OverloadSet;             // below
 class Scope;                   // cc_scope.h
 class Expression;              // cc.ast
 class Function;                // cc.ast
-class BasicTypeFactory;        // cc_type.h
-class TemplateInfo;            // cc_type.h
+class BasicTypeFactory;        // cc-type.h
+class TemplateInfo;            // cc-type.h
 
 
 // This (after going through the string table) is used as Variable::name
@@ -58,7 +58,7 @@ extern char const * const specialName_constructor;
 // Variables will live in a separate pool (like types) so the AST
 // nodes can share them at will.
 //
-// In fact, my current idea is that the cc_type and variable modules
+// In fact, my current idea is that the cc-type and variable modules
 // are so intertwined they might as well be one.  They share
 // dependencies extensively, including the TypeFactory.  So while
 // they are (and will remain) physically separate files, they

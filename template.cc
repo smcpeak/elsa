@@ -291,7 +291,7 @@ string TemplateParams::paramsLikeArgsToString() const
 }
 
 
-// defined in cc_type.cc
+// defined in cc-type.cc
 bool parameterListCtorSatisfies(TypePred &pred,
                                 SObjList<Variable> const &params);
 

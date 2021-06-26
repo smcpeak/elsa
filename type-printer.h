@@ -6,7 +6,7 @@
 
 #include "cc_ast.h"                    // C++ AST
 #include "cc_lang.h"                   // CCLang
-#include "cc_type.h"                   // Type, etc.
+#include "cc-type.h"                   // Type, etc.
 
 
 // In Oink, TypeLike is a superclass of Type, but by default it is

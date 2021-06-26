@@ -1,7 +1,7 @@
-// cc_type.cc            see license.txt for copyright and terms of use
-// code for cc_type.h
+// cc-type.cc            see license.txt for copyright and terms of use
+// code for cc-type.h
 
-#include "cc_type.h"    // this module
+#include "cc-type.h"    // this module
 #include "trace.h"      // tracingSys
 #include "variable.h"   // Variable
 #include "strutil.h"    // copyToStaticBuffer
@@ -22,7 +22,7 @@
 // explicitly supply MF_MATCH.
 #include "mtype.h"      // MType
 
-// Do *not* add a dependency on cc.ast or cc_env.  cc_type is about
+// Do *not* add a dependency on cc.ast or cc_env.  cc-type is about
 // the intrinsic properties of types, independent of any particular
 // syntax for denoting them.  (toString() uses C's syntax, but that's
 // just for debugging.)
@@ -936,7 +936,7 @@ string CompoundType::renderSubobjHierarchy() const
 string toString(CompoundType::Keyword k)
 {
   xassert((unsigned)k < (unsigned)CompoundType::NUM_KEYWORDS);
-  return string(typeIntrNames[k]);    // see cc_type.h
+  return string(typeIntrNames[k]);    // see cc-type.h
 }
 
 

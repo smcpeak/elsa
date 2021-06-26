@@ -16,16 +16,16 @@
 #include "strmap.h"       // StringRefMap
 #include "lookupset.h"    // LookupSet
 
-// NOTE: We cannot #include cc_type.h b/c cc_type.h #includes cc_scope.h.
+// NOTE: We cannot #include cc-type.h b/c cc-type.h #includes cc_scope.h.
 
 class Env;                // cc_env.h
 class Variable;           // variable.h
-class TypeVisitor;        // cc_type.h
-class CompoundType;       // cc_type.h
-class BaseClassSubobj;    // cc_type.h
-class EnumType;           // cc_type.h
+class TypeVisitor;        // cc-type.h
+class CompoundType;       // cc-type.h
+class BaseClassSubobj;    // cc-type.h
+class EnumType;           // cc-type.h
 class Function;           // cc.ast
-class TemplateParams;     // cc_type.h
+class TemplateParams;     // cc-type.h
 class PQName;             // cc.ast
 class TranslationUnit;    // cc.ast.gen.h
 

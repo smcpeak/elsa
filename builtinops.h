@@ -7,7 +7,7 @@
 #include "cc_flags.h"      // BinaryOp
 #include "okhashtbl.h"     // OwnerKHashTable
 
-class Type;                // cc_type.h
+class Type;                // cc-type.h
 class Variable;            // variable.h
 class Env;                 // cc_env.h
 class OverloadResolver;    // overload.h

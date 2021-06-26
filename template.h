@@ -3,7 +3,7 @@
 //
 // see Diagram 2 of doc/cpp_er.html
 //
-// Conceptually, everything here is an extension of cc_type.
+// Conceptually, everything here is an extension of cc-type.
 //
 // Note that there are many more template-related functions, declared
 // in cc_env.h in a block at the end of the declaration of the Env
@@ -13,7 +13,7 @@
 #ifndef TEMPLATE_H
 #define TEMPLATE_H
 
-#include "cc_type.h"         // non-template parts of type system
+#include "cc-type.h"         // non-template parts of type system
 
 
 // used for (abstract) template parameter types

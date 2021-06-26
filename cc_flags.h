@@ -23,7 +23,7 @@
 
 // ----------------------- TypeIntr ----------------------
 // type introducer keyword
-// NOTE: keep consistent with CompoundType::Keyword (cc_type.h)
+// NOTE: keep consistent with CompoundType::Keyword (cc-type.h)
 enum TypeIntr {
   TI_STRUCT,
   TI_CLASS,

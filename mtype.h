@@ -13,7 +13,7 @@
 
 #include "mflags.h"             // MatchFlags
 #include "objmap.h"             // ObjMap
-#include "cc_type.h"            // Type
+#include "cc-type.h"            // Type
 #include "cc_ast.h"             // C++ AST
 #include "template.h"           // STemplateArgument
 

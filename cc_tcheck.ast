@@ -13,7 +13,7 @@
 verbatim {
   // elsa
   #include "variable.h"      // Variable
-  #include "cc_type.h"       // Type, FunctonType, CompoundType
+  #include "cc-type.h"       // Type, FunctonType, CompoundType
   #include "template.h"      // STemplateArgument
   #include "const_eval.h"    // ConstEval
 

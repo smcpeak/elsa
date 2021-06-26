@@ -4,7 +4,7 @@
 #ifndef CC_ENV_H
 #define CC_ENV_H
 
-#include "cc_type.h"      // Type, AtomicType, etc. (r)
+#include "cc-type.h"      // Type, AtomicType, etc. (r)
 #include "strobjdict.h"   // StrObjDict
 #include "owner.h"        // Owner
 #include "exc.h"          // xBase

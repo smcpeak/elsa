@@ -11,7 +11,7 @@ Alongside ST_FLOAT and friends, we have SimpleTypes like
 ST_FLOAT_COMPLEX and ST_DOUBLE_IMAGINARY.  These are the types
 given to variables and expressions of complex/imaginary type.
 
-(see cc_flags, cc_type, gnu_ext.tok, gnu.lex)
+(see cc_flags, cc-type, gnu_ext.tok, gnu.lex)
 
 
 The GNU component selectors __real__ and __imag__ are parsed as

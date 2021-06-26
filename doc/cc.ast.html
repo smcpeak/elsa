@@ -108,7 +108,7 @@ to <tt>operator</tt>s.
 <p>
 TypeSpecifiers are the first part of Declarations.  They mainly
 correspond to AtomicTypes in the terminology of
-<a href="cc_type.html">cc_type</a>: built-in types, enums, structs,
+<a href="cc-type.html">cc-type</a>: built-in types, enums, structs,
 classes, and unions.  However, via typedefs (TS_name), they can
 actually refer to constructed types (like pointers) also.
 
@@ -163,7 +163,7 @@ pointer to a function which returns a pointer to pointer to an
 integer--you read it from right to left.  The type checker
 (<a href="../cc_tcheck.cc">cc_tcheck.cc</a>) sorts the types out into
 a more usable representation
-(<a href="cc_type.html">cc_type</a>), but they start as above.
+(<a href="cc-type.html">cc-type</a>), but they start as above.
 
 <p>
 (By the way: declarators are inside-out not because Kernighan

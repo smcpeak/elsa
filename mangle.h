@@ -16,8 +16,8 @@
 #include "str.h"             // string, stringBuilder
 #include "objlist.h"         // ObjList
 
-class Type;                  // cc_type.h
-class AtomicType;            // cc_type.h
+class Type;                  // cc-type.h
+class AtomicType;            // cc-type.h
 class Variable;              // variable.h
 class TemplateInfo;          // template.h
 class STemplateArgument;     // template.h

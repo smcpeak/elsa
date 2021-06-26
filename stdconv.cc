@@ -2,7 +2,7 @@
 // code for stdconv.h
 
 #include "stdconv.h"      // this module
-#include "cc_type.h"      // Type
+#include "cc-type.h"      // Type
 #include "cc_env.h"       // Env
 #include "trace.h"        // tracingSys
 

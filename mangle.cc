@@ -83,7 +83,7 @@ string mangleAtomic(AtomicType const *t)
 }
 
 
-// cc_type.cc
+// cc-type.cc
 string cvToString(CVFlags cv);
 
 string mangle(Type const *t)
