@@ -7,6 +7,8 @@
 #ifndef CC_SCOPE_H
 #define CC_SCOPE_H
 
+#include "cc-scope-fwd.h" // forwards for this module
+
 #include "cc-ast-fwd.h"   // Function, PQName, TranslationUnit
 #include "cc-type-fwd.h"  // TypeVisitor, CompoundType, etc.
 #include "cc_flags.h"     // AccessKeyword

@@ -7,6 +7,7 @@
 #include "variable-fwd.h"      // forwards for this module
 
 #include "cc-ast-fwd.h"        // Expression, Function
+#include "cc-scope-fwd.h"      // Scope
 #include "cc-type-fwd.h"       // Type, TypeVisitor, etc.
 #include "srcloc.h"            // SourceLoc
 #include "strtable.h"          // StringRef
@@ -16,8 +17,6 @@
 #include "serialno.h"          // INHERIT_SERIAL_BASE
 #include "packedword.h"        // PackedWord
 #include "template-fwd.h"      // TemplateInfo
-
-class Scope;                   // cc-scope.h
 
 
 // This (after going through the string table) is used as Variable::name
