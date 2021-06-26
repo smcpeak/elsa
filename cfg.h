@@ -5,6 +5,7 @@
 #define CFG_H
 
 #include "array.h"        // ArrayStack<NextPtr>
+#include "cc-ast-fwd.h"   // Statement, Function, etc.
 #include "sobjlist.h"     // SObjList
 #include "objstack.h"     // ObjStack
 #include "sobjstack.h"    // SObjStack
@@ -13,15 +14,6 @@
 #include "srcloc.h"       // SourceLoc
 
 #include <stdint.h>       // intptr_t
-
-// can't just #include cc.ast.gen.h b/c that #includes this file
-class Statement;
-class S_break;
-class S_label;
-class S_goto;
-class S_switch;
-class Function;
-class TranslationUnit;
 
 
 // dsw: Design note: the graph that is built here is NOT the control
