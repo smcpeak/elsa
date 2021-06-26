@@ -6,7 +6,7 @@
 #define GENERIC_AMB_H
 
 #include "cc-ast.h"         // C++ AST
-#include "cc_env.h"         // Env, DisambiguationErrorTrapper
+#include "cc-env.h"         // Env, DisambiguationErrorTrapper
 #include "objlist.h"        // ObjList
 #include "trace.h"          // TRACE
 

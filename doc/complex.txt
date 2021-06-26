@@ -23,7 +23,7 @@ field accesses, e.g.:
 In fact, if someone writes "c.__real__", Elsa will handle it
 exactly the same as "__real__ c".
 
-(see cc_env.h, gnu.gr)
+(see cc-env.h, gnu.gr)
 
 
 When the result is typechecked, the E_fieldAcc::field member is

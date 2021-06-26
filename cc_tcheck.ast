@@ -21,7 +21,7 @@ verbatim {
   #include "datablok.h"      // DataBlock
   #include "sm-macros.h"     // Restorer
 
-  class Env;                 // cc_env.h
+  class Env;                 // cc-env.h
   class ArgumentInfo;        // overload.h
 }
 

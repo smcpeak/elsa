@@ -1,4 +1,4 @@
-// cc_env.h            see license.txt for copyright and terms of use
+// cc-env.h            see license.txt for copyright and terms of use
 // Env class, which is the compile-time C++ environment
 
 #ifndef CC_ENV_H
@@ -433,7 +433,7 @@ public:      // funcs
   Variable *applyPQNameTemplateArguments
     (Variable *var, PQName const *name, LookupFlags flags);
 
-  // lookup a single qualifier; see comments at definition cc_env.cc
+  // lookup a single qualifier; see comments at definition cc-env.cc
   Scope *lookupOneQualifier(
     Scope *startingScope,
     PQ_qualifier const *qualifier,

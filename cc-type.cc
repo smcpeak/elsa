@@ -22,7 +22,7 @@
 // explicitly supply MF_MATCH.
 #include "mtype.h"      // MType
 
-// Do *not* add a dependency on cc.ast or cc_env.  cc-type is about
+// Do *not* add a dependency on cc.ast or cc-env.  cc-type is about
 // the intrinsic properties of types, independent of any particular
 // syntax for denoting them.  (toString() uses C's syntax, but that's
 // just for debugging.)

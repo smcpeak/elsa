@@ -22,7 +22,7 @@
 #include "lookupset.h"    // LookupSet
 #include "variable-fwd.h" // Variable
 
-class Env;                // cc_env.h
+class Env;                // cc-env.h
 
 
 // information about a single scope: the names defined in it,

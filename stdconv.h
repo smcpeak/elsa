@@ -26,7 +26,7 @@
 
 // fwd
 class CCLang;          // cc_lang.h
-class Env;             // cc_env.h
+class Env;             // cc-env.h
 
 
 // The kinds of Standard Conversions.  Any given pair of convertible

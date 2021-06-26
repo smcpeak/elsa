@@ -407,7 +407,7 @@ As recursive type checking can sometimes involve doing computations
 unrelated to the disambiguation, such as template instantiation,
 at certain points the type checker uses the
 <span class="variable">InstantiationContextIsolator</span> class
-(<a href="../cc_env.h">cc_env.h</a>) to isolate those computations.
+(<a href="../cc-env.h">cc-env.h</a>) to isolate those computations.
 They will only be done once (regardless of how many times they
 occur in ambiguous alternatives), and any errors generated are
 <em>not</em> considered by the ambiguity resolver.
@@ -852,7 +852,7 @@ per se, but <code>astgen</code> in general).
 New Type classes can be added by creating new subclasses of AtomicType
 and Type (<a href="../cc-type.h"><code>cc-type.h</code></a>), and implementing
 the appropriate virtual methods.  Operations on the new types can be defined
-by creating a subclass of Env (<a href="../cc_env.h"><code>cc_env.h</code></a>)
+by creating a subclass of Env (<a href="../cc-env.h"><code>cc-env.h</code></a>)
 and overriding some of its methods.  Flaws: not very powerful; you can
 only change behaviors for which hooks are already provided.
 
@@ -1217,7 +1217,7 @@ set of flags to use when debugging a minimized input file:
 
 <li><code>error</code>:
     Print every error message that is added to the list of errors
-    in Env (<a href="../cc_env.h"><code>cc_env.h</code></a>).  This is useful
+    in Env (<a href="../cc-env.h"><code>cc-env.h</code></a>).  This is useful
     for seeing when a particular message is added.  Note that some
     errors are added but never displayed, as part of disambiguation activity.
 

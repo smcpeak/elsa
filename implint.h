@@ -32,7 +32,7 @@
 #define IMPLINT_H
 
 #include "cc-ast.h"         // C++ AST
-#include "cc_env.h"         // Env
+#include "cc-env.h"         // Env
 
 
 // The 'hasImplicitInt' function returns true if the given node is

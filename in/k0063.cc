@@ -2,7 +2,7 @@
 
 // originally found in package 'bibletime'.
 
-// Assertion failed: prior->hasFlag(DF_EXTERN_C), file cc_env.cc line 3505
+// Assertion failed: prior->hasFlag(DF_EXTERN_C), file cc-env.cc line 3505
 // Failure probably related to code near k0063.cc:10:14
 // current location stack:
 //   k0063.cc:10:14

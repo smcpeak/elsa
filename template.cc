@@ -1,9 +1,9 @@
 // template.cc
 // template stuff implementation; code for template.h, and for
-// the template section of cc_env.h at the end of Env
+// the template section of cc-env.h at the end of Env
 
 #include "template.h"      // this module
-#include "cc_env.h"        // also kind of this module
+#include "cc-env.h"        // also kind of this module
 #include "cc_print.h"      // CTypePrinter
 #include "trace.h"         // tracingSys
 #include "strtable.h"      // StringTable
@@ -2026,7 +2026,7 @@ void Env::prepArgScopeForTemlCloneTcheck
   SFOREACH_OBJLIST_NC(Scope, pushedScopes, iter) {
     // Scope 'iter.data()' is now on both lists, but neither owns
     // it; 'scopes' does not own Scopes that are named, as explained
-    // in the comments near its declaration (cc_env.h)
+    // in the comments near its declaration (cc-env.h)
     TRACE("scope", "prepArgScope: adding " << iter.data()->desc());
     extendScope(iter.data());
   }

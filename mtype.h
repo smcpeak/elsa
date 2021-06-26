@@ -12,7 +12,7 @@
 #include "cc-ast.h"             // C++ AST
 #include "template.h"           // STemplateArgument
 
-class Env;                      // cc_env.h
+class Env;                      // cc-env.h
 
 
 // Internal MType: the core of the MType implementation, separated

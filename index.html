@@ -151,8 +151,8 @@ This module finds implicit function calls (like constructors) and creates
 an explicit representation of them.  An analysis can then ignore implicit
 calls and just use the constructed explicit AST.
 
-<li><a href="cc_env.h">cc_env.h</a>,
-    <a href="cc_env.cc">cc_env.cc</a>:
+<li><a href="cc-env.h">cc-env.h</a>,
+    <a href="cc-env.cc">cc-env.cc</a>:
 Env, the type checking environment.  Fundamentally just a stack of
 Scopes (<a href="cc-scope.h">cc-scope.h</a>), plus some global
 type checking state.
@@ -186,7 +186,7 @@ extends the AST with entry points for printing.
 <li><a href="cc-scope.h">cc-scope.h</a>,
     <a href="cc-scope.cc">cc-scope.cc</a>:
 A Scope is two maps: variables and types.  The environment (<a
-href="cc_env.h">cc_env.h</a>) consists of a stack of them.
+href="cc-env.h">cc-env.h</a>) consists of a stack of them.
 
 <li><a href="cc_tcheck.ast">cc_tcheck.ast</a>,
     <a href="cc_tcheck.cc">cc_tcheck.cc</a>:

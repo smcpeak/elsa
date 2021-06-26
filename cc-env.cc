@@ -1,7 +1,7 @@
-// cc_env.cc            see license.txt for copyright and terms of use
-// code for cc_env.h
+// cc-env.cc            see license.txt for copyright and terms of use
+// code for cc-env.h
 
-#include "cc_env.h"        // this module
+#include "cc-env.h"        // this module
 
 #include "trace.h"         // tracingSys
 #include "ckheap.h"        // heapCheck

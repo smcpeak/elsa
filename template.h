@@ -6,7 +6,7 @@
 // Conceptually, everything here is an extension of cc-type.
 //
 // Note that there are many more template-related functions, declared
-// in cc_env.h in a block at the end of the declaration of the Env
+// in cc-env.h in a block at the end of the declaration of the Env
 // class.  There isn't a nice way to separate those declarations out,
 // since I want them to be members of Env.
 

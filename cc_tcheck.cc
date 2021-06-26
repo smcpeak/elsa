@@ -12,7 +12,7 @@
 
 #include "cc-ast.h"         // C++ AST
 #include "cc-ast-aux.h"     // class LoweredASTVisitor
-#include "cc_env.h"         // Env
+#include "cc-env.h"         // Env
 #include "trace.h"          // trace
 #include "cc_print.h"       // PrintEnv
 #include "strutil.h"        // decodeEscapes

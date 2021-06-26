@@ -12,7 +12,7 @@
 
 #include "mtype.h"       // this module
 #include "trace.h"       // tracingSys
-#include "cc_env.h"      // Env::applyArgumentMap
+#include "cc-env.h"      // Env::applyArgumentMap
 
 
 string toString(MatchFlags flags)

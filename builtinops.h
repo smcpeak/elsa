@@ -9,7 +9,7 @@
 #include "okhashtbl.h"     // OwnerKHashTable
 #include "variable-fwd.h"  // Variable
 
-class Env;                 // cc_env.h
+class Env;                 // cc-env.h
 class OverloadResolver;    // overload.h
 class ArgumentInfo;        // overload.h
 

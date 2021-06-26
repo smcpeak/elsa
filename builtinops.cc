@@ -3,7 +3,7 @@
 
 #include "builtinops.h"    // this module
 #include "cc-type.h"       // Type, etc.
-#include "cc_env.h"        // Env
+#include "cc-env.h"        // Env
 #include "overload.h"      // getConversionOperators, OverloadResolver
 
 

@@ -44,7 +44,7 @@
 #include "mtype-fwd.h"    // MType
 #include "variable-fwd.h" // Variable
 
-class Env;                // cc_env.h
+class Env;                // cc-env.h
 
 
 // --------------------- type visitor -----------------------
