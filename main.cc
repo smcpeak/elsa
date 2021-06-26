@@ -220,7 +220,6 @@ static int doit(int argc, char **argv)
   if (tracingSys("printLang")) {
     cout << "language settings:\n";
     cout << lang.toString();
-    cout << endl;
   }
   if (tracingSys("printTracers")) {
     cout << "tracing flags:\n\t";
