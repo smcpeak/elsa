@@ -69,7 +69,7 @@ verbatim {
 #include "cc-type.h"      // type identifiers like ST_CHAR (r)
 #include "cc_tokens.h"    // lexer's token ids for classify()
 #include "trace.h"        // trace
-#include "cc_ast.h"       // C++ abstract syntax
+#include "cc-ast.h"       // C++ abstract syntax
 #include "cc_lang.h"      // CCLang
 #include "ccparse.h"      // ParseEnv, the parser context class
 

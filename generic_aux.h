@@ -2,7 +2,7 @@
 // some templatized routines that used to be in cc-ast-aux.cc,
 // but gnu.cc wants to use them too
 
-#include "cc_ast.h"         // C++ AST
+#include "cc-ast.h"         // C++ AST
 
 
 // generic get/set 'ambiguity'

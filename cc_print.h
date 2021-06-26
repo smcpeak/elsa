@@ -12,7 +12,7 @@
 #define ELSA_CC_PRINT_H
 
 // elsa
-#include "cc_ast.h"                    // C++ AST
+#include "cc-ast.h"                    // C++ AST
 #include "type-printer.h"              // TypePrinter, CTypePrinter
 
 // smbase

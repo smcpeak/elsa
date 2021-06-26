@@ -1,4 +1,4 @@
-// cc_ast.h            see license.txt for copyright and terms of use
+// cc-ast.h            see license.txt for copyright and terms of use
 // a level of indirection for including the generated AST header file
 
 // The idea here is that, since most files are dependent on the AST

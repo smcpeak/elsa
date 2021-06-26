@@ -10,7 +10,7 @@
 //
 // These references are all marked with the string "cppstd".
 
-#include "cc_ast.h"         // C++ AST
+#include "cc-ast.h"         // C++ AST
 #include "cc-ast-aux.h"     // class LoweredASTVisitor
 #include "cc_env.h"         // Env
 #include "trace.h"          // trace

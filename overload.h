@@ -9,7 +9,7 @@
 #include "array.h"         // ArrayStack
 #include "implconv.h"      // ImplicitConversion, StandardConversion
 #include "srcloc.h"        // SourceLoc
-#include "cc_ast.h"        // PQName, ArgExpression, etc.
+#include "cc-ast.h"        // PQName, ArgExpression, etc.
 #include "lookupset.h"     // LookupSet
 
 // fwds

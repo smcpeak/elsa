@@ -7,7 +7,7 @@
 #include "parssppt.h"     // ParseTreeAndTokens
 #include "srcloc.h"       // SourceLocManager
 #include "cc_env.h"       // Env
-#include "cc_ast.h"       // C++ AST (r)
+#include "cc-ast.h"       // C++ AST (r)
 #include "cc_lang.h"      // CCLang
 #include "parsetables.h"  // ParseTables
 #include "cc.gr.gen.h"    // CCParse

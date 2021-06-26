@@ -414,7 +414,7 @@ gendoc/configure.txt: configure
 .PHONY: gendoc/dependencies.dot
 gendoc/dependencies.dot:
 	$(PERL) $(SMBASE)/scan-depends.pl -r \
-	  -Xcc_env.h=1 -Xcc-type.h=1 -Xcc_flags.h=1 -Xcc_ast.h=1 -Xvariable.h=1 \
+	  -Xcc_env.h=1 -Xcc-type.h=1 -Xcc_flags.h=1 -Xcc-ast.h=1 -Xvariable.h=1 \
           -Xcc_print.h -Xsprint.h \
 	  -Xgeneric_aux.h -Xcc-ast-aux.h -Xcc_lang.h=1 \
 	  main.cc cc_tcheck.cc >$@

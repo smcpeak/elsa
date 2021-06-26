@@ -13,7 +13,7 @@
 // spec's specified semantics.
 
 
-#include "cc_ast.h"       // AST components, etc.
+#include "cc-ast.h"       // AST components, etc.
 #include "sm-macros.h"    // ENUM_BITWISE_OPS
 #include "cc-ast-aux.h"   // class LoweredASTVisitor
 #include "ast_build.h"    // ElsaASTBuild

@@ -3,7 +3,7 @@
 
 // this doesn't include implint.h b/c that's sort of different
 
-#include "cc_ast.h"       // AST
+#include "cc-ast.h"       // AST
 #include "trace.h"        // trace
 #include "array.h"        // Array
 

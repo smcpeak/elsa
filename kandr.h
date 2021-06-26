@@ -4,7 +4,7 @@
 #ifndef KANDR_H
 #define KANDR_H
 
-#include "cc_ast.h"         // AST
+#include "cc-ast.h"         // AST
 
 Function *makeKandRdefn(SourceLoc loc, Declaration *rds, IDeclarator *id,
                         S_compound *ds, S_compound *b);

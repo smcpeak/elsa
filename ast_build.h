@@ -4,7 +4,7 @@
 #ifndef AST_BUILD_H
 #define AST_BUILD_H
 
-#include "cc_ast.h"                    // C++ AST
+#include "cc-ast.h"                    // C++ AST
 #include "elsaparse-fwd.h"             // ElsaParse
 
 #include <utility>                     // std::pair

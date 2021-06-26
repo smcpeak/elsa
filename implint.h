@@ -31,7 +31,7 @@
 #ifndef IMPLINT_H
 #define IMPLINT_H
 
-#include "cc_ast.h"         // C++ AST
+#include "cc-ast.h"         // C++ AST
 #include "cc_env.h"         // Env
 
 

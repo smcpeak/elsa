@@ -570,7 +570,7 @@ bool Variable::isPureVirtualMethod() const
   // alter in such a case.
   bool ret = type && type->isMethod() && getHasValue();
   // FIX: figure out how to add these assertions without having to
-  // include cc_ast.h
+  // include cc-ast.h
 //   if (ret) {
 //     xassert(value->isE_intLit());
 //     xassert(value->asE_intLit()->i == 0);

@@ -2,7 +2,7 @@
 // code for const_eval.h
 
 #include "const_eval.h"     // this module
-#include "cc_ast.h"         // C++ AST
+#include "cc-ast.h"         // C++ AST
 #include "cc_env.h"         // Env
 #include "stdconv.h"        // applyIntegralPromotions, etc.
 

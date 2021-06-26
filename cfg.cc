@@ -2,7 +2,7 @@
 // code for cfg.h and cfg.ast
 
 #include "cfg.h"           // this module
-#include "cc_ast.h"        // C++ AST, including cfg.ast's contributions
+#include "cc-ast.h"        // C++ AST, including cfg.ast's contributions
 #include "cc-ast-aux.h"    // class LoweredASTVisitor
 #include "sobjset.h"       // SObjSet
 

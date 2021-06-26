@@ -36,7 +36,7 @@
 
 
 #include "cc_elaborate.h"      // this module
-#include "cc_ast.h"            // Declaration
+#include "cc-ast.h"            // Declaration
 #include "trace.h"             // TRACE
 #include "cc_print.h"          // PrintEnv
 

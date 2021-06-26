@@ -2,7 +2,7 @@
 // code for typelistiter.h
 
 #include "typelistiter.h"      // this module
-#include "cc_ast.h"            // C++ ast components
+#include "cc-ast.h"            // C++ ast components
 
 
 // -------- TypeListIter_FakeList --------

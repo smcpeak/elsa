@@ -6,7 +6,7 @@
 #ifndef ASTVISIT_H
 #define ASTVISIT_H
 
-#include "cc_ast.h"       // ASTVisitor
+#include "cc-ast.h"       // ASTVisitor
 
 class ASTVisitorEx : public ASTVisitor {
 public:      // data

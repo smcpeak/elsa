@@ -11,7 +11,7 @@
 #include "sobjlist.h"     // SObjList
 #include "objstack.h"     // ObjStack
 #include "sobjstack.h"    // SObjStack
-#include "cc_ast.h"       // C++ ast components
+#include "cc-ast.h"       // C++ ast components
 #include "variable.h"     // Variable (r)
 #include "cc_scope.h"     // Scope
 #include "cc_err.h"       // ErrorList

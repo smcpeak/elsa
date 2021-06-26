@@ -5,7 +5,7 @@
 #ifndef SPRINT_H
 #define SPRINT_H
 
-#include "cc_ast.h"     // C++ AST, visitor, etc.
+#include "cc-ast.h"     // C++ AST, visitor, etc.
 
 
 // walk the AST, printing info about syntactic and
