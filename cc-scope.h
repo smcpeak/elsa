@@ -7,22 +7,25 @@
 #ifndef CC_SCOPE_H
 #define CC_SCOPE_H
 
-#include "cc-scope-fwd.h" // forwards for this module
+#include "cc-scope-fwd.h"              // forwards for this module
 
-#include "cc-ast-fwd.h"   // Function, PQName, TranslationUnit
-#include "cc-env-fwd.h"   // Env
-#include "cc-type-fwd.h"  // CompoundType, etc.
+// elsa
+#include "cc-ast-fwd.h"                // Function, PQName, TranslationUnit
+#include "cc-env-fwd.h"                // Env
+#include "cc-flags.h"                  // AccessKeyword
+#include "cc-type-fwd.h"               // CompoundType, etc.
 #include "cc-type-visitor-fwd.h"       // TypeVisitor
-#include "cc-flags.h"     // AccessKeyword
-#include "srcloc.h"       // SourceLoc
-#include "strtable.h"     // StringRef
-#include "sobjlist.h"     // SObjList
-#include "array.h"        // ArrayStack
-#include "serialno.h"     // INHERIT_SERIAL_BASE
-#include "strmap.h"       // StringRefMap
-#include "template-fwd.h" // TemplateParams
-#include "lookupset.h"    // LookupSet
-#include "variable-fwd.h" // Variable
+#include "lookupset.h"                 // LookupSet
+#include "strmap.h"                    // StringRefMap
+#include "template-fwd.h"              // TemplateParams
+#include "variable-fwd.h"              // Variable
+
+// smbase
+#include "array.h"                     // ArrayStack
+#include "serialno.h"                  // INHERIT_SERIAL_BASE
+#include "sobjlist.h"                  // SObjList
+#include "srcloc.h"                    // SourceLoc
+#include "strtable.h"                  // StringRef
 
 
 // information about a single scope: the names defined in it,
