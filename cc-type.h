@@ -22,28 +22,31 @@
 // intelligbly print themselves *without* inspecting the AST pointers
 // (by storing a textual representation if necessary).
 
-#ifndef CC_TYPE_H
-#define CC_TYPE_H
+#ifndef ELSA_CC_TYPE_H
+#define ELSA_CC_TYPE_H
 
-#include "cc-type-fwd.h"  // forwards for this module
+#include "cc-type-fwd.h"               // forwards for this module
 
-#include "str.h"          // string
-#include "objlist.h"      // ObjList
-#include "sobjlist.h"     // SObjList
-#include "astlist.h"      // ASTList
-#include "cc-flags.h"     // CVFlags, DeclFlags, SimpleTypeId
-#include "strtable.h"     // StringRef
-#include "strobjdict.h"   // StringObjDict
-#include "cc-scope.h"     // Scope
-#include "srcloc.h"       // SourceLoc
-#include "exc.h"          // xBase
-#include "serialno.h"     // INHERIT_SERIAL_BASE
-#include "mflags.h"       // MatchFlags
-#include "template-fwd.h" // STemplateArgument, etc.
-#include "cc-ast-fwd.h"   // Expression, Declaration, etc.
-#include "cc-env-fwd.h"   // Env
-#include "mtype-fwd.h"    // MType
-#include "variable-fwd.h" // Variable
+// elsa
+#include "cc-ast-fwd.h"                // Expression, Declaration, etc.
+#include "cc-env-fwd.h"                // Env
+#include "cc-flags.h"                  // CVFlags, DeclFlags, SimpleTypeId
+#include "cc-scope.h"                  // Scope
+#include "mflags.h"                    // MatchFlags
+#include "mtype-fwd.h"                 // MType
+#include "template-fwd.h"              // STemplateArgument, etc.
+#include "variable-fwd.h"              // Variable
+
+// smbase
+#include "astlist.h"                   // ASTList
+#include "exc.h"                       // xBase
+#include "objlist.h"                   // ObjList
+#include "serialno.h"                  // INHERIT_SERIAL_BASE
+#include "sobjlist.h"                  // SObjList
+#include "srcloc.h"                    // SourceLoc
+#include "str.h"                       // string
+#include "strobjdict.h"                // StringObjDict
+#include "strtable.h"                  // StringRef
 
 
 // --------------------- type visitor -----------------------
@@ -1435,4 +1438,4 @@ char *type_toString(Type const *t);
 // standard, whereas cc-tcheck.cc just says it's an 'int &'.
 
 
-#endif // CC_TYPE_H
+#endif // ELSA_CC_TYPE_H
