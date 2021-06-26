@@ -4,6 +4,8 @@
 #ifndef CC_ERR_H
 #define CC_ERR_H
 
+#include "cc-err-fwd.h"      // forwards for this module
+
 #include "sm-macros.h"       // ENUM_BITWISE_OR
 #include "str.h"             // string
 #include "srcloc.h"          // SourceLoc

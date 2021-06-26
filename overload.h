@@ -11,13 +11,11 @@
 #include "srcloc.h"        // SourceLoc
 #include "cc-ast.h"        // PQName, ArgExpression, etc.
 #include "cc-env-fwd.h"    // Env
+#include "cc-err-fwd.h"    // ErrorList
 #include "cc-type-fwd.h"   // Type
 #include "lookupset.h"     // LookupSet
 #include "template-fwd.h"  // TemplCandidates
 #include "variable-fwd.h"  // Variable
-
-// fwds
-class ErrorList;           // cc-err.h
 
 
 // debugging output support
