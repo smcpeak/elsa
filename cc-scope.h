@@ -1,4 +1,4 @@
-// cc_scope.h            see license.txt for copyright and terms of use
+// cc-scope.h            see license.txt for copyright and terms of use
 // a C++ scope, which is used by the Env parsing environment
 // and also by CompoundType to store members
 //

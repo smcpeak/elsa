@@ -13,7 +13,7 @@
 #include "sobjstack.h"    // SObjStack
 #include "cc-ast.h"       // C++ ast components
 #include "variable.h"     // Variable (r)
-#include "cc_scope.h"     // Scope
+#include "cc-scope.h"     // Scope
 #include "cc_err.h"       // ErrorList
 #include "array.h"        // ArrayStack, ArrayStackEmbed
 #include "builtinops.h"   // CandidateSet

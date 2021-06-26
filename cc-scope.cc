@@ -1,7 +1,7 @@
-// cc_scope.cc            see license.txt for copyright and terms of use
-// code for cc_scope.h
+// cc-scope.cc            see license.txt for copyright and terms of use
+// code for cc-scope.h
 
-#include "cc_scope.h"     // this module
+#include "cc-scope.h"     // this module
 #include "trace.h"        // trace
 #include "variable.h"     // Variable
 #include "cc-type.h"      // CompoundType

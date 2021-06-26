@@ -34,7 +34,7 @@
 #include "cc_flags.h"     // CVFlags, DeclFlags, SimpleTypeId
 #include "strtable.h"     // StringRef
 #include "strobjdict.h"   // StringObjDict
-#include "cc_scope.h"     // Scope
+#include "cc-scope.h"     // Scope
 #include "srcloc.h"       // SourceLoc
 #include "exc.h"          // xBase
 #include "serialno.h"     // INHERIT_SERIAL_BASE

@@ -2,7 +2,7 @@
 
 // originally found in package arts
 
-// Assertion failed: ct->parameterizingScope == this, file cc_scope.cc line 53
+// Assertion failed: ct->parameterizingScope == this, file cc-scope.cc line 53
 
 // ERR-MATCH: Assertion failed: ct->parameterizingScope == this
 

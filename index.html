@@ -154,7 +154,7 @@ calls and just use the constructed explicit AST.
 <li><a href="cc_env.h">cc_env.h</a>,
     <a href="cc_env.cc">cc_env.cc</a>:
 Env, the type checking environment.  Fundamentally just a stack of
-Scopes (<a href="cc_scope.h">cc_scope.h</a>), plus some global
+Scopes (<a href="cc-scope.h">cc-scope.h</a>), plus some global
 type checking state.
 
 <li><a href="cc_err.h">cc_err.h</a>,
@@ -183,8 +183,8 @@ options to support (e.g. C vs. C++).
 cc_print is a module to pretty-print the AST using C++ syntax.  It
 extends the AST with entry points for printing.
 
-<li><a href="cc_scope.h">cc_scope.h</a>,
-    <a href="cc_scope.cc">cc_scope.cc</a>:
+<li><a href="cc-scope.h">cc-scope.h</a>,
+    <a href="cc-scope.cc">cc-scope.cc</a>:
 A Scope is two maps: variables and types.  The environment (<a
 href="cc_env.h">cc_env.h</a>) consists of a stack of them.
 

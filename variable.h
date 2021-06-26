@@ -17,7 +17,7 @@
 #include "packedword.h"        // PackedWord
 #include "template-fwd.h"      // TemplateInfo
 
-class Scope;                   // cc_scope.h
+class Scope;                   // cc-scope.h
 
 
 // This (after going through the string table) is used as Variable::name
