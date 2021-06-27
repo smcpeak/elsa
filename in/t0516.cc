@@ -102,7 +102,10 @@ int call_j(F f)
 {
   // template type not ok because it attempts to cv-qualify a function
   // specified via DQT
-  //ERROR(1): return j(f);
+  //
+  // 2021-06-27: I think I was wrong.  8.3.5/7 allows cv-qualification
+  // of functions.
+  return j(f);
 }
 
 int call2_j(int x)
@@ -118,7 +121,9 @@ T const k();
 void call_k()
 {
   // attempts to cv-qualify a function specified via TypeVariable
-  //ERROR(2): k<F::Func>();
+  //
+  // 2021-06-27: Again, I think this is ok per 8.3.5/7.
+  k<F::Func>();
 }
 
 

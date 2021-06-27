@@ -1,0 +1,11 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+struct S {
+  int x : 4;
+};
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

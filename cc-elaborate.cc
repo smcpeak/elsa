@@ -46,12 +46,12 @@ Type *makeLvalType(TypeFactory &tfac, Type *underlying);
 
 // --------------------- ElabVisitor misc. ----------------------
 ElabVisitor::ElabVisitor(StringTable &s, TypeFactory &tf,
-                         TranslationUnit *tu)
+                         CCLang const &lang, TranslationUnit *tu)
   : loweredVisitor(this, VF_NONE),
     str(s),
     tfac(tf),
     tunit(tu),
-    m_astBuild(s, tf, *this),
+    m_astBuild(s, tf, lang, *this),
     env(*this),
     functionStack(),              // empty
     fullExpressionAnnotStack(),   // empty
@@ -117,11 +117,11 @@ Variable *ElabVisitor::makeVariable(SourceLoc loc, StringRef name, Type *type, D
 
 // Variable -> D_name
 //
-// TODO: Remove this.
-D_name *ElabVisitor::makeD_name(SourceLoc loc, Variable *var)
+// TODO: Remove this in favor of using m_astBuild directly.
+IDeclarator *ElabVisitor::makeInnermostDeclarator(SourceLoc loc, Variable *var)
 {
   RESTORER(SourceLoc, enclosingStmtLoc, loc);
-  return m_astBuild.makeD_name(var);
+  return m_astBuild.makeInnermostDeclarator(var);
 }
 
 
@@ -130,7 +130,7 @@ D_name *ElabVisitor::makeD_name(SourceLoc loc, Variable *var)
 // type, so we just use a D_name to finish it off
 Declarator *ElabVisitor::makeDeclarator(SourceLoc loc, Variable *var, DeclaratorContext context)
 {
-  IDeclarator *idecl = makeD_name(loc, var);
+  IDeclarator *idecl = makeInnermostDeclarator(loc, var);
 
   Declarator *decl = new Declarator(idecl, NULL /*init*/);
   decl->var = var;

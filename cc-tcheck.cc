@@ -1534,7 +1534,7 @@ Type *TS_name::itcheck(Env &env, DeclFlags dflags)
   Variable *v = maybeReuseNondependent(env, loc, lflags, nondependentVar);
   if (v) {
     var = v;
-    return env.tfac.makeTypedefType(var);
+    return env.tfac.makeTypedefType(var, CV_NONE);
   }
 
   if (typenameUsed) {
@@ -1643,7 +1643,7 @@ do_lookup:
   // to name a type, so we wrap up the nominated Variable as a Type,
   // thereby conveying 'var->type' to all typdef-unaware consumers, and
   // 'var' to all typedef-aware consumers.
-  return env.tfac.makeTypedefType(var);
+  return env.tfac.makeTypedefType(var, CV_NONE);
 }
 
 
@@ -7148,7 +7148,7 @@ static Type *internalTestingHooks
 
         // The purpose of this special function is to call
         // 'makeASTTypeId' on a TypedefType.
-        TypedefType *tt = env.tfac.makeTypedefType(typedefVar);
+        TypedefType *tt = env.tfac.makeTypedefType(typedefVar, CV_NONE);
         ASTTypeId *newId =
           env.m_astBuild.makeASTTypeId(tt, NULL /*name*/, DC_E_CAST);
         string actual = printASTNodeToString(env.lang, newId);
@@ -9550,7 +9550,7 @@ void IN_ctor::tcheck(Env &env, Type *destType)
         if (ic.user->type->asFunctionType()->isConstructor()) {
           // wrap 'args' in an E_constructor
           MemberSourceLocProvider locProvider(loc);
-          ElsaASTBuild astBuild(env.str, env.tfac, locProvider);
+          ElsaASTBuild astBuild(env.str, env.tfac, env.lang, locProvider);
           TypeSpecifier *destTS =
             astBuild.makeTypeSpecifier(destType->asCVAtomicType());
           E_constructor *ector = new E_constructor(destTS, args);

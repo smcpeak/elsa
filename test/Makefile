@@ -53,6 +53,7 @@ TESTS :=
 # a "known good" expected output.
 
 TESTS += pprint/class.cc
+TESTS += pprint/class2.cc
 TESTS += pprint/conversion-op.cc
 TESTS += pprint/forward.cc
 TESTS += pprint/longlines.cc
@@ -80,6 +81,7 @@ out/pprint/%.cc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
 	touch $@
 
 
+TESTS += pprint/bitfield.c
 TESTS += pprint/func.c
 TESTS += pprint/funcptr.c
 TESTS += pprint/stdconv.c
@@ -160,6 +162,8 @@ out/pqname/%.c.ok: pqname/%.c pqname/%.c.expect $(CCPARSE)
 TESTS += tcheck/conv-void-ptr.c
 TESTS += tcheck/expr-type.c
 TESTS += tcheck/func-ret-func.c
+TESTS += tcheck/func-void-param.c
+TESTS += tcheck/hello-world.c
 TESTS += tcheck/make-typedef.c
 TESTS += tcheck/ptr-plus-equals.c
 

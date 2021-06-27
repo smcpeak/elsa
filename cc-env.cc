@@ -212,7 +212,7 @@ void addCompilerSuppliedDecls(Env &env, SourceLoc loc, CompoundType *ct)
       env.makeVariable(loc,
                        env.otherName,
                        env.makeReferenceType(
-                         env.makeCVAtomicType(ct, CV_CONST)),
+                         env.makeTypedefTypeFromNAT(ct, CV_CONST)),
                        DF_PARAMETER);
     ft->addParam(refToSelfParam);
     env.doneParams(ft);
@@ -252,9 +252,9 @@ void addCompilerSuppliedDecls(Env &env, SourceLoc loc, CompoundType *ct)
 
     // add a copy assignment op declaration: Class& operator=(Class const &);
     Type *refToSelfType =
-      env.makeReferenceType(env.makeCVAtomicType(ct, CV_NONE));
+      env.makeReferenceType(env.makeTypedefTypeFromNAT(ct, CV_NONE));
     Type *refToConstSelfType =
-      env.makeReferenceType(env.makeCVAtomicType(ct, CV_CONST));
+      env.makeReferenceType(env.makeTypedefTypeFromNAT(ct, CV_CONST));
 
     FunctionType *ft = env.makeFunctionType(refToSelfType);
 
@@ -324,7 +324,7 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
     str(s),
     lang(L),
     tfac(tf),
-    m_astBuild(s, tf, *this),
+    m_astBuild(s, tf, L, *this),
     madeUpVariables(madeUpVariables0),
     builtinVars(builtinVars0),
 
@@ -1025,6 +1025,14 @@ Variable *Env::makeVariable(SourceLoc L, StringRef n, Type *t, DeclFlags f)
 }
 
 
+Type *Env::makeTypedefTypeFromNAT(NamedAtomicType *nat, CVFlags cv)
+{
+  // Wrapping in a TypedefType causes later creation of TS_name to
+  // name it rather than TS_elaborated.
+  return tfac.makeTypedefType(nat->typedefVar, cv);
+}
+
+
 Variable *Env::declareFunctionNargs(
   Type *retType, char const *funcName,
   Type **argTypes, char const **argNames, int numArgs,
@@ -1147,7 +1155,7 @@ Variable *Env::makeImplicitDeclFuncVar(StringRef name)
 
 FunctionType *Env::beginConstructorFunctionType(SourceLoc loc, CompoundType *ct)
 {
-  FunctionType *ft = makeFunctionType(makeType(ct));
+  FunctionType *ft = makeFunctionType(makeTypedefTypeFromNAT(ct, CV_NONE));
   ft->flags |= FF_CTOR;
   // asymmetry with makeDestructorFunctionType(): this must be done by the client
 //    doneParams(ft);
@@ -3412,10 +3420,10 @@ Variable *Env::createDeclaration(
         // dsw: not sure where to do this so I'm doing it here; if the
         // two types are function types and one has FF_VARARGS and the
         // other does not it causes me problems in Oink
-        if (prior->type->asFunctionType()->flags | FF_VARARGS) {
+        if (prior->type->asFunctionType()->flags & FF_VARARGS) {
           type->asFunctionType()->flags |= FF_VARARGS;
         }
-        if (type->asFunctionType()->flags | FF_VARARGS) {
+        if (type->asFunctionType()->flags & FF_VARARGS) {
           prior->type->asFunctionType()->flags |= FF_VARARGS;
         }
 

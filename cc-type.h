@@ -1053,19 +1053,27 @@ public:      // class data
   static bool s_printTypedefComments;
 
 public:      // data
-  // The name of the typedef, along with the nominated Type
-  // (as 'm_typedefVar->type').
-  //
-  // The nominated Type might also be a TypedefType, but it cannot be
-  // 'this' TypedefType because that would be circular.
+  // The typedef itself.
   Variable *m_typedefVar;
+
+  // CV flags applied on top of the named type.
+  CVFlags m_cv;
+
+  // Denoted Type.  If 'm_cv==CV_NONE', then 'm_type' is the same as
+  // 'm_typedefVar->type', but otherwise they might be different.
+  // Usually, clients should use 'm_type' since that incorporates the
+  // effect of 'm_cv'.
+  //
+  // The underlying 'm_type' might also be a TypedefType, but of course
+  // it cannot be 'this' TypedefType because that would be circular.
+  Type *m_type;
 
 protected:   // funcs
   friend class BasicTypeFactory;
-  TypedefType(Variable *typedefVar);
+  TypedefType(Variable *typedefVar, CVFlags cv, Type *type);
 
 public:      // methods
-  // Get the type from 'm_typedefVar'.
+  // Get the denoted type.
   Type *underlyingType() const;
 
   // Returns the tag of the underlying type.
@@ -1162,7 +1170,8 @@ public:
     (NamedAtomicType *inClassNAT, CVFlags cv, Type *atType)=0;
 
   // Here, it is required that 'typedefVar->isType()'.
-  virtual TypedefType *makeTypedefType(Variable *typedefVar)=0;
+  virtual TypedefType *makeTypedefType(
+    Variable *typedefVar, CVFlags cv)=0;
 
 
   // ---- create a type based on another one ----
@@ -1291,7 +1300,8 @@ public:    // funcs
   ArrayType *makeArrayType(Type *eltType, int size) override;
   PointerToMemberType *makePointerToMemberType
     (NamedAtomicType *inClassNAT, CVFlags cv, Type *atType) override;
-  TypedefType *makeTypedefType(Variable *typedefVar) override;
+  TypedefType *makeTypedefType
+    (Variable *typedefVar, CVFlags cv) override;
 
   Variable *makeVariable(SourceLoc L, StringRef n, Type *t, DeclFlags f) override;
 };

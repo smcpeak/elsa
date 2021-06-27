@@ -1,7 +1,9 @@
 // ast_build.h
 // code for ast_build.cc
 
-#include "ast_build.h"      // this module
+#include "ast_build.h"                 // this module
+
+#include "cc-lang.h"                   // CCLang
 
 
 // ----------------------- SourceLocProvider ---------------------------
@@ -26,11 +28,11 @@ SourceLoc MemberSourceLocProvider::provideLoc() const
 
 // -------------------------- ElsaASTBuild -----------------------------
 ElsaASTBuild::ElsaASTBuild(StringTable &stringTable, TypeFactory &tfac,
-                           SourceLocProvider &locProvider)
+                           CCLang const &lang, SourceLocProvider &locProvider)
   : m_stringTable(stringTable),
     m_typeFactory(tfac),
-    m_locProvider(locProvider),
-    m_useTypedefsForNamedAtomics(true)
+    m_lang(lang),
+    m_locProvider(locProvider)
 {}
 
 
@@ -45,9 +47,16 @@ FakeList<ArgExpression> *ElsaASTBuild::makeExprList2(Expression *e1, Expression 
 }
 
 
-D_name *ElsaASTBuild::makeD_name(Variable *var)
+IDeclarator *ElsaASTBuild::makeInnermostDeclarator(Variable *var)
 {
-  return new D_name(loc(), makePQName(var));
+  PQName *pqname = makePQName(var);
+  if (var->isBitfield()) {
+    int sz = var->getBitfieldSize();
+    return new D_bitfield(loc(), pqname, makeE_intLit(sz));
+  }
+  else {
+    return new D_name(loc(), pqname);
+  }
 }
 
 
@@ -74,6 +83,18 @@ D_func *ElsaASTBuild::makeD_func(FunctionType const *ftype, IDeclarator *base)
     destParams = fl_prepend(destParams, destParam);
   }
 
+  if (ftype->acceptsVarargs()) {
+    // Add the '...' parameter.
+    destParams = fl_prepend(destParams, makeSimpleTypeTypeId(ST_ELLIPSIS));
+  }
+
+  else if (ftype->params.isEmpty() &&
+           !ftype->hasFlag(FF_NO_PARAM_INFO) &&
+           m_lang.emptyParamsMeansNoInfo) {
+    // Add the single 'void' parameter to say there are no parameters.
+    destParams = fl_prepend(destParams, makeSimpleTypeTypeId(ST_VOID));
+  }
+
   // Reverse the constructed parameters.
   destParams = fl_reverse(destParams);
 
@@ -89,8 +110,8 @@ D_func *ElsaASTBuild::makeD_func(FunctionType const *ftype, IDeclarator *base)
 Type const *ElsaASTBuild::buildUpDeclarator(
   Type const *type, IDeclarator *&idecl)
 {
-  // Loop until we hit an atomic type.
-  while (!type->isCVAtomicType()) {
+  // Loop until we hit a TypedefType or an atomic type.
+  while (!type->isTypedefType() && !type->isCVAtomicType()) {
     switch (type->getTag()) {
       default:
         xfailure("bad tag");
@@ -146,8 +167,6 @@ Type const *ElsaASTBuild::buildUpDeclarator(
     } // switch (tag)
   } // while (!atomic)
 
-  // 'type' is known to be a CVAtomicType, but it could have a
-  // TypedefType wrapped around it, and I want to preserve that.
   return type;
 }
 
@@ -164,10 +183,10 @@ TS_name *ElsaASTBuild::makeTS_name(Variable *typedefVar)
 
 TypeSpecifier *ElsaASTBuild::makeTypeSpecifier(Type const *type)
 {
-  if (type->isTypedefType()) {
-    // Currently at least, I do not have a notion of a cv-qualifier
-    // on TypedefType.
-    return makeTS_name(type->asTypedefTypeC()->m_typedefVar);
+  if (TypedefType const *tt = type->ifTypedefTypeC()) {
+    TS_name *tsn = makeTS_name(tt->m_typedefVar);
+    tsn->cv = tt->m_cv;
+    return tsn;
   }
 
   CVAtomicType const *atype = type->asCVAtomicTypeC();
@@ -183,19 +202,14 @@ TypeSpecifier *ElsaASTBuild::makeTypeSpecifier(Type const *type)
     case AtomicType::T_ENUM: {
       NamedAtomicType *ntype = atype->atomic->asNamedAtomicType();
 
-      // Whenever possible, I want to use the typedefName.  However, I
-      // can't tell here whether typedefName is in fact accessible...
-      //
-      // TODO: Straighten this out.
-      if (m_useTypedefsForNamedAtomics) {
-        tspec = makeTS_name(ntype->typedefVar);
-      }
-      else {
-        TS_elaborated *tse = new TS_elaborated(loc(), ntype->getTypeIntr(),
-                                               makePQName(ntype->typedefVar));
-        tse->atype = ntype;
-        tspec = tse;
-      }
+      // If we are making a specifier for a compound or enum directly,
+      // then use the elaborated form.  If instead we were to make a
+      // specifier for a TypedefType of one of these, then we would make
+      // a TS_name.
+      TS_elaborated *tse = new TS_elaborated(loc(), ntype->getTypeIntr(),
+                                             makePQName(ntype->typedefVar));
+      tse->atype = ntype;
+      tspec = tse;
 
       break;
     }
@@ -215,21 +229,13 @@ std::pair<TypeSpecifier*, Declarator*>
 {
   // Inner declarator for 'var' that, together with the type specifier,
   // denotes 'var->type'.
-  IDeclarator *idecl = makeD_name(var);
+  IDeclarator *idecl = makeInnermostDeclarator(var);
 
-  TypeSpecifier *tspec = NULL;
-  if (var->type->isTypedefType()) {
-    // When the type is a TypedefType, we directly turn it into a type
-    // specifier and use 'idecl' as-is.
-    tspec = makeTS_name(var->type->asTypedefType()->m_typedefVar);
-  }
-  else {
-    // Add type constructors on top of 'idecl'.
-    Type const *atype = buildUpDeclarator(var->type, idecl /*INOUT*/);
+  // Add type constructors on top of 'idecl'.
+  Type const *atype = buildUpDeclarator(var->type, idecl /*INOUT*/);
 
-    // Express the atomic type as a type specifier.
-    tspec = makeTypeSpecifier(atype);
-  }
+  // Express what remains as a type specifier.
+  TypeSpecifier *tspec = makeTypeSpecifier(atype);
 
   // Stack a Declarator on 'idecl', and annotate it with the given 'var'
   // so the declaration as a whole is seen as declaring that specific
@@ -248,7 +254,8 @@ ASTTypeId *ElsaASTBuild::makeASTTypeId(Type *type, PQName *name,
 {
   // Construct a Variable out of 'type' and 'name'.
   StringRef nameSR = name? name->getName() : NULL;
-  Variable *var = m_typeFactory.makeVariable(loc(), nameSR, type, DF_NONE);
+  Variable *var = m_typeFactory.makeVariable(loc(), nameSR, type,
+    context==DC_D_FUNC? DF_PARAMETER : DF_NONE);
 
   // Build a type specifier and declarator to represent 'type'.
   std::pair<TypeSpecifier*, Declarator*> ts_and_decl =
@@ -256,6 +263,15 @@ ASTTypeId *ElsaASTBuild::makeASTTypeId(Type *type, PQName *name,
 
   // Package those as an ASTTypeId.
   return new ASTTypeId(ts_and_decl.first, ts_and_decl.second);
+}
+
+
+ASTTypeId *ElsaASTBuild::makeSimpleTypeTypeId(SimpleTypeId tid)
+{
+  return makeASTTypeId(
+    m_typeFactory.getSimpleType(tid),
+    NULL /*name*/,
+    DC_D_FUNC);
 }
 
 

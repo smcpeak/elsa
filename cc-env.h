@@ -583,12 +583,16 @@ public:      // funcs
   // (this does the work of the old 'makeMadeUpVariable')
   Variable *makeVariable(SourceLoc L, StringRef n, Type *t, DeclFlags f);
 
+  // Convenience wrappers around 'tfac' methods.
   CVAtomicType *getSimpleType(SimpleTypeId st, CVFlags cv = CV_NONE)
     { return tfac.getSimpleType(st, cv); }
   CVAtomicType *makeType(AtomicType *atomic)
     { return tfac.makeType(atomic); }
   Type *makePtrType(Type *type)
     { return tfac.makePtrType(type); }
+
+  // Create a TypedefType referring to 'nat->typedefVar'.
+  Type *makeTypedefTypeFromNAT(NamedAtomicType *nat, CVFlags cv);
 
   // others are more obscure, so I'll just call into 'tfac' directly
   // in the places I call them

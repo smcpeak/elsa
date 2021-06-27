@@ -77,7 +77,7 @@ void func()
 
 // ------------------
 typedef int Func(int);
-//ERROR(13): Func const cfunc;
+Func const cfunc;    // This is ok, per C++14 8.3.5/7.
 
 
 // ------------------

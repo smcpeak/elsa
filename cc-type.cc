@@ -9,6 +9,8 @@
 #include "hashtbl.h"    // lcprngTwoSteps
 #include "asthelp.h"    // ind
 
+#include "strip-comments.h"            // stripComments
+
 // TemplateInfo, etc... it would be sort of nice if this module didn't
 // have to #include template.h, since most of what it does is
 // independent of that, but there are enough little dependencies that
@@ -2213,16 +2215,19 @@ CVFlags PointerToMemberType::getCVFlags() const
 bool TypedefType::s_printTypedefComments = true;
 
 
-TypedefType::TypedefType(Variable *typedefVar)
-  : m_typedefVar(typedefVar)
+TypedefType::TypedefType(Variable *typedefVar, CVFlags cv, Type *type)
+  : m_typedefVar(typedefVar),
+    m_cv(cv),
+    m_type(type)
 {
   xassert(typedefVar->isType());
+  xassert(type);
 }
 
 
 Type *TypedefType::underlyingType() const
 {
-  return m_typedefVar->type;
+  return m_type;
 }
 
 
@@ -2281,7 +2286,7 @@ string        TypedefType::toMLString() const
 string TypedefType::leftString(bool innerParen) const
 {
   if (s_printTypedefComments) {
-    return stringb("/*" << m_typedefVar->name << "*/" <<
+    return stringb("/*" << stripComments(m_typedefVar->name) << "*/" <<
                    underlyingType()->leftString(innerParen));
   }
   else {
@@ -2525,7 +2530,9 @@ string TemplateParams::paramsToMLString() const
 CompoundType *TypeFactory::makeCompoundType
   (CompoundType::Keyword keyword, StringRef name)
 {
-  return new CompoundType(keyword, name);
+  CompoundType *ct = new CompoundType(keyword, name);
+  TRACE("makeCompoundType", "ct=" << (void*)ct << " name=" << name);
+  return ct;
 }
 
 
@@ -2599,18 +2606,27 @@ Type *TypeFactory::setQualifiers(SourceLoc loc, CVFlags cv, Type *baseType,
 
   Type *ret = NULL;
 
-  if (baseType->isCVAtomicType()) {
+  if (TypedefType *tt = baseType->ifTypedefType()) {
+    return makeTypedefType(tt->m_typedefVar, cv);
+  }
+  else if (baseType->isCVAtomicType()) {
     ret = shallowCloneType(baseType);
     ret->asCVAtomicType()->cv = cv;
-  } else if (baseType->isPointerType()) {
+  }
+  else if (baseType->isPointerType()) {
     ret = shallowCloneType(baseType);
     ret->asPointerType()->cv = cv;
-  } else if (baseType->isPointerToMemberType()) {
+  }
+  else if (baseType->isPointerToMemberType()) {
     ret = shallowCloneType(baseType);
     ret->asPointerToMemberType()->cv = cv;
-  } else {
+  }
+  else {
     // anything else cannot have a cv applied to it anyway; the NULL
     // will result in an error message in the client
+    //
+    // 2021-06-27: At the moment, getting here means we crash.  I might
+    // have broken some error reporting.
     ret = NULL;
   }
 
@@ -2623,6 +2639,11 @@ Type *TypeFactory::applyCVToType(SourceLoc loc, CVFlags cv, Type *baseType,
 {
   if (baseType->isReferenceType()) {
     // 8.3.2p1: this is fine; 'cv' is ignored
+    return baseType;
+  }
+
+  if (baseType->isFunctionType()) {
+    // This is also ignored per C++14 8.3.5/7.
     return baseType;
   }
 
@@ -2686,8 +2707,20 @@ PointerToMemberType *TypeFactory::syntaxPointerToMemberType(SourceLoc loc,
 Type *TypeFactory::makeTypeOf_receiver(SourceLoc loc,
   NamedAtomicType *classType, CVFlags cv, D_func *syntax)
 {
-  CVAtomicType *at = makeCVAtomicType(classType, cv);
-  return makeReferenceType(at);
+  if (classType->typedefVar) {
+    // Wrap the atomic in a TypedefType so when this gets printed it
+    // will use the TS_name rather than TS_elaborated form.
+    TypedefType *tt = makeTypedefType(classType->typedefVar, cv);
+
+    return makeReferenceType(tt);
+  }
+  else {
+    // One way this happens is while processing templates, where
+    // 'classType' could be a PseudoInstantiation.  Since there is no
+    // 'typedefVar', we cannot create a TypedefType.
+    CVAtomicType *at = makeCVAtomicType(classType, cv);
+    return makeReferenceType(at);
+  }
 }
 
 
@@ -2828,9 +2861,18 @@ PointerToMemberType *BasicTypeFactory::makePointerToMemberType
 }
 
 
-TypedefType *BasicTypeFactory::makeTypedefType(Variable *typedefVar)
+TypedefType *BasicTypeFactory::makeTypedefType
+  (Variable *typedefVar, CVFlags cv)
 {
-  return new TypedefType(typedefVar);
+  xassert(typedefVar);
+  xassert(typedefVar->isType());
+
+  Type *orig = typedefVar->type;
+  xassert(orig);
+
+  Type *withCV = applyCVToType(SL_UNKNOWN, cv, orig, NULL /*syntax*/);
+
+  return new TypedefType(typedefVar, cv, withCV);
 }
 
 

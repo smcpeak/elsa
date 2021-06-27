@@ -7,6 +7,7 @@
 
 // elsa
 #include "cc-lang.h"                   // CCLang
+#include "strip-comments.h"            // stripComments
 
 // smbase
 #include "trace.h"                     // trace
@@ -533,6 +534,9 @@ void TS_classSpec::iprint(PrintEnv &env) const
   env << toString(cv);
   env << toString(keyword) << ' ';
   if (name) env << name->toString();
+
+  env << env.seq;
+
   bool first_time = true;
   FAKELIST_FOREACH_NC(BaseClassSpec, bases, iter) {
     if (first_time) {
@@ -544,6 +548,14 @@ void TS_classSpec::iprint(PrintEnv &env) const
     }
     iter->print(env);
   }
+
+  env << env.end;
+
+  // TODO: Members are printed without regard to their access control
+  // status.  This is particularly a problem for compiler-generated
+  // functions, which will simply be appended to the member list even
+  // if that gives them the wrong access.
+
   env << " ";
   BPBRACES;
   FOREACH_ASTLIST(Member, members->list, iter2) {
@@ -1835,7 +1847,7 @@ OperatorPrecedence E_grouping::getPrecedence() const
 
 void E_implicitStandardConversion::iprint(PrintEnv &env) const
 {
-  env << "/*ISC:" << type->toString() << "*/";
+  env << "/*ISC:" << stripComments(type->toString()) << "*/";
   expr->iprint(env);
 }
 

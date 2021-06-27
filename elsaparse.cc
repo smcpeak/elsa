@@ -450,7 +450,7 @@ void ElsaParse::parse(char const *inputFname)
   else {
     SectionTimer timer(m_elaborationTime);
 
-    ElabVisitor vis(m_stringTable, m_typeFactory, m_translationUnit);
+    ElabVisitor vis(m_stringTable, m_typeFactory, m_lang, m_translationUnit);
 
     if (!m_lang.isCplusplus) {
       // do only the C elaboration activities

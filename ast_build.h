@@ -49,21 +49,17 @@ public:      // data
   // For making new Type objects.
   TypeFactory &m_typeFactory;
 
+  // Language options.  One reason this is needed is when creating a
+  // function declarator, we use a single 'void' parameter to indicate
+  // the absence of parameters in C only.
+  CCLang const &m_lang;
+
   // Used when an AST node needs a location.
   SourceLocProvider &m_locProvider;
 
-  // HACK: When true, which is the default, use the 'typedefVar' carried
-  // by NamedAtomicType to name such a type, rather than the elaborated
-  // name (with the 'class' or whatever keyword).
-  //
-  // This results in more compact code when printed, but is sometimes
-  // WRONG because I don't actually know whether the typedef is
-  // accessible (or even exists, in the case of C!).
-  bool m_useTypedefsForNamedAtomics;
-
 public:      // methods
   ElsaASTBuild(StringTable &stringTable, TypeFactory &tfac,
-               SourceLocProvider &locProvider);
+               CCLang const &lang, SourceLocProvider &locProvider);
 
   SourceLoc loc() const
     { return m_locProvider.provideLoc(); }
@@ -74,10 +70,10 @@ public:      // methods
   // wrap a pair of expressions in a list
   FakeList<ArgExpression> *makeExprList2(Expression *e1, Expression *e2);
 
-  // Given a Variable, create a D_name that refers to it.  This D_name
-  // must have additional IDeclarators wrapped around it in order to
-  // properly express the type of 'var'.
-  D_name *makeD_name(Variable *var);
+  // Given a Variable, create a D_name or D_bitfield that refers to it.
+  // This D_name must have additional IDeclarators wrapped around it in
+  // order to properly express the type of 'var'.
+  IDeclarator *makeInnermostDeclarator(Variable *var);
 
   // Stack a D_func on top of 'base' that expresses that 'base' has
   // type 'ftype', except that the return type of 'ftype' is ignored
@@ -86,13 +82,7 @@ public:      // methods
 
   // Given a base declarator (which should be a D_name), add more
   // IDeclarators on top of it in order to denote 'type'.  Stop when we
-  // reach an atomic type, returning it.
-  //
-  // Although the returned value is known to be CVAtomicType, it could
-  // have TypedefType wrapped around that, which I do not want to lose,
-  // so it is declared as simply 'Type'.
-  //
-  // Ensures: 'return->isCVAtomicType()'.
+  // reach a TypedefType or an atomic type, returning it.
   Type const *buildUpDeclarator(
     Type const *type, IDeclarator *&idecl /*INOUT*/);
 
@@ -121,6 +111,9 @@ public:      // methods
   // non-const pointer to it.
   ASTTypeId *makeASTTypeId(Type *type, PQName *name,
     DeclaratorContext context);
+
+  // Make an ASTTypeId denoting a SimpleTypeId.
+  ASTTypeId *makeSimpleTypeTypeId(SimpleTypeId tid);
 
   // Return an ASTTypeId to represent the parameter denoted by 'var'.
   ASTTypeId *makeParameter(Variable *var);

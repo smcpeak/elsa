@@ -192,7 +192,7 @@ public:      // funcs
   // are in the .cc file, so look there first.
 
   // AST creation
-  D_name *makeD_name(SourceLoc loc, Variable *var);
+  IDeclarator *makeInnermostDeclarator(SourceLoc loc, Variable *var);
   Declarator *makeDeclarator(SourceLoc loc, Variable *var, DeclaratorContext context);
   Declaration *makeDeclaration(SourceLoc loc, Variable *var, DeclaratorContext context);
   Function *makeFunction(SourceLoc loc, Variable *var,
@@ -289,7 +289,8 @@ public:      // funcs
   Variable *getDtor(CompoundType *ct);           // ~C();
 
 public:
-  ElabVisitor(StringTable &str, TypeFactory &tfac, TranslationUnit *tunit);
+  ElabVisitor(StringTable &str, TypeFactory &tfac,
+              CCLang const &lang, TranslationUnit *tunit);
   virtual ~ElabVisitor();
 
   // ASTVisitor funcs
