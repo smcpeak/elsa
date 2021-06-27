@@ -1,7 +1,7 @@
-// const_eval.cc
-// code for const_eval.h
+// const-eval.cc
+// code for const-eval.h
 
-#include "const_eval.h"     // this module
+#include "const-eval.h"     // this module
 #include "cc-ast.h"         // C++ AST
 #include "cc-env.h"         // Env
 #include "stdconv.h"        // applyIntegralPromotions, etc.

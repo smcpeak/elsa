@@ -14,7 +14,7 @@ cc.gr.gen.o: cc-tokens.h
 cc.gr.gen.o: cc.ast.gen.h
 ccparse.o: cc.ast.gen.h
 cfg.o: cc.ast.gen.h
-const_eval.o: cc.ast.gen.h
+const-eval.o: cc.ast.gen.h
 elsaparse.o: cc-tokens.h
 elsaparse.o: cc.ast.gen.h
 elsaparse.o: cc.gr.gen.h

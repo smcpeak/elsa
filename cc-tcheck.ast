@@ -15,7 +15,7 @@ verbatim {
   #include "variable.h"      // Variable
   #include "cc-type.h"       // Type, FunctonType, CompoundType
   #include "template.h"      // STemplateArgument
-  #include "const_eval.h"    // ConstEval
+  #include "const-eval.h"    // ConstEval
 
   // smbase
   #include "datablok.h"      // DataBlock

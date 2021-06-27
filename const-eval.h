@@ -1,4 +1,4 @@
-// const_eval.h
+// const-eval.h
 // evaluate Expression AST nodes to a constant, if possible
 
 #ifndef CONST_EVAL_H

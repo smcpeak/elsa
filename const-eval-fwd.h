@@ -1,5 +1,5 @@
 // const-eval-fwd.h
-// Forwards for const_eval.h.
+// Forwards for const-eval.h.
 
 #ifndef ELSA_CONST_EVAL_FWD_H
 #define ELSA_CONST_EVAL_FWD_H
