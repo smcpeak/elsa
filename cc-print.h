@@ -63,7 +63,15 @@ string printASTNodeToString(CCLang const &lang, T *astNode)
 {
   CTypePrinter typePrinter(lang);
   PrintEnv env(typePrinter);
+
+  // Wrap the node in a sequence so it won't turn every optional break
+  // into a newline.  Usually, we want a relatively short one-line
+  // string.
+  env << env.seq;
+
   astNode->print(env);
+
+  env << env.end;
   return env.getResult();
 }
 
