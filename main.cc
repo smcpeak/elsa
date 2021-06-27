@@ -1,8 +1,10 @@
 // main.cc            see license.txt for copyright and terms of use
 // entry-point module for a program that parses C++
 
+// elsa
 #include "ast_build.h"                 // test_astbuild
 #include "elsaparse.h"                 // ElsaParse
+#include "strip-comments.h"            // strip_comments_unit_tests
 
 // smbase
 #include "ckheap.h"                    // malloc_stats
@@ -49,6 +51,13 @@ static TargetPlatform decodeTargetPlatform(char const *target)
     xfatal("Unknown target \"" << target << "\".");
     return TF_BUILD;     // Not reached.
   }
+}
+
+
+static void runUnitTests()
+{
+  strip_comments_unit_tests();
+  cout << "unit tests passed\n";
 }
 
 
@@ -104,6 +113,10 @@ static char *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
       argv += 2;
       argc -= 2;
     }
+    else if (streq(argv[1], "--unit-tests")) {
+      runUnitTests();
+      exit(0);
+    }
     else {
       break;     // didn't find any more options
     }
@@ -120,6 +133,7 @@ static char *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
             "    --quiet                opposite of --verbose (and the default)\n"
             "    --prettyPrint          pretty-print the parsed AST as C/C++ syntax\n"
             "    --printStringLiterals  print every decoded string literal\n"
+            "    --unit-tests           run internal unit tests\n"
          << (additionalInfo? additionalInfo : "");
     exit(argc==1? 0 : 2);    // error if any args supplied
   }

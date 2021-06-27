@@ -322,6 +322,8 @@ ELSA_OBJS += cc-ast-aux.o
 ELSA_OBJS += variable.o
 ELSA_OBJS += lookupset.o
 ELSA_OBJS += ccparse.o
+ELSA_OBJS += strip-comments.o
+ELSA_OBJS += test-strip-comments.o
 
 # Parser as a library.
 TOCLEAN += libelsa.a

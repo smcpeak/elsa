@@ -170,6 +170,15 @@ out/tcheck/%.c.ok: tcheck/%.c $(CCPARSE)
 	touch $@
 
 
+# ---------------------------- unit tests ------------------------------
+out/unit-tests.ok: $(CCPARSE)
+	@mkdir -p $(dir $@)
+	./$(CCPARSE) --unit-tests
+	touch $@
+
+check: out/unit-tests.ok
+
+
 # ---------------------------- check rule ------------------------------
 check: $(patsubst %,out/%.ok,$(TESTS))
 	@echo "All tests in test/ passed."
