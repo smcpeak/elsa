@@ -160,6 +160,8 @@ public:      // methods
 
   E_cast *makeE_cast(Type *type, Expression *src);
 
+  E_cond *makeE_cond(Expression *cond, Expression *th, Expression *el);
+
   E_assign *makeE_assign(
     Expression *target, BinaryOp op, Expression *src);
 

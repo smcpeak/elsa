@@ -562,6 +562,18 @@ E_cast *ElsaASTBuild::makeE_cast(Type *type, Expression *src)
 }
 
 
+E_cond *ElsaASTBuild::makeE_cond(
+  Expression *cond, Expression *th, Expression *el)
+{
+  E_cond *ret = new E_cond(cond, th, el);
+
+  // TODO: Rules are more complicated here.
+  ret->type = th->type;
+
+  return ret;
+}
+
+
 E_assign *ElsaASTBuild::makeE_assign(
   Expression *target, BinaryOp op, Expression *src)
 {
