@@ -28,9 +28,7 @@ kandr.o: cc.ast.gen.h
 lexer.o: cc-tokens.h
 lexer.o: lexer.yy.h
 lexer.yy.o: cc-tokens.h
-main.o: cc-tokens.h
 main.o: cc.ast.gen.h
-main.o: cc.gr.gen.h
 mangle.o: cc.ast.gen.h
 mtype.o: cc.ast.gen.h
 overload.o: cc.ast.gen.h
@@ -44,9 +42,7 @@ smin.o: iptparse.yy.h
 sprint.o: cc.ast.gen.h
 stdconv.o: cc.ast.gen.h
 template.o: cc.ast.gen.h
-test-astbuild.o: cc-tokens.h
 test-astbuild.o: cc.ast.gen.h
-test-astbuild.o: cc.gr.gen.h
 tlexer.o: cc-tokens.h
 tlexer.o: lexer.yy.h
 type-printer.o: cc.ast.gen.h

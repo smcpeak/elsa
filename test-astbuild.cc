@@ -3,12 +3,15 @@
 
 #include "ast_build.h"                 // module under test
 
+// elsa
 #include "cc-ast.h"                    // ModificationASTVisitor
 #include "cc-print.h"                  // PrintEnv, etc.
 #include "elsaparse.h"                 // ElsaParse
 #include "integrity.h"                 // IntegrityVisitor
 
+// smbase
 #include "sm-test.h"                   // EXPECT_EQ
+#include "trace.h"                     // tracingSys
 
 
 // Visitor that tests ElsaASTBuild at certain nodes.

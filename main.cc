@@ -8,6 +8,7 @@
 
 // smbase
 #include "ckheap.h"                    // malloc_stats
+#include "trace.h"                     // tracingSys
 
 
 static void if_malloc_stats()
