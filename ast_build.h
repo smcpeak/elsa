@@ -86,6 +86,11 @@ public:      // methods
   Type const *buildUpDeclarator(
     Type const *type, IDeclarator *&idecl /*INOUT*/);
 
+  // Return the lvalue version of 'type'.  Normally that means wrapping
+  // it in a ReferenceType, but if it is already a ReferenceType then
+  // we return 'type' itself.
+  Type *makeLvalueType(Type *type);
+
   // Given a Variable representing a typedef'd type, construct a type
   // specifier that uses it.
   TS_name *makeTS_name(Variable *typedefVar);
@@ -124,10 +129,15 @@ public:      // methods
   // Make a syntactic exception specification.
   ExceptionSpec *makeExceptionSpec(FunctionType::ExnSpec *srcSpec);
 
+  PQName *makePQName(Variable *var);
+
   // Make an E_intLit.
   E_intLit *makeE_intLit(int n);
 
-  PQName *makePQName(Variable *var);
+  E_variable *makeE_variable(Variable *var);
+
+  E_funCall *makeE_funCall(
+    Expression *func, FakeList<ArgExpression> *args);
 
   // Make an E_funCall invoking an unqualified name.
   E_funCall *makeNamedFunCall1(
@@ -135,17 +145,25 @@ public:      // methods
   E_funCall *makeNamedFunCall2(
     Variable *callee, Expression *arg1, Expression *arg2);
 
+  E_fieldAcc *makeE_fieldAcc(Expression *obj, Variable *field);
+
+  E_unary *makeE_unary(UnaryOp op, Expression *expr);
+
+  E_effect *makeE_effect(EffectOp op, Expression *expr);
+
   E_binary *makeE_binary(
     Expression *e1, BinaryOp op, Expression *e2);
 
-  E_variable *makeE_variable(Variable *var);
+  E_addrOf *makeE_addrOf(Expression *expr);
+
+  E_deref *makeE_deref(Expression *ptr);
+
+  E_cast *makeE_cast(Type *type, Expression *src);
 
   E_assign *makeE_assign(
     Expression *target, BinaryOp op, Expression *src);
 
-  E_cast *makeE_cast(Type *type, Expression *src);
-
-  E_deref *makeE_deref(Expression *ptr);
+  E_sizeofType *makeE_sizeofType(ASTTypeId *typeId);
 };
 
 

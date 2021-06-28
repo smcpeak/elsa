@@ -171,6 +171,17 @@ Type const *ElsaASTBuild::buildUpDeclarator(
 }
 
 
+Type *ElsaASTBuild::makeLvalueType(Type *type)
+{
+  if (type->isReferenceType()) {
+    return type;
+  }
+  else {
+    return m_typeFactory.makeReferenceType(type);
+  }
+}
+
+
 TS_name *ElsaASTBuild::makeTS_name(Variable *typedefVar)
 {
   xassert(typedefVar->isType());
@@ -324,19 +335,6 @@ ExceptionSpec *ElsaASTBuild::makeExceptionSpec(FunctionType::ExnSpec *srcSpec)
 }
 
 
-E_intLit *ElsaASTBuild::makeE_intLit(int n)
-{
-  E_intLit *ret = new E_intLit(m_stringTable.add(stringb(n).c_str()));
-
-  // TODO: This is not really safe, but will suffice for my immediate purpose.
-  ret->i = (unsigned long)n;
-
-  ret->type = m_typeFactory.getSimpleType(ST_INT);
-
-  return ret;
-}
-
-
 PQName *ElsaASTBuild::makePQName(Variable *var)
 {
   if (var->name == NULL) {
@@ -430,34 +428,16 @@ PQName *ElsaASTBuild::makePQName(Variable *var)
 }
 
 
-E_funCall *ElsaASTBuild::makeNamedFunCall1(
-  Variable *callee, Expression *arg1)
+E_intLit *ElsaASTBuild::makeE_intLit(int n)
 {
-  FakeList<ArgExpression> *args = makeExprList1(arg1);
-  E_funCall *call = new E_funCall(
-    makeE_variable(callee),
-    args);
-  call->type = callee->type->asRval()->asFunctionType()->retType;
-  return call;
-}
+  E_intLit *ret = new E_intLit(m_stringTable.add(stringb(n).c_str()));
 
+  // TODO: This is not really safe, but will suffice for my immediate purpose.
+  ret->i = (unsigned long)n;
 
-E_funCall *ElsaASTBuild::makeNamedFunCall2(
-  Variable *callee, Expression *arg1, Expression *arg2)
-{
-  FakeList<ArgExpression> *args = makeExprList2(arg1, arg2);
-  E_funCall *call = new E_funCall(
-    makeE_variable(callee),
-    args);
-  call->type = callee->type->asRval()->asFunctionType()->retType;
-  return call;
-}
+  ret->type = m_typeFactory.getSimpleType(ST_INT);
 
-
-E_binary *ElsaASTBuild::makeE_binary(
-  Expression *e1, BinaryOp op, Expression *e2)
-{
-  return new E_binary(e1, op, e2);
+  return ret;
 }
 
 
@@ -470,12 +450,105 @@ E_variable *ElsaASTBuild::makeE_variable(Variable *var)
 }
 
 
-E_assign *ElsaASTBuild::makeE_assign(
-  Expression *target, BinaryOp op, Expression *src)
+E_funCall *ElsaASTBuild::makeE_funCall(
+  Expression *func, FakeList<ArgExpression> *args)
 {
-  E_assign *assign = new E_assign(target, op, src);
-  assign->type = target->type;
-  return assign;
+  E_funCall *call = new E_funCall(func, args);
+  call->type = func->type->asRval()->asFunctionType()->retType;
+  return call;
+}
+
+
+E_funCall *ElsaASTBuild::makeNamedFunCall1(
+  Variable *callee, Expression *arg1)
+{
+  FakeList<ArgExpression> *args = makeExprList1(arg1);
+  return makeE_funCall(makeE_variable(callee), args);
+}
+
+
+E_funCall *ElsaASTBuild::makeNamedFunCall2(
+  Variable *callee, Expression *arg1, Expression *arg2)
+{
+  FakeList<ArgExpression> *args = makeExprList2(arg1, arg2);
+  return makeE_funCall(makeE_variable(callee), args);
+}
+
+
+E_fieldAcc *ElsaASTBuild::makeE_fieldAcc(Expression *obj, Variable *field)
+{
+  E_fieldAcc *fa = new E_fieldAcc(obj, makePQName(field));
+  fa->field = field;
+  fa->type = makeLvalueType(field->type);
+  return fa;
+}
+
+
+E_unary *ElsaASTBuild::makeE_unary(UnaryOp op, Expression *expr)
+{
+  E_unary *un = new E_unary(op, expr);
+
+  // TODO: The rules for this are more complicated.
+  un->type = expr->type;
+
+  return un;
+}
+
+
+E_effect *ElsaASTBuild::makeE_effect(
+  EffectOp op, Expression *expr)
+{
+  E_effect *eff = new E_effect(op, expr);
+
+  switch (op) {
+    default:
+      xfailure("bad effect op");
+
+    case EFF_POSTINC:
+    case EFF_POSTDEC:
+      eff->type = expr->type->asRval();
+      break;
+
+    case EFF_PREINC:
+    case EFF_PREDEC:
+      eff->type = expr->type;
+      break;
+  }
+
+  return eff;
+}
+
+
+E_binary *ElsaASTBuild::makeE_binary(
+  Expression *e1, BinaryOp op, Expression *e2)
+{
+  E_binary *bin = new E_binary(e1, op, e2);
+
+  // TODO: There are a lot of rules about how to properly compute the
+  // type here.
+
+  bin->type = e1->type->asRval();
+  return bin;
+}
+
+
+E_addrOf *ElsaASTBuild::makeE_addrOf(Expression *expr)
+{
+  E_addrOf *ao = new E_addrOf(expr);
+  ao->type = m_typeFactory.makePointerType(CV_NONE, expr->type->asRval());
+  return ao;
+}
+
+
+E_deref *ElsaASTBuild::makeE_deref(Expression *ptr)
+{
+  Type *atType = ptr->type->asRval()->asPointerType()->atType;
+  E_deref *deref = new E_deref(ptr);
+
+  // Dereferencing produces an lvalue.
+  deref->type = makeLvalueType(atType);
+
+  return deref;
 }
 
 
@@ -489,12 +562,21 @@ E_cast *ElsaASTBuild::makeE_cast(Type *type, Expression *src)
 }
 
 
-E_deref *ElsaASTBuild::makeE_deref(Expression *ptr)
+E_assign *ElsaASTBuild::makeE_assign(
+  Expression *target, BinaryOp op, Expression *src)
 {
-  Type *atType = ptr->type->asRval()->asPointerType()->atType;
-  E_deref *deref = new E_deref(ptr);
-  deref->type = m_typeFactory.makeReferenceType(atType);
-  return deref;
+  E_assign *assign = new E_assign(target, op, src);
+  assign->type = target->type;
+  return assign;
+}
+
+
+E_sizeofType *ElsaASTBuild::makeE_sizeofType(ASTTypeId *typeId)
+{
+  E_sizeofType *st = new E_sizeofType(typeId);
+  st->type = m_typeFactory.getSimpleType(
+    getStddefType_size_t(m_lang.m_typeSizes));
+  return st;
 }
 
 
