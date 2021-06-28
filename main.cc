@@ -99,12 +99,12 @@ static char *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
       argv++;
       argc--;
     }
-    else if (streq(argv[1], "--prettyPrint")) {
+    else if (streq(argv[1], "--pretty-print")) {
       elsaParse.m_prettyPrint = true;
       argv++;
       argc--;
     }
-    else if (streq(argv[1], "--printStringLiterals")) {
+    else if (streq(argv[1], "--print-string-literals")) {
       elsaParse.m_printStringLiterals = true;
       argv++;
       argc--;
@@ -137,18 +137,16 @@ static char *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
   if (argc != 2) {
     cout << "usage: " << progName << " [options] input-file\n"
             "  options:\n"
-            "    -tr <flags>:           turn on given tracing flags (comma-separated)\n"
-            "    -xc                    parse input as C rather than C++\n"
-            "    --target <target>:     options: build (default), linux64, win64, win32\n"
-            "    -w                     disable warnings\n"
-            "    --verbose              print error/warn counts and times\n"
-            "    --quiet                opposite of --verbose (and the default)\n"
-            // TODO: Rename these options to use hyphens insteadof
-            // camelCase.
-            "    --prettyPrint          pretty-print the parsed AST as C/C++ syntax\n"
-            "    --printStringLiterals  print every decoded string literal\n"
-            "    --no-elaborate         disable elaboration pass\n"
-            "    --unit-tests           run internal unit tests\n"
+            "    -tr <flags>:             turn on given tracing flags (comma-separated)\n"
+            "    -xc                      parse input as C rather than C++\n"
+            "    --target <target>:       options: build (default), linux64, win64, win32\n"
+            "    -w                       disable warnings\n"
+            "    --verbose                print error/warn counts and times\n"
+            "    --quiet                  opposite of --verbose (and the default)\n"
+            "    --pretty-print           pretty-print the parsed AST as C/C++ syntax\n"
+            "    --print-string-literals  print every decoded string literal\n"
+            "    --no-elaborate           disable elaboration pass\n"
+            "    --unit-tests             run internal unit tests\n"
          << (additionalInfo? additionalInfo : "");
     exit(argc==1? 0 : 2);    // error if any args supplied
   }

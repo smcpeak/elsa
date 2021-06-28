@@ -129,7 +129,7 @@ for my $name(@names) {
     push @outfiles, $name;
     $outfile2command{$name} = "ORIGINAL: $name";
     eval {
-        my $flags = "--prettyPrint $ccparseOptions";
+        my $flags = "--pretty-print $ccparseOptions";
 #          my $cppflags = "-lang-c++";      # This doesn't work!
 
         my $cpp = "cpp";

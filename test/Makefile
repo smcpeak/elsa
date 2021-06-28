@@ -49,7 +49,7 @@ TESTS :=
 
 
 # ------------------------------ pprint --------------------------------
-# Pretty-print tests run with --prettyPrint and compare the output to
+# Pretty-print tests run with --pretty-print and compare the output to
 # a "known good" expected output.
 
 TESTS += pprint/class.cc
@@ -71,7 +71,7 @@ out/pprint/%.cc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/pprint/$*.cc.actual \
 	  --expect pprint/$*.cc.expect \
-	  $(CCPARSE) --prettyPrint $<
+	  $(CCPARSE) --pretty-print $<
 #	The 'cpp' here is to get rid of the template instantiations,
 #	which are bracketed by #if 0/#endif.
 	../chop_out < out/pprint/$*.cc.actual | cpp > out/pprint/$*.cc.trimmed
@@ -94,7 +94,7 @@ out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect $(CCPARSE)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/pprint/$*.c.actual \
 	  --expect pprint/$*.c.expect \
-	  $(CCPARSE) -xc --prettyPrint $<
+	  $(CCPARSE) -xc --pretty-print $<
 	../chop_out < out/pprint/$*.c.actual > out/pprint/$*.c.trimmed
 	$(CCPARSE) -xc out/pprint/$*.c.trimmed
 	gcc -c -oout/pprint/$*.c.trimmed.o -xc out/pprint/$*.c.trimmed
@@ -103,7 +103,7 @@ out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect $(CCPARSE)
 
 
 # ------------------------------ strlit --------------------------------
-# String literal tests run with --printStringLiterals and compare the
+# String literal tests run with --print-string-literals and compare the
 # output to expected output.
 
 TESTS += strlit/strlit1.cc
@@ -114,7 +114,7 @@ out/strlit/%.cc.ok: strlit/%.cc strlit/%.cc.expect $(CCPARSE)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/strlit/$*.cc.actual \
 	  --expect strlit/$*.cc.expect \
-	  $(CCPARSE) --printStringLiterals $<
+	  $(CCPARSE) --print-string-literals $<
 	touch $@
 
 
@@ -126,7 +126,7 @@ out/strlit/%.c.ok: strlit/%.c strlit/%.c.expect $(CCPARSE)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/strlit/$*.c.actual \
 	  --expect strlit/$*.c.expect \
-	  $(CCPARSE) -xc --printStringLiterals $<
+	  $(CCPARSE) -xc --print-string-literals $<
 	touch $@
 
 
