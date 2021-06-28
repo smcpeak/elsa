@@ -89,12 +89,16 @@ TESTS += pprint/typedef.c
 TESTS += pprint/vararg-promote.c
 
 # Run a C pretty-print test.
+#
+# For these I also disable the elaborator because it does not do much
+# in C and the things it does do (mainly about structure assignment)
+# are things I do not want, at least as part of a pprint test.
 out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect $(CCPARSE)
 	@mkdir -p $(dir $@)idem
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/pprint/$*.c.actual \
 	  --expect pprint/$*.c.expect \
-	  $(CCPARSE) -xc --pretty-print $<
+	  $(CCPARSE) -xc --pretty-print --no-elaborate $<
 	../chop_out < out/pprint/$*.c.actual > out/pprint/$*.c.trimmed
 	$(CCPARSE) -xc out/pprint/$*.c.trimmed
 	gcc -c -oout/pprint/$*.c.trimmed.o -xc out/pprint/$*.c.trimmed
