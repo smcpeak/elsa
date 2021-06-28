@@ -2,11 +2,15 @@
 // code for cc-flags.h
 
 #include "cc-flags.h"     // this module
+
+#include "type-sizes.h"   // TypeSize
+
 #include "sm-macros.h"    // STATIC_ASSERT
 #include "xassert.h"      // xassert
 #include "trace.h"        // tracingSys
 #include "strtokpc.h"     // StrtokParseC
 #include "exc.h"          // xformat
+
 #include <ctype.h>        // toupper
 
 
@@ -223,7 +227,7 @@ bool isValid(SimpleTypeId id)
 
 
 #define S(x) ((SimpleTypeFlags)(x))    // work around bitwise-OR in initializers..
-#define STS(x) TypeSizes::STS_##x
+#define STS(x) STS_##x
 static SimpleTypeInfo const simpleTypeInfoArray[] = {
   //name                      sts,                      flags
   { "char",                   STS(CHAR),                S(STF_INTEGER                          ) },

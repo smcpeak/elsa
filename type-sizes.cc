@@ -18,7 +18,10 @@
 namespace {
   // An entry for one STS in 'g_sizeData'.
   struct SizeData {
-    TypeSizes::ScalarTypeSet m_sts;
+    // The key for this entry.
+    ScalarTypeSet m_sts;
+
+    // The name of the enumerator, without the "STS_" prefix.
     char const *m_name;
 
     // This is the size according to the compiler used to compile Elsa.
@@ -41,7 +44,7 @@ namespace {
 }
 
 
-#define NAME(name) TypeSizes::STS_##name, #name
+#define NAME(name) STS_##name, #name
 
 static SizeData const g_sizeData[] = {
   // Name                      Host                         L64 W64 W32
@@ -66,7 +69,7 @@ static SizeData const g_sizeData[] = {
 #undef NAME
 
 
-/*static*/ char const *TypeSizes::stsName(ScalarTypeSet sts)
+char const *toString(ScalarTypeSet sts)
 {
   if ((unsigned)sts < NUM_SCALAR_TYPE_SETS) {
     return g_sizeData[sts].m_name;

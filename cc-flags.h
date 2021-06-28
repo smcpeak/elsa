@@ -19,7 +19,8 @@
 #define CC_FLAGS_H
 
 // elsa
-#include "type-sizes.h"                // TypeSizes::ScalarTypeSet
+#include "scalar-type-set.h"           // ScalarTypeSet
+#include "type-sizes-fwd.h"            // TypeSizes
 
 // smbase
 #include "sm-macros.h"                 // ENUM_BITWISE_OPS
@@ -242,7 +243,7 @@ struct SimpleTypeInfo {
   char const *name;
 
   // Categorization of this type as an STS.
-  TypeSizes::ScalarTypeSet m_sts;
+  ScalarTypeSet m_sts;
 
   // Various boolean attributes.
   SimpleTypeFlags flags;
@@ -252,8 +253,7 @@ bool isValid(SimpleTypeId id);                          // bounds check
 SimpleTypeInfo const &simpleTypeInfo(SimpleTypeId id);
 
 inline char const *simpleTypeName(SimpleTypeId id)  { return simpleTypeInfo(id).name; }
-inline TypeSizes::ScalarTypeSet simpleTypeSTS(SimpleTypeId id)
-                                                    { return simpleTypeInfo(id).m_sts; }
+inline ScalarTypeSet simpleTypeSTS(SimpleTypeId id) { return simpleTypeInfo(id).m_sts; }
 inline bool isIntegerType(SimpleTypeId id)          { return !!(simpleTypeInfo(id).flags & STF_INTEGER); }
 inline bool isFloatType(SimpleTypeId id)            { return !!(simpleTypeInfo(id).flags & STF_FLOAT); }
 inline bool isExplicitlyUnsigned(SimpleTypeId id)   { return !!(simpleTypeInfo(id).flags & STF_UNSIGNED); }

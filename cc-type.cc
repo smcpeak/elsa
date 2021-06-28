@@ -10,6 +10,7 @@
 #include "asthelp.h"    // ind
 
 #include "strip-comments.h"            // stripComments
+#include "type-sizes.h"                // TypeSizes
 
 // TemplateInfo, etc... it would be sort of nice if this module didn't
 // have to #include template.h, since most of what it does is
@@ -1665,7 +1666,7 @@ string PointerType::rightString(bool /*innerParen*/) const
 
 int PointerType::reprSize(TypeSizes const &typeSizes) const
 {
-  return typeSizes.getSize(TypeSizes::STS_POINTER);
+  return typeSizes.getSize(STS_POINTER);
 }
 
 
@@ -1724,7 +1725,7 @@ string ReferenceType::rightString(bool /*innerParen*/) const
 
 int ReferenceType::reprSize(TypeSizes const &typeSizes) const
 {
-  return typeSizes.getSize(TypeSizes::STS_POINTER);
+  return typeSizes.getSize(STS_POINTER);
 }
 
 
@@ -2194,7 +2195,7 @@ string PointerToMemberType::rightString(bool /*innerParen*/) const
 
 int PointerToMemberType::reprSize(TypeSizes const &typeSizes) const
 {
-  return typeSizes.getSize(TypeSizes::STS_POINTER_TO_MEMBER);
+  return typeSizes.getSize(STS_POINTER_TO_MEMBER);
 }
 
 
