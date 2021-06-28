@@ -5316,10 +5316,9 @@ Type *Env::sizeofType(Type *t, int &size, Expression * /*nullable*/ expr)
     }
   }
 
-  // 5.3.3p6: result is of type 'size_t'; most systems (including my
-  // elsa/include/stddef.h header) make that the same as 'unsigned';
-  // in any case, it must be an unsigned integer type (c99, 7.17p2)
-  return t->isError()? t : env.getSimpleType(ST_UNSIGNED_INT);
+  // 5.3.3p6: result is of type 'size_t'
+  return t->isError()? t :
+    env.getSimpleType(getStddefType_size_t(lang.m_typeSizes));
 }
 
 
