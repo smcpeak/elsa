@@ -8,8 +8,8 @@
 
 // elsa
 #include "cc-ast.h"                    // TranslationUnit, Function
-#include "cc-elaborate.h"              // ElabActivities
 #include "cc-lang.h"                   // CCLang
+#include "elab-activities.h"           // ElabActivities
 
 // smbase
 #include "strtable.h"                  // StringTable
