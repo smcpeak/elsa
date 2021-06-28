@@ -32,6 +32,9 @@ static TargetPlatform targetPlatform = TF_BUILD;
 // When true, print the count of warnings and errors, and the phase times.
 static bool verboseOutput = false;
 
+// When true, the elaboration pass is run after parsing.
+static bool enableElaboration = true;
+
 
 // Decode the --target argument.
 static TargetPlatform decodeTargetPlatform(char const *target)
@@ -114,9 +117,17 @@ static char *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
       argv += 2;
       argc -= 2;
     }
+    else if (streq(argv[1], "--no-elaborate")) {
+      enableElaboration = false;
+      argv++;
+      argc--;
+    }
     else if (streq(argv[1], "--unit-tests")) {
       runUnitTests();
       exit(0);
+    }
+    else if (argv[1][0] == '-') {
+      xfatal("unknown option: " << argv[1]);
     }
     else {
       break;     // didn't find any more options
@@ -132,8 +143,11 @@ static char *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
             "    -w                     disable warnings\n"
             "    --verbose              print error/warn counts and times\n"
             "    --quiet                opposite of --verbose (and the default)\n"
+            // TODO: Rename these options to use hyphens insteadof
+            // camelCase.
             "    --prettyPrint          pretty-print the parsed AST as C/C++ syntax\n"
             "    --printStringLiterals  print every decoded string literal\n"
+            "    --no-elaborate         disable elaboration pass\n"
             "    --unit-tests           run internal unit tests\n"
          << (additionalInfo? additionalInfo : "");
     exit(argc==1? 0 : 2);    // error if any args supplied
@@ -256,6 +270,10 @@ static int doit(int argc, char **argv)
   }
   else if (targetPlatform == TF_WIN32) {
     lang.m_typeSizes.set_windows_x86();
+  }
+
+  if (!enableElaboration) {
+    elsaParse.m_elabActivities = EA_NONE;
   }
 
   if (tracingSys("test_xfatal")) {
