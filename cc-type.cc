@@ -1,38 +1,38 @@
 // cc-type.cc            see license.txt for copyright and terms of use
 // code for cc-type.h
 
-#include "cc-type.h"    // this module
-#include "trace.h"      // tracingSys
-#include "variable.h"   // Variable
-#include "strutil.h"    // copyToStaticBuffer
-#include "sobjset.h"    // SObjSet
-#include "hashtbl.h"    // lcprngTwoSteps
-#include "asthelp.h"    // ind
+#include "cc-type.h"                   // this module
 
+// elsa
 #include "strip-comments.h"            // stripComments
+#include "template.h"                  // TemplateInfo, etc.
 #include "type-sizes.h"                // TypeSizes
-
-// TemplateInfo, etc... it would be sort of nice if this module didn't
-// have to #include template.h, since most of what it does is
-// independent of that, but there are enough little dependencies that
-// for now I just live with it.
-#include "template.h"
+#include "variable.h"                  // Variable
 
 // This dependency is to support using MType for equality checking.
 // It causes a transitive dependency on cc.ast, but I rationalize that
 // an MType variant could be created, if necessary, that cut that
 // dependency, especially as none of the call sites in this file
 // explicitly supply MF_MATCH.
-#include "mtype.h"      // MType
+#include "mtype.h"                     // MType
 
 // Do *not* add a dependency on cc.ast or cc-env.  cc-type is about
 // the intrinsic properties of types, independent of any particular
 // syntax for denoting them.  (toString() uses C's syntax, but that's
 // just for debugging.)
 
-#include "sm-stdint.h"  // uintptr_t
+// ast
+#include "asthelp.h"                   // ind
 
-#include <stdlib.h>     // getenv
+// smbase
+#include "hashtbl.h"                   // lcprngTwoSteps
+#include "sm-stdint.h"                 // uintptr_t
+#include "sobjset.h"                   // SObjSet
+#include "strutil.h"                   // copyToStaticBuffer
+#include "trace.h"                     // tracingSys
+
+// libc
+#include <stdlib.h>                    // getenv
 
 
 // 2005-08-10: the anon things are kind of ugly..
