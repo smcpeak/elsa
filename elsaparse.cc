@@ -449,6 +449,9 @@ void ElsaParse::parse(char const *inputFname)
   if (tracingSys("no-elaborate")) {
     cout << "no-elaborate" << endl;
   }
+  else if (m_elabActivities == EA_NONE) {
+    // No elaboration requested.
+  }
   else {
     SectionTimer timer(m_elaborationTime);
 
@@ -471,7 +474,7 @@ void ElsaParse::parse(char const *inputFname)
     // do elaboration
     m_translationUnit->traverse(vis.loweredVisitor);
 
-    // print abstract syntax tree annotated with types
+    // print abstract syntax tree annotated with elaborated semantics
     if (tracingSys("printElabAST")) {
       m_translationUnit->debugPrint(cout, 0);
     }

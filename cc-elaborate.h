@@ -37,6 +37,9 @@ extern int throwClauseSerialNumber;
 // visitor.  Each can be individually turned on or off, though all are
 // on by default.
 enum ElabActivities {
+  // Do not perform any elaboration.
+  EA_NONE                  = 0x0000,
+
   // This replaces return-by-value for class-valued objects with
   // call-by-reference:
   //   - At every call site that would return by value, a temporary
