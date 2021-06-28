@@ -47,13 +47,9 @@ public:      // data
 
   // Parameters to the elaborator.  By default, we do full elaboration
   // and do not clone defunct children.  However, setting
-  // 'm_prettyPrint' causes 'm_cloneDefunctChildren' to be changed to
-  // true during parsing.
-  //
-  // TODO: Combine these into one variable and move ElabActivities into
-  // its own file.
+  // 'm_prettyPrint' causes 'EA_REMOVE_DEFUNCT_CHILDREN' to be changed
+  // to false during parsing.
   ElabActivities m_elabActivities;
-  bool m_cloneDefunctChildren;
 
   // The parsed TU.
   TranslationUnit *m_translationUnit;

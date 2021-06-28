@@ -178,7 +178,6 @@ ElsaParse::ElsaParse(StringTable &stringTable_, CCLang &lang_)
     m_prettyPrint(false),
     m_printStringLiterals(false),
     m_elabActivities(EA_ALL),
-    m_cloneDefunctChildren(false),
     m_translationUnit(NULL),
     m_mainFunction(NULL),
     m_parseTime(0),
@@ -463,13 +462,12 @@ void ElsaParse::parse(char const *inputFname)
     // If we are going to pretty print, then we need to retain defunct
     // children.
     if (m_prettyPrint) {
-      m_cloneDefunctChildren = true;
+      m_elabActivities &= ~EA_REMOVE_DEFUNCT_CHILDREN;
     }
 
     // Configure the elaborator.
     ElabVisitor vis(m_stringTable, m_typeFactory, m_lang, m_translationUnit);
     vis.activities = m_elabActivities;
-    vis.cloneDefunctChildren = m_cloneDefunctChildren;
 
     // do elaboration
     m_translationUnit->traverse(vis.loweredVisitor);

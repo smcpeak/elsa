@@ -61,8 +61,7 @@ ElabVisitor::ElabVisitor(StringTable &s, TypeFactory &tf,
     e_newSerialNumber(0),
 
     // elaboration parameters
-    activities(EA_ALL),
-    cloneDefunctChildren(false)
+    activities(EA_ALL)
 {
   // don't do anything here that depends on the elaboration
   // parameters, because then the client would be unable to affect
@@ -335,7 +334,7 @@ FakeList<ArgExpression> *ElabVisitor::cloneExprList(FakeList<ArgExpression> *arg
 {
   FakeList<ArgExpression> *ret = FakeList<ArgExpression>::emptyList();
 
-  if (cloneDefunctChildren) {
+  if (cloneDefunctChildren()) {
     FAKELIST_FOREACH(ArgExpression, args0, iter) {
       // clone the AST node
       ArgExpression *argExpr0 = iter->clone();
@@ -353,7 +352,7 @@ FakeList<ArgExpression> *ElabVisitor::cloneExprList(FakeList<ArgExpression> *arg
 
 Expression *ElabVisitor::cloneExpr(Expression *e)
 {
-  if (cloneDefunctChildren) {
+  if (cloneDefunctChildren()) {
     // clone the AST node
     Expression *expr0 = e->clone();
     // use the clone

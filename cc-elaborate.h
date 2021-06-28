@@ -70,19 +70,16 @@ public:      // data
   // can change them after construction.  I did it this way to avoid
   // making tons of ctor parameters.
 
-  // what we're doing; this defaults to EA_ALL
+  // What we're doing.  This defaults to EA_ALL.
   ElabActivities activities;
-
-  // When true, we retain cloned versions of subtrees whose semantics
-  // is captured (and therefore the tree obviated) by the elaboration.
-  // When false, we just nullify those subtrees, which results in
-  // sometimes-invalid AST, but makes some analyses happy anway.  This
-  // defaults to false.
-  bool cloneDefunctChildren;
 
 private:     // methods
   // Implement SourceLocProvider.
   SourceLoc provideLoc() const override;
+
+  // True if we need to clone defunct children to preserve them.
+  bool cloneDefunctChildren() const
+    { return !(activities & EA_REMOVE_DEFUNCT_CHILDREN); }
 
 public:      // funcs
   // true if a particular activity is requested
