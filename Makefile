@@ -225,6 +225,7 @@ LEXER_OBJS += baselexer.o
 LEXER_OBJS += lexer.o
 LEXER_OBJS += lexer.yy.o
 LEXER_OBJS += cc-tokens.o
+LEXER_OBJS += cc-flags.o
 
 # program to test the lexer alone
 tlexer.exe: tlexer.o $(LEXER_OBJS) $(LIBS)

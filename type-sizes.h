@@ -7,6 +7,7 @@
 #include "type-sizes-fwd.h"            // forward for this module
 
 // elsa
+#include "cc-flags.h"                  // SimpleTypeId
 #include "scalar-type-set.h"           // ScalarTypeSet
 
 // smbase
@@ -16,8 +17,13 @@
 // Configurable map from scalar type to size and alignment.
 class TypeSizes {
 private:     // data
-  // Size for each set.
+  // Size for each set.  This is private just to interpose a
+  // bounds-checked query mechanism.
   int m_stsSize[NUM_SCALAR_TYPE_SETS];
+
+public:      // data
+  // The type that 'size_t' is defined to be.
+  SimpleTypeId m_type_of_size_t;
 
 public:      // class methods
   // Returns "BOOL", etc.

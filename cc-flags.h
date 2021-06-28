@@ -269,9 +269,6 @@ bool isComplexOrImaginary(SimpleTypeId id);
 
 int simpleTypeReprSize(TypeSizes const &typeSizes, SimpleTypeId id);
 
-// Get the type used for 'size_t'.
-SimpleTypeId getStddefType_size_t(TypeSizes const &typeSize);
-
 inline char const *toString(SimpleTypeId id)        { return simpleTypeName(id); }
 
 

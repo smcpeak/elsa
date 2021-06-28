@@ -310,13 +310,6 @@ int simpleTypeReprSize(TypeSizes const &typeSizes, SimpleTypeId id)
 }
 
 
-SimpleTypeId getStddefType_size_t(TypeSizes const &typeSize)
-{
-  // TODO: This is wrong, but is what I did historically.
-  return ST_UNSIGNED_INT;
-}
-
-
 // ------------------------ UnaryOp -----------------------------
 char const * const unaryOpNames[NUM_UNARYOPS] = {
   "+",

@@ -87,6 +87,29 @@ int TypeSizes::getSize(ScalarTypeSet sts) const
 }
 
 
+namespace {
+  // Compile-time map from type T to its SimpleTypeId.  For now it only
+  // handles the types that 'size_t' is likely to be.
+  template <class T>
+  struct GetSimpleTypeIdFor {};
+
+  template <>
+  struct GetSimpleTypeIdFor<unsigned> {
+    SimpleTypeId const id = ST_UNSIGNED_INT;
+  };
+
+  template <>
+  struct GetSimpleTypeIdFor<unsigned long> {
+    SimpleTypeId const id = ST_UNSIGNED_LONG_INT;
+  };
+
+  template <>
+  struct GetSimpleTypeIdFor<unsigned long long> {
+    SimpleTypeId const id = ST_UNSIGNED_LONG_LONG;
+  };
+}
+
+
 void TypeSizes::set_build_compiler()
 {
   ASSERT_TABLESIZE(g_sizeData, NUM_SCALAR_TYPE_SETS);
@@ -94,6 +117,8 @@ void TypeSizes::set_build_compiler()
     xassert(g_sizeData[i].m_sts == i);
     m_stsSize[i] = g_sizeData[i].m_build;
   }
+
+  m_type_of_size_t = GetSimpleTypeIdFor<size_t>().id;
 }
 
 
@@ -103,6 +128,8 @@ void TypeSizes::set_linux_x86_64()
     xassert(g_sizeData[i].m_sts == i);
     m_stsSize[i] = g_sizeData[i].m_linux64;
   }
+
+  m_type_of_size_t = ST_UNSIGNED_LONG_INT;
 }
 
 
@@ -112,6 +139,8 @@ void TypeSizes::set_windows_x86_64()
     xassert(g_sizeData[i].m_sts == i);
     m_stsSize[i] = g_sizeData[i].m_win64;
   }
+
+  m_type_of_size_t = ST_UNSIGNED_LONG_LONG;
 }
 
 
@@ -121,6 +150,8 @@ void TypeSizes::set_windows_x86()
     xassert(g_sizeData[i].m_sts == i);
     m_stsSize[i] = g_sizeData[i].m_win32;
   }
+
+  m_type_of_size_t = ST_UNSIGNED_LONG_INT;
 }
 
 
@@ -130,6 +161,7 @@ string TypeSizes::toString() const
   for (int i=0; i < NUM_SCALAR_TYPE_SETS; i++) {
     sb << g_sizeData[i].m_name << ": " << m_stsSize[i] << '\n';
   }
+  sb << "size_t is " << simpleTypeName(m_type_of_size_t) << '\n';
   return sb.str();
 }
 

@@ -5318,7 +5318,7 @@ Type *Env::sizeofType(Type *t, int &size, Expression * /*nullable*/ expr)
 
   // 5.3.3p6: result is of type 'size_t'
   return t->isError()? t :
-    env.getSimpleType(getStddefType_size_t(lang.m_typeSizes));
+    env.getSimpleType(lang.m_typeSizes.m_type_of_size_t);
 }
 
 

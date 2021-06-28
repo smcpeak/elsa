@@ -575,7 +575,7 @@ E_sizeofType *ElsaASTBuild::makeE_sizeofType(ASTTypeId *typeId)
 {
   E_sizeofType *st = new E_sizeofType(typeId);
   st->type = m_typeFactory.getSimpleType(
-    getStddefType_size_t(m_lang.m_typeSizes));
+    m_lang.m_typeSizes.m_type_of_size_t);
   return st;
 }
 
