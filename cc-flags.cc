@@ -1,17 +1,20 @@
 // cc-flags.cc            see license.txt for copyright and terms of use
 // code for cc-flags.h
 
-#include "cc-flags.h"     // this module
+#include "cc-flags.h"                  // this module
 
-#include "type-sizes.h"   // TypeSize
+// elsa
+#include "type-sizes.h"                // TypeSize
 
-#include "sm-macros.h"    // STATIC_ASSERT
-#include "xassert.h"      // xassert
-#include "trace.h"        // tracingSys
-#include "strtokpc.h"     // StrtokParseC
-#include "exc.h"          // xformat
+// smbase
+#include "exc.h"                       // xformat
+#include "sm-macros.h"                 // STATIC_ASSERT
+#include "strtokpc.h"                  // StrtokParseC
+#include "trace.h"                     // tracingSys
+#include "xassert.h"                   // xassert
 
-#include <ctype.h>        // toupper
+// libc
+#include <ctype.h>                     // toupper
 
 
 // the check for array[limit-1] is meant to ensure that there
