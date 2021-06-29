@@ -6,7 +6,7 @@ int something(char const *fmt, ...);
 void f(int a)
 {
   something("long format string with %d some format specifiers %d", a,
-            a, a, a, a, a, a, a, a, a, a, a);
+    a, a, a, a, a, a, a, a, a, a, a);
 }
 
 void g(int a)

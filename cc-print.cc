@@ -112,6 +112,7 @@ namespace {
   // Begin/end vertical or sequence boxes.
   #define BPVERTICAL BPBeginEndBox bpBeginEndBox(env, BoxPrint::vert)
   #define BPSEQUENCE BPBeginEndBox bpBeginEndBox(env, BoxPrint::seq)
+  #define BP_H_OR_V  BPBeginEndBox bpBeginEndBox(env, BoxPrint::hv)
 
   // Print opening and closing braces.
   class BPBraces {
@@ -1298,17 +1299,16 @@ OperatorPrecedence E_variable::getPrecedence() const
 
 void printArgExprList(PrintEnv &env, FakeList<ArgExpression> *list)
 {
-  BPSEQUENCE;
-
-  bool first_time = true;
+  int ct=0;
   FAKELIST_FOREACH_NC(ArgExpression, list, iter) {
-    if (first_time) {
-      first_time = false;
-    }
-    else {
+    if (ct > 0) {
       env << ',' << env.br;
     }
+    if (ct == 1) {
+      env.adjustIndent(1);
+    }
     iter->expr->print(env, OPREC_COMMA);
+    ct++;
   }
 }
 
@@ -1322,6 +1322,8 @@ static void printArgExprListWithParens(PrintEnv &env,
 
 void E_funCall::iprint(PrintEnv &env) const
 {
+  BPSEQUENCE;
+
   func->print(env, this->getPrecedence());
   printArgExprListWithParens(env, args);
 }
@@ -1652,16 +1654,19 @@ OperatorPrecedence E_cast::getPrecedence() const
 // ? : syntax
 void E_cond::iprint(PrintEnv &env) const
 {
+  BP_H_OR_V;
+
   cond->print(env, this->getPrecedence());
 
   if (th) {
-    env << "? ";
+    env << "?" << env.br;
+    env.adjustIndent(1);
     th->print(env, this->getPrecedence());
-    env << " : ";
+    env << " :" << env.br;
   }
   else {
     // GNU binary conditional.
-    env << " ?: ";
+    env << " ?:" << env.br;
   }
 
   el->print(env, this->getPrecedence());

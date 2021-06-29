@@ -84,6 +84,7 @@ out/pprint/%.cc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
 TESTS += pprint/bitfield.c
 TESTS += pprint/func.c
 TESTS += pprint/funcptr.c
+TESTS += pprint/longlines2.c
 TESTS += pprint/stdconv.c
 TESTS += pprint/typedef.c
 TESTS += pprint/vararg-promote.c
@@ -102,7 +103,7 @@ out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect $(CCPARSE)
 	../chop_out < out/pprint/$*.c.actual > out/pprint/$*.c.trimmed
 	$(CCPARSE) -xc out/pprint/$*.c.trimmed
 	gcc -c -oout/pprint/$*.c.trimmed.o -xc out/pprint/$*.c.trimmed
-	../idemcheck --elsadir .. -d $(dir $@)idem -xc -q $<
+	../idemcheck --elsadir .. -d $(dir $@)idem -xc --no-elaborate -q $<
 	touch $@
 
 
