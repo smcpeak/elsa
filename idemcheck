@@ -26,7 +26,8 @@ my %outfile2command = ();
 my $outdir;
 
 my $usage=<<END
-Usage: idemcheck -d <outputdir> [--elsadir elsadir] [-xc] [-q] <inputlist>...
+Usage: idemcheck -d <outputdir> [--elsadir elsadir] [-xc]
+         [-q] [--no-elaborate] <inputlist>...
 END
     ;
 
@@ -59,6 +60,9 @@ if (+@ARGV==0) {
     }
     elsif ($arg eq "-xc") {
         $ccparseOptions = "-xc";
+    }
+    elsif ($arg eq "--no-elaborate") {
+        $ccparseOptions .= " --no-elaborate";
     }
     elsif ($arg eq "-q") {
         $verbose = 0;
