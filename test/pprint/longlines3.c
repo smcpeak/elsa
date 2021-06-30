@@ -20,6 +20,7 @@ void *av_oo_ptr_check(av_oo_pointer_t p, size_t size);
 
 struct List {
   av_oo_pointer_t head;
+  int x;
 };
 
 typedef struct List List;
@@ -31,6 +32,10 @@ void g()
   av_oo_pointer_t __ptr_to_list = av_oo_ptr_malloc(16);
   (*((List *)av_oo_ptr_check(__ptr_to_list, 16))).head =
     av_oo_ptr_from_intptr(0);
+  int y = (*((List *)av_oo_ptr_check(__ptr_to_list, 16))).x +
+            av_oo_ptr_from_intptr(0).m_offset;
+  y += (*((List *)av_oo_ptr_check(__ptr_to_list, 16))).x +
+         av_oo_ptr_from_intptr(0).m_offset;
 }
 
 // EOF

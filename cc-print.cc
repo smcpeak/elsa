@@ -1493,9 +1493,11 @@ static bool verySimple(Expression const *e)
          e->isE_variable();
 }
 
-// dsw: binary operator.
+
 void E_binary::iprint(PrintEnv &env) const
 {
+  TPSEQUENCE;
+
   OperatorPrecedence thisPrec = this->getPrecedence();
   OperatorPrecedence e1Prec   = e1->getPrecedence();
   OperatorPrecedence e2Prec   = e2->getPrecedence();
@@ -1533,7 +1535,7 @@ void E_binary::iprint(PrintEnv &env) const
     env << toString(op);
 
     if (addSpaces) {
-      env << " ";
+      env << env.sp;
     }
 
     if (bothGray(thisPrec, e2Prec)) {
@@ -1685,13 +1687,15 @@ OperatorPrecedence E_sizeofType::getPrecedence() const
 
 void E_assign::iprint(PrintEnv &env) const
 {
+  TPSEQUENCE;
+
   target->print(env, this->getPrecedence());
 
   env << " ";
   if (op != BIN_ASSIGN) {
     env << toString(op);
   }
-  env << "= ";
+  env << '=' << env.sp;
 
   src->print(env, this->getPrecedence());
 }
