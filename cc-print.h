@@ -16,14 +16,14 @@
 #include "type-printer.h"              // TypePrinter, CTypePrinter
 
 // smbase
-#include "boxprint.h"                  // BoxPrint
+#include "tree-print.h"                // TreePrint
 
 
 // Context for a pretty-print.
 //
-// When printing, we accumulate in BoxPrint a tree that describes the
-// intended syntax structure.  Then, 'finish()' renders it to a string,
-// which is sent to 'm_out'.
+// When printing, we accumulate in TreePrint a tree that describes the
+// intended syntax structure.  Then, 'print()' renders it to an
+// ostream.
 //
 // Printing is somewhat delicate because it's easy to have too many or
 // too few line breaks.  The general strategy used in cc-print is that
@@ -32,7 +32,7 @@
 // what is being printed on both sides of the break.  Individual
 // elements do *not* insert breaks on their own.
 //
-class PrintEnv : public BoxPrint {
+class PrintEnv : public TreePrint {
 public:      // data
   // How to print types.
   TypePrinter &m_typePrinter;
@@ -42,9 +42,7 @@ public:      // methods
     : m_typePrinter(typePrinter)
   {}
 
-  // Render the built BoxPrint tree to a string.  This internally
-  // empties the tree, so a subsequent call would return the empty
-  // string if no further printing happens.
+  // Print the tree to a string.
   string getResult();
 
   // Print 'type' using 'm_typePrinter'.
@@ -64,14 +62,8 @@ string printASTNodeToString(CCLang const &lang, T *astNode)
   CTypePrinter typePrinter(lang);
   PrintEnv env(typePrinter);
 
-  // Wrap the node in a sequence so it won't turn every optional break
-  // into a newline.  Usually, we want a relatively short one-line
-  // string.
-  env << env.seq;
-
   astNode->print(env);
 
-  env << env.end;
   return env.getResult();
 }
 

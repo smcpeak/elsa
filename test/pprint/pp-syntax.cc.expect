@@ -10,7 +10,8 @@ void g()
 {}
 
 int hasTry(int x)
-try {
+try
+{
   return 2+x;
 }
 catch (int z) {

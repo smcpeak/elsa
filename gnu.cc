@@ -1259,7 +1259,7 @@ static void print_DesignatorList(PrintEnv &env, FakeList<Designator> *dl) {
   env << "=";
 }
 
-void IN_designated::print(PrintEnv &env) const
+void IN_designated::print(PrintEnv &env, bool) const
 {
   print_DesignatorList(env, designator_list);
   init->print(env);
