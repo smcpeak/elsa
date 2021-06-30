@@ -840,7 +840,15 @@ void S_compound::iprint(PrintEnv &env) const
 {
   env << "{" << env.br;
   FOREACH_ASTLIST(Statement, stmts, iter) {
-    iter.data()->print(env);
+    Statement const *stmt = iter.data();
+    if (stmt->isS_compound()) {
+      // The parent of S_compound has to make the sequence.
+      TPSEQUENCE;
+      stmt->print(env);
+    }
+    else {
+      iter.data()->print(env);
+    }
     env << env.br;
   }
   env << env.und << "}";
