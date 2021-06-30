@@ -85,6 +85,7 @@ TESTS += pprint/bitfield.c
 TESTS += pprint/func.c
 TESTS += pprint/funcptr.c
 TESTS += pprint/longlines2.c
+TESTS += pprint/nested-block.c
 TESTS += pprint/stdconv.c
 TESTS += pprint/typedef.c
 TESTS += pprint/vararg-promote.c
