@@ -46,7 +46,11 @@ public:      // methods
   string getResult();
 
   // Print 'type' using 'm_typePrinter'.
-  void ptype(TypeLike const *type, char const *name = "");
+  virtual void ptype(TypeLike const *type, char const *name = "");
+
+  // Nominally, call 'expr->iprint(*this)'.  This is exposed as a
+  // possible point of customization for clients.
+  virtual void iprintExpression(Expression const *expr);
 };
 
 // Print 'type' to a string using the rules of 'lang'.

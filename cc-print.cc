@@ -50,6 +50,12 @@ void PrintEnv::ptype(Type const *type, char const *name)
 }
 
 
+void PrintEnv::iprintExpression(Expression const *expr)
+{
+  expr->iprint(*this);
+}
+
+
 string printTypeToString(CCLang const &lang, Type const *type)
 {
   CTypePrinter typePrinter(lang);
@@ -1057,13 +1063,13 @@ void Expression::print(PrintEnv &env, OperatorPrecedence parentPrec) const
   OperatorPrecedence thisPrec = this->getPrecedence();
   if (thisPrec >= parentPrec) {
     env << "(";
-    iprint(env);
+    env.iprintExpression(this);
     env << ")";
   }
   else {
     // 'this' expression has higher precedence than its parent, so does
     // not need parentheses.
-    iprint(env);
+    env.iprintExpression(this);
   }
 }
 
@@ -1606,7 +1612,7 @@ void E_addrOf::iprint(PrintEnv &env) const
   env << "&";
   if (expr->isE_variable()) {
     // could be forming ptr-to-member, do not parenthesize
-    expr->iprint(env);
+    env.iprintExpression(expr);
   }
   else {
     expr->print(env, this->getPrecedence());
@@ -1849,7 +1855,7 @@ OperatorPrecedence E_grouping::getPrecedence() const
 void E_implicitStandardConversion::iprint(PrintEnv &env) const
 {
   env << "/*ISC:" << stripComments(type->toString()) << "*/";
-  expr->iprint(env);
+  env.iprintExpression(expr);
 }
 
 OperatorPrecedence E_implicitStandardConversion::getPrecedence() const
