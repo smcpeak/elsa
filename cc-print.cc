@@ -50,9 +50,10 @@ void PrintEnv::ptype(Type const *type, char const *name)
 }
 
 
-void PrintEnv::iprintStatement(Statement const *stmt)
+void PrintEnv::iprintStatement(
+  Statement const *stmt, StatementContext context)
 {
-  stmt->iprint(*this);
+  stmt->iprint(*this, context);
 }
 
 
@@ -67,6 +68,16 @@ string printTypeToString(CCLang const &lang, Type const *type)
   CTypePrinter typePrinter(lang);
   PrintEnv env(typePrinter);
   env.ptype(type, "" /*do not print "anon"*/);
+  return env.getResult();
+}
+
+
+string printStatementToString(
+  CCLang const &lang, Statement const *stmt, StatementContext context)
+{
+  CTypePrinter typePrinter(lang);
+  PrintEnv env(typePrinter);
+  stmt->print(env, context);
   return env.getResult();
 }
 
@@ -349,7 +360,7 @@ void Function::print(PrintEnv &env, DeclFlags declFlagsMask) const
   }
   else {
     TPSEQUENCE;
-    body->print(env);
+    body->print(env, SC_FUNCTION_BODY);
   }
 
   if (handlers) {
@@ -810,81 +821,91 @@ void ON_conversion::print(PrintEnv &env) const
 
 
 // ---------------------- Statement ---------------------
-void Statement::print(PrintEnv &env) const
+void Statement::print(PrintEnv &env, StatementContext context) const
 {
-  env.iprintStatement(this);
+  env.iprintStatement(this, context);
 }
 
 // no-op
-void S_skip::iprint(PrintEnv &env) const
+void S_skip::iprint(PrintEnv &env, StatementContext) const
 {
   env << ";";
 }
 
-void S_label::iprint(PrintEnv &env) const
+void S_label::iprint(PrintEnv &env, StatementContext) const
 {
   env << env.und << name << ":" << env.br;
-  s->print(env);
+  s->print(env, SC_LABEL);
 }
 
-void S_case::iprint(PrintEnv &env) const
+void S_case::iprint(PrintEnv &env, StatementContext) const
 {
   env << env.und << "case ";
   expr->print(env, OPREC_LOWEST);
   env << ":" << env.br;
 
-  s->print(env);
+  s->print(env, SC_CASE);
 }
 
-void S_default::iprint(PrintEnv &env) const
+void S_default::iprint(PrintEnv &env, StatementContext) const
 {
   env << env.und << "default:" << env.br;
-  s->print(env);
+  s->print(env, SC_DEFAULT);
 }
 
-void S_expr::iprint(PrintEnv &env) const
+void S_expr::iprint(PrintEnv &env, StatementContext) const
 {
   expr->print(env);
   env << ";";
 }
 
-void S_compound::iprint(PrintEnv &env) const
+void S_compound::iprint(PrintEnv &env, StatementContext context) const
 {
+  // When the parent is an S_compound, we make our own sequence.  Other
+  // forms do their own sequence creation a bit earlier so we wrap to
+  // indent under their starting points.
+  if (context == SC_COMPOUND) {
+    env.begin();
+  }
+
   env << "{" << env.br;
+
   FOREACH_ASTLIST(Statement, stmts, iter) {
     Statement const *stmt = iter.data();
-    if (stmt->isS_compound()) {
-      // The parent of S_compound has to make the sequence.
-      TPSEQUENCE;
-      stmt->print(env);
-    }
-    else {
-      iter.data()->print(env);
-    }
+    stmt->print(env, SC_COMPOUND);
     env << env.br;
   }
+
+  if (context == SC_SWITCH) {
+    // We need an extra unindent.
+    env << env.und;
+  }
   env << env.und << "}";
+
+  if (context == SC_COMPOUND) {
+    env.end();
+  }
 }
 
-void S_if::iprint(PrintEnv &env) const
+void S_if::iprint(PrintEnv &env, StatementContext) const
 {
   {
     TPSEQUENCE;
     env << "if (";
     cond->print(env);
     env << ") ";
-    thenBranch->print(env);
+    thenBranch->print(env, SC_IF_THEN);
     env << env.br;
   }
 
   {
     TPSEQUENCE;
     env << "else ";
-    elseBranch->print(env);
+    elseBranch->print(env, SC_IF_ELSE);
   }
 }
 
-void S_switch::iprint(PrintEnv &env) const
+void S_switch::iprint(PrintEnv &env, StatementContext) const
 {
   // In the common case of an S_compound, use my preferred style where
   // labels are indented one level and everything else is indented two
@@ -895,45 +916,32 @@ void S_switch::iprint(PrintEnv &env) const
   cond->print(env);
   env << ") ";
 
-  if (S_compound const *comp = branches->ifS_compoundC()) {
-    env << "{" << env.br;
-
-    FOREACH_ASTLIST(Statement, comp->stmts, iter) {
-      iter.data()->print(env);
-      env << env.br;
-    }
-
-    env.end();
-    env << "}";
-  }
-  else {
-    branches->print(env);
-    env.end();
-  }
+  branches->print(env, SC_SWITCH);
+  env.end();
 }
 
-void S_while::iprint(PrintEnv &env) const
+void S_while::iprint(PrintEnv &env, StatementContext) const
 {
   TPSEQUENCE;
 
   env << "while (";
   cond->print(env);
   env << ") ";
-  body->print(env);
+  body->print(env, SC_WHILE);
 }
 
-void S_doWhile::iprint(PrintEnv &env) const
+void S_doWhile::iprint(PrintEnv &env, StatementContext) const
 {
   TPSEQUENCE;
 
   env << "do ";
-  body->print(env);
+  body->print(env, SC_DO_WHILE);
   env << " while (";
   expr->print(env);
   env << ");";
 }
 
-void S_for::iprint(PrintEnv &env) const
+void S_for::iprint(PrintEnv &env, StatementContext) const
 {
   TPSEQUENCE;
 
@@ -941,27 +949,27 @@ void S_for::iprint(PrintEnv &env) const
   {
     TPSEQUENCE;
 
-    init->print(env);
+    init->print(env, SC_FOR_INIT);
     env << env.sp;
     cond->print(env);
     env << "; ";
     after->print(env);
   }
   env << ") ";
-  body->print(env);
+  body->print(env, SC_FOR_BODY);
 }
 
-void S_break::iprint(PrintEnv &env) const
+void S_break::iprint(PrintEnv &env, StatementContext) const
 {
   env << "break;";
 }
 
-void S_continue::iprint(PrintEnv &env) const
+void S_continue::iprint(PrintEnv &env, StatementContext) const
 {
   env << "continue;";
 }
 
-void S_return::iprint(PrintEnv &env) const
+void S_return::iprint(PrintEnv &env, StatementContext) const
 {
   env << "return";
   if (expr) {
@@ -971,35 +979,35 @@ void S_return::iprint(PrintEnv &env) const
   env << ";";
 }
 
-void S_goto::iprint(PrintEnv &env) const
+void S_goto::iprint(PrintEnv &env, StatementContext) const
 {
   env << "goto ";
   env << target;
   env << ";";
 }
 
-void S_decl::iprint(PrintEnv &env) const
+void S_decl::iprint(PrintEnv &env, StatementContext) const
 {
   decl->print(env);
 }
 
-void S_try::iprint(PrintEnv &env) const
+void S_try::iprint(PrintEnv &env, StatementContext) const
 {
   env << "try";
-  body->print(env);
+  body->print(env, SC_TRY);
   FAKELIST_FOREACH_NC(Handler, handlers, iter) {
     iter->print(env);
   }
 }
 
-void S_asm::iprint(PrintEnv &env) const
+void S_asm::iprint(PrintEnv &env, StatementContext) const
 {
   env << "asm(";
   text->print(env, OPREC_LOWEST);
   env << ");";
 }
 
-void S_namespaceDecl::iprint(PrintEnv &env) const
+void S_namespaceDecl::iprint(PrintEnv &env, StatementContext) const
 {
   decl->print(env);
 }
@@ -1034,7 +1042,7 @@ void Handler::print(PrintEnv &env) const
     typeId->print(env);
   }
   env << ") ";
-  body->print(env);
+  body->print(env, SC_HANDLER);
 }
 
 

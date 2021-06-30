@@ -84,9 +84,31 @@ class OperatorName {
 }
 
 
+// Possible syntactic places that a Statement can appear.  This is used
+// to refine how a few things are printed.
+enum StatementContext {
+  SC_NONE,
+
+  SC_FUNCTION_BODY,
+  SC_LABEL,
+  SC_CASE,
+  SC_DEFAULT,
+  SC_COMPOUND,
+  SC_IF_THEN,
+  SC_IF_ELSE,
+  SC_SWITCH,
+  SC_WHILE,
+  SC_DO_WHILE,
+  SC_FOR_INIT,
+  SC_FOR_BODY,
+  SC_TRY,
+  SC_HANDLER,
+};
+
+
 class Statement {
-  public void print(PrintEnv &env) const;
-  pure_virtual void iprint(PrintEnv &env) const;
+  public void print(PrintEnv &env, StatementContext context) const;
+  pure_virtual void iprint(PrintEnv &env, StatementContext context) const;
 }
 
 

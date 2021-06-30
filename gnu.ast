@@ -53,6 +53,12 @@ class Expression {
 
 
 // ----------- gcc misc -----------
+enum StatementContext {
+  SC_STMT_EXPR,
+  SC_RANGE_CASE,
+};
+
+
 class Statement {
   // nested function definition
   -> S_function(Function f);

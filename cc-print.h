@@ -48,9 +48,10 @@ public:      // methods
   // Print 'type' using 'm_typePrinter'.
   virtual void ptype(TypeLike const *type, char const *name = "");
 
-  // Nominally, call 'stmt->iprint(*this)'.  This is exposed as a
-  // possible point of customization for clients.
-  virtual void iprintStatement(Statement const *stmt);
+  // Nominally, call 'stmt->iprint(*this, context)'.  This is exposed as
+  // a possible point of customization for clients.
+  virtual void iprintStatement(
+    Statement const *stmt, StatementContext context);
 
   // Nominally, call 'expr->iprint(*this)'.
   virtual void iprintExpression(Expression const *expr);
@@ -73,6 +74,12 @@ string printASTNodeToString(CCLang const &lang, T const *astNode)
 
   return env.getResult();
 }
+
+
+// The template above does not work for Statements because they require
+// an additional parameter.
+string printStatementToString(
+  CCLang const &lang, Statement const *stmt, StatementContext context);
 
 
 #endif // ELSA_CC_PRINT_H

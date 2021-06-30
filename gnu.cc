@@ -1107,24 +1107,24 @@ void ASTTypeof::addAmbiguity(ASTTypeof *alt)
 }
 
 
-void S_function::iprint(PrintEnv &env) const
+void S_function::iprint(PrintEnv &env, StatementContext) const
 {
   f->print(env);
 }
 
 
-void S_rangeCase::iprint(PrintEnv &env) const
+void S_rangeCase::iprint(PrintEnv &env, StatementContext) const
 {
   env << "case";
   exprLo->print(env, OPREC_LOWEST);
   env << "...";
   exprHi->print(env, OPREC_LOWEST);
   env << ":";
-  s->print(env);
+  s->print(env, SC_RANGE_CASE);
 }
 
 
-void S_computedGoto::iprint(PrintEnv &env) const
+void S_computedGoto::iprint(PrintEnv &env, StatementContext) const
 {
   env << "goto *";
   target->print(env, OPREC_PREFIX);
@@ -1215,7 +1215,7 @@ OperatorPrecedence E_alignofExpr::getPrecedence() const
 void E_statement::iprint(PrintEnv &env) const
 {
   env << "(";
-  s->iprint(env);
+  s->iprint(env, SC_STMT_EXPR);
   env << ")";
 }
 
