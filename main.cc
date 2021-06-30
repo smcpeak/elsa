@@ -104,6 +104,11 @@ static char *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
       argv++;
       argc--;
     }
+    else if (streq(argv[1], "--no-pp-comments")) {
+      elsaParse.m_prettyPrintComments = false;
+      argv++;
+      argc--;
+    }
     else if (streq(argv[1], "--print-string-literals")) {
       elsaParse.m_printStringLiterals = true;
       argv++;
@@ -144,6 +149,7 @@ static char *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
             "    --verbose                print error/warn counts and times\n"
             "    --quiet                  opposite of --verbose (and the default)\n"
             "    --pretty-print           pretty-print the parsed AST as C/C++ syntax\n"
+            "    --no-pp-comments         suppress details comments in pretty-print\n"
             "    --print-string-literals  print every decoded string literal\n"
             "    --no-elaborate           disable elaboration pass\n"
             "    --unit-tests             run internal unit tests\n"

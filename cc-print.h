@@ -37,13 +37,30 @@ public:      // data
   // How to print types.
   TypePrinter &m_typePrinter;
 
+  // If true, print comments with some additional AST details.  The
+  // default is true.
+  bool m_printComments;
+
 public:      // methods
   PrintEnv(TypePrinter &typePrinter)
-    : m_typePrinter(typePrinter)
+    : m_typePrinter(typePrinter),
+      m_printComments(true)
   {}
 
   // Print the tree to a string.
   string getResult();
+
+  // If 'm_printComments', then:
+  //   * strip any existing comments out of 'info',
+  //   * enclose the result in "/*...*/",
+  //   * append 'after',
+  //   * and return that.
+  // Otherwise return the empty string.
+  string commentary(string const &info, char const *after="") const;
+
+  // If 'name' is not NULL, return it.  Otherwise, if 'm_printComments',
+  // return "/*anon*/".  Otherwise, return "".
+  char const *possiblyAnonName(StringRef name) const;
 
   // Print 'type' using 'm_typePrinter'.
   virtual void ptype(TypeLike const *type, char const *name = "");
@@ -79,7 +96,8 @@ string printASTNodeToString(CCLang const &lang, T const *astNode)
 // The template above does not work for Statements because they require
 // an additional parameter.
 string printStatementToString(
-  CCLang const &lang, Statement const *stmt, StatementContext context);
+  CCLang const &lang, Statement const *stmt, StatementContext context,
+  bool printComments = true);
 
 
 #endif // ELSA_CC_PRINT_H

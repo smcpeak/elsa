@@ -109,6 +109,18 @@ out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect $(CCPARSE)
 	touch $@
 
 
+# One-off test of --no-pp-comments.
+out/pprint/stdconv-no-comments.c.ok: pprint/stdconv.c pprint/stdconv-no-comments.c.expect $(CCPARSE)
+	@mkdir -p $(dir $@)idem
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/pprint/stdconv-no-comments.c.actual \
+	  --expect pprint/stdconv-no-comments.c.expect \
+	  $(CCPARSE) -xc --pretty-print --no-pp-comments $<
+	touch $@
+
+check: out/pprint/stdconv-no-comments.c.ok
+
+
 # ------------------------------ strlit --------------------------------
 # String literal tests run with --print-string-literals and compare the
 # output to expected output.

@@ -44,6 +44,31 @@ string PrintEnv::getResult()
 }
 
 
+string PrintEnv::commentary(string const &info, char const *after) const
+{
+  if (m_printComments) {
+    return stringb("/*" << stripComments(info) << "*/" << after);
+  }
+  else {
+    return string("");
+  }
+}
+
+
+char const *PrintEnv::possiblyAnonName(StringRef name) const
+{
+  if (name) {
+    return name;
+  }
+  else if (m_printComments) {
+    return "/*anon*/";
+  }
+  else {
+    return "";
+  }
+}
+
+
 void PrintEnv::ptype(Type const *type, char const *name)
 {
   *this << m_typePrinter.printType(type, name);
@@ -73,10 +98,12 @@ string printTypeToString(CCLang const &lang, Type const *type)
 
 
 string printStatementToString(
-  CCLang const &lang, Statement const *stmt, StatementContext context)
+  CCLang const &lang, Statement const *stmt, StatementContext context,
+  bool printComments)
 {
   CTypePrinter typePrinter(lang);
   PrintEnv env(typePrinter);
+  env.m_printComments = printComments;
   stmt->print(env, context);
   return env.getResult();
 }
@@ -228,7 +255,7 @@ void TF_asm::print(PrintEnv &env) const
 
 void TF_namespaceDefn::print(PrintEnv &env) const
 {
-  env << "namespace " << (name? name : "/*anon*/") << " ";
+  env << "namespace " << env.possiblyAnonName(name) << " ";
   TPBRACES;
   printTopFormList(env, forms);
 }
@@ -1221,20 +1248,21 @@ void printSTemplateArgument(PrintEnv &env, STemplateArgument const *sta)
       }
       break;
     case STemplateArgument::STA_INT:
-      env << stringc << "/*int*/ " << sta->value.i;
+      env << stringc << env.commentary("int", " ") << sta->value.i;
       break;
     case STemplateArgument::STA_ENUMERATOR:
-      env << stringc << "/*enum*/ " << sta->value.v->name;
+      env << stringc << env.commentary("enum", " ") << sta->value.v->name;
       break;
     case STemplateArgument::STA_REFERENCE:
-      env << stringc << "/*ref*/ " << sta->value.v->name;
+      env << stringc << env.commentary("ref", " ") << sta->value.v->name;
       break;
     case STemplateArgument::STA_POINTER:
-      env << stringc << "/*ptr*/ &" << sta->value.v->name;
+      env << stringc << env.commentary("ptr", " ") << "&" << sta->value.v->name;
       break;
     case STemplateArgument::STA_MEMBER:
       env << stringc
-              << "/*member*/ &"
+              << env.commentary("member", " ")
+              << "&"
               << sta->value.v->m_containingScope->curCompound->name
               << "::" << sta->value.v->name;
       break;
@@ -1868,7 +1896,9 @@ OperatorPrecedence E_grouping::getPrecedence() const
 
 void E_implicitStandardConversion::iprint(PrintEnv &env) const
 {
-  env << "/*ISC:" << stripComments(type->toString()) << "*/";
+  if (env.m_printComments) {
+    env << "/*ISC:" << stripComments(type->toString()) << "*/";
+  }
   env.iprintExpression(expr);
 }
 
@@ -1990,7 +2020,7 @@ void TD_func::iprint(PrintEnv &env) const
     // NOTE: inlined from Variable::toCString()
 
     TypeLike const *type0 = env.m_typePrinter.getVariableTypeLike(var);
-    env.ptype(type0, (var->name? var->name : "/*anon*/"));
+    env.ptype(type0, env.possiblyAnonName(var->name));
     env << var->namePrintSuffix() << env.br;
     printFuncInstantiations(env, var);
 
@@ -2058,7 +2088,7 @@ void TD_tmember::iprint(PrintEnv &env) const
 // ------------------- TemplateParameter ------------------
 void TP_type::print(PrintEnv &env) const
 {
-  env << "class " << (name? name : "/*anon*/");
+  env << "class " << env.possiblyAnonName(name);
 
   if (defaultType) {
     env << " = ";
