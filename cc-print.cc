@@ -37,7 +37,7 @@ string PrintEnv::getResult()
 
   // Print the formatted tree to 'oss'.
   std::ostringstream oss;
-  print(oss);
+  prettyPrint(oss);
 
   // Copy the std::string to my string.
   return string(oss.str().c_str());
