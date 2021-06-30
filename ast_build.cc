@@ -583,8 +583,10 @@ E_assign *ElsaASTBuild::makeE_assign(
 }
 
 
-E_sizeofType *ElsaASTBuild::makeE_sizeofType(ASTTypeId *typeId)
+E_sizeofType *ElsaASTBuild::makeE_sizeofType(Type *type)
 {
+  ASTTypeId *typeId =
+    makeASTTypeId(type, NULL /*name*/, DC_E_SIZEOFTYPE);
   E_sizeofType *st = new E_sizeofType(typeId);
   st->type = m_typeFactory.getSimpleType(
     m_lang.m_typeSizes.m_type_of_size_t);

@@ -165,7 +165,7 @@ public:      // methods
   E_assign *makeE_assign(
     Expression *target, BinaryOp op, Expression *src);
 
-  E_sizeofType *makeE_sizeofType(ASTTypeId *typeId);
+  E_sizeofType *makeE_sizeofType(Type *type);
 };
 
 
