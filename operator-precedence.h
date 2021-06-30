@@ -1,8 +1,8 @@
-// cc-precedence.h
+// operator-precedence.h
 // OperatorPrecedence enum.
 
-#ifndef ELSA_CC_PRECEDENCE_H
-#define ELSA_CC_PRECEDENCE_H
+#ifndef ELSA_OPERATOR_PRECEDENCE_H
+#define ELSA_OPERATOR_PRECEDENCE_H
 
 // Operator precedence levels, where a lower numeric value means higher
 // precedence.
@@ -45,4 +45,4 @@ enum OperatorPrecedence {
 };
 
 
-#endif // ELSA_CC_PRECEDENCE_H
+#endif // ELSA_OPERATOR_PRECEDENCE_H
