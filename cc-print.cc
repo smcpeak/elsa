@@ -50,6 +50,12 @@ void PrintEnv::ptype(Type const *type, char const *name)
 }
 
 
+void PrintEnv::iprintStatement(Statement const *stmt)
+{
+  stmt->iprint(*this);
+}
+
+
 void PrintEnv::iprintExpression(Expression const *expr)
 {
   expr->iprint(*this);
@@ -806,7 +812,7 @@ void ON_conversion::print(PrintEnv &env) const
 // ---------------------- Statement ---------------------
 void Statement::print(PrintEnv &env) const
 {
-  iprint(env);
+  env.iprintStatement(this);
 }
 
 // no-op

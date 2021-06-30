@@ -48,8 +48,11 @@ public:      // methods
   // Print 'type' using 'm_typePrinter'.
   virtual void ptype(TypeLike const *type, char const *name = "");
 
-  // Nominally, call 'expr->iprint(*this)'.  This is exposed as a
+  // Nominally, call 'stmt->iprint(*this)'.  This is exposed as a
   // possible point of customization for clients.
+  virtual void iprintStatement(Statement const *stmt);
+
+  // Nominally, call 'expr->iprint(*this)'.
   virtual void iprintExpression(Expression const *expr);
 };
 
@@ -61,7 +64,7 @@ void printSTemplateArgument(PrintEnv &env, STemplateArgument const *sta);
 
 // Print 'astNode' as a string.
 template <class T>
-string printASTNodeToString(CCLang const &lang, T *astNode)
+string printASTNodeToString(CCLang const &lang, T const *astNode)
 {
   CTypePrinter typePrinter(lang);
   PrintEnv env(typePrinter);
