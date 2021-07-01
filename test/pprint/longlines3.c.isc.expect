@@ -29,14 +29,25 @@ av_oo_pointer_t av_oo_ptr_from_intptr(intptr_t n);
 
 void g()
 {
-  av_oo_pointer_t __ptr_to_list = av_oo_ptr_malloc(16);
-  (*((List *)av_oo_ptr_check(__ptr_to_list, 16))).head =
-    av_oo_ptr_from_intptr(0);
-  int y = (*((List *)av_oo_ptr_check(__ptr_to_list, 16))).x +
-            (av_oo_ptr_from_intptr(0)).m_offset;
+  av_oo_pointer_t __ptr_to_list = av_oo_ptr_malloc(
+                                    ISC(SC_INT_CONV, unsigned long long,
+                                      16));
+  (*((List *)av_oo_ptr_check(
+               ISC(SC_LVAL_TO_RVAL, av_oo_pointer_struct, __ptr_to_list),
+               ISC(SC_INT_CONV, unsigned long long, 16)))).head =
+    av_oo_ptr_from_intptr(ISC(SC_INT_CONV, long long, 0));
+  int y = ISC(SC_INT_CONV, int,
+            (*((List *)av_oo_ptr_check(
+                         ISC(SC_LVAL_TO_RVAL, av_oo_pointer_struct,
+                           __ptr_to_list),
+                         ISC(SC_INT_CONV, unsigned long long, 16)))).x +
+              (av_oo_ptr_from_intptr(ISC(SC_INT_CONV, long long, 0))).m_offset);
   y +=
-    (*((List *)av_oo_ptr_check(__ptr_to_list, 16))).x +
-      (av_oo_ptr_from_intptr(0)).m_offset;
+    (*((List *)av_oo_ptr_check(
+                 ISC(SC_LVAL_TO_RVAL, av_oo_pointer_struct,
+                   __ptr_to_list),
+                 ISC(SC_INT_CONV, unsigned long long, 16)))).x +
+      (av_oo_ptr_from_intptr(ISC(SC_INT_CONV, long long, 0))).m_offset;
 }
 
 ---- STOP ----

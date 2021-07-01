@@ -9176,11 +9176,14 @@ Type *E_grouping::itcheck_grouping_set(Env &env, Expression *&replacement,
 
 Type *E_implicitStandardConversion::itcheck_x(Env &env, Expression *&replacement)
 {
-  // I do not expect this to be called normally since the type checker
-  // inserts ISC after it has done its work.  But it should be harmless
-  // to call it.  When an ISC is created, it is already in its final
-  // form.
-  return type;
+  // Getting here means we ran a tcheck, which inserted the ISC, then
+  // ran another tcheck.  One way this happens normally is the original
+  // was an uninstantiated template and now we've cloned that and are
+  // scanning the instantiation.  Since ISC is effectively an output of
+  // tcheck, we want to pretend the ISC was not here and allow tcheck to
+  // re-insert if it desired.
+  expr->mid_tcheck(env, replacement);
+  return replacement->type;
 }
 
 

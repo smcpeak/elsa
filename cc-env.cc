@@ -5444,46 +5444,59 @@ Expression *Env::makeImplicitConversion(Type * /*nullable*/ destType,
     break;
 
   case ImplicitConversion::IC_STANDARD:
-    switch (ic.scs & SC_GROUP_1_MASK) {
-      default:
-        // No conversion here, ignore.
-        break;
+    if (ic.scs != SC_IDENTITY) {
+      // Insert the conversion into the AST.
+      newarg = new E_implicitStandardConversion(ic.scs, arg);
 
-      case SC_LVAL_TO_RVAL:
-        // TODO
-        break;
+      if (!destType) {
+        // Deduce the destination type from the source type and the kind
+        // of conversion.
+        //
+        // The logic here is suspect; I haven't fully examined the cases
+        // where 'destType' is missing and what the standard says about
+        // them.
+        destType = arg->type;
 
-      case SC_ARRAY_TO_PTR:
-        // TODO
-        break;
+        // All of the deductions involve discarding ReferenceType.
+        destType = destType->asRval();
 
-      case SC_FUNC_TO_PTR:
-        newarg = makeAddr(env.tfac, env.loc(), newarg);
-        break;
-    }
+        switch (ic.scs & SC_GROUP_1_MASK) {
+          default:
+            break;
 
-    switch (ic.scs & SC_GROUP_2_MASK) {
-      default:
-        // No conversion, or TODO: one I have not handled.
-        break;
+          case SC_LVAL_TO_RVAL:
+            // Already did 'asRval()'.
+            break;
 
-      case SC_PTR_CONV: {
-        newarg = new E_implicitStandardConversion(ic.scs, newarg);
-        xassert(destType);
-        newarg->type = destType;
-        break;
+          case SC_ARRAY_TO_PTR:
+            destType = tfac.makePointerType(CV_NONE,
+              destType->asArrayType()->eltType);
+            break;
+
+          case SC_FUNC_TO_PTR:
+            newarg->type = tfac.makePointerType(CV_NONE, destType);
+            break;
+        }
+
+        switch (ic.scs & SC_GROUP_2_MASK) {
+          default:
+            // Only in the promotion cases can we deduce the type.
+            break;
+
+          case SC_INT_PROM:
+            destType = tfac.getSimpleType(ST_INT);
+            break;
+
+          case SC_FLOAT_PROM:
+            destType = tfac.getSimpleType(ST_DOUBLE);
+            break;
+        }
+
+        // Group 3 doesn't let us deduce the type.
       }
 
-      case SC_INT_PROM: {
-        // Record the entire conversion, not just SC_INT_PROM.  In
-        // particular, this captures SC_LVAL_TO_RVAL.
-        newarg = new E_implicitStandardConversion(ic.scs, newarg);
-        newarg->type = env.tfac.getSimpleType(ST_INT);
-        break;
-      }
+      newarg->type = destType;
     }
-
-    // TODO: Group 3.
     break;
 
   case ImplicitConversion::IC_USER_DEFINED:

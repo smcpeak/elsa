@@ -25,12 +25,26 @@ void f()
   av_oo_pointer_t __ptr_to_p;
   av_oo_pointer_t __ptr_to_q;
   av_oo_pointer_t pp;
-  printf("**pp=%d pp=%s\n",
-    *((int *)av_oo_ptr_check(
-               *((av_oo_pointer_t *)av_oo_ptr_check(pp, 16)), 4)),
-    av_oo_ptr_cmp_eq(pp, __ptr_to_p)?
-      "&p" :
-      (av_oo_ptr_cmp_eq(pp, __ptr_to_q)? "&q" : "?"));
+  printf(
+    ISC(SC_ARRAY_TO_PTR|SC_QUAL_CONV, char const *, "**pp=%d pp=%s\n"),
+    ISC(SC_LVAL_TO_RVAL, int,
+      *((int *)av_oo_ptr_check(
+                 ISC(SC_LVAL_TO_RVAL, av_oo_pointer_struct,
+                   *((av_oo_pointer_t *)av_oo_ptr_check(
+                                          ISC(SC_LVAL_TO_RVAL,
+                                            av_oo_pointer_struct, pp),
+                                          ISC(SC_INT_CONV,
+                                            unsigned long long, 16)))),
+                 ISC(SC_INT_CONV, unsigned long long, 4)))),
+    ISC(SC_LVAL_TO_RVAL, char [3],
+      av_oo_ptr_cmp_eq(ISC(SC_LVAL_TO_RVAL, av_oo_pointer_struct, pp),
+        ISC(SC_LVAL_TO_RVAL, av_oo_pointer_struct, __ptr_to_p))?
+        "&p" :
+        (av_oo_ptr_cmp_eq(
+           ISC(SC_LVAL_TO_RVAL, av_oo_pointer_struct, pp),
+           ISC(SC_LVAL_TO_RVAL, av_oo_pointer_struct, __ptr_to_q))?
+           "&q" :
+           "?")));
 }
 
 ---- STOP ----
