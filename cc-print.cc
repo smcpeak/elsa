@@ -109,6 +109,18 @@ string printStatementToString(
 }
 
 
+string printExpressionToString(
+  CCLang const &lang, Expression const *expr, OperatorPrecedence prec,
+  bool printComments)
+{
+  CTypePrinter typePrinter(lang);
+  PrintEnv env(typePrinter);
+  env.m_printComments = printComments;
+  expr->print(env, prec);
+  return env.getResult();
+}
+
+
 // ****************
 
 // hooks for Oink

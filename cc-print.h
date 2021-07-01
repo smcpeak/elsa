@@ -100,4 +100,10 @@ string printStatementToString(
   bool printComments = true);
 
 
+// Expressions do too.
+string printExpressionToString(
+  CCLang const &lang, Expression const *expr, OperatorPrecedence prec,
+  bool printComments = true);
+
+
 #endif // ELSA_CC_PRINT_H
