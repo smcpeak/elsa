@@ -32,7 +32,7 @@ public:
 class Derived1 : public Base1 {
 public:
   Derived1(Derived1 const &other)
-    : Base1(/*ISC:Base1 const &*/other)
+    : Base1(other)
   {}
   Derived1 &operator=(Derived1 const &__other)
   {
@@ -50,8 +50,8 @@ public:
       Base2()
   {}
   Derived2(Derived2 const &__other)
-    : Base1(/*ISC:Base1*/__other),
-      Base2(/*ISC:Base2*/__other)
+    : Base1(__other),
+      Base2(__other)
   {}
   Derived2 &operator=(Derived2 const &__other)
   {

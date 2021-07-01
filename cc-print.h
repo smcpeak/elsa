@@ -41,10 +41,15 @@ public:      // data
   // default is true.
   bool m_printComments;
 
+  // If true, print implicit standard conversions as invocations of a
+  // hypothetical "ISC" macro.  The default is false.
+  bool m_printISC;
+
 public:      // methods
   PrintEnv(TypePrinter &typePrinter)
     : m_typePrinter(typePrinter),
-      m_printComments(true)
+      m_printComments(true),
+      m_printISC(false)
   {}
 
   // Print the tree to a string.

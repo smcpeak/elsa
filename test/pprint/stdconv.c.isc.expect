@@ -3,7 +3,7 @@
 // -*-c++-*-
 void f(void *p)
 {
-  p = 0;
+  p = ISC(SC_PTR_CONV, void *, 0);
 }
 
 ---- STOP ----

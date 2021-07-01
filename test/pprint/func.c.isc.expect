@@ -1,9 +1,11 @@
 ---- stdout ----
 ---- START ----
 // -*-c++-*-
-void f(void *p)
+typedef int Int;
+
+Int f(void *q)
 {
-  p = 0;
+  return 1;
 }
 
 ---- STOP ----

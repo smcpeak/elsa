@@ -9,7 +9,7 @@ void g(char c)
 {
   f(1);
   f(1, 2);
-  f(1, c);
+  f(1, ISC(SC_LVAL_TO_RVAL|SC_INT_PROM, int, c));
 }
 
 ---- STOP ----

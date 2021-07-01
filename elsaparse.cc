@@ -177,6 +177,7 @@ ElsaParse::ElsaParse(StringTable &stringTable_, CCLang &lang_)
     m_printErrorCount(false),
     m_prettyPrint(false),
     m_prettyPrintComments(true),
+    m_prettyPrintISC(false),
     m_printStringLiterals(false),
     m_elabActivities(EA_ALL),
     m_translationUnit(NULL),
@@ -518,6 +519,7 @@ void ElsaParse::parse(char const *inputFname)
     CTypePrinter typePrinter(m_lang);
     PrintEnv env(typePrinter);
     env.m_printComments = m_prettyPrintComments;
+    env.m_printISC = m_prettyPrintISC;
     cout << "---- START ----" << endl;
     cout << "// -*-c++-*-" << endl;
     m_translationUnit->print(env);

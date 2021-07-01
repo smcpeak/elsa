@@ -1908,10 +1908,17 @@ OperatorPrecedence E_grouping::getPrecedence() const
 
 void E_implicitStandardConversion::iprint(PrintEnv &env) const
 {
-  if (env.m_printComments) {
-    env << "/*ISC:" << stripComments(type->toString()) << "*/";
+  if (env.m_printISC) {
+    TPSEQUENCE;
+    env << "ISC(" << env.optbr
+        << toString(conv) << ',' << env.sp
+        << type->toString() << ',' << env.sp;
+    expr->print(env, OPREC_COMMA);
+    env << ')';
   }
-  env.iprintExpression(expr);
+  else {
+    env.iprintExpression(expr);
+  }
 }
 
 OperatorPrecedence E_implicitStandardConversion::getPrecedence() const

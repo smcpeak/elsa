@@ -88,6 +88,7 @@ TESTS += pprint/longlines2.c
 TESTS += pprint/longlines3.c
 TESTS += pprint/nested-block.c
 TESTS += pprint/stdconv.c
+TESTS += pprint/stringlit.c
 TESTS += pprint/typedef.c
 TESTS += pprint/vararg-promote.c
 
@@ -96,16 +97,23 @@ TESTS += pprint/vararg-promote.c
 # For these I also disable the elaborator because it does not do much
 # in C and the things it does do (mainly about structure assignment)
 # are things I do not want, at least as part of a pprint test.
-out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect $(CCPARSE)
+out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect pprint/%.c.isc.expect $(CCPARSE)
 	@mkdir -p $(dir $@)idem
+#	Main pretty-print.
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/pprint/$*.c.actual \
 	  --expect pprint/$*.c.expect \
 	  $(CCPARSE) -xc --pretty-print --no-elaborate $<
+#	Test that output can be parsed by Elsa and GCC.
 	../chop_out < out/pprint/$*.c.actual > out/pprint/$*.c.trimmed
 	$(CCPARSE) -xc out/pprint/$*.c.trimmed
 	gcc -c -oout/pprint/$*.c.trimmed.o -xc out/pprint/$*.c.trimmed
 	../idemcheck --elsadir .. -d $(dir $@)idem -xc --no-elaborate -q $<
+#	Pretty-print with ISC enabled.
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/pprint/$*.c.isc.actual \
+	  --expect pprint/$*.c.isc.expect \
+	  $(CCPARSE) -xc --pretty-print --no-elaborate --print-isc $<
 	touch $@
 
 

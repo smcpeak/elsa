@@ -41,9 +41,13 @@ public:      // data
   // Initially false.
   bool m_prettyPrint;
 
-  // If true, the prett-printed AST contains some comments with
+  // If true, the pretty-printed AST contains some comments with
   // additional, invisible details.  Initially true.
   bool m_prettyPrintComments;
+
+  // If true, the pretty-printed AST includes implicit standard
+  // conversions.  Initially false.
+  bool m_prettyPrintISC;
 
   // If true, print decoded string literals after parsing.  Initially
   // false.

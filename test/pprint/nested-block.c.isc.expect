@@ -1,9 +1,12 @@
 ---- stdout ----
 ---- START ----
 // -*-c++-*-
-void f(void *p)
+void f(int x)
 {
-  p = 0;
+  x++;
+  {
+    x++;
+  }
 }
 
 ---- STOP ----

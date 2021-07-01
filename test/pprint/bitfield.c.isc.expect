@@ -1,10 +1,9 @@
 ---- stdout ----
 ---- START ----
 // -*-c++-*-
-void f(void *p)
-{
-  p = 0;
-}
+struct S {
+  int x : 4;
+};
 
 ---- STOP ----
 ---- stderr ----
