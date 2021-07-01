@@ -484,6 +484,15 @@ E_fieldAcc *ElsaASTBuild::makeE_fieldAcc(Expression *obj, Variable *field)
 }
 
 
+E_sizeof *ElsaASTBuild::makeE_sizeof(Expression *expr)
+{
+  E_sizeof *szof = new E_sizeof(expr);
+  szof->type = m_typeFactory.getSimpleType(
+    m_lang.m_typeSizes.m_type_of_size_t);
+  return szof;
+}
+
+
 E_unary *ElsaASTBuild::makeE_unary(UnaryOp op, Expression *expr)
 {
   E_unary *un = new E_unary(op, expr);

@@ -147,6 +147,8 @@ public:      // methods
 
   E_fieldAcc *makeE_fieldAcc(Expression *obj, Variable *field);
 
+  E_sizeof *makeE_sizeof(Expression *expr);
+
   E_unary *makeE_unary(UnaryOp op, Expression *expr);
 
   E_effect *makeE_effect(EffectOp op, Expression *expr);
