@@ -259,33 +259,33 @@ static SimpleTypeInfo const simpleTypeInfoArray[] = {
   // gnu: sizeof(void) is 1
   { "void",                   STS(CHAR),                S(STF_NONE                             ) },
 
-  // these should go away early on in typechecking
-  #define STI_DEGEN(name) \
+  // Entries for fake SimpleTypeIds that don't have STS or flags.
+  #define STI_DEGENERATE(name) \
     { name, STS(EMPTY), S(STF_NONE) },
-  STI_DEGEN("...")
-  STI_DEGEN("/*cdtor*/")
-  STI_DEGEN("(error)")
-  STI_DEGEN("(dependent)")
-  STI_DEGEN("(implicit-int)")
-  STI_DEGEN("(notfound)")
+  STI_DEGENERATE("...")
+  STI_DEGENERATE("/*cdtor*/")
+  STI_DEGENERATE("ST_ERROR")
+  STI_DEGENERATE("ST_DEPENDENT")
+  STI_DEGENERATE("ST_IMPLINT")
+  STI_DEGENERATE("ST_NOTFOUND")
 
-  STI_DEGEN("(prom_int)")
-  STI_DEGEN("(prom_arith)")
-  STI_DEGEN("(integral)")
-  STI_DEGEN("(arith)")
-  STI_DEGEN("(arith_nobool)")
-  STI_DEGEN("(any_obj)")
-  STI_DEGEN("(non_void)")
-  STI_DEGEN("(any_type)")
+  STI_DEGENERATE("ST_PROMOTED_INTEGRAL")
+  STI_DEGENERATE("ST_PROMOTED_ARITHMETIC")
+  STI_DEGENERATE("ST_INTEGRAL")
+  STI_DEGENERATE("ST_ARITHMETIC")
+  STI_DEGENERATE("ST_ARITHMETIC_NON_BOOL")
+  STI_DEGENERATE("ST_ANY_OBJ_TYPE")
+  STI_DEGENERATE("ST_ANY_NON_VOID")
+  STI_DEGENERATE("ST_ANY_TYPE")
 
-  STI_DEGEN("(pret_strip_ref)")
-  STI_DEGEN("(pret_ptm)")
-  STI_DEGEN("(pret_arith_conv)")
-  STI_DEGEN("(pret_first)")
-  STI_DEGEN("(pret_first_ptr2ref)")
-  STI_DEGEN("(pret_second)")
-  STI_DEGEN("(pret_second_ptr2ref)")
-  #undef STS_DEGEN
+  STI_DEGENERATE("ST_PRET_STRIP_REF")
+  STI_DEGENERATE("ST_PRET_PTM")
+  STI_DEGENERATE("ST_PRET_ARITH_CONV")
+  STI_DEGENERATE("ST_PRET_FIRST")
+  STI_DEGENERATE("ST_PRET_FIRST_PTR2REF")
+  STI_DEGENERATE("ST_PRET_SECOND")
+  STI_DEGENERATE("ST_PRET_SECOND_PTR2REF")
+  #undef STI_DEGENERATE
 };
 #undef S
 #undef STS
