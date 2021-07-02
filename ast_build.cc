@@ -46,6 +46,12 @@ FakeList<ArgExpression> *ElsaASTBuild::makeExprList2(Expression *e1, Expression 
   return fl_prepend(makeExprList1(e2), new ArgExpression(e1));
 }
 
+FakeList<ArgExpression> *ElsaASTBuild::makeExprList3(
+  Expression *e1, Expression *e2, Expression *e3)
+{
+  return fl_prepend(makeExprList2(e2, e3), new ArgExpression(e1));
+}
+
 
 IDeclarator *ElsaASTBuild::makeInnermostDeclarator(Variable *var)
 {
@@ -471,6 +477,14 @@ E_funCall *ElsaASTBuild::makeNamedFunCall2(
   Variable *callee, Expression *arg1, Expression *arg2)
 {
   FakeList<ArgExpression> *args = makeExprList2(arg1, arg2);
+  return makeE_funCall(makeE_variable(callee), args);
+}
+
+
+E_funCall *ElsaASTBuild::makeNamedFunCall3(
+  Variable *callee, Expression *arg1, Expression *arg2, Expression *arg3)
+{
+  FakeList<ArgExpression> *args = makeExprList3(arg1, arg2, arg3);
   return makeE_funCall(makeE_variable(callee), args);
 }
 

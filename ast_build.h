@@ -67,8 +67,10 @@ public:      // methods
   // wrap an expression in a list
   FakeList<ArgExpression> *makeExprList1(Expression *e);
 
-  // wrap a pair of expressions in a list
+  // Wrap multiple expressions in a list.
   FakeList<ArgExpression> *makeExprList2(Expression *e1, Expression *e2);
+  FakeList<ArgExpression> *makeExprList3(
+    Expression *e1, Expression *e2, Expression *e3);
 
   // Given a Variable, create a D_name or D_bitfield that refers to it.
   // This D_name must have additional IDeclarators wrapped around it in
@@ -144,6 +146,8 @@ public:      // methods
     Variable *callee, Expression *arg1);
   E_funCall *makeNamedFunCall2(
     Variable *callee, Expression *arg1, Expression *arg2);
+  E_funCall *makeNamedFunCall3(
+    Variable *callee, Expression *arg1, Expression *arg2, Expression *arg3);
 
   E_fieldAcc *makeE_fieldAcc(Expression *obj, Variable *field);
 
