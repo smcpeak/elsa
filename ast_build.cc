@@ -465,6 +465,13 @@ E_funCall *ElsaASTBuild::makeE_funCall(
 }
 
 
+E_funCall *ElsaASTBuild::makeNamedFunCall0(
+  Variable *callee)
+{
+  return makeE_funCall(makeE_variable(callee), NULL /*args*/);
+}
+
+
 E_funCall *ElsaASTBuild::makeNamedFunCall1(
   Variable *callee, Expression *arg1)
 {

@@ -142,6 +142,8 @@ public:      // methods
     Expression *func, FakeList<ArgExpression> *args);
 
   // Make an E_funCall invoking an unqualified name.
+  E_funCall *makeNamedFunCall0(
+    Variable *callee);
   E_funCall *makeNamedFunCall1(
     Variable *callee, Expression *arg1);
   E_funCall *makeNamedFunCall2(
