@@ -447,6 +447,23 @@ E_intLit *ElsaASTBuild::makeE_intLit(int n)
 }
 
 
+E_stringLit *ElsaASTBuild::makeE_stringLit(char const *text)
+{
+  // This is kind of ugly; I have to turn 'text' into C syntax because
+  // my AST representation keeps it after parsing, and the
+  // pretty-printer in turn relies on that...
+  string s = quoted(text);
+
+  StringRef sref = m_stringTable.add(s);
+  E_stringLit *ret = new E_stringLit(sref);
+
+  // This is the result of interpreting the syntax.
+  ret->m_stringData = DataBlock(text);
+
+  return ret;
+}
+
+
 E_variable *ElsaASTBuild::makeE_variable(Variable *var)
 {
   E_variable *evar = new E_variable(makePQName(var));

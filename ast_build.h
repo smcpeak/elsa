@@ -136,6 +136,9 @@ public:      // methods
   // Make an E_intLit.
   E_intLit *makeE_intLit(int n);
 
+  // Make an E_stringLit that denotes 'text'.
+  E_stringLit *makeE_stringLit(char const *text);
+
   E_variable *makeE_variable(Variable *var);
 
   E_funCall *makeE_funCall(
