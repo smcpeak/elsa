@@ -641,4 +641,15 @@ E_sizeofType *ElsaASTBuild::makeE_sizeofType(Type *type)
 }
 
 
+#ifdef GNU_EXTENSION
+E___builtin_va_arg *ElsaASTBuild::makeE___builtin_va_arg(SourceLoc loc,
+  Expression *expr, ASTTypeId *atype)
+{
+  E___builtin_va_arg *vaa = new E___builtin_va_arg(loc, expr, atype);
+  vaa->type = atype->getType();
+  return vaa;
+}
+#endif // GNU_EXTENSION
+
+
 // EOF
