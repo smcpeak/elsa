@@ -244,12 +244,19 @@ TypeSpecifier *ElsaASTBuild::makeTypeSpecifier(Type const *type)
 std::pair<TypeSpecifier*, Declarator*>
   ElsaASTBuild::makeTSandDeclarator(Variable *var, DeclaratorContext context)
 {
+  return makeTSandDeclaratorForType(var, var->type, context);
+}
+
+std::pair<TypeSpecifier*, Declarator*>
+  ElsaASTBuild::makeTSandDeclaratorForType(Variable *var, Type *type,
+                                           DeclaratorContext context)
+{
   // Inner declarator for 'var' that, together with the type specifier,
-  // denotes 'var->type'.
+  // denotes 'type'.
   IDeclarator *idecl = makeInnermostDeclarator(var);
 
   // Add type constructors on top of 'idecl'.
-  Type const *atype = buildUpDeclarator(var->type, idecl /*INOUT*/);
+  Type const *atype = buildUpDeclarator(type, idecl /*INOUT*/);
 
   // Express what remains as a type specifier.
   TypeSpecifier *tspec = makeTypeSpecifier(atype);
@@ -259,7 +266,7 @@ std::pair<TypeSpecifier*, Declarator*>
   // Variable, not just one with the same name and type.
   Declarator *declarator = new Declarator(idecl, NULL /*init*/);
   declarator->var = var;
-  declarator->type = var->type;
+  declarator->type = type;
   declarator->context = context;
 
   return std::make_pair(tspec, declarator);

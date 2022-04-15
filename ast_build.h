@@ -108,6 +108,20 @@ public:      // methods
   std::pair<TypeSpecifier*, Declarator*>
     makeTSandDeclarator(Variable *var, DeclaratorContext context);
 
+  // Given 'var' and 'type', return a TypeSpecifier and a Declarator
+  // (both as owner pointers) that declares that variable with the given
+  // type.
+  //
+  // Whereas 'makeTSandDeclarator' uses 'var->type', this takes an
+  // explicit type, which is needed for the case of a function that has
+  // a prototype, since 'var->type' will have parameter names that come
+  // from the prototype, whereas 'type' can have those from the
+  // definition.
+  //
+  std::pair<TypeSpecifier*, Declarator*>
+    makeTSandDeclaratorForType(Variable *var, Type *type,
+                               DeclaratorContext context);
+
   // Return a syntactic ASTTypeId denoting semantic 'type'.
   //
   // 'name' is used as the name of the innermost D_name.  If it is NULL
