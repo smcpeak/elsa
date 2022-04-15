@@ -888,7 +888,10 @@ void S_case::iprint(PrintEnv &env, StatementContext) const
 
 void S_default::iprint(PrintEnv &env, StatementContext) const
 {
-  env << env.und << "default:" << env.br;
+  // The colon is printed separately so PrintEnv::lastStringIs(":") will
+  // be true afterward, thus allowing that test to recognize being after
+  // a 'case' and after a 'default' with one test.
+  env << env.und << "default" << ":" << env.br;
   s->print(env, SC_DEFAULT);
 }
 
