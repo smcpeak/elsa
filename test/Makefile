@@ -2,7 +2,7 @@
 # Makefile-based tests.
 
 # I'm transitioning away from 'regrtest' in favor of 'make'-based tests
-# since the latter are easier to run individually and parallize.
+# since the latter are easier to run individually and parallelize.
 
 # Default rule.
 all: check
