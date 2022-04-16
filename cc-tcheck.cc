@@ -8251,10 +8251,17 @@ Type *E_binary::itcheck_x(Env &env, Expression *&replacement)
     return replacement->type;
   }
 
-  // get types of arguments, converted to rval, and normalized with
-  // array-to-pointer and function-to-pointer conversions
-  Type *lhsType = env.operandRval(e1->type);
-  Type *rhsType = env.operandRval(e2->type);
+  if (op == BIN_COMMA) {
+    // Comma is special in that it does not entail lval-to-rval
+    // conversions.  We simply yield the RHS type.  Example: &(3, a).
+    return e2->type;
+  }
+
+  // Normalize the operand types with rvalue conversions, possibly
+  // modifying the AST to explicitly show the conversion if one took
+  // place.
+  Type *lhsType = env.insertOperandRvalConversion(e1);
+  Type *rhsType = env.insertOperandRvalConversion(e2);
 
   switch (op) {
     default: xfailure("illegal op code"); break;
@@ -8271,10 +8278,6 @@ Type *E_binary::itcheck_x(Env &env, Expression *&replacement)
     case BIN_IMPLIES:             // ==>
     case BIN_EQUIVALENT:          // <==>
       return env.getSimpleType(ST_BOOL);
-
-    case BIN_COMMA:
-      // dsw: I changed this to allow the following: &(3, a);
-      return e2->type/*rhsType*/;
 
     case BIN_PLUS:                // +
       // case: p + n

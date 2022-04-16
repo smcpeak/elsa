@@ -2570,25 +2570,44 @@ Variable *Env::receiverParameter(SourceLoc loc, NamedAtomicType *nat, CVFlags cv
 }
 
 
-// cppstd 5 para 8
-Type *Env::operandRval(Type *t)
+// Given 'origExpr' appearing as an operator where an rvalue is
+// expected, perform the required conversions and return the
+// resulting type.  C++14 5/9 describes this process.
+//
+// Furthermore, if we are not in the middle of a template
+// disambiguation, and there is a conversion to perform, modify 'expr'
+// to add an implicit standard conversion AST node on top of it.
+//
+Type *Env::insertOperandRvalConversion(Expression *&expr)
 {
-  // 4.1: lval to rval
+  StandardConversion sc = SC_IDENTITY;
+  Type *t = expr->type;
+
+  // 4.1: lvalue to rvalue
   if (t->isReferenceType()) {
     t = t->asRval();
-
-    // non-compounds have their constness stripped at this point too,
-    // but I think that would not be observable in my implementation
+    sc = SC_LVAL_TO_RVAL;
   }
 
-  // 4.2: array to pointer
+  // 4.2: Array to pointer.
   if (t->isArrayType()) {
     t = makePointerType(CV_NONE, t->getAtType());
+
+    // This subsumes SC_LVAL_TO_RVAL.
+    sc = SC_ARRAY_TO_PTR;
   }
 
-  // 4.2: function to pointer
+  // 4.3: Function to pointer.
   if (t->isFunctionType()) {
     t = makePointerType(CV_NONE, t);
+    sc = SC_FUNC_TO_PTR;
+  }
+
+  if (sc != SC_IDENTITY && !onlyDisambiguating()) {
+    E_implicitStandardConversion *isc =
+      new E_implicitStandardConversion(sc, expr);
+    isc->type = t;
+    expr = isc;
   }
 
   return t;

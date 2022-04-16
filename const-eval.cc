@@ -786,6 +786,9 @@ CValue Expression::iconstEval(ConstEval &env) const
     ASTNEXTC(E_grouping, e)
       return e->expr->constEval(env);
 
+    ASTNEXTC(E_implicitStandardConversion, e)
+      return e->expr->constEval(env);
+
     ASTDEFAULTC
       return extConstEval(env);
 

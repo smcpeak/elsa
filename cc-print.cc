@@ -1548,6 +1548,12 @@ static bool bothGray(OperatorPrecedence p1, OperatorPrecedence p2)
 // but I'll accept it for now.
 static bool verySimple(Expression const *e)
 {
+  // Skip ISCs since this logic is written for the case where ISCs are
+  // not printed.
+  if (e->isE_implicitStandardConversion()) {
+    e = e->asE_implicitStandardConversionC()->expr;
+  }
+
   return e->isE_boolLit() ||
          e->isE_intLit() ||
          e->isE_floatLit() ||
@@ -1926,8 +1932,7 @@ void E_implicitStandardConversion::iprint(PrintEnv &env) const
 
 OperatorPrecedence E_implicitStandardConversion::getPrecedence() const
 {
-  // Since the only thing we print is a comment, we behave transparentlt
-  // w.r.t. printing.
+  // Behave transparently w.r.t. printing.
   return expr->getPrecedence();
 }
 

@@ -81,6 +81,7 @@ out/pprint/%.cc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
 	touch $@
 
 
+TESTS += pprint/array-plus-int.c
 TESTS += pprint/bitfield.c
 TESTS += pprint/func.c
 TESTS += pprint/funcptr.c
