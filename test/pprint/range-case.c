@@ -1,0 +1,20 @@
+// range-case.c
+// Printing of GNU range case.
+
+int f(int x)
+{
+  switch (x) {
+    case 0:
+      return 0;
+    case 1 ... 2:
+      return 3;
+    case 4 ... 5:
+      return 6;
+    case 7 ... 8:
+    case 9 ... 10:
+    default:
+      return 11;
+  }
+}
+
+// EOF

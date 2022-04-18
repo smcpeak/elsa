@@ -90,6 +90,7 @@ TESTS += pprint/if-without-else.c
 TESTS += pprint/longlines2.c
 TESTS += pprint/longlines3.c
 TESTS += pprint/nested-block.c
+TESTS += pprint/range-case.c
 TESTS += pprint/stdconv.c
 TESTS += pprint/stringlit.c
 TESTS += pprint/typedef.c

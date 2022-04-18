@@ -1115,11 +1115,12 @@ void S_function::iprint(PrintEnv &env, StatementContext) const
 
 void S_rangeCase::iprint(PrintEnv &env, StatementContext) const
 {
-  env << "case";
+  env << env.und << "case ";
   exprLo->print(env, OPREC_LOWEST);
-  env << "...";
+  env << " ... ";
   exprHi->print(env, OPREC_LOWEST);
-  env << ":";
+  env << ":" << env.br;
+
   s->print(env, SC_RANGE_CASE);
 }
 
