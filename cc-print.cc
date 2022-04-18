@@ -994,7 +994,8 @@ void S_for::iprint(PrintEnv &env, StatementContext) const
     init->print(env, SC_FOR_INIT);
     env << env.sp;
     cond->print(env);
-    env << "; ";
+    env << ";";
+    env << env.sp;
     after->print(env);
   }
   env << ") ";
