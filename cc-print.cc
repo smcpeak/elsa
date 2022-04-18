@@ -937,8 +937,21 @@ void S_if::iprint(PrintEnv &env, StatementContext) const
     cond->print(env);
     env << ") ";
     thenBranch->print(env, SC_IF_THEN);
-    env << env.br;
   }
+
+  if (S_compound const *comp = elseBranch->ifS_compoundC()) {
+    if (comp->m_implicit && comp->stmts.count() == 1) {
+      if (S_skip const *skip = comp->stmts.firstC()->ifS_skipC()) {
+        if (skip->m_implicit) {
+          // The 'else' branch is implicit, and consists only of an
+          // implicit skip statement.  Do not print it at all.
+          return;
+        }
+      }
+    }
+  }
+
+  env << env.br;
 
   {
     TPSEQUENCE;

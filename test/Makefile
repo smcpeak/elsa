@@ -86,6 +86,7 @@ TESTS += pprint/big-for-loop.c
 TESTS += pprint/bitfield.c
 TESTS += pprint/func.c
 TESTS += pprint/funcptr.c
+TESTS += pprint/if-without-else.c
 TESTS += pprint/longlines2.c
 TESTS += pprint/longlines3.c
 TESTS += pprint/nested-block.c

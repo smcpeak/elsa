@@ -885,7 +885,7 @@ nonterm(Statement*) Statement {
   // selection-statement
   // (prefer to shift "else" over reducing by this rule)
   -> "if" "(" e:Condition ")" s:Statement     precedence(TOK_PREFER_SHIFT)
-       { return new S_if(loc, e, s, new S_skip(loc)); }
+       { return new S_if(loc, e, s, new S_skip(loc, MI_IMPLICIT)); }
 
   // if-then-else preferred over if-then when ambiguous
   -> "if" "(" e:Condition ")" s1:Statement "else" s2:Statement
@@ -930,7 +930,7 @@ nonterm(Statement*) Statement {
 }
 
 nonterm(Statement*) ExpressionStatement {
-  -> ";"                  { return new S_skip(loc); }
+  -> ";"                  { return new S_skip(loc, MI_EXPLICIT); }
   -> e:Expression ";"     { return new S_expr(loc, new FullExpression(e)); }
 }
 

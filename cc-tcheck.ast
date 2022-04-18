@@ -486,6 +486,21 @@ class Statement {
        // the case label must be an integer; this its value
        public int labelVal = 0;
      }
+
+  -> S_compound {
+       // If true, the original text did not contain braces, but this
+       // 'S_compound' was added in order to clarify the semantics.
+       public MaybeImplicit m_implicit = MI_EXPLICIT;
+
+       custom debugPrint {
+         // Only print 'm_implicit' when it is true, which is the rare
+         // case.  Otherwise all the 'm_implicit=0' printouts are just
+         // clutter.
+         if (m_implicit) {
+           PRINT_GENERIC(m_implicit);
+         }
+       }
+     }
 }
 
 

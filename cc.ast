@@ -76,6 +76,7 @@
 // emitted verbatim into generated header (cc.ast.gen.h)
 verbatim {
   #include "cc-flags.h"         // CVFlags, DeclFlags, etc. (r)
+  #include "maybe-implicit.h"   // MaybeImplicit
   #include "stdconv.h"          // StandardConversion
 
   class CCLang;                 // cc-lang.h
@@ -513,7 +514,13 @@ class Statement (SourceLoc loc) {
   public string lineColString() const;      // e.g. "4:5"
   public string kindLocString() const;      // e.g. "S_if@4:5"
 
-  -> S_skip();      // no-op; used whenever optional Statement is not present
+  // Semantically this does nothing.  If 'm_implicit' is MI_EXPLICIT,
+  // this corresponds to the empty statement ";".  Otherwise it is used
+  // when an optional element (particularly the 'elsaBranch' of 'S_if')
+  // is syntactically absent, in order to avoid that being a special
+  // case.
+  -> S_skip(MaybeImplicit m_implicit);
+
   -> S_label(StringRef name, Statement s);
   -> S_case(Expression expr, Statement s);
   -> S_default(Statement s);

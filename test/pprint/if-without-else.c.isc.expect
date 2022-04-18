@@ -1,0 +1,15 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+int f(int x)
+{
+  if (ISC(SC_LVAL_TO_RVAL, int, x) == 1) {
+    return 2;
+  }
+  return 0;
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

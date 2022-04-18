@@ -4760,7 +4760,10 @@ void implicitLocalScope(Statement *&stmt)
 {
   if (!stmt->isS_compound()) {
     Statement *orig = stmt;
-    stmt = new S_compound(orig->loc, new ASTList<Statement>(orig));
+    S_compound *comp =
+      new S_compound(orig->loc, new ASTList<Statement>(orig));
+    comp->m_implicit = MI_IMPLICIT;
+    stmt = comp;
   }
 }
 

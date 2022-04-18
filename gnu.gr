@@ -213,16 +213,16 @@ nonterm(Statement*) LabeledEmptyStatementList {
   -> n:LabelAndColon s:LabeledEmptyStatementListOpt
        { return new S_label(loc, n, s); }
   -> "case" e:ConstantExpression ":" s:LabeledEmptyStatementListOpt
-       { return new S_case(loc, e, new S_skip(loc)); }
+       { return new S_case(loc, e, new S_skip(loc, MI_IMPLICIT)); }  // BUG: Should not be S_skip!
   -> "case" e:ConstantExpression "..." e2:ConstantExpression ":" s:LabeledEmptyStatementListOpt
        { return new S_rangeCase(loc, e, e2, s); }
   -> "default" ":" s:LabeledEmptyStatementListOpt
-       { return new S_default(loc, new S_skip(loc)); }
+       { return new S_default(loc, new S_skip(loc, MI_IMPLICIT)); }  // BUG: Should not be S_skip!
 }
 
 nonterm(Statement*) LabeledEmptyStatementListOpt {
   -> empty
-       { return new S_skip(loc); }
+       { return new S_skip(loc, MI_IMPLICIT); }
   -> s:LabeledEmptyStatementList
        { return s; }
 }
