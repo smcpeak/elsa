@@ -121,16 +121,16 @@ out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect pprint/%.c.isc.expect $(CCPARSE)
 	touch $@
 
 
-# One-off test of --no-pp-comments.
-out/pprint/stdconv-no-comments.c.ok: pprint/stdconv.c pprint/stdconv-no-comments.c.expect $(CCPARSE)
+# Test without passing the result into GCC.
+out/pprint/%.c.nogcc.ok: pprint/%.c pprint/%.c.expect $(CCPARSE)
 	@mkdir -p $(dir $@)idem
 	$(RUN_COMPARE_EXPECT) \
-	  --actual out/pprint/stdconv-no-comments.c.actual \
-	  --expect pprint/stdconv-no-comments.c.expect \
-	  $(CCPARSE) -xc --pretty-print --no-pp-comments $<
+	  --actual out/pprint/$*.c.actual \
+	  --expect pprint/$*.c.expect \
+	  $(CCPARSE) -xc --pretty-print $<
 	touch $@
 
-check: out/pprint/stdconv-no-comments.c.ok
+check: out/pprint/chained-labels.c.nogcc.ok
 
 
 # ------------------------------ strlit --------------------------------
