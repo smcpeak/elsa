@@ -523,6 +523,9 @@ void ElsaParse::parse(char const *inputFname)
     cout << "---- START ----" << endl;
     cout << "// -*-c++-*-" << endl;
     m_translationUnit->print(env);
+    if (tracingSys("dumpTreePrintTree")) {
+      env.debugPrintCout();
+    }
     cout << env.getResult();
     cout << "---- STOP ----" << endl;
   }
