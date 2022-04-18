@@ -166,7 +166,9 @@ validate-extradep: all
 	$(PYTHON3) $(SMBASE)/find-extra-deps.py $(EXTRADEPS_ARGS) >extradep.tmp
 	@echo diff extradep.mk extradep.tmp
 	@if diff extradep.mk extradep.tmp; then true; else \
-	  echo "extradep.mk needs updating; run 'make remake-extradep'"; \
+	  echo "extradep.mk may need updating; run 'make remake-extradep'"; \
+	  echo "if you have added a new *generated* header file.  Otherwise,"; \
+	  echo "for a new normal header 'git add' it to satisfy this check."; \
 	  exit 2; \
 	fi
 	rm extradep.tmp
