@@ -33,8 +33,8 @@ void g()
   (*((List *)av_oo_ptr_check(__ptr_to_list, 16))).head =
     av_oo_ptr_from_intptr(0);
   int y =
-        (*((List *)av_oo_ptr_check(__ptr_to_list, 16))).x +
-          (av_oo_ptr_from_intptr(0)).m_offset;
+    (*((List *)av_oo_ptr_check(__ptr_to_list, 16))).x +
+      (av_oo_ptr_from_intptr(0)).m_offset;
   y +=
     (*((List *)av_oo_ptr_check(__ptr_to_list, 16))).x +
       (av_oo_ptr_from_intptr(0)).m_offset;

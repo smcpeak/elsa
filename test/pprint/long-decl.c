@@ -40,4 +40,28 @@ int f(int arr, int dummy)
   }
 }
 
+struct CMUnitTest__inst__ {
+  char *name;
+  int test_func;
+  int setup_func;
+  int teardown_func;
+  int initial_state;
+};
+
+int av_ord_ptr_from_intptr(int);
+
+void g()
+{
+  int strcmp_test__inst__ = 1;
+
+  // Current rendering, which I want to improve.
+  struct CMUnitTest__inst__ const strcmp_tests[1] =
+                                    {
+                                      { "strcmp_test",
+                                        strcmp_test__inst__,
+                                        av_ord_ptr_from_intptr(0),
+                                        av_ord_ptr_from_intptr(0),
+                                        av_ord_ptr_from_intptr(0) } };
+}
+
 // EOF

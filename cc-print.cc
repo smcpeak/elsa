@@ -417,6 +417,39 @@ void Function::print(PrintEnv &env, DeclFlags declFlagsMask) const
 // MemberInit
 
 // -------------------- Declaration -------------------
+static void printInitializerOpt(PrintEnv &env, Initializer /*nullable*/ *init)
+{
+  if (init) {
+    IN_ctor *ctor = dynamic_cast<IN_ctor*>(init);
+    if (ctor) {
+      // sm: don't print "()" as an IN_ctor initializer (cppstd 8.5 para 8)
+      if (fl_isEmpty(ctor->args)) {
+        // Don't print anything.
+      }
+      else {
+        // Constructor arguments.
+        env << "(";
+        ctor->print(env);
+        env << ")";
+      }
+    }
+    else {
+      env << " =";
+      if (init->isIN_compound()) {
+        // No break before the open brace.
+        env << " ";
+      }
+      else {
+        // Optional break after '='.
+        env << env.sp;
+      }
+
+      init->print(env);
+    }
+  }
+}
+
+
 void Declaration::print(PrintEnv &env) const
 {
   // Check if the type specifier wants to print vertically.  I cannot
@@ -425,6 +458,22 @@ void Declaration::print(PrintEnv &env) const
   //
   // TODO: Needed?
   //bool isClassOrEnum = spec->isTS_classSpec() || spec->isTS_enumSpec();
+
+  if (fl_count(decllist) == 1) {
+    // If there is only one declarator, we will wrap with indentation
+    // back to where the type specifier started.
+    TP_H_OR_V;
+    printDeclFlags(env, dflags);
+    spec->print(env);
+    Declarator *declarator = fl_first(decllist);
+    if (ideclaratorWantsSpace(spec, declarator->decl)) {
+      env << " ";
+    }
+    declarator->decl->print(env);
+    printInitializerOpt(env, declarator->init);
+    env << ";";
+    return;
+  }
 
   // Sequence for the entire declaration, encompassing any breaks in
   // the type specifier.
@@ -463,31 +512,6 @@ void Declaration::print(PrintEnv &env) const
 
 
 // -------------------- ASTTypeId -------------------
-void printInitializerOpt(PrintEnv &env, Initializer /*nullable*/ *init)
-{
-  if (init) {
-    IN_ctor *ctor = dynamic_cast<IN_ctor*>(init);
-    if (ctor) {
-      // sm: don't print "()" as an IN_ctor initializer (cppstd 8.5 para 8)
-      if (fl_isEmpty(ctor->args)) {
-        // Don't print anything.
-      }
-      else {
-        // Constructor arguments.
-        env << "(";
-        ctor->print(env);
-        env << ")";
-      }
-    }
-    else {
-      // Optional break after '='.
-      env << " =" << env.sp;
-
-      init->print(env);
-    }
-  }
-}
-
 void ASTTypeId::print(PrintEnv &env) const
 {
   printTypeSpecifierAndDeclarator(env, spec, decl);
@@ -1988,12 +2012,6 @@ void IN_expr::print(PrintEnv &env, bool) const
 //           ^^^^^^^^^ only
 void IN_compound::print(PrintEnv &env, bool outermost) const
 {
-  // HACK: I've changed how declarations print, in particular arranging
-  // to wrap to a point indented relative to the declarator start
-  // (rather than the type specifier start), and now it seems to work
-  // better to not special-case the outermost set.
-  outermost = false;
-
   if (outermost) {
     // There will already be a sequence started where the type
     // specifier is.  Do not start a new sequence at the brace,

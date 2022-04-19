@@ -11,17 +11,16 @@ int f(int arr, int dummy)
 {
   {
     int __retval_longer_name =
-          AV_ORD_PTR_CHECK_DEREF(
-            av_ord_ptr_add(
-              AV_ORD_PTR_REGISTER_LOCAL(ISC(SC_LVAL_TO_RVAL, int, arr)),
-              ISC(SC_INT_CONV, int, 0 * sizeof(int))),
-            ISC(SC_LVAL_TO_RVAL, int, dummy)) +
-            AV_ORD_PTR_CHECK_DEREF(
-              av_ord_ptr_add(
-                AV_ORD_PTR_REGISTER_LOCAL(
-                  ISC(SC_LVAL_TO_RVAL, int, arr)),
-                ISC(SC_INT_CONV, int, 1 * sizeof(int))),
-              ISC(SC_LVAL_TO_RVAL, int, dummy));
+      AV_ORD_PTR_CHECK_DEREF(
+        av_ord_ptr_add(
+          AV_ORD_PTR_REGISTER_LOCAL(ISC(SC_LVAL_TO_RVAL, int, arr)),
+          ISC(SC_INT_CONV, int, 0 * sizeof(int))),
+        ISC(SC_LVAL_TO_RVAL, int, dummy)) +
+        AV_ORD_PTR_CHECK_DEREF(
+          av_ord_ptr_add(
+            AV_ORD_PTR_REGISTER_LOCAL(ISC(SC_LVAL_TO_RVAL, int, arr)),
+            ISC(SC_INT_CONV, int, 1 * sizeof(int))),
+          ISC(SC_LVAL_TO_RVAL, int, dummy));
     int __retval_longer_namf =
           AV_ORD_PTR_CHECK_DEREF(
             av_ord_ptr_add(
@@ -48,6 +47,25 @@ int f(int arr, int dummy)
               ISC(SC_LVAL_TO_RVAL, int, dummy));
     return __retval_longer_name;
   }
+}
+
+struct CMUnitTest__inst__ {
+  char *name;
+  int test_func;
+  int setup_func;
+  int teardown_func;
+  int initial_state;
+};
+
+int av_ord_ptr_from_intptr(int);
+
+void g()
+{
+  int strcmp_test__inst__ = 1;
+  struct CMUnitTest__inst__ const strcmp_tests[1] = {
+    { "strcmp_test", strcmp_test__inst__, av_ord_ptr_from_intptr(0),
+      av_ord_ptr_from_intptr(0), av_ord_ptr_from_intptr(0) }
+  };
 }
 
 ---- STOP ----
