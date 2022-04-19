@@ -426,23 +426,39 @@ void Declaration::print(PrintEnv &env) const
   // TODO: Needed?
   //bool isClassOrEnum = spec->isTS_classSpec() || spec->isTS_enumSpec();
 
-  //TPSEQUENCE;
-  TP_H_OR_V;
+  // Sequence for the entire declaration, encompassing any breaks in
+  // the type specifier.
+  TPSEQUENCE;
 
   printDeclFlags(env, dflags);
 
   spec->print(env);
 
-  FAKELIST_FOREACH_NC(Declarator, decllist, declarator) {
-    if (declarator != fl_first(decllist)) {
-      env << "," << env.sp;
-    }
-    else if (ideclaratorWantsSpace(spec, declarator->decl)) {
-      env << " ";
-    }
-    declarator->print(env);
+  // Print the space that follows the specifier before starting the
+  // first declarator so breaks within the declarator list return to
+  // the column after this space.
+  if (fl_isNotEmpty(decllist) &&
+      ideclaratorWantsSpace(spec, fl_first(decllist)->decl)) {
+    env << " ";
   }
-  env << ";";
+
+  {
+    // Enclose the declarator list in its own sequence, breaking lines
+    // after every declarator if we do so after any.  But don't indent
+    // when wrapping so all of the declarators are lined up vertically.
+    // See example pprint/long-decl.c.
+    env.begin(0 /*indent*/, true /*consistentBreaks*/);
+
+    FAKELIST_FOREACH_NC(Declarator, decllist, declarator) {
+      if (declarator != fl_first(decllist)) {
+        env << "," << env.sp;
+      }
+      declarator->print(env);
+    }
+    env << ";";
+
+    env.end();
+  }
 }
 
 
@@ -462,8 +478,11 @@ void printInitializerOpt(PrintEnv &env, Initializer /*nullable*/ *init)
         ctor->print(env);
         env << ")";
       }
-    } else {
-      env << " = ";
+    }
+    else {
+      // Optional break after '='.
+      env << " =" << env.sp;
+
       init->print(env);
     }
   }
@@ -694,6 +713,10 @@ void Enumerator::print(PrintEnv &env) const
 // -------------------- Declarator --------------------
 void Declarator::print(PrintEnv &env) const
 {
+  // If we break after the '=' before an initializer, we will wrap to
+  // a point indented relative to the start of the declarator.
+  TP_H_OR_V;
+
   decl->print(env);
   printInitializerOpt(env, init);
 }
@@ -1965,6 +1988,12 @@ void IN_expr::print(PrintEnv &env, bool) const
 //           ^^^^^^^^^ only
 void IN_compound::print(PrintEnv &env, bool outermost) const
 {
+  // HACK: I've changed how declarations print, in particular arranging
+  // to wrap to a point indented relative to the declarator start
+  // (rather than the type specifier start), and now it seems to work
+  // better to not special-case the outermost set.
+  outermost = false;
+
   if (outermost) {
     // There will already be a sequence started where the type
     // specifier is.  Do not start a new sequence at the brace,

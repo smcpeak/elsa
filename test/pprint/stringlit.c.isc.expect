@@ -5,8 +5,8 @@ void g(char const *p);
 
 void f()
 {
-  char const *p = ISC(SC_ARRAY_TO_PTR|SC_QUAL_CONV, char const *,
-                    "init");
+  char const *p =
+               ISC(SC_ARRAY_TO_PTR|SC_QUAL_CONV, char const *, "init");
   char *q = ISC(SC_ARRAY_TO_PTR, char *, "init2");
   p = ISC(SC_ARRAY_TO_PTR|SC_QUAL_CONV, char const *, "assign");
   g(ISC(SC_ARRAY_TO_PTR|SC_QUAL_CONV, char const *, "arg"));
