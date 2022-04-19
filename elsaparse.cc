@@ -608,4 +608,19 @@ Variable *ElsaParse::getGlobalVar(char const *varName_) const
 }
 
 
+Variable *ElsaParse::getFieldOf(Variable *container,
+                                char const *fieldName_) const
+{
+  StringRef fieldName = m_stringTable.add(fieldName_);
+
+  CompoundType *ct = container->type->asRval()->asCompoundType();
+  Variable *field = ct->rawLookupVariable(fieldName);
+  if (!field) {
+    xfailure(stringb("not in '" << container->name <<
+                     "': " << fieldName));
+  }
+  return field;
+}
+
+
 // EOF
