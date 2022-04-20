@@ -75,6 +75,8 @@ string toString(StandardConversion c)
     CASE(SC_PTR_CONV)
     CASE(SC_PTR_MEMB_CONV)
     CASE(SC_BOOL_CONV)
+    CASE(SC_DERIVED_TO_BASE)
+    CASE(SC_CHAR_PTR_CONV)
   }
 
   #undef CASE
@@ -742,6 +744,14 @@ StandardConversion getStandardConversion
     // since we stripped ptrs, final type must be equal
     if (s->atomic->equals(d->atomic)) {
       return conv.ret;
+    }
+    else if (!lang.isCplusplus &&
+             ((s->cv | d->cv) == d->cv) &&       // Dest can add CV.
+             s->isSomeNarrowCharType() &&
+             d->isSomeNarrowCharType()) {
+      // In C, we can implicitly convert between (e.g.) 'char*' and
+      // 'unsigned char*'.  test: pprint/init-struct-with-string2.c.
+      return conv.ret | SC_CHAR_PTR_CONV;
     }
     else {
       // 9/25/04: (in/t0316.cc) I'm not sure where the best place to do

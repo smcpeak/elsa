@@ -1,0 +1,57 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+struct S {
+  char const *str;
+};
+
+int test1()
+{
+  struct S s = {
+    ISC(SC_ARRAY_TO_PTR|SC_QUAL_CONV, char const *, "hello")
+  };
+  int ch =
+    ISC(SC_LVAL_TO_RVAL|SC_INT_PROM, int,
+      *(ISC(SC_LVAL_TO_RVAL, char const *, s.str) + 1));
+  return ISC(SC_LVAL_TO_RVAL, int, ch) == 'e'? 0 : 1;
+}
+
+int test2()
+{
+  struct S s = {
+    ISC(SC_QUAL_CONV, char const *,
+      &(*(ISC(SC_ARRAY_TO_PTR, char *, "hello") + 0)))
+  };
+  int ch =
+    ISC(SC_LVAL_TO_RVAL|SC_INT_PROM, int,
+      *(ISC(SC_LVAL_TO_RVAL, char const *, s.str) + 1));
+  return ISC(SC_LVAL_TO_RVAL, int, ch) == 'e'? 0 : 1;
+}
+
+int test3()
+{
+  char src[6] = "hello";
+  struct S s = { ISC(SC_ARRAY_TO_PTR|SC_QUAL_CONV, char const *, src) };
+  int ch =
+    ISC(SC_LVAL_TO_RVAL|SC_INT_PROM, int,
+      *(ISC(SC_LVAL_TO_RVAL, char const *, s.str) + 1));
+  return ISC(SC_LVAL_TO_RVAL, int, ch) == 'e'? 0 : 1;
+}
+
+int test4()
+{
+  char src[6] = "hello";
+  struct S s = {
+    ISC(SC_QUAL_CONV, char const *,
+      &(*(ISC(SC_ARRAY_TO_PTR, char *, src)+0)))
+  };
+  int ch =
+    ISC(SC_LVAL_TO_RVAL|SC_INT_PROM, int,
+      *(ISC(SC_LVAL_TO_RVAL, char const *, s.str) + 1));
+  return ISC(SC_LVAL_TO_RVAL, int, ch) == 'e'? 0 : 1;
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

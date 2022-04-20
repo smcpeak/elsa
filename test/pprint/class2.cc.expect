@@ -63,6 +63,21 @@ public:
   {}
 };
 
+class Another {
+public:
+  virtual int f() = 0;
+  Another()
+  {}
+  Another(Another const &__other)
+  {}
+  Another &operator=(Another const &__other)
+  {
+    return *this;
+  }
+  ~Another()
+  {}
+};
+
 ---- STOP ----
 ---- stderr ----
 ---- exit status ----

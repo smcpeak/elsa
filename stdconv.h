@@ -57,6 +57,7 @@ enum StandardConversion {
   SC_PTR_MEMB_CONV   = 0x70,  // 4.11: int Child::* -> int Parent::*
   SC_BOOL_CONV       = 0x80,  // 4.12: various types <-> bool
   SC_DERIVED_TO_BASE = 0x90,  // 13.3.3.1p6: Child -> Parent
+  SC_CHAR_PTR_CONV   = 0xA0,  // C: char* -> unsigned char*, etc.
   SC_GROUP_2_MASK    = 0xF0,
 
   SC_ERROR           = 0xFF,  // cannot convert

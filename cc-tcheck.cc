@@ -3959,6 +3959,19 @@ void D_name::tcheck(Env &env, Declarator::Tcheck &dt)
 {
   env.setLoc(loc);
 
+  if (dt.context == DC_D_FUNC) {
+    if (ArrayType *at = dt.type->ifArrayType()) {
+      // C11 6.7.6.3/7: A parameter with array type becomes a parameter
+      // with pointer type.  Tangential test: k0018.cc.
+      //
+      // TODO: In C11, it's evidently possible to put type qualifiers
+      // inside the brackets of an array-typed parameter, and those become
+      // qualifiers on the resulting pointer type, but I don't think the
+      // Elsa grammar allows that, nor is it part of the AST.
+      dt.type = env.makePointerType(CV_NONE, at->eltType);
+    }
+  }
+
   // 7/27/04: This has been disabled because Declarator::mid_tcheck
   // takes care of tchecking the name in advance.
   //if (name) {
@@ -9405,15 +9418,50 @@ void FullExpression::tcheck(Env &env)
 // ----------------------- Initializer --------------------
 void IN_expr::tcheck(Env &env, Type *target)
 {
-  // TODO: check the initializer for compatibility with 'target'
-
-  // limited form of checking: use 'target' to resolve 'e' if it
-  // names an overloaded function
+  // Use 'target' to resolve 'e' if it names an overloaded function.
   tcheckExpression_possibleAddrOfOverload(env, e, target);
+
+  if (target->isSimple(ST_ERROR)) {
+    // This could be (probably is) due to the initializer containing
+    // designators, which are currently ignored, so the real member
+    // type is unknown.
+    return;
+  }
+
+  if (target->isArrayType() && e->type->asRval()->isArrayType()) {
+    // TODO: Initializing an array with a string literal.
+    return;
+  }
+
+  if (target->isFunctionType()) {
+    // We get here when processing the '=0' of a pure virtual function.
+    // TODO: Check these.
+    return;
+  }
+
+  // Get conversion from 'e' to 'target'.
+  ImplicitConversion ic = getImplicitConversion(env,
+    e->getSpecial(env.lang),
+    e->type,
+    target,
+    false /*destIsReceiver*/);
+  if (ic) {
+    // Record the conversion explicitly.
+    e = env.makeImplicitConversion(target, e, ic);
+  }
+  else {
+    env.error(e->type, stringb(
+      "cannot convert initializer '" << e->asString() <<
+      "' with type '" << e->type->toString() <<
+      "' to type '" << target->toString() << "'"));
+  }
 }
 
 
 // initialize 'type' with expressions drawn from 'initIter'
+//
+// TODO: This does not handle designators properly, and needs
+// significant changes to do so.
 void initializeAggregate(Env &env, Type *type,
                          ASTListIterNC<Initializer> &initIter)
 {

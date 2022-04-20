@@ -63,8 +63,10 @@ void g()
 {
   int strcmp_test__inst__ = 1;
   struct CMUnitTest__inst__ const strcmp_tests[1] = {
-    { "strcmp_test", strcmp_test__inst__, av_ord_ptr_from_intptr(0),
-      av_ord_ptr_from_intptr(0), av_ord_ptr_from_intptr(0) }
+    { ISC(SC_ARRAY_TO_PTR, char *, "strcmp_test"),
+      ISC(SC_LVAL_TO_RVAL, int, strcmp_test__inst__),
+      av_ord_ptr_from_intptr(0), av_ord_ptr_from_intptr(0),
+      av_ord_ptr_from_intptr(0) }
   };
 }
 

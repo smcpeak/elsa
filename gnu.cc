@@ -1007,7 +1007,14 @@ static void check_designator_list(Env &env, FakeList<Designator> *dl)
 
 void IN_designated::tcheck(Env &env, Type *type)
 {
-  init->tcheck(env, type);
+  // The designator is currently ignored, and consequently the 'type'
+  // that has been passed in is incorrect.  Replace it with ST_ERROR so
+  // we can check the initializer expression but bypass checking it for
+  // compatibility with the initialized member.
+  //
+  // One test is c99/t0133.c.
+  init->tcheck(env, env.getSimpleType(ST_ERROR));
+
   check_designator_list(env, designator_list);
 }
 

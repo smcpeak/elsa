@@ -1226,10 +1226,16 @@ bool BaseType::isSimple(SimpleTypeId id) const
 bool BaseType::isSomeKindOfCharType() const
 {
   return
+    isSomeNarrowCharType()     ||
+    isSimple(ST_WCHAR_T);
+}
+
+bool BaseType::isSomeNarrowCharType() const
+{
+  return
     isSimple(ST_CHAR)          ||
     isSimple(ST_UNSIGNED_CHAR) ||
-    isSimple(ST_SIGNED_CHAR)   ||
-    isSimple(ST_WCHAR_T);
+    isSimple(ST_SIGNED_CHAR);
 }
 
 bool BaseType::isStringType() const

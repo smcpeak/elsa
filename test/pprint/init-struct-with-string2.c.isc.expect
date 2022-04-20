@@ -1,0 +1,19 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+struct S {
+  unsigned char const *str;
+};
+
+void test3()
+{
+  struct S s = {
+    ISC(SC_ARRAY_TO_PTR|SC_QUAL_CONV|SC_CHAR_PTR_CONV,
+      unsigned char const *, "hello")
+  };
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

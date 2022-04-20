@@ -24,4 +24,9 @@ class Derived2 : public Base1, public Base2 {
 public:
 };
 
+class Another {
+public:
+  virtual int f() = 0;
+};
+
 // EOF
