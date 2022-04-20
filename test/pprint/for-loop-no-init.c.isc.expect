@@ -1,0 +1,35 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+int av_ord_ptr_cmp_lt(int, int);
+
+int av_ord_ptr_add(int, int);
+
+int av_ord_ptr_preincrement(int *, int);
+
+int av_ord_ptr_postincrement(int *, int);
+
+int AV_ORD_PTR_REGISTER_LOCAL(int);
+
+void f(int p, int q, int r, int buf)
+{
+  int __ptr_to_buf;
+  for (; av_ord_ptr_cmp_lt(ISC(SC_LVAL_TO_RVAL, int, p),
+           av_ord_ptr_add(
+             ISC(SC_LVAL_TO_RVAL, int,
+               __ptr_to_buf =
+                 AV_ORD_PTR_REGISTER_LOCAL(
+                   ISC(SC_LVAL_TO_RVAL, int, buf))),
+             ISC(SC_INT_CONV, int, 5 * sizeof(char))));
+         av_ord_ptr_preincrement(&p,
+           ISC(SC_INT_CONV, int, sizeof(char))),
+           av_ord_ptr_preincrement(&q,
+             ISC(SC_INT_CONV, int, sizeof(char)))) {
+    av_ord_ptr_postincrement(&r, ISC(SC_INT_CONV, int, sizeof(char)));
+  }
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

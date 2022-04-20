@@ -1052,7 +1052,14 @@ void S_for::iprint(PrintEnv &env, StatementContext) const
     TPSEQUENCE;
 
     init->print(env, SC_FOR_INIT);
-    env << env.sp;
+    if (init->isS_skip()) {
+      // If there is no initializer, then do not break the line after
+      // the semicolon.
+      env << " ";
+    }
+    else {
+      env << env.sp;
+    }
     cond->print(env);
     env << ";";
     env << env.sp;
