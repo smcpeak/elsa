@@ -1,12 +1,12 @@
 // cc.in74
 // need global operator new defined
 
-int foo()
+void *foo()
 {
   return operator new(3);
 }
 
-int foo2()
+void *foo2()
 {
   return ::operator new(4);
 }

@@ -4869,15 +4869,52 @@ void S_continue::itcheck(Env &env)
 
 void S_return::itcheck(Env &env)
 {
+  // Return type for enclosing function.
+  Type *retType = env.scope()->curFunction->funcType->retType;
+
   if (expr) {
     expr->tcheck(env);
 
-    // TODO: verify that 'expr' is compatible with the current
-    // function's declared return type
+    // Verify that the returned expression is compatible with the
+    // current function's declared return type, and insert an implicit
+    // conversion if needed.
+
+    // Get conversion from 'expr->expr' to 'retType'.
+    ImplicitConversion ic = getImplicitConversion(env,
+      expr->expr->getSpecial(env.lang),
+      expr->expr->type,
+      retType,
+      false /*destIsReceiver*/);
+    if (ic) {
+      // Record the conversion explicitly.
+      expr->expr = env.makeImplicitConversion(retType, expr->expr, ic);
+    }
+    else if (retType->isIntegerType() &&
+             expr->expr->type->asRval()->isPointerType()) {
+      env.diagnose3(env.lang.m_allowReturnPointerAsInteger, env.loc(), stringb(
+        "return value '" << expr->expr->asString() <<
+        "' with type '" << expr->expr->type->toString() <<
+        "' is converted to integer type '" <<
+        retType->toString() << "' (gcc permissive mode allows it)"));
+
+      // Handle this by inserting an explicit cast.
+      expr->expr = env.m_astBuild.makeE_cast(retType, expr->expr);
+    }
+    else {
+      env.error(expr->expr->type, stringb(
+        "cannot convert return value '" << expr->expr->asString() <<
+        "' with type '" << expr->expr->type->toString() <<
+        "' to type '" << retType->toString() << "'"));
+    }
   }
 
   else {
-    // TODO: check that the function is declared to return 'void'
+    // Check that the function is declared to return 'void'.
+    if (!retType->isVoid()) {
+      env.error(retType, stringb(
+        "return statement with no expression, but function has return "
+        "type '" << retType->toString() << "'"));
+    }
   }
 }
 

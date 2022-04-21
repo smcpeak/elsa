@@ -36,6 +36,7 @@ void CCLang::setAllWarnings(bool enable)
   setWarning(allowDuplicateParameterNames, enable);
   setWarning(allowExplicitSpecWithoutParams, enable);
   setWarning(allowStaticAfterNonStatic, enable);
+  setWarning(m_allowReturnPointerAsInteger, enable);
 }
 
 
@@ -89,6 +90,7 @@ void CCLang::ANSI_C89()
   allowDuplicateParameterNames = B3_FALSE;
   allowExplicitSpecWithoutParams = B3_FALSE;
   allowStaticAfterNonStatic =  B3_WARN;
+  m_allowReturnPointerAsInteger = B3_FALSE;
 }
 
 void CCLang::KandR_C()
@@ -139,6 +141,7 @@ void CCLang::GNU_C_extensions()
   allowAnonymousStructs = B3_TRUE;
   allowRepeatedTypeSpecifierKeywords = B3_TRUE;
   allowCVAppliedToFunctionTypes = B3_TRUE;
+  m_allowReturnPointerAsInteger = B3_TRUE;
 }
 
 void CCLang::GNU_C()

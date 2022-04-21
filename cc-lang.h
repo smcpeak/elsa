@@ -242,6 +242,11 @@ public:      // data
   // disallows.
   Bool3 allowStaticAfterNonStatic;
 
+  // gcc permissive compat: In C mode, GCC by default allows returning a
+  // pointer from a function declared to return an integer.  Test:
+  // in/c/t0010.c.
+  Bool3 m_allowReturnPointerAsInteger;
+
 private:     // funcs
   void setAllWarnings(bool enable);
 

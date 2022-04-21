@@ -12,7 +12,7 @@ struct S1;
 
 void foo(S1<int> *);
 
-void f()
+int f()
 {
     S1<int>* ptr;
 

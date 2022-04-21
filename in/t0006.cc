@@ -40,8 +40,8 @@ mylabel:
   // decl in init
   for (int j=9; j>0; j--) 18;
 
-  // both variants of 'return'
-  if (a) return; else return x;
+  // 'return' with an argument (without arg is tested below)
+  if (a) return x;
 
   goto mylabel;
 
@@ -57,4 +57,11 @@ mylabel:
   }
 
   4;   // dummy for 'try' CFG targets
+}
+
+void other()
+{
+  if (a) return;
+
+  return;
 }

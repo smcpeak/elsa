@@ -45,7 +45,7 @@ int f(int arr, int dummy)
                   ISC(SC_LVAL_TO_RVAL, int, arr)),
                 ISC(SC_INT_CONV, int, 1 * sizeof(int))),
               ISC(SC_LVAL_TO_RVAL, int, dummy));
-    return __retval_longer_name;
+    return ISC(SC_LVAL_TO_RVAL, int, __retval_longer_name);
   }
 }
 

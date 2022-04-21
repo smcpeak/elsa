@@ -1,0 +1,12 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+void *retzero()
+{
+  return ISC(SC_PTR_CONV, void *, 0);
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0
