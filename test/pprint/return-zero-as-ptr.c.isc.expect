@@ -6,6 +6,16 @@ void *retzero()
   return ISC(SC_PTR_CONV, void *, 0);
 }
 
+void *f2(int n, char *s)
+{
+  return n? (void *)s : ISC(SC_PTR_CONV, void *, 0);
+}
+
+void *f3(int n, char *s)
+{
+  return n? ISC(SC_PTR_CONV, void *, 0) : (void *)s;
+}
+
 ---- STOP ----
 ---- stderr ----
 ---- exit status ----

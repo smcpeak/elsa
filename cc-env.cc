@@ -5592,6 +5592,29 @@ bool Env::elaborateImplicitConversionArgToVararg(Expression *&arg)
 }
 
 
+Expression *Env::getAndInsertImplicitConversion(Type *destType,
+                                                Expression *expr)
+{
+  // Get conversion from 'expr' to 'destType'.
+  ImplicitConversion ic = getImplicitConversion(env,
+    expr->getSpecial(env.lang),
+    expr->type,
+    destType,
+    false /*destIsReceiver*/);
+  if (ic) {
+    // Record the conversion explicitly.
+    return makeImplicitConversion(destType, expr, ic);
+  }
+  else {
+    env.error(expr->type, stringb(
+      "cannot convert value '" << expr->asString() <<
+      "' with type '" << expr->type->toString() <<
+      "' to type '" << destType->toString() << "'"));
+    return expr;
+  }
+}
+
+
 // ------------------------ SavedScopePair -------------------------
 SavedScopePair::SavedScopePair(Scope *s)
   : scope(s),

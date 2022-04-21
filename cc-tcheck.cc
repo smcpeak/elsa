@@ -8767,6 +8767,34 @@ Type *compositePointerToMemberType
 }
 
 
+// True if 'type' is a pointer to void with any CV qualification.
+static bool isPointerToVoid(Type *type)
+{
+  if (PointerType *pt = type->ifPointerType()) {
+    return pt->atType->isVoid();
+  }
+  return false;
+}
+
+
+// C11 6.3.2.3/3: "An integer constant expression with the value 0, or
+// such an expression cast to type void *, is called a null pointer
+// constant."
+static bool isNullPointerConstant(Expression const *e)
+{
+  if (E_intLit const *lit = e->ifE_intLitC()) {
+    return lit->i == 0;
+  }
+  else if (E_cast const *cast = e->ifE_castC()) {
+    return isPointerToVoid(cast->ctype->getType()) &&
+           isNullPointerConstant(cast->expr);
+  }
+  else {
+    return false;
+  }
+}
+
+
 // cppstd 5.16
 Type *E_cond::itcheck_x(Env &env, Expression *&replacement)
 {
@@ -8805,6 +8833,31 @@ Type *E_cond::itcheck_x(Env &env, Expression *&replacement)
   Type *elRval = el->type->asRval();
 
   if (!env.lang.isCplusplus) {
+    // C11 6.5.15/6: "If both the second and third operands are pointers
+    // or one is a null pointer constant and the other is a pointer,
+    // ..."
+    if ( (thRval->isPointerType() && elRval->isPointerType()) ||
+         (thRval->isPointerType() && isNullPointerConstant(el)) ||
+         (isNullPointerConstant(th) && elRval->isPointerType()) ) {
+      // TODO: Several provisions, such as appropriate qualification.
+
+      // "... if one operand is a null pointer constant, the result has the
+      // type of the other operand; ...".
+      if (isNullPointerConstant(th)) {
+        // Insert a conversion to the chosen type.
+        th = env.getAndInsertImplicitConversion(elRval, th);
+
+        // Although GCC yields lvalues from conditionals under some
+        // circumstances, it would make no sense here since the null
+        // pointer isn't an lvalue.  So yield an rvalue.
+        return elRval;
+      }
+      if (isNullPointerConstant(el)) {
+        el = env.getAndInsertImplicitConversion(thRval, el);
+        return thRval;
+      }
+    }
+
     // ANSI C99 mostly requires that the types be the same, but gcc
     // doesn't seem to enforce anything, so I won't either; and if
     // they are different, it isn't clear what the type should be ...

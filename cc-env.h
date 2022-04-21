@@ -756,6 +756,12 @@ public:      // funcs
   bool elaborateImplicitConversionArgToParam(Type *paramType, Expression *&arg);
   bool elaborateImplicitConversionArgToVararg(Expression *&arg);
 
+  // Get an implicit conversion from 'arg' to 'destType', insisting that
+  // it succeed.  Return the expression formed by adding a conversion on
+  // top of 'arg', which may be 'arg' itself if no conversion is needed.
+  Expression *getAndInsertImplicitConversion(Type *destType,
+                                             Expression *expr);
+
   // ------------ new lookup mechanism ---------------
 private:     // funcs
   void unqualifiedLookup(LookupSet &set, Scope * /*nullable*/ scope,
