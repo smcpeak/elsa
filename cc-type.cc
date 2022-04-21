@@ -1357,11 +1357,6 @@ PseudoInstantiation const *BaseType::asPseudoInstantiationC() const
 }
 
 
-bool BaseType::isOwnerPtr() const
-{
-  return isPointer() && ((asPointerTypeC()->cv & CV_OWNER) != 0);
-}
-
 bool BaseType::isMethod() const
 {
   return isFunctionType() &&
