@@ -595,11 +595,11 @@ nonterm(TS_enumSpec*) EnumSpecifier {
 // no arguments, you could get by with a new UberModifier flag and
 // associated DeclFlag.
 nonterm(UberModifiers) UberModifier {
-  -> AttributeSpecifier      { return UM_NONE; }
+  -> as:AttributeSpecifier      { return as->toUberModifiers(); }
 }
 
 nonterm(UberModifiers) UberCVQualifier {
-  -> AttributeSpecifier      { return UM_NONE; }
+  -> as:AttributeSpecifier      { return as->toUberModifiers(); }
 }
 
 
@@ -624,15 +624,15 @@ nonterm(enum CVFlags) CVQualAttrSeq {
 
 nonterm(enum CVFlags) CVQualAttr {
   -> q:CVQualifier                     { return q; }
-  -> AttributeSpecifier                { return CV_NONE; }
+  -> as:AttributeSpecifier             { return as->toCVFlags(); }
 }
 
 
 nonterm(IDeclarator*) Declarator {
   // "*", then some cv, then *one* __attribute__, which causes the
   // parser to commit to this production, then cv+attr seq
-  -> "*" cv:CVQualifierSeqOpt /*DROPPED*/AttributeSpecifier cv2:CVQualAttrSeqOpt d:Declarator
-       { return new D_pointer(loc, cv | cv2, d); }
+  -> "*" cv:CVQualifierSeqOpt as:AttributeSpecifier cv2:CVQualAttrSeqOpt d:Declarator
+       { return new D_pointer(loc, cv | as->toCVFlags() | cv2, d); }
 
   // perhaps attributes should be allowed after "&" and "C::*"?
 
@@ -651,8 +651,8 @@ nonterm(IDeclarator*) DirectDeclarator {
 
 
 nonterm(IDeclarator*) AbstractDeclarator {
-  -> "*" cv:CVQualifierSeqOpt attrspec:AttributeSpecifier cv2:CVQualAttrSeqOpt d:AbstractDeclaratorOpt
-       { return new D_pointer(loc, cv | cv2, d); }
+  -> "*" cv:CVQualifierSeqOpt as:AttributeSpecifier cv2:CVQualAttrSeqOpt d:AbstractDeclaratorOpt
+       { return new D_pointer(loc, cv | as->toCVFlags() | cv2, d); }
 
   -> d:DirectAbstractDeclarator attr:AttributeSpecifierList
        { return new D_attribute(loc, d, attr); }

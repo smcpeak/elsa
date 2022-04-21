@@ -1492,4 +1492,49 @@ void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
 // removing).
 
 
+// ---------------------- AttributeSpecifier -------------------------
+UberModifiers AttributeSpecifier::toUberModifiers() const
+{
+  UberModifiers ret = attr->toUberModifiers();
+  if (next) {
+    ret = (UberModifiers)(ret | next->toUberModifiers());
+  }
+  return ret;
+}
+
+
+CVFlags AttributeSpecifier::toCVFlags() const
+{
+  return uberCVFlags(toUberModifiers());
+}
+
+
+// ---------------------- Attribute -------------------------
+UberModifiers AT_empty::toUberModifiers() const
+{
+  return UM_NONE;
+}
+
+
+UberModifiers AT_word::toUberModifiers() const
+{
+  if (streq(w, "may_alias") || streq(w, "__may_alias__")) {
+    return UM_MAY_ALIAS;
+  }
+
+  return UM_NONE;
+}
+
+
+UberModifiers AT_func::toUberModifiers() const
+{
+  return UM_NONE;
+}
+
+
+CVFlags Attribute::toCVFlags() const
+{
+  return uberCVFlags(toUberModifiers());
+}
+
 // EOF

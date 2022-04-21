@@ -52,10 +52,11 @@ enum CVFlags {
   CV_CONST    = 0x0400,
   CV_VOLATILE = 0x0800,
   CV_RESTRICT = 0x1000,     // C99
-  CV_ALL      = 0x1C00,
+  CV_MAY_ALIAS= 0x2000,     // __attribute__((__may_alias__))
+  CV_ALL      = 0x3C00,
 
   CV_SHIFT_AMOUNT = 10,     // shift right this many bits before counting for cvFlagNames
-  NUM_CVFLAGS = 3           // # bits set to 1 in CV_ALL
+  NUM_CVFLAGS = 4           // # bits set to 1 in CV_ALL
 };
 
 extern char const * const cvFlagNames[NUM_CVFLAGS];      // 0="const", 1="volatile", 2="owner"
@@ -66,6 +67,13 @@ ENUM_BITWISE_OPS(CVFlags, CV_ALL)
 // experiment: superset operator
 inline bool operator>= (CVFlags cv1, CVFlags cv2)
   { return (cv1 & cv2) == cv2; }
+
+
+// Regarding __attribute__((__may_alias__)) / CV_MAY_ALIAS, I have added
+// this to CVFlags as an experiment.  This isn't a good long-term
+// solution for GCC attributes but may suffice in the short term and the
+// experience of doing it this way may help me to plan for a longer-term
+// solution.
 
 
 // ----------------------- DeclFlags ----------------------
@@ -509,11 +517,11 @@ enum UberModifiers {
   UM_CONST        = 0x00000400,
   UM_VOLATILE     = 0x00000800,
   UM_RESTRICT     = 0x00001000,    // C99
+  UM_MAY_ALIAS    = 0x00002000,    // __attribute__((__may_alias__))
 
-  UM_CVFLAGS      = 0x00001C00,
+  UM_CVFLAGS      = 0x00003C00,
 
   // type keywords
-  UM_WCHAR_T      = 0x00002000,
   UM_BOOL         = 0x00004000,
   UM_SHORT        = 0x00008000,
   UM_INT          = 0x00010000,
@@ -527,11 +535,12 @@ enum UberModifiers {
   UM_CHAR         = 0x01000000,    // large value b/c got bumped by UM_RESTRICT
   UM_COMPLEX      = 0x02000000,    // C99/GNU
   UM_IMAGINARY    = 0x04000000,    // C99
+  UM_WCHAR_T      = 0x08000000,    // bumped down here by UM_MAY_ALIAS
 
-  UM_TYPEKEYS     = 0x07FFE000,
+  UM_TYPEKEYS     = 0x0FFFC000,
 
-  UM_ALL_FLAGS    = 0x07FFFFFF,
-  UM_NUM_FLAGS    = 27             // # bits set in UM_ALL_FLAGS
+  UM_ALL_FLAGS    = 0x0FFFFFFF,
+  UM_NUM_FLAGS    = 28             // # bits set in UM_ALL_FLAGS
 };
 
 // string repr.

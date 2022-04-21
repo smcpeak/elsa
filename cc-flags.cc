@@ -84,7 +84,8 @@ MAKE_TOSTRING(TypeIntr, NUM_TYPEINTRS, typeIntrNames)
 char const * const cvFlagNames[NUM_CVFLAGS] = {
   "const",
   "volatile",
-  "restrict"
+  "restrict",
+  "__attribute__((__may_alias__))"
 };
 
 
@@ -110,6 +111,8 @@ string bitmapString(int bitmap, char const * const *names, int numFlags,
 
 string toString(CVFlags cv)
 {
+  STATIC_ASSERT((((1 << NUM_CVFLAGS) - 1) << CV_SHIFT_AMOUNT) == CV_ALL);
+
   return bitmapString(cv >> CV_SHIFT_AMOUNT, cvFlagNames, NUM_CVFLAGS, " ");
 }
 
@@ -665,8 +668,8 @@ char const * const uberModifierNames[UM_NUM_FLAGS] = {
   "const",
   "volatile",
   "restrict",        // 0x00001000
+  "__attribute__((__may_alias__))",
 
-  "wchar_t",
   "bool",
   "short",
   "int",             // 0x00010000
@@ -679,11 +682,29 @@ char const * const uberModifierNames[UM_NUM_FLAGS] = {
   "long long",
   "char",            // 0x01000000
   "complex",
-  "imaginary"
+  "imaginary",
+  "wchar_t",
 };
 
 string toString(UberModifiers m)
 {
+  // Check correspondence with CVFlags.
+  STATIC_ASSERT((int)CV_ALL == (int)UM_CVFLAGS);
+  #define ASSERT_SAME_VALUE(flag) \
+    STATIC_ASSERT((int)CV_##flag == (int)UM_##flag)
+  ASSERT_SAME_VALUE(CONST);
+  ASSERT_SAME_VALUE(VOLATILE);
+  ASSERT_SAME_VALUE(RESTRICT);
+  ASSERT_SAME_VALUE(MAY_ALIAS);
+  #undef ASSERT_SAME_VALUE
+
+  // Check that the masks make sense.
+  STATIC_ASSERT((UM_DECLFLAGS | UM_CVFLAGS | UM_TYPEKEYS) == UM_ALL_FLAGS);
+  STATIC_ASSERT((UM_DECLFLAGS & UM_CVFLAGS) == 0);
+  STATIC_ASSERT((UM_DECLFLAGS & UM_TYPEKEYS) == 0);
+  STATIC_ASSERT((UM_TYPEKEYS & UM_CVFLAGS) == 0);
+  STATIC_ASSERT((1 << UM_NUM_FLAGS) - 1 == UM_ALL_FLAGS);
+
   xassert(uberModifierNames[UM_NUM_FLAGS-1] != NULL);
   return bitmapString(m, uberModifierNames, UM_NUM_FLAGS, " ");
 }

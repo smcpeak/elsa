@@ -267,12 +267,18 @@ class AttributeSpecifierList(
 class AttributeSpecifier(
   Attribute attr,
   AttributeSpecifier /*nullable*/ next
-);
+) {
+  public UberModifiers toUberModifiers() const;
+  public CVFlags toCVFlags() const;
+}
 
 
 // one attribute, somewhere inside __attribute((...)); syntactically,
 // attributes are separated by commas in the parens
 class Attribute(SourceLoc loc) {
+  pure_virtual UberModifiers toUberModifiers() const;
+  public CVFlags toCVFlags() const;
+
   // e.g., __attribute__(( ))
   //                      ^
   // I decided to keep these even though the GNU documentation states

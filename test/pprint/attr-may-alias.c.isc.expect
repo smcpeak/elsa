@@ -1,0 +1,22 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+typedef short __attribute__((__may_alias__)) short_a;
+
+int main()
+{
+  int a = 12345678;
+  short_a *b = (short_a *)(&a);
+  *(ISC(SC_LVAL_TO_RVAL,
+      /*short_a*/short __attribute__((__may_alias__)) *, b)+1) =
+    ISC(SC_INT_CONV, short __attribute__((__may_alias__)), 0);
+  if (ISC(SC_LVAL_TO_RVAL, int, a) == 12345678) {
+    return 1;
+  }
+  return 0;
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0
