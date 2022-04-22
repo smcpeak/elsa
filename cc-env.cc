@@ -2578,7 +2578,7 @@ Variable *Env::receiverParameter(SourceLoc loc, NamedAtomicType *nat, CVFlags cv
 // disambiguation, and there is a conversion to perform, modify 'expr'
 // to add an implicit standard conversion AST node on top of it.
 //
-Type *Env::insertOperandRvalConversion(Expression *&expr)
+Type *Env::insertOperandRvalConversion(Expression *&expr, bool wantBool)
 {
   StandardConversion sc = SC_IDENTITY;
   Type *t = expr->type;
@@ -2601,6 +2601,12 @@ Type *Env::insertOperandRvalConversion(Expression *&expr)
   if (t->isFunctionType()) {
     t = makePointerType(CV_NONE, t);
     sc = SC_FUNC_TO_PTR;
+  }
+
+  // Certain operators also convert to boolean.
+  if (wantBool && !t->isBool()) {
+    t = getSimpleType(ST_BOOL);
+    sc |= SC_BOOL_CONV;
   }
 
   if (sc != SC_IDENTITY && !onlyDisambiguating()) {

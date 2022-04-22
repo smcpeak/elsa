@@ -1,0 +1,53 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+int f(int a, _Bool b, void *p, void *q)
+{
+  int r;
+  r =
+    ISC(SC_INT_PROM, int,
+      ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, a) &&
+        ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p));
+  r =
+    ISC(SC_INT_PROM, int,
+      ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p) &&
+        ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, a));
+  r =
+    ISC(SC_INT_PROM, int,
+      ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p) &&
+        ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, q));
+  r =
+    ISC(SC_INT_PROM, int,
+      ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, a) ||
+        ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p));
+  r =
+    ISC(SC_INT_PROM, int,
+      ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p) ||
+        ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, a));
+  r =
+    ISC(SC_INT_PROM, int,
+      ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p) ||
+        ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, q));
+  r =
+    ISC(SC_INT_PROM, int,
+      ISC(SC_LVAL_TO_RVAL, bool, b) &&
+        ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p));
+  r =
+    ISC(SC_INT_PROM, int,
+      ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p) &&
+        ISC(SC_LVAL_TO_RVAL, bool, b));
+  r =
+    ISC(SC_INT_PROM, int,
+      ISC(SC_LVAL_TO_RVAL, bool, b) ||
+        ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p));
+  r =
+    ISC(SC_INT_PROM, int,
+      ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p) ||
+        ISC(SC_LVAL_TO_RVAL, bool, b));
+  return ISC(SC_LVAL_TO_RVAL, int, r);
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

@@ -8310,11 +8310,15 @@ Type *E_binary::itcheck_x(Env &env, Expression *&replacement)
     return e2->type;
   }
 
+  // Are we expecting boolean operands?
+  bool wantBool = (op == BIN_AND || op == BIN_OR ||
+                   op == BIN_IMPLIES || op == BIN_EQUIVALENT);
+
   // Normalize the operand types with rvalue conversions, possibly
   // modifying the AST to explicitly show the conversion if one took
   // place.
-  Type *lhsType = env.insertOperandRvalConversion(e1);
-  Type *rhsType = env.insertOperandRvalConversion(e2);
+  Type *lhsType = env.insertOperandRvalConversion(e1, wantBool);
+  Type *rhsType = env.insertOperandRvalConversion(e2, wantBool);
 
   switch (op) {
     default: xfailure("illegal op code"); break;

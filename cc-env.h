@@ -606,7 +606,7 @@ public:      // funcs
                               D_func *syntax = NULL);
 
   // standard conversion 4.1, 4.2, and 4.3
-  Type *insertOperandRvalConversion(Expression *&expr);
+  Type *insertOperandRvalConversion(Expression *&expr, bool wantBool);
 
   // get 'std::type_info const &'
   Type *type_info_const_ref();

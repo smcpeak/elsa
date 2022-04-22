@@ -93,6 +93,7 @@ TESTS += pprint/funcptr.c
 TESTS += pprint/if-without-else.c
 TESTS += pprint/init-struct-with-string.c
 TESTS += pprint/init-struct-with-string2.c
+TESTS += pprint/logical-op-ptr.c
 TESTS += pprint/long-decl.c
 TESTS += pprint/longlines2.c
 TESTS += pprint/longlines3.c
