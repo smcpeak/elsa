@@ -1,0 +1,29 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+int printf(char const *format, ...);
+
+static void test1()
+{
+  char const *n = ISC(SC_ARRAY_TO_PTR, char const *, __func__);
+  printf(ISC(SC_ARRAY_TO_PTR|SC_QUAL_CONV, char const *, "name: %s\n"),
+    ISC(SC_LVAL_TO_RVAL, char const *, n));
+}
+
+static void test2()
+{
+  printf(ISC(SC_ARRAY_TO_PTR|SC_QUAL_CONV, char const *, "name: %s\n"),
+    ISC(SC_ARRAY_TO_PTR, char const *, __func__));
+}
+
+int main()
+{
+  test1();
+  test2();
+  return 0;
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

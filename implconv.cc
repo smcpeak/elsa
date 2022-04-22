@@ -302,14 +302,20 @@ ImplicitConversion getImplicitConversionToVararg
     return ret;
   }
 
-  // lvalue-to-rvalue conversion.
   StandardConversion sconv = SC_IDENTITY;
+
+  // array-to-pointer conversion.
+  if (ArrayType *at = src->asRval()->ifArrayType()) {
+    sconv |= SC_ARRAY_TO_PTR;
+    src = env.tfac.makePointerType(CV_NONE, at->eltType);
+  }
+
+  // lvalue-to-rvalue conversion.
   if (src->isReferenceType()) {
     sconv |= SC_LVAL_TO_RVAL;
     src = src->asReferenceType()->atType;
   }
 
-  // TODO: array-to-pointer
   // TODO: function-to-pointer
   // TODO: nullptr_t to void*
 

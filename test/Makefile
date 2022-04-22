@@ -88,6 +88,7 @@ TESTS += pprint/bitfield.c
 TESTS += pprint/deref-array.c
 TESTS += pprint/for-loop-no-init.c
 TESTS += pprint/func.c
+TESTS += pprint/func-symbol.c
 TESTS += pprint/funcptr.c
 TESTS += pprint/if-without-else.c
 TESTS += pprint/init-struct-with-string.c
