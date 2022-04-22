@@ -1,0 +1,14 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+void foo()
+{
+  char buf[4];
+  char c =
+    ISC(SC_LVAL_TO_RVAL, char, *ISC(SC_ARRAY_TO_PTR, char *, buf));
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

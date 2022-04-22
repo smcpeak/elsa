@@ -8602,8 +8602,13 @@ Type *E_deref::itcheck_x(Env &env, Expression *&replacement)
   }
 
   // implicit coercion of array to pointer for dereferencing
-  if (rt->isArrayType()) {
-    return makeLvalType(env, rt->asArrayType()->eltType);
+  if (ArrayType *at = rt->ifArrayType()) {
+    // Insert a node to represent the implicit conversion.
+    PointerType *pty = env.tfac.makePointerType(CV_NONE, at->eltType);
+    ptr = env.getAndInsertImplicitConversion(pty, ptr);
+
+    // Yield a reference to an element.
+    return makeLvalType(env, at->eltType);
   }
 
   return env.error(rt, stringc
