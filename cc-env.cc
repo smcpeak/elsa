@@ -5615,6 +5615,18 @@ Expression *Env::getAndInsertImplicitConversion(Type *destType,
 }
 
 
+Expression *Env::possiblyConvertArrayToPointer(Expression *expr)
+{
+  if (ArrayType *at = expr->type->asRval()->ifArrayType()) {
+    PointerType *pt = tfac.makePointerType(CV_NONE, at->eltType);
+    return getAndInsertImplicitConversion(pt, expr);
+  }
+  else {
+    return expr;
+  }
+}
+
+
 // ------------------------ SavedScopePair -------------------------
 SavedScopePair::SavedScopePair(Scope *s)
   : scope(s),

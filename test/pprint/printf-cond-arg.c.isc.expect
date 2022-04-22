@@ -1,0 +1,19 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+int printf(char const *format, ...);
+
+int main(int argc, char **argv)
+{
+  printf(
+    ISC(SC_ARRAY_TO_PTR|SC_QUAL_CONV, char const *, "argc==2: %s\n"),
+    ISC(SC_LVAL_TO_RVAL, int, argc) == 2?
+      ISC(SC_ARRAY_TO_PTR, char *, "yes") :
+      ISC(SC_ARRAY_TO_PTR, char *, "no"));
+  return 0;
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

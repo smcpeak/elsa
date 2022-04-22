@@ -36,15 +36,13 @@ void f()
                                           ISC(SC_INT_CONV,
                                             unsigned long long, 16)))),
                  ISC(SC_INT_CONV, unsigned long long, 4)))),
-    ISC(SC_ARRAY_TO_PTR, char *,
-      av_oo_ptr_cmp_eq(ISC(SC_LVAL_TO_RVAL, av_oo_pointer_struct, pp),
-        ISC(SC_LVAL_TO_RVAL, av_oo_pointer_struct, __ptr_to_p))?
-        "&p" :
-        (av_oo_ptr_cmp_eq(
-           ISC(SC_LVAL_TO_RVAL, av_oo_pointer_struct, pp),
-           ISC(SC_LVAL_TO_RVAL, av_oo_pointer_struct, __ptr_to_q))?
-           "&q" :
-           "?")));
+    av_oo_ptr_cmp_eq(ISC(SC_LVAL_TO_RVAL, av_oo_pointer_struct, pp),
+      ISC(SC_LVAL_TO_RVAL, av_oo_pointer_struct, __ptr_to_p))?
+      ISC(SC_ARRAY_TO_PTR, char *, "&p") :
+      (av_oo_ptr_cmp_eq(ISC(SC_LVAL_TO_RVAL, av_oo_pointer_struct, pp),
+         ISC(SC_LVAL_TO_RVAL, av_oo_pointer_struct, __ptr_to_q))?
+         ISC(SC_ARRAY_TO_PTR, char *, "&q") :
+         ISC(SC_ARRAY_TO_PTR, char *, "?")));
 }
 
 ---- STOP ----

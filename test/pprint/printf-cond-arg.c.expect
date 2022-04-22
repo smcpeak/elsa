@@ -1,0 +1,15 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+int printf(char const *format, ...);
+
+int main(int argc, char **argv)
+{
+  printf("argc==2: %s\n", argc == 2? "yes" : "no");
+  return 0;
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

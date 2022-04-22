@@ -8829,6 +8829,12 @@ Type *E_cond::itcheck_x(Env &env, Expression *&replacement)
     return env.dependentType();
   }
 
+  // Perform array-to-pointer conversions first.  (I think this what
+  // C++14 5/9 wants, but I'm not sure since conditional expressions
+  // can yield lvalues.  Anyway, this needs to happen someplace.)
+  th = env.possiblyConvertArrayToPointer(th);
+  el = env.possiblyConvertArrayToPointer(el);
+
   // pull out the types; during the processing below, we might change
   // these to implement "converted operand used in place of ..."
   Type *thType = th->type;

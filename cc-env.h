@@ -762,6 +762,10 @@ public:      // funcs
   Expression *getAndInsertImplicitConversion(Type *destType,
                                              Expression *expr);
 
+  // If 'expr' has array type, create and return a conversion to
+  // pointer node on top of it.  Otherwise return 'expr' unchanged.
+  Expression *possiblyConvertArrayToPointer(Expression *expr);
+
   // ------------ new lookup mechanism ---------------
 private:     // funcs
   void unqualifiedLookup(LookupSet &set, Scope * /*nullable*/ scope,
