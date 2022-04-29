@@ -950,10 +950,14 @@ void S_expr::iprint(PrintEnv &env, StatementContext) const
 
 void S_compound::iprint(PrintEnv &env, StatementContext context) const
 {
-  // When the parent is an S_compound, we make our own sequence.  Other
-  // forms do their own sequence creation a bit earlier so we wrap to
-  // indent under their starting points.
-  if (context == SC_COMPOUND) {
+  // When the parent is an S_compound or a label statement, we make our
+  // own sequence.  Other forms do their own sequence creation a bit
+  // earlier so we wrap to indent under their starting points.
+  bool makeSequence = (context == SC_COMPOUND ||
+                       context == SC_LABEL ||
+                       context == SC_CASE ||
+                       context == SC_DEFAULT);
+  if (makeSequence) {
     env.begin();
   }
 
@@ -971,7 +975,7 @@ void S_compound::iprint(PrintEnv &env, StatementContext context) const
   }
   env << env.und << "}";
 
-  if (context == SC_COMPOUND) {
+  if (makeSequence) {
     env.end();
   }
 }

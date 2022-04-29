@@ -85,6 +85,7 @@ TESTS += pprint/array-plus-int.c
 TESTS += pprint/attr-may-alias.c
 TESTS += pprint/big-for-loop.c
 TESTS += pprint/bitfield.c
+TESTS += pprint/compound-after-label.c
 TESTS += pprint/deref-array.c
 TESTS += pprint/for-loop-no-init.c
 TESTS += pprint/func.c
