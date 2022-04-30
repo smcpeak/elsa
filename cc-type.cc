@@ -2538,6 +2538,12 @@ CompoundType *TypeFactory::makeCompoundType
 }
 
 
+EnumType *TypeFactory::makeEnumType(StringRef name)
+{
+  return new EnumType(name);
+}
+
+
 Type *TypeFactory::shallowCloneType(Type *baseType)
 {
   switch (baseType->getTag()) {

@@ -2070,7 +2070,7 @@ Type *TS_elaborated::itcheck(Env &env, DeclFlags dflags)
       }
       else {
         // make a forward-declared enum (gnu/d0083.c)
-        EnumType *et = new EnumType(name->getName());
+        EnumType *et = env.tfac.makeEnumType(name->getName());
         this->atype = et;
         return env.declareEnum(loc, et);
       }
@@ -2400,7 +2400,7 @@ Type *TS_enumSpec::itcheck(Env &env, DeclFlags dflags)
 
   if (!et) {
     // declare the new enum
-    et = new EnumType(name);
+    et = env.tfac.makeEnumType(name);
     ret = env.declareEnum(loc, et);
   }
 

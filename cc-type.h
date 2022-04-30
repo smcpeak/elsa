@@ -1142,12 +1142,13 @@ class TypeFactory {
 public:
   virtual ~TypeFactory() {}      // silence stupid compiler warnings
 
-  // ---- constructors for the atomic types ----
-  // for now, only CompoundType is built this way, and I'm going to
-  // provide a default implementation in TypeFactory to avoid having
-  // to change the interface w.r.t. oink/qual
+  // ---- constructors for the named atomic types ----
   virtual CompoundType *makeCompoundType
     (CompoundType::Keyword keyword, StringRef name);
+
+  virtual EnumType *makeEnumType(StringRef name);
+
+  // The non-named atomic types are just made with ordinary 'new'.
 
   // ---- constructors for the constructed types ----
   virtual CVAtomicType *makeCVAtomicType(AtomicType *atomic, CVFlags cv)=0;
