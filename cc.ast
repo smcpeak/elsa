@@ -429,6 +429,14 @@ class IDeclarator(SourceLoc loc) {
   // skip any toplevel grouping operators
   public IDeclarator *skipGroups();
 
+  // Return the second-from-bottom-most declarator (where the
+  // bottom-most must be either D_name or D_bitfield), ignoring
+  // D_grouping.  If 'this' is the bottom-most (again ignoring
+  // D_grouping), return it.
+  public IDeclarator const *getSecondFromBottomC() const;
+  public IDeclarator *getSecondFromBottom()
+    { return const_cast<IDeclarator*>(getSecondFromBottomC()); };
+
   // true if this declarator is "obviously" declaring a function type,
   // i.e. the innermost non-D_name, non-D_grouping constructor is
   // D_func

@@ -1010,24 +1010,37 @@ IDeclarator *IDeclarator::skipGroups()
 }
 
 
-bool IDeclarator::bottomIsDfunc() const
+IDeclarator const *IDeclarator::getSecondFromBottomC() const
 {
+  // Pointer for digging down into the structure.
   IDeclarator const *d = this;
-  IDeclarator const *prev = d;     // last non-D_name, non-D_grouping declarator seen
+
+  // Last non-D_name, non-D_bitfield, non-D_grouping declarator seen,
+  // or 'this' if we haven't seen such.
+  IDeclarator const *candidate = this;
 
   for (;;) {
     IDeclarator const *next = d->getBaseC();
     if (!next) {
-      break;
+      // 'd' is D_name or D_bitfield; it is the bottom.
+      return candidate;
     }
 
     if (!d->isD_grouping()) {
-      prev = d;
+      // 'd' is not D_name, D_bitfield, or D_grouping.
+      candidate = d;
     }
+
     d = next;
   }
 
-  return prev->isD_func();
+  return candidate;
+}
+
+
+bool IDeclarator::bottomIsDfunc() const
+{
+  return getSecondFromBottomC()->isD_func();
 }
 
 
