@@ -149,11 +149,14 @@ Type const *ElsaASTBuild::buildUpDeclarator(
         if (atype->size >= 0) {
           idecl = new D_array(loc(), idecl, makeE_intLit(atype->size));
         }
-        else if (atype->size == ArrayType::NO_SIZE) {
-          idecl = new D_array(loc(), idecl, NULL /*size*/);
-        }
         else {
-          xunimp("array with dynamic size");
+          // For both unsized and dynamically sized arrays, yield a
+          // declarator with no size.  In the latter case, the caller
+          // can check for dynamic sizing (which must be at the top
+          // level of the Type) and fill in the size by digging down
+          // with IDeclarator::getSecondFromBottom() to find the D_array
+          // and set its size.
+          idecl = new D_array(loc(), idecl, NULL /*size*/);
         }
 
         type = atype->eltType;
