@@ -1002,6 +1002,13 @@ void S_if::iprint(PrintEnv &env, StatementContext) const
     }
   }
 
+  if (S_skip const *skip = elseBranch->ifS_skipC()) {
+    if (skip->m_implicit) {
+      // Similar but without the surrounding compound.
+      return;
+    }
+  }
+
   env << env.br;
 
   {
