@@ -686,7 +686,8 @@ public:     // funcs
 
   // similar for CompoundType
   bool isCompoundType() const { return isCVAtomicType(AtomicType::T_COMPOUND); }
-  CompoundType *ifCompoundType();        // NULL or corresp. compound
+  CompoundType const *ifCompoundTypeC() const; // NULL or corresp. compound
+  CompoundType *ifCompoundType() { return const_cast<CompoundType*>(ifCompoundTypeC()); }
   CompoundType const *asCompoundTypeC() const; // fail assertion if not
   CompoundType *asCompoundType() { return const_cast<CompoundType*>(asCompoundTypeC()); }
 

@@ -1336,9 +1336,9 @@ NamedAtomicType *BaseType::ifNamedAtomicType()
   return isNamedAtomicType()? asNamedAtomicType() : NULL;
 }
 
-CompoundType *BaseType::ifCompoundType()
+CompoundType const *BaseType::ifCompoundTypeC() const
 {
-  return isCompoundType()? asCompoundType() : NULL;
+  return isCompoundType()? asCompoundTypeC() : NULL;
 }
 
 NamedAtomicType const *BaseType::asNamedAtomicTypeC() const
