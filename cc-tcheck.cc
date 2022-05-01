@@ -9582,13 +9582,21 @@ void initializeAggregate(Env &env, Type *type,
   }
 
   if (type->isArrayType()) {
-    // initialize the array element type with successive initializers
     ArrayType *at = type->asArrayType();
 
-    int limit = (at->hasSize()? at->size : -1);
-    while (limit != 0 && !initIter.isDone()) {
-      initializeAggregate(env, at->eltType, initIter);
-      limit--;
+    if (at->eltType->isSomeKindOfCharType() &&
+        initIter.data()->isIN_expr() &&
+        initIter.data()->asIN_expr()->e->isE_stringLit()) {
+      // TODO: Initializing an array of characters with a string literal.
+      initIter.adv();
+    }
+    else {
+      // initialize the array element type with successive initializers
+      int limit = (at->hasSize()? at->size : -1);
+      while (limit != 0 && !initIter.isDone()) {
+        initializeAggregate(env, at->eltType, initIter);
+        limit--;
+      }
     }
   }
 
@@ -9648,8 +9656,11 @@ void IN_compound::tcheck(Env &env, Type *type)
 {
   // NOTE: I ignore the FullExpressionAnnot *annot
 
-  // kick off a recursion for this list of initializers
+  // Prepare to iterate over the elements.
   ASTListIterNC<Initializer> initIter(inits);
+
+  // Distribute the initializers to potentially multiple levels in
+  // 'type', since the brace structures don't have to match exactly.
   initializeAggregate(env, type, initIter);
 
   // we should have consumed them all

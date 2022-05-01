@@ -205,6 +205,7 @@ TESTS += tcheck/conv-void-ptr.c
 TESTS += tcheck/expr-type.c
 TESTS += tcheck/func-ret-func.c
 TESTS += tcheck/func-void-param.c
+TESTS += tcheck/init-global-struct.c
 TESTS += tcheck/hello-world.c
 TESTS += tcheck/make-typedef.c
 TESTS += tcheck/ptr-plus-equals.c
