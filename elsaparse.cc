@@ -596,15 +596,21 @@ Type *ElsaParse::getGlobalType(char const *typeName_) const
 }
 
 
-Variable *ElsaParse::getGlobalVar(char const *varName_) const
+Variable *ElsaParse::getGlobalVar(char const *varName) const
 {
-  StringRef varName = m_stringTable.add(varName_);
-
-  Variable *var = m_translationUnit->globalScope->rawLookupVariable(varName);
+  Variable *var = getGlobalVarOpt(varName);
   if (!var) {
     xfailure(stringb("not in the global scope: " << varName));
   }
   return var;
+}
+
+
+Variable *ElsaParse::getGlobalVarOpt(char const *varName_) const
+{
+  StringRef varName = m_stringTable.add(varName_);
+
+  return m_translationUnit->globalScope->rawLookupVariable(varName);
 }
 
 

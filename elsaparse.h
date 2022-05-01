@@ -91,6 +91,9 @@ public:      // methods
   // Same for variables, and also for typedefs.
   Variable *getGlobalVar(char const *varName) const;
 
+  // Variant that returns NULL if not found.
+  Variable *getGlobalVarOpt(char const *varName) const;
+
   // Search within a Variable whose type is a CompoundType for a
   // field with the given name.
   Variable *getFieldOf(Variable *container, char const *fieldName) const;
