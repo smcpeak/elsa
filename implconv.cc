@@ -323,10 +323,10 @@ ImplicitConversion getImplicitConversionToVararg
   // pointer to member, or class type.
 
   // Consider promotion to 'int'.
-  SimpleType &intType = SimpleType::fixed[ST_INT];
+  SimpleType *intType = SimpleType::getST(ST_INT);
   if (src->isCVAtomicType() &&
       isIntegerPromotion(src->asCVAtomicType()->atomic,
-                         &intType))
+                         intType))
   {
     sconv |= SC_INT_PROM;
   }

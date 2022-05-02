@@ -160,6 +160,14 @@ SimpleType SimpleType::fixed[NUM_SIMPLE_TYPES] = {
   SimpleType(ST_PRET_SECOND_PTR2REF),
 };
 
+
+/*static*/ SimpleType *SimpleType::getST(SimpleTypeId id)
+{
+  xassert((unsigned)id < (unsigned)NUM_SIMPLE_TYPES);
+  return &SimpleType::fixed[id];
+}
+
+
 string SimpleType::toCString() const
 {
   return simpleTypeName(type);
@@ -2747,8 +2755,7 @@ FunctionType *TypeFactory::makeSimilarFunctionType(SourceLoc loc,
 
 CVAtomicType *TypeFactory::getSimpleType(SimpleTypeId st, CVFlags cv)
 {
-  xassert((unsigned)st < (unsigned)NUM_SIMPLE_TYPES);
-  return makeCVAtomicType(&SimpleType::fixed[st], cv);
+  return makeCVAtomicType(SimpleType::getST(st), cv);
 }
 
 

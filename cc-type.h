@@ -146,6 +146,9 @@ public:     // data
 public:     // funcs
   SimpleType(SimpleTypeId t) : type(t) {}
 
+  // Return the representative in 'fixed' for 'id'.
+  static SimpleType *getST(SimpleTypeId id);
+
   // AtomicType interface
   Tag getTag() const override { return T_SIMPLE; }
   string toCString() const override;
