@@ -5608,8 +5608,14 @@ Expression *Env::getAndInsertImplicitConversion(Type *destType,
     destType,
     false /*destIsReceiver*/);
   if (ic) {
-    // Record the conversion explicitly.
-    return makeImplicitConversion(destType, expr, ic);
+    if (env.onlyDisambiguating()) {
+      // Don't change the AST yet.
+      return expr;
+    }
+    else {
+      // Record the conversion explicitly.
+      return makeImplicitConversion(destType, expr, ic);
+    }
   }
   else {
     env.error(expr->type, stringb(
