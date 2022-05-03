@@ -762,9 +762,17 @@ public:      // funcs
   Expression *getAndInsertImplicitConversion(Type *destType,
                                              Expression *expr);
 
-  // If 'expr' has array type, create and return a conversion to
-  // pointer node on top of it.  Otherwise return 'expr' unchanged.
-  Expression *possiblyConvertArrayToPointer(Expression *expr);
+  // If 'expr' has array type, create a conversion to pointer node on
+  // top of it and yield that in 'expr' (unless only disambiguating),
+  // and return the pointer type.  Otherwise yield 'expr' unchanged and
+  // return its current type.
+  Type *possiblyConvertArrayToPointer(Expression /*INOUT*/ *&expr);
+
+  // Given 'expr' with array type 'at', insert an implicit conversion
+  // to pointer, yielding that in 'expr', and return the pointer type.
+  // (If only disambiguating, then 'expr' will not be modified.)
+  PointerType *convertArrayToPointer(ArrayType *at,
+                                     Expression /*INOUT*/ *&expr);
 
   // ------------ new lookup mechanism ---------------
 private:     // funcs

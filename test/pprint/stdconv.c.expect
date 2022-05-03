@@ -10,6 +10,12 @@ void f(void *p)
   }
 }
 
+void g()
+{
+  if (!"this is an idiom for forcing an assert failure") {
+  }
+}
+
 ---- STOP ----
 ---- stderr ----
 ---- exit status ----

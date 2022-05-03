@@ -8,4 +8,9 @@ void f(void *p)
   if (0 == p) {}
 }
 
+void g()
+{
+  if (!"this is an idiom for forcing an assert failure") {}
+}
+
 // EOF

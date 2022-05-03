@@ -5627,15 +5627,23 @@ Expression *Env::getAndInsertImplicitConversion(Type *destType,
 }
 
 
-Expression *Env::possiblyConvertArrayToPointer(Expression *expr)
+Type *Env::possiblyConvertArrayToPointer(Expression /*INOUT*/ *&expr)
 {
   if (ArrayType *at = expr->type->asRval()->ifArrayType()) {
-    PointerType *pt = tfac.makePointerType(CV_NONE, at->eltType);
-    return getAndInsertImplicitConversion(pt, expr);
+    return convertArrayToPointer(at, expr /*INOUT*/);
   }
   else {
-    return expr;
+    return expr->type;
   }
+}
+
+
+PointerType *Env::convertArrayToPointer(ArrayType *at,
+                                        Expression /*INOUT*/ *&expr)
+{
+  PointerType *pt = tfac.makePointerType(CV_NONE, at->eltType);
+  expr = getAndInsertImplicitConversion(pt, expr);
+  return pt;
 }
 
 

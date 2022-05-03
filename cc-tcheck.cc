@@ -8142,6 +8142,11 @@ Type *E_unary::itcheck_x(Env &env, Expression *&replacement)
 
   Type *t = expr->type->asRval();
 
+  // C11 6.3.2.1/3: Array type is converted to pointer type.
+  if (ArrayType *at = t->ifArrayType()) {
+    t = env.convertArrayToPointer(at, expr);
+  }
+
   // make sure 'expr' is compatible with given operator
   switch (op) {
     default:
@@ -8623,8 +8628,7 @@ Type *E_deref::itcheck_x(Env &env, Expression *&replacement)
   // implicit coercion of array to pointer for dereferencing
   if (ArrayType *at = rt->ifArrayType()) {
     // Insert a node to represent the implicit conversion.
-    PointerType *pty = env.tfac.makePointerType(CV_NONE, at->eltType);
-    ptr = env.getAndInsertImplicitConversion(pty, ptr);
+    env.convertArrayToPointer(at, ptr);
 
     // Yield a reference to an element.
     return makeLvalType(env, at->eltType);
@@ -8851,13 +8855,8 @@ Type *E_cond::itcheck_x(Env &env, Expression *&replacement)
   // Perform array-to-pointer conversions first.  (I think this what
   // C++14 5/9 wants, but I'm not sure since conditional expressions
   // can yield lvalues.  Anyway, this needs to happen someplace.)
-  th = env.possiblyConvertArrayToPointer(th);
-  el = env.possiblyConvertArrayToPointer(el);
-
-  // pull out the types; during the processing below, we might change
-  // these to implement "converted operand used in place of ..."
-  Type *thType = th->type;
-  Type *elType = el->type;
+  Type *thType = env.possiblyConvertArrayToPointer(th);
+  Type *elType = env.possiblyConvertArrayToPointer(el);
 
   Type *thRval = th->type->asRval();
   Type *elRval = el->type->asRval();
