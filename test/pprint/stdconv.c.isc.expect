@@ -4,6 +4,10 @@
 void f(void *p)
 {
   p = ISC(SC_PTR_CONV, void *, 0);
+  if (ISC(SC_LVAL_TO_RVAL, void *, p) == ISC(SC_PTR_CONV, void *, 0)) {
+  }
+  if (ISC(SC_PTR_CONV, void *, 0) == ISC(SC_LVAL_TO_RVAL, void *, p)) {
+  }
 }
 
 ---- STOP ----

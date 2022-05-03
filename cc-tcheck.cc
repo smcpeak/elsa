@@ -8310,6 +8310,10 @@ Type *E_binary::itcheck_x(Env &env, Expression *&replacement)
     return e2->type;
   }
 
+  // Is either operand special?
+  SpecialExpr special1 = e1->getSpecial(env.lang);
+  SpecialExpr special2 = e2->getSpecial(env.lang);
+
   // Are we expecting boolean operands?
   bool wantBool = (op == BIN_AND || op == BIN_OR ||
                    op == BIN_IMPLIES || op == BIN_EQUIVALENT);
@@ -8325,10 +8329,21 @@ Type *E_binary::itcheck_x(Env &env, Expression *&replacement)
 
     case BIN_EQUAL:               // ==
     case BIN_NOTEQUAL:            // !=
+      // Insert implicit conversion in case of comparing a pointer to
+      // zero.  (TODO: Other combinations.)
+      if (lhsType->isPointerType() && (special2 & SE_ZERO)) {
+        e2 = env.getAndInsertImplicitConversion(lhsType, e2);
+      }
+      else if (rhsType->isPointerType() && (special1 & SE_ZERO)) {
+        e1 = env.getAndInsertImplicitConversion(rhsType, e1);
+      }
+      return env.getSimpleType(ST_BOOL);
+
     case BIN_LESS:                // <
     case BIN_GREATER:             // >
     case BIN_LESSEQ:              // <=
     case BIN_GREATEREQ:           // >=
+      return env.getSimpleType(ST_BOOL);
 
     case BIN_AND:                 // &&
     case BIN_OR:                  // ||
