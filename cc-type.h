@@ -161,9 +161,17 @@ public:     // funcs
 // elements common to structs and enums
 class NamedAtomicType : public AtomicType {
 public:     // data
-  StringRef name;          // (nullable) user-assigned name of this struct or enum
-  Variable *typedefVar;    // (owner) implicit typedef variable
-  AccessKeyword access;    // accessibility of this type in its declaration context
+  // User-assigned name of this struct or enum, or NULL for anonymous.
+  StringRef name;
+
+  // Implicit typedef variable.  The type checking process ensures this
+  // is not NULL, even if 'name' is, so 'typedefVar' can always be used
+  // internally to identify the type.  However, note that
+  // 'typedefVar->name' can be NULL.
+  Variable *typedefVar;
+
+  // Accessibility of this type in its declaration context
+  AccessKeyword access;
 
 public:
   NamedAtomicType(StringRef name);

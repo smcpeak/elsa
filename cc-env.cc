@@ -1652,11 +1652,13 @@ bool Env::addTypeTag(Variable *tag)
 Type *Env::declareEnum(SourceLoc loc /*...*/, EnumType *et)
 {
   Type *ret = makeType(et);
-  if (et->name) {
-    // make the implicit typedef
-    Variable *tv = makeVariable(loc, et->name, ret, DF_TYPEDEF | DF_IMPLICIT);
-    et->typedefVar = tv;
 
+  // Make the implicit typedef, even for anonymous types.
+  Variable *tv = makeVariable(loc, et->name, ret, DF_TYPEDEF | DF_IMPLICIT);
+  et->typedefVar = tv;
+
+  // If it has a name, add it to the lookup environment.
+  if (et->name) {
     if (!addEnum(et)) {
       error(stringc << "multiply defined enum '" << et->name << "'");
     }

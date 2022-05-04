@@ -37,14 +37,20 @@ bool IntegrityVisitor::visitTypeSpecifier(TypeSpecifier *typeSpecifier)
 
     ASTNEXTC(TS_elaborated, tse) {
       xassert(tse->atype != NULL);
+
+      // In all cases, the 'typedefVar' of a NamedAtomicType should not
+      // be NULL.
+      xassert(tse->atype->typedefVar != NULL);
     }
 
     ASTNEXTC(TS_classSpec, tsc) {
       xassert(tsc->ctype != NULL);
+      xassert(tsc->ctype->typedefVar != NULL);
     }
 
     ASTNEXTC(TS_enumSpec, tse) {
       xassert(tse->etype != NULL);
+      xassert(tse->etype->typedefVar != NULL);
     }
 
     ASTENDCASECD
