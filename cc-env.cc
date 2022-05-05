@@ -355,8 +355,7 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
     special_cause_xfailure(NULL),
     special_checkMakeASTTypeId(NULL),
 
-    // TODO: This is very wrong!
-    m_size_t_Type(getSimpleType(ST_INT)),
+    m_size_t_Type(getSimpleType(L.m_typeSizes.m_type_of_size_t)),
 
     string_realSelector(str("__real__")),
     string_imagSelector(str("__imag__")),

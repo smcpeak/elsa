@@ -8,12 +8,12 @@ struct S {
 
 int f()
 {
-  return __builtin_offsetof(struct S, x);
+  return ISC(SC_INT_CONV, int, __builtin_offsetof(struct S, x));
 }
 
 int g()
 {
-  return __builtin_offsetof(struct S, y);
+  return ISC(SC_INT_CONV, int, __builtin_offsetof(struct S, y));
 }
 
 ---- STOP ----
