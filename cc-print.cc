@@ -2034,6 +2034,29 @@ OperatorPrecedence E_implicitStandardConversion::getPrecedence() const
 }
 
 
+void E_offsetof::iprint(PrintEnv &env) const
+{
+  // I print using the GNU syntax even though E_offsetof is now a
+  // part of the core AST.  That may need to change at some point.
+  env << "__builtin_offsetof(";
+
+  env.begin(0 /*indent*/);
+
+  atype->print(env);
+  env << "," << env.sp;
+  fieldName->print(env);
+
+  env.end();
+
+  env << ")";
+}
+
+OperatorPrecedence E_offsetof::getPrecedence() const
+{
+  return OPREC_POSTFIX;
+}
+
+
 // ----------------------- Initializer --------------------
 
 // this is under a declaration

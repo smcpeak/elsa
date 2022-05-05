@@ -715,6 +715,16 @@ class Expression {
   // record the existence of an implicit standard conversion.
   -> E_implicitStandardConversion(StandardConversion conv,
                                   Expression expr);
+
+  // Compute the offset of 'fieldName' within structure 'atype'.
+  //
+  // Currently, this node is only created when parsing the GNU
+  // __builtin_offsetof extension.  But it could be parsed by other
+  // dialects, and possibly even parsed in response to recognizing the
+  // expansion of the 'offsetof' macro defined in the traditional way.
+  // Thus, I do not regard this as an "extension" AST node, even though
+  // it is only produced in GNU mode.
+  -> E_offsetof(ASTTypeId atype, PQName fieldName);
 }
 
 

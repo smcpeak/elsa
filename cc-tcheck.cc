@@ -9348,6 +9348,56 @@ Type *E_implicitStandardConversion::itcheck_x(Env &env, Expression *&replacement
 }
 
 
+Type *E_offsetof::itcheck_x(Env &env, Expression *&replacement)
+{
+  ASTTypeId::Tcheck tc(DF_NONE, DC_E_OFFSETOF);
+  atype = atype->tcheck(env, tc);
+
+  // This is how E_fieldAcc checks its field name.
+  tcheckPQName(fieldName, env, NULL /*scope*/, LF_NONE);
+
+  if (CompoundType *ct = atype->getType()->ifCompoundType()) {
+    // Find the field that 'fieldName' refers to.
+    //
+    // This is not right because, although we start our search in scope
+    // 'ct', a qualifier in 'fieldName' can take us to any name,
+    // including things that are not fields.  The lookup procedure in
+    // E_fieldAcc::tcheck deals with that issue, but is very complex and
+    // not easily factored for reuse.  So for now I accept that this
+    // will accept invalid code.
+    LookupSet results;
+    env.lookupPQ_withScope(results, fieldName, LF_NONE, ct);
+    if (results.isEmpty()) {
+      env.error(stringb(
+        "In 'offsetof', field name '" << fieldName->toString() <<
+        "' not found in type '" << ct->toString() << "'."));
+    }
+    else if (results.count() > 1) {
+      // TODO: Say what the possibilities are.
+      env.error("In 'offsetof', field name is ambiguous.");
+    }
+    else {
+      Variable *field = results.first();
+
+      // TODO: I would like to do this as a way of validating that the
+      // field is actually a member of 'ct', but it does not work for
+      // derived classes.
+      //ct->getDataMemberOffset(env.lang.m_typeSizes, field);
+
+      this->field = field;
+    }
+  }
+  else {
+    env.error(stringb(
+      "The first argument to 'offsetof' is expected to be a "
+      "struct/class/union, but here is '" <<
+      atype->getType()->toString() << "'."));
+  }
+
+  return env.m_size_t_Type;
+}
+
+
 // --------------------- Expression constEval ------------------
 // TODO: Currently I do not implement the notion of "value-dependent
 // expression" (cppstd 14.6.2.3).  But, I believe a good way to do

@@ -19,7 +19,6 @@ enum DeclaratorContext {
   DC_TS_TYPEOF_TYPE,      //   TS_typeof_type::atype
   DC_E_COMPOUNDLIT,       //   E_compoundLit::stype
   DC_E_ALIGNOFTYPE,       //   E_alignofType::atype
-  DC_E_OFFSETOF,          //   E_offsetof::atype
   DC_E_BUILTIN_VA_ARG,    //   E___builtin_va_arg::atype
 }
 
@@ -101,18 +100,6 @@ class Expression {
   -> E_gnuCond(Expression cond, Expression el) {
        public virtual CValue extConstEval(ConstEval &env) const override;
        public virtual bool extHasUnparenthesizedGT() override;
-     }
-
-  // Compute the offset of 'fieldName' within structure 'atype'.
-  //
-  // TODO: I think I should move this into cc.gr.  'offsetof' is of
-  // course standard, and being able to represent it directly in the AST
-  // is useful for more than just parsing GCC extensions.
-  -> E_offsetof(ASTTypeId atype, PQName fieldName) {
-       // The field that 'fieldName' refers to.
-       public Variable *field = NULL;
-
-       public virtual CValue extConstEval(ConstEval &env) const override;
      }
 }
 

@@ -324,6 +324,7 @@ enum DeclaratorContext {
   DC_E_NEW,               //   E_new::atype (new)
   DC_E_KEYWORDCAST,       //   E_keywordCast::ctype
   DC_E_TYPEIDTYPE,        //   E_typeidType::ttype
+  DC_E_OFFSETOF,          //   E_offsetof::atype
   DC_TP_TYPE,             //   TP_type::defaultType
   DC_TP_NONTYPE,          //   TP_nontype::param
   DC_TA_TYPE,             //   TA_type::type
@@ -708,6 +709,11 @@ class Expression {
   -> E_arrow {
        public Type *itcheck_arrow_set(Env &env, Expression *&replacement,
                                       LookupFlags flags, LookupSet &set);
+     }
+
+  -> E_offsetof {
+       // The field that 'fieldName' refers to.
+       public Variable *field = NULL;
      }
 }
 

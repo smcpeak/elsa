@@ -789,6 +789,17 @@ CValue Expression::iconstEval(ConstEval &env) const
     ASTNEXTC(E_implicitStandardConversion, e)
       return e->expr->constEval(env);
 
+    ASTNEXTC(E_offsetof, e)
+      if (CompoundType *ct = e->atype->getType()->asRval()->ifCompoundType()) {
+        CValue val;
+        val.setUnsigned(env.m_typeSizes.m_type_of_size_t,
+          ct->getDataMemberOffset(env.m_typeSizes, e->field));
+        return val;
+      }
+      else {
+        return CValue("invalid operand to offsetof, must be a compound type");
+      }
+
     ASTDEFAULTC
       return extConstEval(env);
 
