@@ -192,6 +192,8 @@ public:      // methods
 
   E_sizeofType *makeE_sizeofType(Type *type);
 
+  E_offsetof *makeE_offsetof(Type *structType, Variable *field);
+
 #ifdef GNU_EXTENSION
   E___builtin_va_arg *makeE___builtin_va_arg(SourceLoc loc,
     Expression *expr, ASTTypeId *atype);

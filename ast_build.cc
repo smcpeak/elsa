@@ -651,6 +651,18 @@ E_sizeofType *ElsaASTBuild::makeE_sizeofType(Type *type)
 }
 
 
+E_offsetof *ElsaASTBuild::makeE_offsetof(Type *structType, Variable *field)
+{
+  ASTTypeId *typeId =
+    makeASTTypeId(structType, NULL /*name*/, DC_E_OFFSETOF);
+  E_offsetof *eo = new E_offsetof(typeId, makePQName(field));
+  eo->type = m_typeFactory.getSimpleType(
+    m_lang.m_typeSizes.m_type_of_size_t);
+  eo->field = field;
+  return eo;
+}
+
+
 #ifdef GNU_EXTENSION
 E___builtin_va_arg *ElsaASTBuild::makeE___builtin_va_arg(SourceLoc loc,
   Expression *expr, ASTTypeId *atype)
