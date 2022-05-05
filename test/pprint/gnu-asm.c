@@ -272,5 +272,11 @@ uint32_t unknown_length(void *p)
 //         );
 //}
 
+void no_operands()
+{
+  // The grammar in the GCC manual clearly excludes this possibility,
+  // but it appears in the wild and GCC accepts it.
+  asm volatile("no operands here" /*no operands*/);
+}
 
 // EOF

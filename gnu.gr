@@ -343,6 +343,15 @@ nonterm(AsmDefinition*) AsmDefinition {
        { return new AD_gnu(q, t, new ASTList<GNUAsmOperand>(), input,
                            clobbers); }
 
+  // Variant with all operands missing.  The GCC manual implies this is
+  // illegal, but it appears in the wild and GCC accepts it.  (Without
+  // "volatile", this would be the standard C++ form, which is parsed by
+  // the rule in cc.gr.)
+  -> "asm" "volatile" "(" t:StringLiteral ")" ";"
+       { return new AD_gnu(CV_VOLATILE, t, new ASTList<GNUAsmOperand>(),
+                           new ASTList<GNUAsmOperand>(),
+                           new ASTList<E_stringLit>()); }
+
   // TODO: There is a form with "asm" followed by "goto", which has a
   // total of four lists after colons.
 }

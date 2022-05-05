@@ -241,6 +241,12 @@ uint32_t unknown_length(void *p)
   return count;
 }
 
+void no_operands()
+{
+  asm volatile ("no operands here"
+                :);
+}
+
 ---- STOP ----
 ---- stderr ----
 ---- exit status ----
