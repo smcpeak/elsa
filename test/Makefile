@@ -85,6 +85,7 @@ TESTS += pprint/array-plus-int.c
 TESTS += pprint/attr-may-alias.c
 TESTS += pprint/big-for-loop.c
 TESTS += pprint/bitfield.c
+TESTS += pprint/builtin-offsetof.c
 TESTS += pprint/compound-after-label.c
 TESTS += pprint/deref-array.c
 TESTS += pprint/for-loop-no-init.c
@@ -203,6 +204,7 @@ out/pqname/%.c.ok: pqname/%.c pqname/%.c.expect $(CCPARSE)
 # Type-check tests simply run ccparse and expect it to do its own
 # internal validation with internal testing hooks.
 
+TESTS += tcheck/builtin-offsetof.c
 TESTS += tcheck/conv-void-ptr.c
 TESTS += tcheck/expr-type.c
 TESTS += tcheck/func-ret-func.c
@@ -216,6 +218,14 @@ TESTS += tcheck/ptr-plus-equals.c
 out/tcheck/%.c.ok: tcheck/%.c $(CCPARSE)
 	@mkdir -p $(dir $@)
 	$(PERL) ../multitest.pl $(CCPARSE) -xc tcheck/$*.c
+	touch $@
+
+TESTS += tcheck/builtin-offsetof.cc
+
+# Run a C++ tcheck test
+out/tcheck/%.cc.ok: tcheck/%.cc $(CCPARSE)
+	@mkdir -p $(dir $@)
+	$(PERL) ../multitest.pl $(CCPARSE) tcheck/$*.cc
 	touch $@
 
 

@@ -355,6 +355,9 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
     special_cause_xfailure(NULL),
     special_checkMakeASTTypeId(NULL),
 
+    // TODO: This is very wrong!
+    m_size_t_Type(getSimpleType(ST_INT)),
+
     string_realSelector(str("__real__")),
     string_imagSelector(str("__imag__")),
     // complexComponentFields init'd below
@@ -436,10 +439,6 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
   Type *t_void = getSimpleType(ST_VOID);
   Type *t_voidptr = makePtrType(t_void);
 
-  // note: my stddef.h typedef's size_t to be 'int', so I just use
-  // 'int' directly here instead of size_t
-  Type *t_size_t = getSimpleType(ST_INT);
-
   if (lang.isCplusplus) {
     // must predefine this to be able to define bad_alloc
     Scope *std_scope = createNamespace(SL_INIT, str("std"));
@@ -475,12 +474,12 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
 
     // void* operator new(std::size_t sz) throw(std::bad_alloc);
     declareFunction1arg(t_voidptr, "operator new",
-                        t_size_t, "sz",
+                        m_size_t_Type, "sz",
                         FF_DEFAULT_ALLOC, t_bad_alloc);
 
     // void* operator new[](std::size_t sz) throw(std::bad_alloc);
     declareFunction1arg(t_voidptr, "operator new[]",
-                        t_size_t, "sz",
+                        m_size_t_Type, "sz",
                         FF_DEFAULT_ALLOC, t_bad_alloc);
 
     // void operator delete (void *p) throw();

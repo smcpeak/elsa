@@ -94,25 +94,12 @@ nonterm(Expression*) UnaryExpression {
   -> "__alignof__" "(" e:Expression ")"
        { return new E_alignofExpr(e); }
 
-  // quarl 2006-07-12
-  //    Handle __offsetof__ (gcc-3.4), __builtin_offsetof (gcc-4.x)
+  // https://gcc.gnu.org/onlinedocs/gcc/Offsetof.html
+  //
+  // TODO: 'fieldName' can actually be a sequence of fields and array
+  // index expressions.
   -> "__builtin_offsetof" "(" t:TypeId "," n:NameAfterDot ")"
-       // { return new E_offsetof(t, n); }
-       {
-         // just create "(unsigned long) &((t*)0)->n)"
-
-         // make it a pointer
-         t->decl->decl = new D_pointer(loc, CV_NONE, t->decl->decl);
-
-         ASTTypeId *ulong = new ASTTypeId(new TS_simple(loc, ST_UNSIGNED_INT),
-                                          new Declarator(new D_name(loc, NULL), NULL));
-
-         return new E_cast(ulong,
-                           (new E_addrOf(
-                             new E_arrow(
-                               new E_cast(t, new E_intLit("0")),
-                               n))));
-       }
+       { return new E_offsetof(t, n); }
 
   -> "__offsetof__" "(" e:Expression ")"
        { return new E_grouping(e); }

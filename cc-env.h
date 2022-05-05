@@ -188,6 +188,9 @@ public:      // data
   StringRef special_checkMakeASTTypeId;
   // ---- END: special names ----
 
+  // The type of 'size_t'.
+  Type *m_size_t_Type;
+
   // gcc __complex__ support
   StringRef string_realSelector;
   StringRef string_imagSelector;

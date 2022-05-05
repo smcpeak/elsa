@@ -832,13 +832,58 @@ Type *E_alignofExpr::itcheck_x(Env &env, Expression *&replacement)
 }
 
 
-// Type *E_offsetof::itcheck_x(Env &env, Expression *&replacement)
-// {
-//   ASTTypeId::Tcheck tc(DF_NONE, DC_E_OFFSETOF);
-//   atype = atype->tcheck(env, tc);
+// Defined in cc-tcheck.cc.
+void tcheckPQName(PQName *&name, Env &env, Scope *scope = NULL,
+                  LookupFlags lflags = LF_NONE);
 
-//   return env.getSimpleType(ST_UNSIGNED_INT);
-// }
+Type *E_offsetof::itcheck_x(Env &env, Expression *&replacement)
+{
+  ASTTypeId::Tcheck tc(DF_NONE, DC_E_OFFSETOF);
+  atype = atype->tcheck(env, tc);
+
+  // This is how E_fieldAcc checks its field name.
+  tcheckPQName(fieldName, env, NULL /*scope*/, LF_NONE);
+
+  if (CompoundType *ct = atype->getType()->ifCompoundType()) {
+    // Find the field that 'fieldName' refers to.
+    //
+    // This is not right because, although we start our search in scope
+    // 'ct', a qualifier in 'fieldName' can take us to any name,
+    // including things that are not fields.  The lookup procedure in
+    // E_fieldAcc::tcheck deals with that issue, but is very complex and
+    // not easily factored for reuse.  So for now I accept that this
+    // will accept invalid code.
+    LookupSet results;
+    env.lookupPQ_withScope(results, fieldName, LF_NONE, ct);
+    if (results.isEmpty()) {
+      env.error(stringb(
+        "In 'offsetof', field name '" << fieldName->toString() <<
+        "' not found in type '" << ct->toString() << "'."));
+    }
+    else if (results.count() > 1) {
+      // TODO: Say what the possibilities are.
+      env.error("In 'offsetof', field name is ambiguous.");
+    }
+    else {
+      Variable *field = results.first();
+
+      // TODO: I would like to do this as a way of validating that the
+      // field is actually a member of 'ct', but it does not work for
+      // derived classes.
+      //ct->getDataMemberOffset(env.lang.m_typeSizes, field);
+
+      this->field = field;
+    }
+  }
+  else {
+    env.error(stringb(
+      "The first argument to 'offsetof' is expected to be a "
+      "struct/class/union, but here is '" <<
+      atype->getType()->toString() << "'."));
+  }
+
+  return env.m_size_t_Type;
+}
 
 
 Type *E_statement::itcheck_x(Env &env, Expression *&replacement)
@@ -1089,21 +1134,20 @@ bool E_gnuCond::extHasUnparenthesizedGT()
          hasUnparenthesizedGT(el);
 }
 
-// // quarl 2006-07-12
-// //    Handle __offsetof__ (gcc-3.4), __builtin_offsetof (gcc-4.x)
-// //
-// //    based on Expression::constEvalAddr#E_fieldAcc
-// bool E_offsetof::extConstEval(ConstEval &env) const
-// {
-//   CompoundType *ct = t->asRval()->ifCompoundType();
-//   if (ct) {
-//     CValue val;
-//     val.setUnsigned(CValue::K_UNSIGNED, ct->getDataMemberOffset(e->field));
-//     return val;
-//   } else {
-//     return CValue("invalid operand to offsetof, must be a compound type");
-//   }
-// }
+
+CValue E_offsetof::extConstEval(ConstEval &env) const
+{
+  if (CompoundType *ct = atype->getType()->asRval()->ifCompoundType()) {
+    CValue val;
+    val.setUnsigned(env.m_typeSizes.m_type_of_size_t,
+      ct->getDataMemberOffset(env.m_typeSizes, field));
+    return val;
+  }
+  else {
+    return CValue("invalid operand to offsetof, must be a compound type");
+  }
+}
+
 
 // ------------------------ print --------------------------
 void TS_typeof::iprint(PrintEnv &env) const
@@ -1300,13 +1344,25 @@ OperatorPrecedence E_alignofExpr::getPrecedence() const
 }
 
 
-// void E_offsetof:iprint(PrintEnv &env) const
-// {
-//   env << "__offsetof__(";
-//   atype->print(env);
-//   fieldName->print(env);
-//   env << ")";
-// }
+void E_offsetof::iprint(PrintEnv &env) const
+{
+  env << "__builtin_offsetof(";
+
+  env.begin(0 /*indent*/);
+
+  atype->print(env);
+  env << "," << env.sp;
+  fieldName->print(env);
+
+  env.end();
+
+  env << ")";
+}
+
+OperatorPrecedence E_offsetof::getPrecedence() const
+{
+  return OPREC_POSTFIX;
+}
 
 
 void E_statement::iprint(PrintEnv &env) const
