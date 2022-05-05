@@ -592,8 +592,19 @@ class Expression {
   // interpretations of literals
   -> E_intLit      { public unsigned long i = 0; }
   -> E_floatLit    { public double d = 0; }
-  -> E_stringLit   { public DataBlock m_stringData; }
   -> E_charLit     { public unsigned int c = 0; }
+
+  -> E_stringLit {
+       // The character sequence represented by the string literal,
+       // after escape sequence interpretation and concatenation of
+       // adjacent literal elements.
+       public DataBlock m_stringData;
+
+       // The usual 'tcheck' method is annoying because it requires a
+       // 'replacement' argument that is a more general type.  This
+       // method hides that for cases where we know we have E_stringLit.
+       public void tcheck_strlit(Env &env);
+     }
 
   -> E_this {
        // the receiver parameter to which this 'this' refers; NOTE

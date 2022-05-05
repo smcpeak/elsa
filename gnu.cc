@@ -723,6 +723,38 @@ void S_computedGoto::itcheck(Env &env)
 }
 
 
+void AD_gnu::tcheck(Env &env)
+{
+  text->tcheck_strlit(env);
+
+  FOREACH_ASTLIST_NC(GNUAsmOperand, outputOperands, iter) {
+    iter.data()->tcheck(env, false /*isInputOperand*/);
+  }
+  FOREACH_ASTLIST_NC(GNUAsmOperand, inputOperands, iter) {
+    iter.data()->tcheck(env, true /*isInputOperand*/);
+  }
+  FOREACH_ASTLIST_NC(E_stringLit, clobbers, iter) {
+    iter.data()->tcheck_strlit(env);
+  }
+}
+
+
+void GNUAsmOperand::tcheck(Env &env, bool isInputOperand)
+{
+  constraint->tcheck_strlit(env);
+  expr->tcheck(env, expr);
+
+  if (!isInputOperand) {
+    Type *t = expr->type;
+    if (!t->isLval()) {
+      env.error(t, stringb(
+        "asm output operand '" << expr->asString() <<
+        "' must be an lvalue"));
+    }
+  }
+}
+
+
 Type *E_compoundLit::itcheck_x(Env &env, Expression *&replacement)
 {
   ASTTypeId::Tcheck tc(DF_NONE, DC_E_COMPOUNDLIT);
@@ -1137,6 +1169,63 @@ void S_computedGoto::iprint(PrintEnv &env, StatementContext) const
   env << "goto *";
   target->print(env, OPREC_PREFIX);
   env << ";";
+}
+
+
+void AD_gnu::print(PrintEnv &env) const
+{
+  env << "asm";
+  if (cv != CV_NONE) {
+    env << " " << toString(cv) << " ";
+  }
+  env << "(";
+
+  env.begin(0 /*indent*/, true /*consistentBreaks*/);
+
+  text->print(env, OPREC_LOWEST);
+
+  int ct;
+
+  ct=0;
+  env << env.br << ":";
+  FOREACH_ASTLIST(GNUAsmOperand, outputOperands, iter) {
+    env << (ct++? ", " : " ");
+    iter.data()->print(env);
+  }
+
+  if (inputOperands.isNotEmpty() || clobbers.isNotEmpty()) {
+    ct=0;
+    env << env.br << ":";
+    FOREACH_ASTLIST(GNUAsmOperand, inputOperands, iter) {
+      env << (ct++? ", " : " ");
+      iter.data()->print(env);
+    }
+
+    if (clobbers.isNotEmpty()) {
+      ct=0;
+      env << env.br << ":";
+      FOREACH_ASTLIST(E_stringLit, clobbers, iter) {
+        env << (ct++? ", " : " ");
+        iter.data()->print(env, OPREC_COMMA);
+      }
+    }
+  }
+
+  env.end();
+
+  env << ");";
+}
+
+
+void GNUAsmOperand::print(PrintEnv &env) const
+{
+  if (asmSymbolicName) {
+    env << "[" << asmSymbolicName << "] ";
+  }
+  constraint->print(env, OPREC_COMMA);
+  env << " (";
+  expr->print(env, OPREC_LOWEST);
+  env << ")";
 }
 
 

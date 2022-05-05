@@ -5017,11 +5017,7 @@ void Handler::tcheck(Env &env)
 // ------------------------- AsmDefinition -----------------------------
 void AD_string::tcheck(Env &env)
 {
-  Expression *disambigutated = text;
-  text->tcheck(env, disambigutated);
-
-  // I don't think string literals can be ambiguous.
-  xassert(disambigutated == text);
+  text->tcheck_strlit(env);
 }
 
 
@@ -5614,6 +5610,17 @@ Type *E_stringLit::itcheck_x(Env &env, Expression *&replacement)
   }
 
   return ret;
+}
+
+
+void E_stringLit::tcheck_strlit(Env &env)
+{
+  Expression *replacement = this;
+  this->tcheck(env, replacement);
+
+  // Since string literals are not ambiguous, there should never be a
+  // reason for a different replacement.
+  xassert(replacement == this);
 }
 
 

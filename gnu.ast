@@ -163,7 +163,60 @@ class TypeSpecifier {
 
 
 // ----------- gcc asm -----------
-// (no AST extension b/c extra info dropped on floor)
+// https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html
+class AsmDefinition {
+  -> AD_gnu(
+       // This is to hold the optional 'volatile' qualifier.  I think a
+       // type-safe enum bit set is preferable to 'bool' even if only
+       // one bit can be set.
+       CVFlags cv,
+
+       // Assembly template string.  This can have %-prefixed
+       // placeholders where the operands are inserted (see GCC
+       // manual for details).
+       E_stringLit text,
+
+       // Possibly empty list of expressions whose value is updated by
+       // the assembly code, along with constraints on where the
+       // compiler can allocate them.  The list might be empty, but the
+       // pointer to the list is never NULL.
+       ASTList<GNUAsmOperand> outputOperands,
+
+       // Possibly empty list of expressions that are read by the
+       // assembly code.
+       ASTList<GNUAsmOperand> inputOperands,
+
+       // List of strings that identify hardware resources such as
+       // registers and flags that are written by the assembly code.
+       ASTList<E_stringLit> clobbers);
+
+  // TODO: Add support for 'GotoLabels'.  Currently, I don't even have
+  // grammar support, so AST support is pointless.
+}
+
+
+// An element of the input or output operand list.
+class GNUAsmOperand(
+  // Optional identifier that can be used in the template string to
+  // refer to this operand (like "%[result]") instead of a numeric
+  // positional references (like "%2").
+  StringRef /*nullable*/ asmSymbolicName,
+
+  // String listing allocation constraints for the operand, such as
+  // whether it can be in a register or in memory or both.
+  E_stringLit constraint,
+
+  // For an output operand, this is an lvalue expression to update.  For
+  // an input operand, it is an expression giving the value.  In each
+  // case, the compiler is expected to know how to refer to the location
+  // that contains the value from within assembly code, and that is what
+  // is substituted for the placeholder.  There are no implicit
+  // conversions performed on the value.
+  Expression expr)
+{
+  public void tcheck(Env &env, bool isInputOperand);
+  public void print(PrintEnv &env) const;
+}
 
 
 // ----------- gcc asm labels -----------

@@ -310,75 +310,80 @@ nonterm(OperatorName*) Operator {
 
 
 // ----------- gcc asm -----------
-// http://gcc.gnu.org/onlinedocs/gcc-3.2.2/gcc/Extended-Asm.html
-
-//  nonterm(UberModifiers) VolatileOpt {
-//    -> empty
-//         { return UM_NONE; }
-//    -> "volatile"
-//         { return UM_VOLATILE; }
-//  }
-
-
-// dsw: FIX: add returning semantic value
-nonterm BracketedWordOpt {
-  -> empty ;
-  -> "[" id:Identifier "]" ;
+nonterm(CVFlags) VolatileOpt {
+  -> empty         { return CV_NONE; }
+  -> "volatile"    { return CV_VOLATILE; }
 }
 
-
-// dsw: FIX: add returning semantic value
-nonterm ParenthesizedExpressionOpt {
-  -> empty ;
-  ->  "(" e:Expression ")" ;
-}
-
-
-// dsw: FIX: add returning semantic value
-nonterm OpConstraint {
-  -> name:BracketedWordOpt constr:StringLiteral e:ParenthesizedExpressionOpt ;
-}
-
-
-// dsw: FIX: add returning semantic value
-nonterm OpConstraintList {
-  -> empty ;
-  -> oc:OpConstraint ;
-  -> oc:OpConstraint "," ocl:OpConstraintList ;
-}
-
-
-// dsw: FIX: add returning semantic value
-// note: technically you can only have up to 3, but I allow 0 or more
-nonterm OpConstraints {
-  -> empty;
-  -> NonemptyOpConstraints;
-}
-nonterm NonemptyOpConstraints {
-  -> ocs:OpConstraints ":" ocl:OpConstraintList ;
-  -> ocs:OpConstraints "::" ocl:OpConstraintList ;
-}
-
-
-// dsw: FIX: add returning rest of semantic value
 nonterm(AsmDefinition*) AsmDefinition {
-  // 7/31/04: For some time we have allowed "volatile" after "asm", as
-  // is documented here:
-  //   http://gcc.gnu.org/onlinedocs/gcc-3.1/gcc/Extended-Asm.html
-  // Recently we found some code that used "const" after "asm".  What
-  // is that?  Where is it documented?
+  -> "asm" q:VolatileOpt "(" t:StringLiteral
+                             ":" output:GNUAsmOperandListOpt
+                             ":" input:GNUAsmOperandListOpt
+                             clobbers:GNUAsmClobberListOpt ")" ";"
+       { return new AD_gnu(q, t, output, input, clobbers); }
 
-  // NOTE: CVQualifierSeqOpt is simply discarded here
-  -> "asm" q:CVQualifierSeq "(" s:StringLiteral ")" ";"
-       { return new AD_string(s); }
+  // Variant with missing inputs and clobbers.
+  -> "asm" q:VolatileOpt "(" t:StringLiteral
+                             ":" output:GNUAsmOperandListOpt ")" ";"
+       { return new AD_gnu(q, t, output, new ASTList<GNUAsmOperand>(),
+                           new ASTList<E_stringLit>()); }
 
-  // I write two rules, exposing the optionality of CVQualifierSeq at
-  // this level instead of pushing it down into CVQualifierSeqOpt, to
-  // avoid an S/R conflict.
-  -> "asm" q:CVQualifierSeq "(" s:StringLiteral ocs:NonemptyOpConstraints ")" ";"
-       { return new AD_string(s); }
-  -> "asm" "(" s:StringLiteral ocs:NonemptyOpConstraints ")" ";"
-       { return new AD_string(s); }
+  // Variant with missing inputs, using "::" to get to clobbers.  This
+  // is special because "::" is treated as a single token.
+  -> "asm" q:VolatileOpt "(" t:StringLiteral
+                             ":" output:GNUAsmOperandListOpt
+                             "::" clobbers:GNUAsmClobberList ")" ";"
+       { return new AD_gnu(q, t, output, new ASTList<GNUAsmOperand>(),
+                           clobbers); }
+
+  // Variant with "::" to skip the outputs.
+  -> "asm" q:VolatileOpt "(" t:StringLiteral
+                             "::" input:GNUAsmOperandListOpt
+                             clobbers:GNUAsmClobberListOpt ")" ";"
+       { return new AD_gnu(q, t, new ASTList<GNUAsmOperand>(), input,
+                           clobbers); }
+
+  // TODO: There is a form with "asm" followed by "goto", which has a
+  // total of four lists after colons.
+}
+
+
+nonterm(ASTList<GNUAsmOperand>*) GNUAsmOperandListOpt {
+  -> empty
+       { return new ASTList<GNUAsmOperand>(); }
+  -> list:GNUAsmOperandList
+       { return list; }
+}
+
+nonterm(ASTList<GNUAsmOperand>*) GNUAsmOperandList {
+  -> element:GNUAsmOperand
+       { return new ASTList<GNUAsmOperand>(element); }
+  -> list:GNUAsmOperandList "," element:GNUAsmOperand
+       { list->append(element); return list; }
+}
+
+nonterm(GNUAsmOperand*) GNUAsmOperand {
+  -> "[" name:Identifier "]" c:StringLiteral "(" e:Expression ")"
+       { return new GNUAsmOperand(name, c, e); }
+  -> c:StringLiteral "(" e:Expression ")"
+       { return new GNUAsmOperand(NULL /*asmSymbolicName*/, c, e); }
+}
+
+
+nonterm(ASTList<E_stringLit>*) GNUAsmClobberListOpt {
+  -> empty
+       { return new ASTList<E_stringLit>(); }
+  -> ":"
+       { return new ASTList<E_stringLit>(); }
+  -> ":" list:GNUAsmClobberList
+       { return list; }
+}
+
+nonterm(ASTList<E_stringLit>*) GNUAsmClobberList {
+  -> s:StringLiteral
+       { return new ASTList<E_stringLit>(s); }
+  -> list:GNUAsmClobberList "," s:StringLiteral
+       { list->append(s); return list; }
 }
 
 
