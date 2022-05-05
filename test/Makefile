@@ -141,7 +141,9 @@ out/pprint/%.c.nogcc.ok: pprint/%.c pprint/%.c.expect $(CCPARSE)
 	  $(CCPARSE) -xc --pretty-print $<
 	touch $@
 
+check: out/pprint/asm.c.nogcc.ok
 check: out/pprint/chained-labels.c.nogcc.ok
+check: out/pprint/gnu-asm.c.nogcc.ok
 
 
 # ------------------------------ strlit --------------------------------

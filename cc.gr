@@ -1329,15 +1329,11 @@ nonterm(Enumerator*) EnumeratorDefinition {
 }
 
 
-// dsw: this is ambiguous and redundant with a similar thing in
-// gnu.gr; should it be here at all?
-//
-// sm: Yes it should be here.  First, we don't always use the gnu.gr
-// extension module.  Second, gnu.gr's AsmDefinition *extends* this
-// one, which is how it should be.  This is the AsmDefinition for
-// C++.
-nonterm(E_stringLit*) AsmDefinition {
-  -> "asm" "(" s:StringLiteral ")" ";"    { return s; }
+nonterm(AsmDefinition*) AsmDefinition {
+  // This is the form given in C++14 7.4 and C11 J.5.10.  Grammar
+  // extensions may add additional forms in their respective .gr  files.
+  -> "asm" "(" s:StringLiteral ")" ";"
+       { return new AD_string(s); }
 }
 
 

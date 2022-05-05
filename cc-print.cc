@@ -260,9 +260,7 @@ void TF_one_linkage::print(PrintEnv &env) const
 
 void TF_asm::print(PrintEnv &env) const
 {
-  env << "asm(";
-  text->print(env, OPREC_LOWEST);
-  env << ");";
+  ad->print(env);
 }
 
 void TF_namespaceDefn::print(PrintEnv &env) const
@@ -1123,9 +1121,7 @@ void S_try::iprint(PrintEnv &env, StatementContext) const
 
 void S_asm::iprint(PrintEnv &env, StatementContext) const
 {
-  env << "asm(";
-  text->print(env, OPREC_LOWEST);
-  env << ");";
+  ad->print(env);
 }
 
 void S_namespaceDecl::iprint(PrintEnv &env, StatementContext) const
@@ -1164,6 +1160,28 @@ void Handler::print(PrintEnv &env) const
   }
   env << ") ";
   body->print(env, SC_HANDLER);
+}
+
+
+// -------------------------- AsmDefinition ----------------------------
+void AD_string::print(PrintEnv &env) const
+{
+  // In C++, 'asm' is a reserved keyword (C++14 2.11/1).  But C does not
+  // reserve it (C11 6.4.1/1), even though J.5.10 'asm' is listed as a
+  // common extension.  It's therefore possible that, in C, we are using
+  // the wrong keyword here, depending on what extensions are supported
+  // by the compiler and their associated syntax.
+  env << "asm(";
+
+  // It is common for the string literal to have multiple elements,
+  // and those should be printed so they line up in a column.
+  env.begin(0 /*indent*/, true /*consistentBreaks*/);
+
+  text->print(env, OPREC_LOWEST);
+
+  env.end();
+
+  env << ");";
 }
 
 

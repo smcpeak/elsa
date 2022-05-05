@@ -518,6 +518,11 @@ class Handler {
 }
 
 
+class AsmDefinition {
+  pure_virtual void tcheck(Env &env);
+}
+
+
 class Expression {
   // type check and yield the type of the expression; this type
   // gets automatically stored in the 'type' field; the return

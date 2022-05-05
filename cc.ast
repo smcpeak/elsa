@@ -140,8 +140,8 @@ class TopForm (SourceLoc loc) {
   // different semantics [cppstd 7.5 para 7]
   -> TF_one_linkage(StringRef linkageType, TopForm form);
 
-  // assembly directive at toplevel
-  -> TF_asm(E_stringLit text);
+  // assembly definition at toplevel
+  -> TF_asm(AsmDefinition ad);
 
   // namespace definition [cppstd 7.3.1]
   -> TF_namespaceDefn(StringRef /*nullable*/ name, ASTList<TopForm> forms);
@@ -546,7 +546,7 @@ class Statement (SourceLoc loc) {
   -> S_goto(StringRef target);
   -> S_decl(Declaration decl);
   -> S_try(Statement body, FakeList<Handler> *handlers);
-  -> S_asm(E_stringLit text);
+  -> S_asm(AsmDefinition ad);
   -> S_namespaceDecl(NamespaceDecl decl);
 }
 
@@ -589,6 +589,17 @@ class Handler (
   // check and handle 'isEllipsis' directly without looking further
   // at 'typeId' (because ST_ELLIPSIS is a hack)
   public bool isEllipsis() const;
+}
+
+// Assembly-language declaration (but called a "definition" by the C++
+// grammar, so I'm adopting that term here too).
+class AsmDefinition {
+  // This carries the information used in the form that appears in C++14
+  // 7.4 and C11 J.5.10.
+  -> AD_string(E_stringLit text);
+
+  // The intent is that extensions can provide alternative AsmDefinition
+  // forms within their respective .ast files.
 }
 
 

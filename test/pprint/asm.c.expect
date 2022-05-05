@@ -1,0 +1,14 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+asm("asm at top level");
+
+void f()
+{
+  asm("asm inside a function");
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

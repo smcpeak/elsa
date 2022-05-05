@@ -357,13 +357,16 @@ string collectContinuations(E_stringLit *strLit)
 void TF_asm::itcheck(Env &env)
 {
   env.setLoc(loc);
+  ad->tcheck(env);
 
-  StringRef t = text->text;
-  if (prefixEquals(t, "\"collectLookupResults")) {
-    // this activates an internal diagnostic that will collect
-    // the E_variable lookup results as warnings, then at the
-    // end of the program, compare them to this string
-    env.collectLookupResults = collectContinuations(text);
+  if (AD_string *ads = ad->ifAD_string()) {
+    string text = ads->text->m_stringData.toString();
+    if (prefixEquals(text, "collectLookupResults")) {
+      // this activates an internal diagnostic that will collect
+      // the E_variable lookup results as warnings, then at the
+      // end of the program, compare them to this string
+      env.collectLookupResults = text;
+    }
   }
 }
 
@@ -4946,8 +4949,10 @@ void S_try::itcheck(Env &env)
 }
 
 
-void S_asm::itcheck(Env &)
-{}
+void S_asm::itcheck(Env &env)
+{
+  ad->tcheck(env);
+}
 
 
 void S_namespaceDecl::itcheck(Env &env)
@@ -5006,6 +5011,17 @@ void Handler::tcheck(Env &env)
   body->tcheck(env);
 
   env.exitScope(scope);
+}
+
+
+// ------------------------- AsmDefinition -----------------------------
+void AD_string::tcheck(Env &env)
+{
+  Expression *disambigutated = text;
+  text->tcheck(env, disambigutated);
+
+  // I don't think string literals can be ambiguous.
+  xassert(disambigutated == text);
 }
 
 

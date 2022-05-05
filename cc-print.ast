@@ -122,6 +122,11 @@ class Handler {
 }
 
 
+class AsmDefinition {
+  pure_virtual void print(PrintEnv &env) const;
+}
+
+
 class FullExpression {
   public void print(PrintEnv &env) const;
 }
