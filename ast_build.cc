@@ -222,6 +222,10 @@ TypeSpecifier *ElsaASTBuild::makeTypeSpecifier(Type const *type)
     case AtomicType::T_ENUM: {
       NamedAtomicType *ntype = atype->atomic->asNamedAtomicType();
 
+      // This won't work if the type is anonymous because an elaborated
+      // type specifier must have a name.
+      xassert(ntype->name);
+
       // If we are making a specifier for a compound or enum directly,
       // then use the elaborated form.  If instead we were to make a
       // specifier for a TypedefType of one of these, then we would make
