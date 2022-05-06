@@ -598,7 +598,8 @@ class Expression {
   -> E_stringLit {
        // The character sequence represented by the string literal,
        // after escape sequence interpretation and concatenation of
-       // adjacent literal elements.
+       // adjacent literal elements.  The data block and its size
+       // include the NUL terminator.
        public DataBlock m_stringData;
 
        // The usual 'tcheck' method is annoying because it requires a
