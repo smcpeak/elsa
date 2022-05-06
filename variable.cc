@@ -128,6 +128,13 @@ void Variable::setFlagsTo(DeclFlags f)
 
 bool Variable::inGlobalOrNamespaceScope() const
 {
+  // 2022-05-06: In the past, there were methods in Variable whose
+  // definition implied that the following relation might not hold.  I
+  // think it should hold, so I changed those misleading definitions and
+  // added this assertion.
+  xassert(isGlobal() ==
+            (m_containingScope && m_containingScope->isGlobalScope()));
+
   return m_containingScope &&
          (m_containingScope->isGlobalScope() ||
           m_containingScope->isNamespace());

@@ -190,15 +190,21 @@ public:
     //    Note that these are not exclusive; a variable can have both static
     //    linkage (by being inline) and be a static member.
     return (((hasFlag(DF_STATIC) &&
-              (hasFlag(DF_GLOBAL) || inGlobalOrNamespaceScope())) ||
+              inGlobalOrNamespaceScope()) ||
              hasAllFlags(DF_INLINE | DF_MEMBER)) /*&&
                                                    !hasFlag(DF_GNU_EXTERN_INLINE)*/);
   }
-  bool isStaticLocal() const {
-    return (hasFlag(DF_STATIC) &&
-            !(hasFlag(DF_GLOBAL) || inGlobalOrNamespaceScope()) &&
-            !hasFlag(DF_MEMBER));
+
+  // True of variables declared in and local to a function.  False for
+  // members of local classes.
+  bool isLocalVariable() const {
+    return !( inGlobalOrNamespaceScope() || isMember() );
   }
+
+  bool isStaticLocal() const {
+    return hasFlag(DF_STATIC) && isLocalVariable();
+  }
+
   bool isStaticMember() const { return hasAllFlags(DF_STATIC | DF_MEMBER); }
   bool isNonStaticMember() const { return hasFlag(DF_MEMBER) && !hasFlag(DF_STATIC); }
   // bool isStatic() const { return hasFlag(DF_STATIC); }
