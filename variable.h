@@ -168,6 +168,9 @@ protected:    // funcs
 public:
   virtual ~Variable();
 
+  // Throw if some invariant does not hold of this Variable.
+  virtual void checkInvariants();
+
   bool hasFlag(DeclFlags f) const { return (flags & f) != 0; }
   bool hasAnyFlags(DeclFlags /*union*/ f) const { return (flags & f) != 0; }
   bool hasAllFlags(DeclFlags /*union*/ f) const { return (flags & f) == f; }
@@ -182,15 +185,28 @@ public:
 
   // some convenient interpretations of 'flags'
   bool hasAddrTaken() const { return hasFlag(DF_ADDRTAKEN); }
+
+  // Unfortunately, the exact meaning of this is unclear due to
+  // confusion about templates and their instantiations.
   bool isGlobal() const { return hasFlag(DF_GLOBAL); }
+
+  // True if the containing scope exists and is either the global scope
+  // or a namespace scope.  That excludes templates since they are in
+  // a "template scope" ...
   bool inGlobalOrNamespaceScope() const;
+
+  // This is a test that has been historically a part of these queries.
+  // I started trying to clean them up but failed.
+  bool isGlobal_flag_or_scope() const
+    { return isGlobal() || inGlobalOrNamespaceScope(); }
+
   bool isStaticLinkage() const {
     // quarl 2006-07-11
     //    See Declarator::mid_tcheck() for why this checks for DF_INLINE|DF_MEMBER.
     //    Note that these are not exclusive; a variable can have both static
     //    linkage (by being inline) and be a static member.
     return (((hasFlag(DF_STATIC) &&
-              inGlobalOrNamespaceScope()) ||
+              isGlobal_flag_or_scope()) ||
              hasAllFlags(DF_INLINE | DF_MEMBER)) /*&&
                                                    !hasFlag(DF_GNU_EXTERN_INLINE)*/);
   }
@@ -198,7 +214,7 @@ public:
   // True of variables declared in and local to a function.  False for
   // members of local classes.
   bool isLocalVariable() const {
-    return !( inGlobalOrNamespaceScope() || isMember() );
+    return !( isGlobal_flag_or_scope() || isMember() );
   }
 
   bool isStaticLocal() const {

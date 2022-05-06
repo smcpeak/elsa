@@ -105,6 +105,13 @@ enum DeclFlags {
   DF_SOURCEFLAGS = 0x040003FF,    // all flags that come from keywords in the source
 
   // semantic flags on Variables
+  //
+  // TODO: These flags are a mess.  They're not orthogonal, and their
+  // exact definitions are unclear, being a consequence of initially
+  // naive assumptions combined with later "adjustments" for the benefit
+  // of this or that analysis without adequate rationale.  I think I
+  // should remove all of them and instead use queries on Variable that
+  // have properly documented semantics.
   DF_ENUMERATOR  = 0x00000400,    // true for values in an 'enum' (enumerators in the terminology of the C++ standard)
   DF_GLOBAL      = 0x00000800,    // set for globals, unset for locals and members of classes and namespaces
   DF_INITIALIZED = 0x00001000,    // true if has been declared with an initializer (or, for functions, with code)

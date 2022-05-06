@@ -73,6 +73,8 @@ bool IntegrityVisitor::visitDeclarator(Declarator *obj)
     checkNontemplateType(obj->type);
   }
 
+  obj->var->checkInvariants();
+
   return true;
 }
 
