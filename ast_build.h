@@ -71,6 +71,8 @@ public:      // methods
   FakeList<ArgExpression> *makeExprList2(Expression *e1, Expression *e2);
   FakeList<ArgExpression> *makeExprList3(
     Expression *e1, Expression *e2, Expression *e3);
+  FakeList<ArgExpression> *makeExprList4(
+    Expression *e1, Expression *e2, Expression *e3, Expression *e4);
 
   // Given a Variable, create a D_name or D_bitfield that refers to it.
   // This D_name must have additional IDeclarators wrapped around it in
@@ -167,6 +169,8 @@ public:      // methods
     Variable *callee, Expression *arg1, Expression *arg2);
   E_funCall *makeNamedFunCall3(
     Variable *callee, Expression *arg1, Expression *arg2, Expression *arg3);
+  E_funCall *makeNamedFunCall4(
+    Variable *callee, Expression *arg1, Expression *arg2, Expression *arg3, Expression *arg4);
 
   E_fieldAcc *makeE_fieldAcc(Expression *obj, Variable *field);
 
