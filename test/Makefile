@@ -206,6 +206,7 @@ out/pqname/%.c.ok: pqname/%.c pqname/%.c.expect $(CCPARSE)
 
 TESTS += tcheck/builtin-offsetof.c
 TESTS += tcheck/conv-void-ptr.c
+TESTS += tcheck/enum.c
 TESTS += tcheck/expr-type.c
 TESTS += tcheck/func-ret-func.c
 TESTS += tcheck/func-void-param.c

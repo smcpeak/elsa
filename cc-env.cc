@@ -1674,6 +1674,15 @@ Type *Env::declareEnum(SourceLoc loc /*...*/, EnumType *et)
     }
   }
 
+  // Although we may not have added 'tv' to any scope (either because it
+  // has no name, or because 'lang.tagAreTypes==false'), its DF_GLOBAL
+  // flag should be set if appropriate.  That is done by registering it
+  // the scope we would have put it into.
+  //
+  // It is ugly to be doing this redundantly in the case where the
+  // variable *was* added to a scope.
+  acceptingScope(tv->flags)->registerVariable(tv);
+
   return ret;
 }
 

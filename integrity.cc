@@ -1,11 +1,15 @@
 // integrity.cc
 // code for integrity.h
 
-#include "integrity.h"         // this module
+#include "integrity.h"                 // this module
+
+#include "vector-utils.h"              // back_or_null, vec_contains
 
 
-IntegrityVisitor::IntegrityVisitor(bool inTemplate)
-  : ASTVisitorEx()
+IntegrityVisitor::IntegrityVisitor(CCLang &lang, bool inTemplate)
+  : ASTVisitorEx(),
+    m_enclosingSyntaxStack(),
+    m_lang(lang)
 {
   m_inTemplate = inTemplate;
 }
@@ -26,10 +30,79 @@ void IntegrityVisitor::foundAmbiguous(void *obj, void **ambig, char const *kind)
 }
 
 
+IntegrityVisitor::EnclosingSyntax IntegrityVisitor::getEnclosingSyntax() const
+{
+  return back_or_value(m_enclosingSyntaxStack, ES_NONE);
+}
+
+bool IntegrityVisitor::withinSyntax(EnclosingSyntax es) const
+{
+  return vec_contains(m_enclosingSyntaxStack, es);
+}
+
+void IntegrityVisitor::pushSyntax(EnclosingSyntax es)
+{
+  m_enclosingSyntaxStack.push_back(es);
+}
+
+void IntegrityVisitor::popSyntax(EnclosingSyntax es)
+{
+  pop_check(m_enclosingSyntaxStack, es);
+}
+
+
+bool IntegrityVisitor::visitTopForm(TopForm *topForm)
+{
+  if (!ASTVisitorEx::visitTopForm(topForm)) {
+    return false;
+  }
+
+  if (topForm->isTF_namespaceDefn()) {
+    pushSyntax(ES_NAMESPACE);
+  }
+
+  return true;
+}
+
+
+void IntegrityVisitor::postvisitTopForm(TopForm *topForm)
+{
+  ASTVisitorEx::postvisitTopForm(topForm);
+
+  if (topForm->isTF_namespaceDefn()) {
+    popSyntax(ES_NAMESPACE);
+  }
+}
+
+
+bool IntegrityVisitor::visitFunction(Function *func)
+{
+  if (!ASTVisitorEx::visitFunction(func)) {
+    return false;
+  }
+
+  pushSyntax(ES_FUNCTION);
+
+  return true;
+}
+
+
+void IntegrityVisitor::postvisitFunction(Function *func)
+{
+  ASTVisitorEx::postvisitFunction(func);
+
+  popSyntax(ES_FUNCTION);
+}
+
+
 // The various annotations added by the type checker should all be
 // present.
 bool IntegrityVisitor::visitTypeSpecifier(TypeSpecifier *typeSpecifier)
 {
+  if (!ASTVisitorEx::visitTypeSpecifier(typeSpecifier)) {
+    return false;
+  }
+
   ASTSWITCHC(TypeSpecifier, typeSpecifier) {
     ASTCASEC(TS_name, tsn) {
       xassert(tsn->var != NULL);
@@ -45,12 +118,14 @@ bool IntegrityVisitor::visitTypeSpecifier(TypeSpecifier *typeSpecifier)
 
     ASTNEXTC(TS_classSpec, tsc) {
       xassert(tsc->ctype != NULL);
-      xassert(tsc->ctype->typedefVar != NULL);
+      checkDefinitionTypedefVar(tsc->ctype->typedefVar);
+
+      pushSyntax(ES_CLASS);
     }
 
     ASTNEXTC(TS_enumSpec, tse) {
       xassert(tse->etype != NULL);
-      xassert(tse->etype->typedefVar != NULL);
+      checkDefinitionTypedefVar(tse->etype->typedefVar);
     }
 
     ASTENDCASECD
@@ -59,6 +134,116 @@ bool IntegrityVisitor::visitTypeSpecifier(TypeSpecifier *typeSpecifier)
   return true;
 }
 
+
+// TODO: Currently this is only done for typedef Variables, but I
+// would like to extend it to cover all Variables.
+void IntegrityVisitor::checkDefinitionTypedefVar(Variable const *var)
+{
+  xassert(var != NULL);
+
+  // The permanent scope the variable says it is in, if any.  The scope
+  // might not actually have a record of the variable, for example if
+  // the variable is anonymous, or we are in C and this is a C++
+  // implicit typedef, but 'm_containingScope' says where it would have
+  // gone.
+  Scope *scope = var->m_containingScope;
+  if (scope) {
+    xassert(scope->isPermanentScope());
+  }
+
+  if (getEnclosingSyntax() == ES_NONE) {
+    // We're not inside anything.
+
+    if (scope) {
+      if (scope->isGlobalScope()) {
+        shouldBeGlobal(var);
+      }
+      else if (scope->isNamespace() || scope->isClassScope()) {
+        // The variable is something that was declared inside a class
+        // or namespace but then defined outside it.
+        shouldNotBeGlobal(var);
+      }
+      else {
+        xfailure("Unknown permanent scope kind.");
+      }
+    }
+    else {
+      // No containing scope.  When?
+      xfailure("When does this happen?");
+    }
+  }
+
+  else if (m_lang.noInnerClasses &&    // i.e., we are in C
+           var->isType() &&            // currently always true
+           withinSyntax(ES_CLASS) &&
+           !withinSyntax(ES_FUNCTION)) {
+    // In C, if a type is defined inside a struct, it is as if it was
+    // declared at global scope.  But if all of that is inside a
+    // function, then the type is local to the function, not global.
+    shouldBeGlobal(var);
+  }
+
+  else {
+    // We're inside something that gives rise to a scope, so it should
+    // *not* be global.
+    //
+    // This would be wrong for friends, but you can't define a type in a
+    // friend declaration, so at the moment this won't trip for that.
+    shouldNotBeGlobal(var);
+  }
+}
+
+
+void IntegrityVisitor::shouldBeGlobal(Variable const *var)
+{
+  xassert(var->hasFlag(DF_GLOBAL));
+
+  Scope *scope = var->m_containingScope;
+  xassert(scope);
+  xassert(scope->isGlobalScope());
+}
+
+void IntegrityVisitor::shouldNotBeGlobal(Variable const *var)
+{
+  xassert(!var->hasFlag(DF_GLOBAL));
+
+  Scope *scope = var->m_containingScope;
+  xassert(!( scope && scope->isGlobalScope() ));
+}
+
+
+void IntegrityVisitor::postvisitTypeSpecifier(TypeSpecifier *typeSpecifier)
+{
+  ASTVisitorEx::postvisitTypeSpecifier(typeSpecifier);
+
+  if (typeSpecifier->isTS_classSpec()) {
+    popSyntax(ES_CLASS);
+  }
+}
+
+
+bool IntegrityVisitor::visitIDeclarator(IDeclarator *idecl)
+{
+  if (!ASTVisitorEx::visitIDeclarator(idecl)) {
+    return false;
+  }
+
+  if (idecl->isD_func()) {
+    pushSyntax(ES_PARAMETER_LIST);
+  }
+
+  return true;
+}
+
+
+void IntegrityVisitor::postvisitIDeclarator(IDeclarator *idecl)
+{
+  ASTVisitorEx::postvisitIDeclarator(idecl);
+
+  if (idecl->isD_func()) {
+    popSyntax(ES_PARAMETER_LIST);
+  }
+}
 
 
 bool IntegrityVisitor::visitDeclarator(Declarator *obj)
@@ -120,10 +305,11 @@ bool IntegrityVisitor::visitExpression(Expression *obj)
 }
 
 
-void integrityCheckTU(TranslationUnit *tu)
+void integrityCheckTU(CCLang &lang, TranslationUnit *tu)
 {
-  IntegrityVisitor ivis(false /*inTemplate*/);
+  IntegrityVisitor ivis(lang, false /*inTemplate*/);
   tu->traverse(ivis);
+  xassert(ivis.getEnclosingSyntax() == IntegrityVisitor::ES_NONE);
 }
 
 

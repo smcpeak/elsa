@@ -168,7 +168,7 @@ bool TestASTBuildVisitor::visitASTTypeId(ASTTypeId *originalId)
     }
 
     // Run the integrity checker on the new fragment.
-    IntegrityVisitor ivis(m_inTemplate);
+    IntegrityVisitor ivis(m_elsaParse.m_lang, m_inTemplate);
     newId->traverse(ivis);
 
     delete newId;
