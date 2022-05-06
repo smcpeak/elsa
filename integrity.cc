@@ -15,6 +15,13 @@ IntegrityVisitor::IntegrityVisitor(CCLang &lang, bool inTemplate)
 }
 
 
+void IntegrityVisitor::checkTU(TranslationUnit *tu)
+{
+  tu->traverse(*this);
+  xassert(getEnclosingSyntax() == IntegrityVisitor::ES_NONE);
+}
+
+
 void IntegrityVisitor::foundAmbiguous(void *obj, void **ambig, char const *kind)
 {
   // 2005-06-29: I have so far been unable to provoke this error by
@@ -308,8 +315,7 @@ bool IntegrityVisitor::visitExpression(Expression *obj)
 void integrityCheckTU(CCLang &lang, TranslationUnit *tu)
 {
   IntegrityVisitor ivis(lang, false /*inTemplate*/);
-  tu->traverse(ivis);
-  xassert(ivis.getEnclosingSyntax() == IntegrityVisitor::ES_NONE);
+  ivis.checkTU(tu);
 }
 
 

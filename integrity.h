@@ -67,6 +67,10 @@ public:      // funcs
   // 'false'.
   IntegrityVisitor(CCLang &lang, bool inTemplate);
 
+  // Run the checks on 'tu'.  This is the main entry point after
+  // constructing the visitor.
+  void checkTU(TranslationUnit *tu);
+
   // Innermost enclosing syntax, or ES_NONE.
   EnclosingSyntax getEnclosingSyntax() const;
 
