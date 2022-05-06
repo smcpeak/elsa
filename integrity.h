@@ -22,6 +22,12 @@
 //
 // When a check fails, it throws an assertion failure exception.
 //
+// There are flags to control whether certain checks are performed.  The
+// default set of checks is appropriate for use after Elsa has parsed
+// some source code.  But if, say, AST is being constructed as part of a
+// source-to-source transformation, some of the checks might need to be
+// turned off.
+//
 class IntegrityVisitor : public ASTVisitorEx {
 public:      // types
   // Kinds of possible enclosing syntax.
@@ -42,6 +48,10 @@ private:     // data
 public:      // data
   // Language rules in effect when translation unit was parsed.
   CCLang &m_lang;
+
+  // When true (which is the default), check Variable scopes and
+  // DF_GLOBAL flag.
+  bool m_checkVariableScopes;
 
 private:     // funcs
   // Check the typedef Variable of a class or enum type whose definition

@@ -9,7 +9,8 @@
 IntegrityVisitor::IntegrityVisitor(CCLang &lang, bool inTemplate)
   : ASTVisitorEx(),
     m_enclosingSyntaxStack(),
-    m_lang(lang)
+    m_lang(lang),
+    m_checkVariableScopes(true)
 {
   m_inTemplate = inTemplate;
 }
@@ -148,6 +149,10 @@ void IntegrityVisitor::checkDefinitionTypedefVar(Variable const *var)
 {
   xassert(var != NULL);
 
+  if (!m_checkVariableScopes) {
+    return;
+  }
+
   // The permanent scope the variable says it is in, if any.  The scope
   // might not actually have a record of the variable, for example if
   // the variable is anonymous, or we are in C and this is a C++
@@ -175,8 +180,7 @@ void IntegrityVisitor::checkDefinitionTypedefVar(Variable const *var)
       }
     }
     else {
-      // No containing scope.  When?
-      xfailure("When does this happen?");
+      xfailure("Variable at file scope missing m_containingScope.");
     }
   }
 
