@@ -4,7 +4,6 @@
 #include "cc-env.h"        // this module
 
 #include "trace.h"         // tracingSys
-#include "ckheap.h"        // heapCheck
 #include "strtable.h"      // StringTable
 #include "cc-lang.h"       // CCLang
 #include "strutil.h"       // suffixEquals, prefixEquals

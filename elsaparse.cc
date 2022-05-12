@@ -21,7 +21,6 @@
 #include "ptreenode.h"                 // PTreeNode
 
 // smbase
-#include "ckheap.h"                    // checkHeap
 #include "nonport.h"                   // getMilliseconds
 #include "sm-fstream.h"                // ofstream
 #include "sm-iostream.h"               // cout
@@ -258,8 +257,6 @@ void ElsaParse::parse(char const *inputFname)
     delete parseContext;
     delete tables;
   }
-
-  checkHeap();
 
   // print abstract syntax tree
   if (tracingSys("printAST")) {

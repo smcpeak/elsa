@@ -7,16 +7,7 @@
 #include "strip-comments.h"            // strip_comments_unit_tests
 
 // smbase
-#include "ckheap.h"                    // malloc_stats
 #include "trace.h"                     // tracingSys
-
-
-static void if_malloc_stats()
-{
-  if (tracingSys("malloc_stats")) {
-    malloc_stats();
-  }
-}
 
 
 enum TargetPlatform {
@@ -172,8 +163,6 @@ static int doit(int argc, char **argv)
   // I think this is more noise than signal at this point
   xBase::logExceptions = false;
 
-  if_malloc_stats();
-
   SourceLocManager mgr;
 
   // string table for storing parse tree identifiers
@@ -207,7 +196,6 @@ static int doit(int argc, char **argv)
      "    printElabAST       print AST after semantic elaboration\n"
      "\n"
      "  debugging output:\n"
-     "    malloc_stats       print malloc stats every so often\n"
      "    env                print as variables are added to the environment\n"
      "    error              print as errors are accumulated\n"
      "    overload           print details of overload resolution\n"
@@ -336,17 +324,12 @@ static int doit(int argc, char **argv)
 
   //traceProgress() << "cleaning up...\n";
 
-  //malloc_stats();
-
   // delete the tree
   // (currently this doesn't do very much because FakeLists are
   // non-owning, so I won't pretend it does)
   //delete unit;
 
   strTable.clear();
-
-  //checkHeap();
-  //malloc_stats();
 
   return 0;
 }
