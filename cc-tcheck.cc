@@ -3620,6 +3620,10 @@ void Declarator::mid_tcheck(Env &env, Tcheck &dt)
     var->setBitfieldSize(decl->asD_bitfield()->numBits);
   }
 
+  if (dt.gnuAliasTarget) {
+    var->setGNUAliasTarget(dt.gnuAliasTarget);
+  }
+
   // declarators usually require complete types
   //
   // 2005-04-16: moved this down below the call to
@@ -7239,6 +7243,37 @@ static Type *internalTestingHooks
       }
     }
 
+    env.error("invalid special function call");
+    return env.getSimpleType(ST_VOID);
+  }
+
+  if (funcName == env.special_checkIsGNUAlias) {
+    if (fl_count(args) == 3) {
+      // First argument is ignored.
+      Expression *e2 = fl_nth(args, 1)->expr;
+      Expression *e3 = fl_nth(args, 2)->expr;
+
+      E_variable *evAlias = e2->ifE_variable();
+      E_variable *evTarget = e3->ifE_variable();
+      if (evAlias && evTarget) {
+        Variable *target = evAlias->var->getGNUAliasTarget();
+        if (!target) {
+          env.error(stringb(
+            "checkIsGNUAlias: not a GNU alias: '" <<
+            evAlias->var->name << "'"));
+        }
+        else if (target != evTarget->var) {
+          env.error(stringb(
+            "checkIsGNUAlias: alias target is '" <<
+            target->name << "', not '" << evTarget->var->name <<
+            "'"));
+        }
+        else {
+          // Success!
+        }
+        return env.getSimpleType(ST_VOID);
+      }
+    }
     env.error("invalid special function call");
     return env.getSimpleType(ST_VOID);
   }

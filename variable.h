@@ -149,7 +149,8 @@ private:      // data
 
   // for most kinds of Variables, this is 'getUsingAlias()'; for
   // template parameters (isTemplateParam()), this is
-  // 'getParameterizedEntity()'
+  // 'getParameterizedEntity()'; if 'getIsGNUAlias()', this is
+  // 'getGNUAliasTarget()'.
   Variable *usingAlias_or_parameterizedEntity;   // (nullable serf)
 
   // for templates, this is the list of template parameters and other
@@ -253,6 +254,12 @@ public:
   PACKEDWORD_DEF_GS(intData, User2,            bool,           7,  8)
   PACKEDWORD_DEF_GS(intData, ScopeKind,        ScopeKind,      8, 11)
   PACKEDWORD_DEF_GS(intData, HasValue,         bool,          11, 12)
+
+  // If true, this symbol has the GNU '__alias__' attribute, and
+  // 'usingAlias_or_parameterizedEntity' points to the Variable this is
+  // an alias of.
+  PACKEDWORD_DEF_GS(intData, IsGNUAlias,       bool,          12, 13)
+
   PACKEDWORD_DEF_GS(intData, ParameterOrdinal, int,           16, 32)
   // ParameterOrdinal and BitfieldSize overlap, but
   // set/getBitfieldSize check an assertion before delegating to
@@ -375,6 +382,10 @@ public:
   // follow the 'usingAlias' field if non-NULL; otherwise return this
   Variable const *skipAliasC() const;
   Variable *skipAlias() { return const_cast<Variable*>(skipAliasC()); }
+
+  // Get/set the GNU '__alias__' target, or NULL for none.
+  Variable *getGNUAliasTarget() const;
+  void setGNUAliasTarget(Variable *target);
 
   // true if this name refers to a template (function) or an overload
   // set that includes one

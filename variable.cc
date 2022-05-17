@@ -618,7 +618,7 @@ bool Variable::isTemplateTypeParam() const
 
 Variable *Variable::getUsingAlias() const
 {
-  if (!isTemplateParam()) {
+  if (!isTemplateParam() && !getIsGNUAlias()) {
     if (usingAlias_or_parameterizedEntity) {
       xassert(usingAlias_or_parameterizedEntity->getMaybeUsedAsAlias());
     }
@@ -632,6 +632,7 @@ Variable *Variable::getUsingAlias() const
 void Variable::setUsingAlias(Variable *target)
 {
   xassert(!isTemplateParam());
+  xassert(!getIsGNUAlias());
   usingAlias_or_parameterizedEntity = target;
   if (usingAlias_or_parameterizedEntity) {
     usingAlias_or_parameterizedEntity->setMaybeUsedAsAlias(true);
@@ -671,6 +672,32 @@ bool Variable::sameTemplateParameter(Variable const *other) const
   }
 
   return false;
+}
+
+
+Variable *Variable::getGNUAliasTarget() const
+{
+  if (getIsGNUAlias()) {
+    return usingAlias_or_parameterizedEntity;
+  }
+  else {
+    return NULL;
+  }
+}
+
+
+void Variable::setGNUAliasTarget(Variable *target)
+{
+  xassert(!isTemplateParam());
+
+  if (!getIsGNUAlias()) {
+    // Mark this as a GNU alias.  But make sure we aren't already using
+    // the pointer field to record a 'using' alias.
+    xassert(usingAlias_or_parameterizedEntity == NULL);
+    setIsGNUAlias(true);
+  }
+
+  usingAlias_or_parameterizedEntity = target;
 }
 
 

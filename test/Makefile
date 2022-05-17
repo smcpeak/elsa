@@ -211,6 +211,7 @@ TESTS += tcheck/enum.c
 TESTS += tcheck/expr-type.c
 TESTS += tcheck/func-ret-func.c
 TESTS += tcheck/func-void-param.c
+TESTS += tcheck/gnu-alias.c
 TESTS += tcheck/init-global-struct.c
 TESTS += tcheck/hello-world.c
 TESTS += tcheck/make-typedef.c

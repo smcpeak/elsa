@@ -383,30 +383,37 @@ class Declarator {
     // syntactic context
     DeclaratorContext context;
 
+    // If we see the GNU attribute '__alias__(("target"))', this is the
+    // Variable that the target names.
+    Variable *gnuAliasTarget;
+
   public:
     Tcheck(Type *t, DeclFlags d, DeclaratorContext dc)
-      : existingVar (NULL)
-      , type        (t)
-      , dflags      (d)
-      , size_E_new  (NULL)
-      , funcSyntax  (NULL)
-      , context     (dc)
+      : existingVar   (NULL)
+      , type          (t)
+      , dflags        (d)
+      , size_E_new    (NULL)
+      , funcSyntax    (NULL)
+      , context       (dc)
+      , gnuAliasTarget(NULL)
     {}
     Tcheck(Tcheck const &obj)
-      : existingVar (obj.existingVar)
-      , type        (obj.type)
-      , dflags      (obj.dflags)
-      , size_E_new  (obj.size_E_new)
-      , funcSyntax  (obj.funcSyntax)
-      , context     (obj.context)
+      : existingVar   (obj.existingVar)
+      , type          (obj.type)
+      , dflags        (obj.dflags)
+      , size_E_new    (obj.size_E_new)
+      , funcSyntax    (obj.funcSyntax)
+      , context       (obj.context)
+      , gnuAliasTarget(obj.gnuAliasTarget)
     {}
     Tcheck& operator= (Tcheck const &obj) {
-      existingVar = obj.existingVar;
-      type        = obj.type;
-      dflags      = obj.dflags;
-      size_E_new  = obj.size_E_new;
-      funcSyntax  = obj.funcSyntax;
-      context     = obj.context;
+      existingVar    = obj.existingVar;
+      type           = obj.type;
+      dflags         = obj.dflags;
+      size_E_new     = obj.size_E_new;
+      funcSyntax     = obj.funcSyntax;
+      context        = obj.context;
+      gnuAliasTarget = obj.gnuAliasTarget;
       return *this;
     }
 

@@ -533,6 +533,7 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
   special_test_mtype = declareSpecialFunction("__test_mtype")->name;
   special_cause_xfailure = declareSpecialFunction("__cause_xfailure")->name;
   special_checkMakeASTTypeId = declareSpecialFunction("__elsa_checkMakeASTTypeId")->name;
+  special_checkIsGNUAlias = declareSpecialFunction2("__elsa_checkIsGNUAlias")->name;
 
   setupOperatorOverloading();
 
@@ -1074,6 +1075,17 @@ Variable *Env::declareFunctionNargs(
 Variable *Env::declareSpecialFunction(char const *name)
 {
   return declareFunction0arg(getSimpleType(ST_INT), name, FF_VARARGS);
+}
+
+
+// This is version 2 of the concept.  It accepts an integer first
+// parameter, typically ignored, because it is not valid to begin a
+// parameter list with '...'.  It also returns void because my
+// convention during type checking is to return ST_VOID for these.
+Variable *Env::declareSpecialFunction2(char const *name)
+{
+  return declareFunction1arg(getSimpleType(ST_VOID), name,
+                             getSimpleType(ST_INT), "dummy", FF_VARARGS);
 }
 
 

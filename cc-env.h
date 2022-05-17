@@ -186,6 +186,7 @@ public:      // data
   StringRef special_test_mtype;
   StringRef special_cause_xfailure;
   StringRef special_checkMakeASTTypeId;
+  StringRef special_checkIsGNUAlias;
   // ---- END: special names ----
 
   // The type of 'size_t'.
@@ -714,6 +715,7 @@ public:      // funcs
   // declare a function that can accept basically anything; mainly
   // used for functions the translator itself interprets
   Variable *declareSpecialFunction(char const *name);
+  Variable *declareSpecialFunction2(char const *name);
 
   // see implementation; this is here b/c gnu.cc wants to call it
   Type *computeArraySizeFromCompoundInit(SourceLoc tgt_loc, Type *tgt_type,

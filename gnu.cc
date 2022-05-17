@@ -1481,6 +1481,9 @@ void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
   // Argument to '__mode__'.
   StringRef modeDesignator = NULL;
 
+  // Argument to 'alias'.
+  StringRef foundAlias = NULL;
+
   // Scan the attributes for things we recognize.
   for (AttributeSpecifierList *l = alist; l; l = l->next) {
     for (AttributeSpecifier *s = l->spec; s; s = s->next) {
@@ -1497,6 +1500,34 @@ void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
             // The argument to '__mode__' is an identifier, which my
             // parser classifies as a "variable".
             modeDesignator = e->asE_variable()->name->getName();
+          }
+        }
+
+        if (streq(f->f, "alias") ||
+            streq(f->f, "__alias__")) {
+          if (foundAlias) {
+            env.error("More than one alias attribute.");
+          }
+          else {
+            if (fl_count(f->args) != 1) {
+              env.error("Too many arguments to alias attribute.");
+            }
+            else {
+              Expression *&expr = fl_first(f->args)->expr;
+              if (!expr->isE_stringLit()) {
+                env.error("The argument to the alias attribute must be "
+                          "a string literal.");
+              }
+              else {
+                // Compute the string denoted by the literal.
+                expr->tcheck(env, expr);
+
+                // Store it in the string table.
+                E_stringLit *strlit = expr->asE_stringLit();
+                foundAlias = env.str.add(
+                  (char const *)strlit->m_stringData.getDataC());
+              }
+            }
           }
         }
       }
@@ -1557,18 +1588,26 @@ void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
         "type, not '" << dt.type->toString() << "'"));
     }
   }
+
+  // Apply '__alias__'.
+  if (foundAlias) {
+    // Look up the name.
+    Variable *target = env.lookupVariable(foundAlias);
+    if (target) {
+      dt.gnuAliasTarget = target;
+    }
+    else {
+      env.error(dt.type, stringb(
+        "__alias__ attribute target not found: '" << foundAlias << "'"));
+    }
+  }
 }
 
 
-// smcpeak 2021-06-07: There used to be a method here called
-// 'tcheck_getAlias' that interpreted things like:
-//
-//   attribute((alias("aliasTarget")))
-//
-// I removed it because it was unused in Elsa.  Possibly it was used in
-// Oink, and if so, it can be resurrected at some point, using
-// E_stringLit::m_stringData instead of 'fullTextNQ' (which I am also
-// removing).
+// smcpeak 2021-06-07, 2022-05-17: There used to be a method here
+// called 'tcheck_getAlias' that interpreted
+// 'attribute((alias("aliasTarget")))', but I have replaced that
+// functionality with Variable::getGNUAliasTarget().
 
 
 void D_attribute::print(PrintEnv &env) const
