@@ -1475,63 +1475,86 @@ void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
   AttributeDisambiguator dis;
   alist->traverse(dis);
 
-  // if the type is not a simple type, don't even consider
-  // the __mode__ possibility, since I do not know what it
-  // would mean in that case
-  if (dt.type->isSimpleType()) {
-    // get details about current type
-    SimpleTypeId existingId = dt.type->asSimpleTypeC()->type;
-    CVFlags existingCV = dt.type->getCVFlags();
-    bool uns = isExplicitlyUnsigned(existingId);
+  // True if we see '__transparent_union__'.
+  bool transparentUnion = false;
 
-    // check for a __mode__ attribute
-    SimpleTypeId id = ST_ERROR;    // means no mode was found yet
-    for (AttributeSpecifierList *l = alist; l; l = l->next) {
-      for (AttributeSpecifier *s = l->spec; s; s = s->next) {
-        if (s->attr->isAT_func()) {
-          AT_func *f = s->attr->asAT_func();
-          if (0==strcmp(f->f, "__mode__") && f->args) {
-            Expression *e = fl_first(f->args)->expr;
-            if (e->isE_variable()) {
-              StringRef mode = e->asE_variable()->name->getName();
-              if (0==strcmp(mode, "__QI__")) {
-                id = uns? ST_UNSIGNED_CHAR : ST_SIGNED_CHAR;
-              }
-              else if (0==strcmp(mode, "__HI__")) {
-                id = uns? ST_UNSIGNED_SHORT_INT : ST_SHORT_INT;
-              }
-              else if (0==strcmp(mode, "__SI__")) {
-                id = uns? ST_UNSIGNED_INT : ST_INT;
-              }
-              else if (0==strcmp(mode, "__DI__")) {
-                id = uns? ST_UNSIGNED_LONG_LONG : ST_LONG_LONG;
-              }
-            }
+  // Argument to '__mode__'.
+  StringRef modeDesignator = NULL;
+
+  // Scan the attributes for things we recognize.
+  for (AttributeSpecifierList *l = alist; l; l = l->next) {
+    for (AttributeSpecifier *s = l->spec; s; s = s->next) {
+      if (AT_word *w = s->attr->ifAT_word()) {
+        if (streq(w->w, "transparent_union") ||
+            streq(w->w, "__transparent_union__")) {
+          transparentUnion = true;
+        }
+      }
+      else if (AT_func *f = s->attr->ifAT_func()) {
+        if (streq(f->f, "__mode__") && f->args) {
+          Expression *e = fl_first(f->args)->expr;
+          if (e->isE_variable()) {
+            // The argument to '__mode__' is an identifier, which my
+            // parser classifies as a "variable".
+            modeDesignator = e->asE_variable()->name->getName();
           }
         }
       }
-    }
-
-    // change the type according to the mode (if any)
-    if (id != ST_ERROR) {
-      dt.type = env.getSimpleType(id, existingCV);
     }
   }
 
-  // transparent union?
-  if (dt.type->isUnionType()) {
-    CompoundType *u = dt.type->asCompoundType();
+  // Now, apply the recognized attribute semantics.
 
-    for (AttributeSpecifierList *l = alist; l; l = l->next) {
-      for (AttributeSpecifier *s = l->spec; s; s = s->next) {
-        if (s->attr->isAT_word()) {
-          AT_word *w = s->attr->asAT_word();
-          if (0==strcmp(w->w, "transparent_union") ||
-              0==strcmp(w->w, "__transparent_union__")) {
-            u->isTransparentUnion = true;
-          }
-        }
+  // Apply '__mode__'.
+  if (modeDesignator) {
+    if (dt.type->isSimpleType()) {
+      // get details about current type
+      SimpleTypeId existingId = dt.type->asSimpleTypeC()->type;
+      CVFlags existingCV = dt.type->getCVFlags();
+      bool uns = isExplicitlyUnsigned(existingId);
+
+      // Interpret the mode designator code.
+      SimpleTypeId id = ST_ERROR;    // means mode was not recognized
+      if (streq(modeDesignator, "__QI__")) {
+        id = uns? ST_UNSIGNED_CHAR : ST_SIGNED_CHAR;
       }
+      else if (streq(modeDesignator, "__HI__")) {
+        id = uns? ST_UNSIGNED_SHORT_INT : ST_SHORT_INT;
+      }
+      else if (streq(modeDesignator, "__SI__")) {
+        id = uns? ST_UNSIGNED_INT : ST_INT;
+      }
+      else if (streq(modeDesignator, "__DI__")) {
+        id = uns? ST_UNSIGNED_LONG_LONG : ST_LONG_LONG;
+      }
+
+      // change the type according to the mode
+      if (id != ST_ERROR) {
+        dt.type = env.getSimpleType(id, existingCV);
+      }
+      else {
+        env.error(stringb(
+          "Unrecognized __mode__ attribute argument: '" <<
+          modeDesignator << "'"));
+      }
+    }
+    else {
+      env.error(dt.type, stringb(
+        "__mode__ attribute must be applied to a fundamental scalar "
+        "type, not '" << dt.type->toString() << "'"));
+    }
+  }
+
+  // Apply '__transparent_union__'.
+  if (transparentUnion) {
+    if (dt.type->isUnionType()) {
+      CompoundType *u = dt.type->asCompoundType();
+      u->isTransparentUnion = true;
+    }
+    else {
+      env.error(dt.type, stringb(
+        "__transparent_union__ attribute must be applied to a union "
+        "type, not '" << dt.type->toString() << "'"));
     }
   }
 }
