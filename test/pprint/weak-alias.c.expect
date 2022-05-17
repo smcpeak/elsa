@@ -1,0 +1,14 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+int __f()
+{
+  return 6;
+}
+
+int f() __attribute__((weak, alias("__f")));
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

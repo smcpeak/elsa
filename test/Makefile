@@ -107,6 +107,7 @@ TESTS += pprint/stdconv.c
 TESTS += pprint/stringlit.c
 TESTS += pprint/typedef.c
 TESTS += pprint/vararg-promote.c
+TESTS += pprint/weak-alias.c
 
 # Run a C pretty-print test.
 #

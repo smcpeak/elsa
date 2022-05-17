@@ -305,7 +305,9 @@ class Expression {
 class AttributeSpecifierList(
   AttributeSpecifier spec,
   AttributeSpecifierList /*nullable*/ next
-);
+) {
+  public void print(PrintEnv &env) const;
+}
 
 
 // a single __attribute__((...)) specifier; there may be many
@@ -316,6 +318,7 @@ class AttributeSpecifier(
 ) {
   public UberModifiers toUberModifiers() const;
   public CVFlags toCVFlags() const;
+  public void print(PrintEnv &env) const;
 }
 
 
@@ -324,6 +327,7 @@ class AttributeSpecifier(
 class Attribute(SourceLoc loc) {
   pure_virtual UberModifiers toUberModifiers() const;
   public CVFlags toCVFlags() const;
+  pure_virtual void print(PrintEnv &env) const;
 
   // e.g., __attribute__(( ))
   //                      ^
@@ -376,6 +380,7 @@ verbatim {
     virtual D_attribute *clone() const override;
 
     virtual void tcheck(Env &env, Declarator::Tcheck &dt) override;
+    virtual void print(PrintEnv &env) const override;
   };
 }
 // TODO: IDeclarator::isD_attribute(), asD_attribute(), ifD_attribute()

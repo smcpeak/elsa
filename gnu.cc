@@ -1548,6 +1548,28 @@ void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
 // removing).
 
 
+void D_attribute::print(PrintEnv &env) const
+{
+  base->print(env);
+  alist->print(env);
+}
+
+
+// --------------------- AttributeSpecifierList ------------------------
+void AttributeSpecifierList::print(PrintEnv &env) const
+{
+  // This space follows either the original declarator or the
+  // previous attribute specifier in the list.
+  env << env.sp;
+
+  spec->print(env);
+
+  if (next) {
+    next->print(env);
+  }
+}
+
+
 // ---------------------- AttributeSpecifier -------------------------
 UberModifiers AttributeSpecifier::toUberModifiers() const
 {
@@ -1562,6 +1584,29 @@ UberModifiers AttributeSpecifier::toUberModifiers() const
 CVFlags AttributeSpecifier::toCVFlags() const
 {
   return uberCVFlags(toUberModifiers());
+}
+
+
+void AttributeSpecifier::print(PrintEnv &env) const
+{
+  env.begin();
+  env << "__attribute__((";
+
+  attr->print(env);
+
+  AttributeSpecifier *p = next;
+  while (p) {
+    env << "," << env.sp;
+
+    // We don't recursively invoke p->print() here because that would
+    // print extra "__attribute__" keywords.
+    p->attr->print(env);
+
+    p = p->next;
+  }
+
+  env << "))";
+  env.end();
 }
 
 
@@ -1592,5 +1637,38 @@ CVFlags Attribute::toCVFlags() const
 {
   return uberCVFlags(toUberModifiers());
 }
+
+
+void AT_empty::print(PrintEnv &env) const
+{
+  // Nothing to print.
+}
+
+
+void AT_word::print(PrintEnv &env) const
+{
+  env << w;
+}
+
+
+void AT_func::print(PrintEnv &env) const
+{
+  env.begin();
+
+  env << f << "(";
+
+  int ct = 0;
+  FAKELIST_FOREACH(ArgExpression, args, argExpr) {
+    if (ct++ > 0) {
+      env << "," << env.sp;
+    }
+    argExpr->expr->print(env, OPREC_COMMA);
+  }
+
+  env << ")";
+
+  env.end();
+}
+
 
 // EOF
