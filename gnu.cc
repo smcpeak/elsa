@@ -6,12 +6,33 @@
 #include "cc-print.h"         // olayer, PrintEnv
 #include "generic_amb.h"      // resolveAmbiguity, etc.
 #include "stdconv.h"          // usualArithmeticConversions
+#include "strutil.h"          // streq
 #include "astvisit.h"         // ASTVisitorEx
-#include <string.h>           // strcmp
+#include <string.h>           // strcmp, strncmp
 
 
 // fwd in this file
 SimpleTypeId constructFloatingType(int prec, int axis);
+
+
+bool streq_GAN(StringRef astName, char const *attrName)
+{
+  if (streq(astName, attrName)) {
+    return true;
+  }
+
+  size_t len = strlen(attrName);
+  if (astName[0] == '_' &&
+      astName[1] == '_' &&
+      0==strncmp(astName+2, attrName, len) &&
+      astName[len+2] == '_' &&
+      astName[len+3] == '_' &&
+      astName[len+4] == 0) {
+    return true;
+  }
+
+  return false;
+}
 
 
 // --------------------------- Env ---------------------------------
@@ -1475,10 +1496,10 @@ void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
   AttributeDisambiguator dis;
   alist->traverse(dis);
 
-  // True if we see '__transparent_union__'.
+  // True if we see 'transparent_union'.
   bool transparentUnion = false;
 
-  // Argument to '__mode__'.
+  // Argument to 'mode'.
   StringRef modeDesignator = NULL;
 
   // Argument to 'alias'.
@@ -1488,23 +1509,21 @@ void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
   for (AttributeSpecifierList *l = alist; l; l = l->next) {
     for (AttributeSpecifier *s = l->spec; s; s = s->next) {
       if (AT_word *w = s->attr->ifAT_word()) {
-        if (streq(w->w, "transparent_union") ||
-            streq(w->w, "__transparent_union__")) {
+        if (streq_GAN(w->w, "transparent_union")) {
           transparentUnion = true;
         }
       }
       else if (AT_func *f = s->attr->ifAT_func()) {
-        if (streq(f->f, "__mode__") && f->args) {
+        if (streq_GAN(f->f, "mode") && f->args) {
           Expression *e = fl_first(f->args)->expr;
           if (e->isE_variable()) {
-            // The argument to '__mode__' is an identifier, which my
+            // The argument to 'mode' is an identifier, which my
             // parser classifies as a "variable".
             modeDesignator = e->asE_variable()->name->getName();
           }
         }
 
-        if (streq(f->f, "alias") ||
-            streq(f->f, "__alias__")) {
+        if (streq_GAN(f->f, "alias")) {
           if (foundAlias) {
             env.error("More than one alias attribute.");
           }
@@ -1546,16 +1565,19 @@ void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
 
       // Interpret the mode designator code.
       SimpleTypeId id = ST_ERROR;    // means mode was not recognized
-      if (streq(modeDesignator, "__QI__")) {
+      if (streq_GAN(modeDesignator, "QI") ||
+          streq_GAN(modeDesignator, "byte")) {
         id = uns? ST_UNSIGNED_CHAR : ST_SIGNED_CHAR;
       }
-      else if (streq(modeDesignator, "__HI__")) {
+      else if (streq_GAN(modeDesignator, "HI")) {
         id = uns? ST_UNSIGNED_SHORT_INT : ST_SHORT_INT;
       }
-      else if (streq(modeDesignator, "__SI__")) {
+      else if (streq_GAN(modeDesignator, "SI") ||
+               streq_GAN(modeDesignator, "word")) {     // maybe?
         id = uns? ST_UNSIGNED_INT : ST_INT;
       }
-      else if (streq(modeDesignator, "__DI__")) {
+      else if (streq_GAN(modeDesignator, "DI") ||
+               streq_GAN(modeDesignator, "pointer")) {  // probably not right
         id = uns? ST_UNSIGNED_LONG_LONG : ST_LONG_LONG;
       }
 
@@ -1681,7 +1703,7 @@ UberModifiers AT_empty::toUberModifiers() const
 
 UberModifiers AT_word::toUberModifiers() const
 {
-  if (streq(w, "may_alias") || streq(w, "__may_alias__")) {
+  if (streq_GAN(w, "may_alias")) {
     return UM_MAY_ALIAS;
   }
 

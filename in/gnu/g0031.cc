@@ -19,6 +19,9 @@ typedef unsigned int u_int16_t __attribute__ ((__mode__ (  __HI__ ))) ;
 typedef unsigned int u_int32_t __attribute__ ((__mode__ (  __SI__ ))) ;
 typedef unsigned int u_int64_t __attribute__ ((__mode__ (  __DI__ ))) ;
 
+// The mode argument does not have to use underscores.
+typedef int int8_t_alternate __attribute__ ((__mode__ (  QI ))) ;
+
 
 // way to test at compile-time that two types are equal; template
 // argument deduction will fail if the args are not equal; Elsa has
@@ -52,6 +55,8 @@ void bar()
   u_int32_t ui32;
   u_int64_t ui64;
 
+  int8_t_alternate  i8_alternate;
+
   signed char sc;
   unsigned char uc;
 
@@ -73,6 +78,8 @@ void bar()
   equalTypes(ui16, us);
   equalTypes(ui32, ui);
   equalTypes(ui64, ull);
+
+  equalTypes(i8_alternate,  sc);
 }
 
 

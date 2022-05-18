@@ -10,6 +10,21 @@ verbatim {
   #define GNU_EXTENSION         // this extension module is active
 
   #include <limits.h>           // INT_MIN
+
+  // Return true if 'astName', a name stored in an AST node, is equal to
+  // the GNU attribute name 'attrName'.  The former might be (often is)
+  // surrounded by double underscores, while the latter is the simple
+  // name without underscores.
+  //
+  // This is equivalent to:
+  //
+  //   streq(astName, attrName) ||
+  //   streq(astName, stringbc("__" << attrName << "__"))
+  //
+  // but a bit more efficient and, more importantly, makes the process
+  // of recognizing such names consistent.
+  //
+  bool streq_GAN(StringRef astName, char const *attrName);
 }
 
 
@@ -383,6 +398,8 @@ verbatim {
     virtual void print(PrintEnv &env) const override;
   };
 }
-// TODO: IDeclarator::isD_attribute(), asD_attribute(), ifD_attribute()
+// TODO: IDeclarator::isD_attribute(), asD_attribute(), ifD_attribute().
+// Until then, use dynamic_cast.
+
 
 // EOF
