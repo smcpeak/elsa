@@ -73,6 +73,9 @@ public:      // methods
   // return "/*anon*/".  Otherwise, return "".
   char const *possiblyAnonName(StringRef name) const;
 
+  // Return the spelling of the 'asm' keyword for 'm_lang'.
+  char const *asmKeywordSpelling() const;
+
   // Print 'type' using 'm_typePrinter'.
   virtual void ptype(TypeLike const *type, char const *name = "");
 

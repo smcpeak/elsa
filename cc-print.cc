@@ -69,6 +69,23 @@ char const *PrintEnv::possiblyAnonName(StringRef name) const
 }
 
 
+char const *PrintEnv::asmKeywordSpelling() const
+{
+  if (m_lang.isCplusplus) {
+    // In C++, 'asm' is a reserved keyword (C++14 2.11/1), and
+    // asm-definition is part of the core language.
+    return "asm";
+  }
+  else {
+    // In C, it is not a keyword (C11 6.4.1/1).  Instead, C11 J.5.10
+    // explains that 'asm' is a commonly available extension.  GCC does
+    // not recognize it in standard-conforming mode (like "-std=c99"),
+    // so we use its extension keyword instead.
+    return "__asm__";
+  }
+}
+
+
 void PrintEnv::ptype(Type const *type, char const *name)
 {
   *this << m_typePrinter.printType(type, name);
@@ -1166,19 +1183,7 @@ void Handler::print(PrintEnv &env) const
 // -------------------------- AsmDefinition ----------------------------
 void AD_string::print(PrintEnv &env) const
 {
-  // In C++, 'asm' is a reserved keyword (C++14 2.11/1).  But C does not
-  // reserve it (C11 6.4.1/1), even though J.5.10 'asm' is listed as a
-  // common extension.  Since my usual target compiler is GCC, which
-  // accepts '__asm__' in C mode (and does not accept 'asm' when given a
-  // standard-enforcement switch like "-std=c99"), I will use that for
-  // C.
-  if (env.m_lang.isCplusplus) {
-    env << "asm";
-  }
-  else {
-    env << "__asm__";
-  }
-  env << "(";
+  env << env.asmKeywordSpelling() << "(";
 
   // It is common for the string literal to have multiple elements,
   // and those should be printed so they line up in a column.

@@ -1171,7 +1171,7 @@ void S_computedGoto::iprint(PrintEnv &env, StatementContext) const
 
 void AD_gnu::print(PrintEnv &env) const
 {
-  env << "asm";
+  env << env.asmKeywordSpelling();
   if (cv != CV_NONE) {
     env << " " << toString(cv) << " ";
   }

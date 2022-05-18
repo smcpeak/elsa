@@ -17,12 +17,12 @@ unsigned long long f()
   unsigned long long b = 0xHEXDIGITS;
   unsigned long long c = 0xHEXDIGITS;
   unsigned long long r1;
-  asm volatile ("mov    %1, %%rax   \n\t"
-                "xor    %2, %%rax   \n\t"
-                "xor    %3, %%rax   "
-                : "=&a" (r1)
-                : "g" (a), "g" (b), "g" (c)
-                : "cc");
+  __asm__ volatile ("mov    %1, %%rax   \n\t"
+                    "xor    %2, %%rax   \n\t"
+                    "xor    %3, %%rax   "
+                    : "=&a" (r1)
+                    : "g" (a), "g" (b), "g" (c)
+                    : "cc");
   return r1;
 }
 
@@ -30,19 +30,19 @@ void ex1()
 {
   int src = 1;
   int dst;
-  asm("mov %1, %0\n\t" "add $1, %0"
-      : "=r" (dst)
-      : "r" (src));
+  __asm__("mov %1, %0\n\t" "add $1, %0"
+          : "=r" (dst)
+          : "r" (src));
   printf("%d\n", dst);
 }
 
 uint32_t DoCheck(uint32_t dwSomeValue)
 {
   uint32_t dwRes;
-  asm("bsfl %1,%0"
-      : "=r" (dwRes)
-      : "r" (dwSomeValue)
-      : "cc");
+  __asm__("bsfl %1,%0"
+          : "=r" (dwRes)
+          : "r" (dwSomeValue)
+          : "cc");
   return dwRes;
 }
 
@@ -50,10 +50,10 @@ void do_print(uint32_t dwSomeValue)
 {
   uint32_t dwRes;
   for (uint32_t x = 0; x < 5; x++) {
-    asm("bsfl %1,%0"
-        : "=r" (dwRes)
-        : "r" (dwSomeValue)
-        : "cc");
+    __asm__("bsfl %1,%0"
+            : "=r" (dwRes)
+            : "r" (dwSomeValue)
+            : "cc");
     printf("%u: %u %u\n", x, dwSomeValue, dwRes);
   }
 }
@@ -61,40 +61,40 @@ void do_print(uint32_t dwSomeValue)
 void volatile_example()
 {
   uint64_t msr;
-  asm volatile ("rdtsc\n\t"
-                "shl $32, %%rdx\n\t"
-                "or %%rdx, %0"
-                : "=a" (msr)
-                :
-                : "rdx");
+  __asm__ volatile ("rdtsc\n\t"
+                    "shl $32, %%rdx\n\t"
+                    "or %%rdx, %0"
+                    : "=a" (msr)
+                    :
+                    : "rdx");
   printf("msr: %lx\n", msr);
-  asm volatile ("rdtsc\n\t"
-                "shl $32, %%rdx\n\t"
-                "or %%rdx, %0"
-                : "=a" (msr)
-                :
-                : "rdx");
+  __asm__ volatile ("rdtsc\n\t"
+                    "shl $32, %%rdx\n\t"
+                    "or %%rdx, %0"
+                    : "=a" (msr)
+                    :
+                    : "rdx");
   printf("msr: %lx\n", msr);
 }
 
 uint64_t double_colon_missing_inputs()
 {
   uint64_t msr;
-  asm volatile ("rdtsc\n\t"
-                "shl $32, %%rdx\n\t"
-                "or %%rdx, %0"
-                : "=a" (msr)
-                :
-                : "rdx");
+  __asm__ volatile ("rdtsc\n\t"
+                    "shl $32, %%rdx\n\t"
+                    "or %%rdx, %0"
+                    : "=a" (msr)
+                    :
+                    : "rdx");
   return msr;
 }
 
 int mtfsf1(int x, int y, uint64_t fpenv)
 {
   int sum;
-  asm volatile ("mtfsf 255, %0"
-                :
-                : "r" (fpenv));
+  __asm__ volatile ("mtfsf 255, %0"
+                    :
+                    : "r" (fpenv));
   sum = x+y;
   return sum;
 }
@@ -102,9 +102,9 @@ int mtfsf1(int x, int y, uint64_t fpenv)
 int mtfsf2(int x, int y, uint64_t fpenv)
 {
   int sum;
-  asm volatile ("mtfsf 255,%1"
-                : "=X" (sum)
-                : "r" (fpenv));
+  __asm__ volatile ("mtfsf 255,%1"
+                    : "=X" (sum)
+                    : "r" (fpenv));
   sum = x+y;
   return sum;
 }
@@ -112,11 +112,11 @@ int mtfsf2(int x, int y, uint64_t fpenv)
 bool old_ex(uint32_t *Base, uint32_t Offset)
 {
   bool old;
-  asm("btsl %2,%1\n\t"
-      "sbb %0,%0"
-      : "=r" (old), "+rm" (*Base)
-      : "Ir" (Offset)
-      : "cc");
+  __asm__("btsl %2,%1\n\t"
+          "sbb %0,%0"
+          : "=r" (old), "+rm" (*Base)
+          : "Ir" (Offset)
+          : "cc");
   return old;
 }
 
@@ -126,40 +126,40 @@ void output_non_lvalue()
 uint32_t missing_inputs()
 {
   uint32_t result;
-  asm("blah"
-      : "=r" (result));
+  __asm__("blah"
+          : "=r" (result));
   return result;
 }
 
 void double_colon_missing_outputs(int x)
 {
-  asm("gorf"
-      :
-      : "r" (x));
+  __asm__("gorf"
+          :
+          : "r" (x));
 }
 
 void triple_colon_with_clobbers()
 {
-  asm("oh baby"
-      :
-      :
-      : "cc");
+  __asm__("oh baby"
+          :
+          :
+          : "cc");
 }
 
 void triple_colon_without_clobbers()
 {
-  asm("oh baby"
-      :);
+  __asm__("oh baby"
+          :);
 }
 
 uint32_t no_symname()
 {
   uint32_t Mask = 1234;
   uint32_t Index;
-  asm("bsfl %1, %0"
-      : "=r" (Index)
-      : "r" (Mask)
-      : "cc");
+  __asm__("bsfl %1, %0"
+          : "=r" (Index)
+          : "r" (Mask)
+          : "cc");
   return Index;
 }
 
@@ -167,10 +167,10 @@ uint32_t with_symname()
 {
   uint32_t Mask = 1234;
   uint32_t Index;
-  asm("bsfl %[aMask], %[aIndex]"
-      : [aIndex] "=r" (Index)
-      : [aMask] "r" (Mask)
-      : "cc");
+  __asm__("bsfl %[aMask], %[aIndex]"
+          : [aIndex] "=r" (Index)
+          : [aMask] "r" (Mask)
+          : "cc");
   return Index;
 }
 
@@ -179,72 +179,72 @@ void another_output_op_example()
   uint32_t c = 1;
   uint32_t d;
   uint32_t *e = &c;
-  asm("mov %[e], %[d]"
-      : [d] "=rm" (d)
-      : [e] "rm" (*e));
+  __asm__("mov %[e], %[d]"
+          : [d] "=rm" (d)
+          : [e] "rm" (*e));
 }
 
 void no_output_operands(uint32_t Offset)
 {
-  asm("some instructions"
-      :
-      : "r" (Offset/8));
+  __asm__("some instructions"
+          :
+          : "r" (Offset/8));
 }
 
 uint32_t combine(uint32_t foo, uint32_t bar)
 {
-  asm("combine %2, %0"
-      : "=r" (foo)
-      : "0" (foo), "g" (bar));
+  __asm__("combine %2, %0"
+          : "=r" (foo)
+          : "0" (foo), "g" (bar));
   return foo;
 }
 
 uint32_t cmoveq(uint32_t test, uint32_t new, uint32_t old)
 {
   uint32_t result;
-  asm("cmoveq %1, %2, %[result]"
-      : [result] "=r" (result)
-      : "r" (test), "r" (new), "[result]" (old));
+  __asm__("cmoveq %1, %2, %[result]"
+          : [result] "=r" (result)
+          : "r" (test), "r" (new), "[result]" (old));
   return result;
 }
 
 void vax_clobber(uint32_t from, uint32_t to, uint32_t count)
 {
-  asm volatile ("movc3 %0, %1, %2"
-                :
-                : "g" (from), "g" (to), "g" (count)
-                : "cc", "cc", "memory");
+  __asm__ volatile ("movc3 %0, %1, %2"
+                    :
+                    : "g" (from), "g" (to), "g" (count)
+                    : "cc", "cc", "memory");
 }
 
 uint32_t sumsq(uint32_t *x, uint32_t *y)
 {
   uint32_t result = 0;
-  asm("sumsq %0, %1, %2"
-      : "+r" (result)
-      : "r" (x), "r" (y), "m" (*x), "m" (*y));
+  __asm__("sumsq %0, %1, %2"
+          : "+r" (result)
+          : "r" (x), "r" (y), "m" (*x), "m" (*y));
   return result;
 }
 
 void vecmul(uint32_t *z, uint32_t *x, uint32_t *y)
 {
-  asm("vecmul %0, %1, %2"
-      : "+r" (z), "+r" (x), "+r" (y), "=m" (*z)
-      : "m" (*x), "m" (*y));
+  __asm__("vecmul %0, %1, %2"
+          : "+r" (z), "+r" (x), "+r" (y), "=m" (*z)
+          : "m" (*x), "m" (*y));
 }
 
 uint32_t unknown_length(void *p)
 {
   uint32_t count;
-  asm("repne scasb"
-      : "=c" (count), "+D" (p)
-      : "m" (*((char const (*)[])p)), "0" (-1), "a" (0));
+  __asm__("repne scasb"
+          : "=c" (count), "+D" (p)
+          : "m" (*((char const (*)[])p)), "0" (-1), "a" (0));
   return count;
 }
 
 void no_operands()
 {
-  asm volatile ("no operands here"
-                :);
+  __asm__ volatile ("no operands here"
+                    :);
 }
 
 ---- STOP ----
