@@ -1,5 +1,5 @@
-// asm.c
-// Exercise asm definition.
+// asm.cc
+// Exercise asm definition in C++.
 
 asm("asm at top level");
 __asm__("second asm at top level");

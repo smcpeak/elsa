@@ -148,6 +148,18 @@ check: out/pprint/chained-labels.c.nogcc.ok
 check: out/pprint/gnu-asm.c.nogcc.ok
 
 
+# Test C++ without passing the result into GCC.
+out/pprint/%.cc.nogcc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
+	@mkdir -p $(dir $@)idem
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/pprint/$*.cc.actual \
+	  --expect pprint/$*.cc.expect \
+	  $(CCPARSE) --pretty-print $<
+	touch $@
+
+check: out/pprint/asm-cc.cc.nogcc.ok
+
+
 # ------------------------------ strlit --------------------------------
 # String literal tests run with --print-string-literals and compare the
 # output to expected output.

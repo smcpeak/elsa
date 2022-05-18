@@ -13,6 +13,7 @@
 
 // elsa
 #include "cc-ast.h"                    // C++ AST
+#include "cc-lang.h"                   // CCLang
 #include "type-printer.h"              // TypePrinter, CTypePrinter
 
 // smbase
@@ -37,6 +38,10 @@ public:      // data
   // How to print types.
   TypePrinter &m_typePrinter;
 
+  // Other language options that affect printing.  At the moment, the
+  // only one I plan to use is CCLang::isCplusplus.
+  CCLang const &m_lang;
+
   // If true, print comments with some additional AST details.  The
   // default is true.
   bool m_printComments;
@@ -46,8 +51,9 @@ public:      // data
   bool m_printISC;
 
 public:      // methods
-  PrintEnv(TypePrinter &typePrinter)
+  PrintEnv(TypePrinter &typePrinter, CCLang const &lang)
     : m_typePrinter(typePrinter),
+      m_lang(lang),
       m_printComments(true),
       m_printISC(false)
   {}
@@ -90,7 +96,7 @@ template <class T>
 string printASTNodeToString(CCLang const &lang, T const *astNode)
 {
   CTypePrinter typePrinter(lang);
-  PrintEnv env(typePrinter);
+  PrintEnv env(typePrinter, lang);
 
   astNode->print(env);
 

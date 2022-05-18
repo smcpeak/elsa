@@ -514,7 +514,7 @@ void ElsaParse::parse(char const *inputFname)
 
   if (m_prettyPrint) {
     CTypePrinter typePrinter(m_lang);
-    PrintEnv env(typePrinter);
+    PrintEnv env(typePrinter, m_lang);
     env.m_printComments = m_prettyPrintComments;
     env.m_printISC = m_prettyPrintISC;
     cout << "---- START ----" << endl;
@@ -550,7 +550,7 @@ void ElsaParse::parse(char const *inputFname)
 
       if (tracingSys("clonePrint")) {
         CTypePrinter typePrinter(m_lang);
-        PrintEnv penv(typePrinter);
+        PrintEnv penv(typePrinter, m_lang);
         cout << "---- cloned pretty print ----" << endl;
         u2->print(penv);
         cout << penv.getResult();

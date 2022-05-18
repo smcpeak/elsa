@@ -119,7 +119,7 @@ string CTypePrinter::print(TypeVariable const *typeVar)
 
 string CTypePrinter::print(PseudoInstantiation const *pseudoInst)
 {
-  PrintEnv env(*this);
+  PrintEnv env(*this, m_lang);
 
   env << pseudoInst->name;
 
@@ -138,7 +138,7 @@ string CTypePrinter::print(PseudoInstantiation const *pseudoInst)
 
 string CTypePrinter::print(DependentQType const *depType)
 {
-  PrintEnv env(*this);
+  PrintEnv env(*this, m_lang);
 
   env << print(depType->first) << ':' << ':';
   depType->rest->print(env);

@@ -91,7 +91,7 @@ void PrintEnv::iprintExpression(Expression const *expr)
 string printTypeToString(CCLang const &lang, Type const *type)
 {
   CTypePrinter typePrinter(lang);
-  PrintEnv env(typePrinter);
+  PrintEnv env(typePrinter, lang);
   env.ptype(type, "" /*do not print "anon"*/);
   return env.getResult();
 }
@@ -102,7 +102,7 @@ string printStatementToString(
   bool printComments)
 {
   CTypePrinter typePrinter(lang);
-  PrintEnv env(typePrinter);
+  PrintEnv env(typePrinter, lang);
   env.m_printComments = printComments;
   stmt->print(env, context);
   return env.getResult();
@@ -114,7 +114,7 @@ string printExpressionToString(
   bool printComments)
 {
   CTypePrinter typePrinter(lang);
-  PrintEnv env(typePrinter);
+  PrintEnv env(typePrinter, lang);
   env.m_printComments = printComments;
   expr->print(env, prec);
   return env.getResult();
@@ -1168,10 +1168,17 @@ void AD_string::print(PrintEnv &env) const
 {
   // In C++, 'asm' is a reserved keyword (C++14 2.11/1).  But C does not
   // reserve it (C11 6.4.1/1), even though J.5.10 'asm' is listed as a
-  // common extension.  It's therefore possible that, in C, we are using
-  // the wrong keyword here, depending on what extensions are supported
-  // by the compiler and their associated syntax.
-  env << "asm(";
+  // common extension.  Since my usual target compiler is GCC, which
+  // accepts '__asm__' in C mode (and does not accept 'asm' when given a
+  // standard-enforcement switch like "-std=c99"), I will use that for
+  // C.
+  if (env.m_lang.isCplusplus) {
+    env << "asm";
+  }
+  else {
+    env << "__asm__";
+  }
+  env << "(";
 
   // It is common for the string literal to have multiple elements,
   // and those should be printed so they line up in a column.
@@ -1236,7 +1243,7 @@ string Expression::exprToString() const
   CCLang lang;
 
   CTypePrinter typePrinter(lang);
-  PrintEnv env(typePrinter);
+  PrintEnv env(typePrinter, lang);
 
   this->print(env, OPREC_LOWEST);
   return env.getResult();
