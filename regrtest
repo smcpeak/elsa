@@ -1485,7 +1485,6 @@ if $use_gnu; then
   testCparse gnu/dC0007.c # case 1 ... 3:
   testCparse gnu/dC0008.c # int a[] = { [1] 0 }; struct A a = { .x 8 };
   testCparse gnu/dC0009.c # UCHAR8 SampleResolution:2 __attribute__ ((packed));
-  testCparse gnu/dC0014.c # "'u32 long off' doesn't parse"
   testCparse gnu/dC0015.c # function scope structs can contain arrays of dynamic size
   testCparse gnu/dC0016.c
 
