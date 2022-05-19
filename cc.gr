@@ -255,7 +255,7 @@ nonterm(TranslationUnit*) TranslationUnit {
   -> empty                                { return new TranslationUnit(NULL); }
 
   // destructive action on 't'
-  -> t:TranslationUnit d:Declaration      { t->topForms.append(d); return t; }
+  -> t:TranslationUnit d:TFDeclaration    { t->topForms.append(d); return t; }
 
   // arg!  Mozilla is littered with toplevel semicolons..
   -> t:TranslationUnit ";"                { return t; }
@@ -992,7 +992,7 @@ nonterm(Statement*) ForInitStatement {
 //       { seq->append(d); return seq; }
 //}
 
-nonterm(TopForm*) Declaration {
+nonterm(TopForm*) TFDeclaration {
   -> d:BlockDeclaration        { return new TF_decl(loc, d); }
   -> f:FunctionDefinition      { return new TF_func(loc, f); }
   -> t:TemplateDeclaration     { return new TF_template(loc, t); }
@@ -1341,7 +1341,7 @@ nonterm(TopForm*) LinkageSpecification {
   -> "extern" n:TOK_STRING_LITERAL "{" tu:TranslationUnit "}"
        { return new TF_linkage(loc, n, tu); }
 
-  -> "extern" n:TOK_STRING_LITERAL tf:Declaration
+  -> "extern" n:TOK_STRING_LITERAL tf:TFDeclaration
        { return new TF_one_linkage(loc, n, tf); }
 }
 

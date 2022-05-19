@@ -20,7 +20,7 @@ verbatim {
 // KandR stuff ****************************************************************
 
 // only allow K&R func defns at toplevel
-nonterm(TopForm*) Declaration {
+nonterm(TopForm*) TFDeclaration {
   -> k:KandRFunctionDefinition             { return new TF_func(loc, k); }
   -> k:KandRFunctionDefinition_implInt     { return new TF_func(loc, k); }
 }
@@ -320,7 +320,7 @@ nonterm(Function*) ImplIntFunctionDefinition {
        }
 }
 
-nonterm(TopForm*) Declaration {
+nonterm(TopForm*) TFDeclaration {
   fun keep(x) { return x!=NULL; }
 
   fun merge(L,R) { L->addAmbiguity(R); return L; }
