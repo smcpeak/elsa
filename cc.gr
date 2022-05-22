@@ -564,7 +564,9 @@ nonterm(ASTTypeId*) NewTypeId {
 // is in fact allowed (it doesn't make sense to me) so I do not allow
 // it (so I'll see the counterexample syntax if it exists)
 nonterm(IDeclarator*) NewDeclaratorOpt {
-  -> empty
+  // This forbid_next is to remove a conflict for "new int *", where the
+  // parser naively thinks the '*' could mean multiplication.
+  -> empty                             forbid_next("*")
        { return new D_name(loc, NULL); }
 
   // pointers

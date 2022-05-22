@@ -241,6 +241,7 @@ out/tcheck/%.c.ok: tcheck/%.c $(CCPARSE)
 	touch $@
 
 TESTS += tcheck/builtin-offsetof.cc
+TESTS += tcheck/new-int-star.cc
 
 # Run a C++ tcheck test
 out/tcheck/%.cc.ok: tcheck/%.cc $(CCPARSE)
