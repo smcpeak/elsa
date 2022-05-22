@@ -214,6 +214,12 @@ ifeq ($(USE_KANDR),1)
 endif
 
 
+# Note: If you change the set of active extensions, you have to manually
+# ensure that the AST and parser files are regenerated because nothing
+# knows about the dependency of their contents on the module list in
+# this Makefile.
+
+
 # ------------------- Running smflex ------------------
 TOCLEAN += *.yy.cc *.yy.h lex.backup
 %.yy.h %.yy.cc: %.lex
