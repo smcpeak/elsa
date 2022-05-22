@@ -570,8 +570,8 @@ impl_verbatim {
     Declaration *ret = new Declaration(df,
       env.new_TS_name(loc, cv, name, false /*typename*/),
       NULL /*decllist*/);
-    ret->appendASL(umaaslASL(uma1));
-    ret->appendASL(umaaslASL(uma2));
+    ret->spec->appendASL(umaaslASL(uma1));
+    ret->spec->appendASL(umaaslASL(uma2));
     return ret;
   }
 
@@ -593,8 +593,8 @@ impl_verbatim {
     Declaration *ret = new Declaration(df,
       env.new_TS_simple(loc, cv, id),
       NULL /*decllist*/);
-    ret->appendASL(umaaslASL(uma1));
-    ret->appendASL(umaaslASL(uma2));
+    ret->spec->appendASL(umaaslASL(uma1));
+    ret->spec->appendASL(umaaslASL(uma2));
     return ret;
   }
 
@@ -614,8 +614,8 @@ impl_verbatim {
     e->cv |= uberCVFlags(m);      // destructive action
     Declaration *ret =
       new Declaration(uberDeclFlags(m), e, NULL /*decllist*/);
-    ret->appendASL(umaaslASL(uma1));
-    ret->appendASL(umaaslASL(uma2));
+    ret->spec->appendASL(umaaslASL(uma1));
+    ret->spec->appendASL(umaaslASL(uma2));
     return ret;
   }
 
@@ -635,8 +635,8 @@ impl_verbatim {
     CVFlags cv = uberCVFlags(m);
     Declaration *ret = new Declaration(df,
       new_TS_typeof(loc, cv, te), NULL /*decllist*/);
-    ret->appendASL(umaaslASL(uma1));
-    ret->appendASL(umaaslASL(uma2));
+    ret->spec->appendASL(umaaslASL(uma1));
+    ret->spec->appendASL(umaaslASL(uma2));
     return ret;
   }
 }
@@ -669,7 +669,7 @@ nonterm(Declaration*) DeclSpecifier {
   // The case of a declaration specifier beginning with an attribute can
   // be handled uniformly with one new rule.
   -> asl:AttributeSpecifierList d:DeclSpecifier
-       { d->prependASL(asl); return d; }
+       { d->spec->prependASL(asl); return d; }
 
   // ---- PQTypeName ----
 

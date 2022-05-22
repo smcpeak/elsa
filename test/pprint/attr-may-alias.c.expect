@@ -1,7 +1,7 @@
 ---- stdout ----
 ---- START ----
 // -*-c++-*-
-__attribute__((__may_alias__)) typedef short short_a;
+typedef __attribute__((__may_alias__)) short short_a;
 
 int main()
 {

@@ -1639,9 +1639,6 @@ void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
 
 void D_attribute::print(PrintEnv &env) const
 {
-  // TODO: I need pretty printing for attributes on Declarations and
-  // TypeSpecifiers.
-
   base->print(env);
   env << env.sp;
   alist->print(env);
@@ -1708,18 +1705,6 @@ void TypeSpecifier::prependASL(AttributeSpecifierList *list)
 
 
 void TypeSpecifier::appendASL(AttributeSpecifierList * /*nullable*/ list)
-{
-  m_attrSpecList = aslAppendASL(m_attrSpecList, list);
-}
-
-
-void Declaration::prependASL(AttributeSpecifierList *list)
-{
-  m_attrSpecList = aslAppendASL(list, m_attrSpecList);
-}
-
-
-void Declaration::appendASL(AttributeSpecifierList * /*nullable*/ list)
 {
   m_attrSpecList = aslAppendASL(m_attrSpecList, list);
 }

@@ -1,7 +1,7 @@
 ---- stdout ----
 ---- START ----
 // -*-c++-*-
-__attribute__((mode(byte))) typedef int my_byte;
+typedef __attribute__((mode(byte))) int my_byte;
 
 int main()
 {

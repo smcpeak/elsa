@@ -479,15 +479,6 @@ void Declaration::print(PrintEnv &env) const
     // back to where the type specifier started.
     TP_H_OR_V;
 
-    // TODO: I would like to find a better solution to allowing the GNU
-    // extension to print attributes than inserting an explicit #ifdef.
-    #ifdef GNU_EXTENSION
-    if (m_attrSpecList) {
-      m_attrSpecList->print(env);
-      env << env.sp;
-    }
-    #endif // GNU_EXTENSION
-
     printDeclFlags(env, dflags);
     spec->print(env);
     Declarator *declarator = fl_first(decllist);
@@ -503,13 +494,6 @@ void Declaration::print(PrintEnv &env) const
   // Sequence for the entire declaration, encompassing any breaks in
   // the type specifier.
   TPSEQUENCE;
-
-  #ifdef GNU_EXTENSION
-  if (m_attrSpecList) {
-    m_attrSpecList->print(env);
-    env << env.sp;
-  }
-  #endif // GNU_EXTENSION
 
   printDeclFlags(env, dflags);
 
@@ -616,6 +600,18 @@ void PQ_template::print(PrintEnv &env) const
 // --------------------- TypeSpecifier --------------
 void TypeSpecifier::print(PrintEnv &env) const
 {
+  // TODO: I think I want this, but it causes a few pprint differences.
+  //TPSEQUENCE;
+
+  // TODO: I would like to find a better solution to allowing the GNU
+  // extension to print attributes than inserting an explicit #ifdef.
+  #ifdef GNU_EXTENSION
+  if (m_attrSpecList) {
+    m_attrSpecList->print(env);
+    env << env.sp;
+  }
+  #endif // GNU_EXTENSION
+
   iprint(env);
   if (cv) {
     env << " " << toString(cv);

@@ -26,15 +26,15 @@ possible ways of dealing with them:
 For #2, the syntactic places that attributes are retained in the AST
 are:
 
-* Declaration specifiers (DeclSpecifier grammar nonterminal, Declaration
-  AST class): Basically, this is any place that a storage class
-  specifier like 'extern' or 'static' could go:
+* Declaration type specifiers (DeclSpecifier grammar nonterminal,
+  TypeSpecifier AST class): Basically, this is any place that a storage
+  class specifier like 'extern' or 'static' could go:
 
     __attribute__((...)) int x;
 
-* Type specifiers (TypeSpecifier nonterminal and AST class): These are
-  places that a type can go but are not a full declaration, such as the
-  type in a cast, or the type of a parameter:
+* Non-declaration type specifiers (TypeSpecifier nonterminal and AST
+  class): These are places that a type can go but are not a full
+  declaration, such as the type in a cast, or the type of a parameter:
 
     (__attribute__((...)) int *)NULL
 
@@ -46,7 +46,7 @@ are:
 
     int noattr, hasattr __attribute__((...)), noattr2;
 
-For Declaration and TypeSpecifier, gnu.ast gives each class a nullable
+For type specifier attributes, gnu.ast gives TypeSpecifier a nullable
 'm_attrSpecList' field that carries the attributes.
 
 For Declarators, the D_attribute class carries the attributes.  That

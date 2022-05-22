@@ -159,9 +159,7 @@ new class ASTTypeof {
 
 
 class TypeSpecifier {
-  // Nullable list of attribute specifiers.  This follows the same
-  // pattern as Declaration, below.  Perhaps I should factor the ASL
-  // into a class they can both share?
+  // Nullable list of attribute specifiers.
   public AttributeSpecifierList *m_attrSpecList = NULL;
   custom debugPrint {
     PRINT_SUBTREE(m_attrSpecList);
@@ -329,22 +327,6 @@ class Expression {
 // attributes.  I don't know very much about how they will be used (I
 // don't know much about what they *mean*), so it is hard to do any
 // semantic digestion.  Therefore, I will not try.
-
-
-// Declaration can have attributes.
-class Declaration {
-  // Nullable list of attribute specifiers.
-  public AttributeSpecifierList *m_attrSpecList = NULL;
-  custom debugPrint {
-    PRINT_SUBTREE(m_attrSpecList);
-  }
-
-  // Prepend 'list' to 'm_attrSpecList'.
-  public void prependASL(AttributeSpecifierList *list);
-
-  // Append 'list' to 'm_attrSpecList'.
-  public void appendASL(AttributeSpecifierList * /*nullable*/ list);
-}
 
 
 // a sequence of __attribute__((...)) specifiers

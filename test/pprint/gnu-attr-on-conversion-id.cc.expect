@@ -2,7 +2,8 @@
 ---- START ----
 // -*-c++-*-
 struct S {
-  operator char();
+  operator __attribute__(()) __attribute__(()) char();
+  operator __attribute__(()) __attribute__(()) float();
   S()
   {}
   S(S const &__other)

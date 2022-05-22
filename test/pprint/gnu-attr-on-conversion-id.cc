@@ -35,7 +35,17 @@ Intepretation 2:
 */
 
 struct S {
+  // This is the declaration diagrammed above.
   operator char __attribute__(()) __attribute__(()) ();
+
+  // Variations on attribute placement.
+
+  // TODO: This one triggers a different ambiguity!
+  //operator __attribute__(()) __attribute__(()) int ();
+
+  operator __attribute__(()) float __attribute__(()) ();
+
+  // TODO: More variations.
 };
 
 // EOF

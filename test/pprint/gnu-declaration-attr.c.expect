@@ -3,15 +3,15 @@
 // -*-c++-*-
 int var_target = 7;
 
-__attribute__((alias("var_target"))) extern int var_alias;
+extern __attribute__((alias("var_target"))) int var_alias;
 
 int target2 = 9;
 
-__attribute__((alias("target2"))) extern int alias2;
+extern __attribute__((alias("target2"))) int alias2;
 
 int target3 = 29;
 
-__attribute__((alias("target3"))) extern int alias3;
+extern __attribute__((alias("target3"))) int alias3;
 
 int main()
 {
