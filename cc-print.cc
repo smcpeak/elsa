@@ -478,6 +478,16 @@ void Declaration::print(PrintEnv &env) const
     // If there is only one declarator, we will wrap with indentation
     // back to where the type specifier started.
     TP_H_OR_V;
+
+    // TODO: I would like to find a better solution to allowing the GNU
+    // extension to print attributes than inserting an explicit #ifdef.
+    #ifdef GNU_EXTENSION
+    if (m_attrSpecList) {
+      m_attrSpecList->print(env);
+      env << env.sp;
+    }
+    #endif // GNU_EXTENSION
+
     printDeclFlags(env, dflags);
     spec->print(env);
     Declarator *declarator = fl_first(decllist);
@@ -493,6 +503,13 @@ void Declaration::print(PrintEnv &env) const
   // Sequence for the entire declaration, encompassing any breaks in
   // the type specifier.
   TPSEQUENCE;
+
+  #ifdef GNU_EXTENSION
+  if (m_attrSpecList) {
+    m_attrSpecList->print(env);
+    env << env.sp;
+  }
+  #endif // GNU_EXTENSION
 
   printDeclFlags(env, dflags);
 

@@ -1,6 +1,7 @@
 // gnu.cc
 // tcheck and print routines for gnu.ast/gnu.gr extensions
 
+// TODO: Sort and partition this list.
 #include "generic_aux.h"      // C++ AST, and genericPrintAmbiguities, etc.
 #include "cc-env.h"           // Env
 #include "cc-print.h"         // olayer, PrintEnv
@@ -8,6 +9,7 @@
 #include "stdconv.h"          // usualArithmeticConversions
 #include "strutil.h"          // streq
 #include "astvisit.h"         // ASTVisitorEx
+#include "ubermods-attrspec.h"         // aslPrependAS, aslAppendASL
 #include <string.h>           // strcmp, strncmp
 
 
@@ -1489,6 +1491,9 @@ void AttributeDisambiguator::foundAmbiguous(void *obj, void **ambig, char const 
 
 void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
 {
+  // TODO: I need to type-check the attributes on Declaration and
+  // TypeSpecifier.
+
   // tcheck the underlying declarator
   D_grouping::tcheck(env, dt);
 
@@ -1634,7 +1639,11 @@ void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
 
 void D_attribute::print(PrintEnv &env) const
 {
+  // TODO: I need pretty printing for attributes on Declarations and
+  // TypeSpecifiers.
+
   base->print(env);
+  env << env.sp;
   alist->print(env);
 }
 
@@ -1642,13 +1651,10 @@ void D_attribute::print(PrintEnv &env) const
 // --------------------- AttributeSpecifierList ------------------------
 void AttributeSpecifierList::print(PrintEnv &env) const
 {
-  // This space follows either the original declarator or the
-  // previous attribute specifier in the list.
-  env << env.sp;
-
   spec->print(env);
 
   if (next) {
+    env << env.sp;
     next->print(env);
   }
 }
@@ -1695,6 +1701,30 @@ void AttributeSpecifier::print(PrintEnv &env) const
 
 
 // ---------------------- Attribute -------------------------
+void TypeSpecifier::prependASL(AttributeSpecifierList *list)
+{
+  m_attrSpecList = aslAppendASL(list, m_attrSpecList);
+}
+
+
+void TypeSpecifier::appendASL(AttributeSpecifierList * /*nullable*/ list)
+{
+  m_attrSpecList = aslAppendASL(m_attrSpecList, list);
+}
+
+
+void Declaration::prependASL(AttributeSpecifierList *list)
+{
+  m_attrSpecList = aslAppendASL(list, m_attrSpecList);
+}
+
+
+void Declaration::appendASL(AttributeSpecifierList * /*nullable*/ list)
+{
+  m_attrSpecList = aslAppendASL(m_attrSpecList, list);
+}
+
+
 UberModifiers AT_empty::toUberModifiers() const
 {
   return UM_NONE;

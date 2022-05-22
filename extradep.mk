@@ -47,3 +47,4 @@ tlexer.o: cc-tokens.h
 tlexer.o: lexer.yy.h
 type-printer.o: cc.ast.gen.h
 typelistiter.o: cc.ast.gen.h
+ubermods-attrspec.o: cc.ast.gen.h

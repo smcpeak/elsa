@@ -148,7 +148,7 @@ new class ASTTypeof {
 
   // dsw: I had to move this here to deal with the mid_tcheck design
   // pattern that is used to resolve ambiguities.
-  public Type *type;
+  public Type *type;       // TODO: This should be initialized.  Also 'ambiguity' can be initalized more simply.
 
   // dsw: I'm assuming that ASTTypeof should terminate the top of the
   // Expression tree, but I don't feel absolutely sure about it.
@@ -159,6 +159,21 @@ new class ASTTypeof {
 
 
 class TypeSpecifier {
+  // Nullable list of attribute specifiers.  This follows the same
+  // pattern as Declaration, below.  Perhaps I should factor the ASL
+  // into a class they can both share?
+  public AttributeSpecifierList *m_attrSpecList = NULL;
+  custom debugPrint {
+    PRINT_SUBTREE(m_attrSpecList);
+  }
+
+  // Prepend 'list' to 'm_attrSpecList'.
+  public void prependASL(AttributeSpecifierList *list);
+
+  // Append 'list' to 'm_attrSpecList'.
+  public void appendASL(AttributeSpecifierList * /*nullable*/ list);
+
+  // 'typeof' behaves as a type specifier.
   -> TS_typeof(ASTTypeof atype);
 }
 
@@ -316,7 +331,23 @@ class Expression {
 // semantic digestion.  Therefore, I will not try.
 
 
-// a sequence of __attribute__((..)) specifiers
+// Declaration can have attributes.
+class Declaration {
+  // Nullable list of attribute specifiers.
+  public AttributeSpecifierList *m_attrSpecList = NULL;
+  custom debugPrint {
+    PRINT_SUBTREE(m_attrSpecList);
+  }
+
+  // Prepend 'list' to 'm_attrSpecList'.
+  public void prependASL(AttributeSpecifierList *list);
+
+  // Append 'list' to 'm_attrSpecList'.
+  public void appendASL(AttributeSpecifierList * /*nullable*/ list);
+}
+
+
+// a sequence of __attribute__((...)) specifiers
 class AttributeSpecifierList(
   AttributeSpecifier spec,
   AttributeSpecifierList /*nullable*/ next

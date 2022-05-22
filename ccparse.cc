@@ -128,6 +128,34 @@ UberModifiers ParseEnv
 }
 
 
+UberModifiers ParseEnv::uberCombine(SourceLoc loc,
+  UberModifiers m1, UberModifiers m2, UberModifiers m3)
+{
+  return uberCombine(loc, m1,
+         uberCombine(loc, m2,
+                          m3));
+}
+
+UberModifiers ParseEnv::uberCombine(SourceLoc loc,
+  UberModifiers m1, UberModifiers m2, UberModifiers m3, UberModifiers m4)
+{
+  return uberCombine(loc, m1,
+         uberCombine(loc, m2,
+         uberCombine(loc, m3,
+                          m4)));
+}
+
+UberModifiers ParseEnv::uberCombine(SourceLoc loc,
+  UberModifiers m1, UberModifiers m2, UberModifiers m3, UberModifiers m4, UberModifiers m5)
+{
+  return uberCombine(loc, m1,
+         uberCombine(loc, m2,
+         uberCombine(loc, m3,
+         uberCombine(loc, m4,
+                          m5))));
+}
+
+
 LocString * /*owner*/ ParseEnv::ls(SourceLoc loc, char const *name)
 {
   return new LocString(loc, str(name));

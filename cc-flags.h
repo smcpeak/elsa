@@ -531,6 +531,8 @@ enum UberModifiers {
   UM_CONST        = 0x00000400,
   UM_VOLATILE     = 0x00000800,
   UM_RESTRICT     = 0x00001000,    // C99
+
+  // TODO: Remove this.
   UM_MAY_ALIAS    = 0x00002000,    // __attribute__((__may_alias__))
 
   UM_CVFLAGS      = 0x00003C00,

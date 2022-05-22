@@ -1,0 +1,21 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+struct S {
+  operator char();
+  S()
+  {}
+  S(S const &__other)
+  {}
+  S &operator=(S const &__other)
+  {
+    return *this;
+  }
+  ~S()
+  {}
+};
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

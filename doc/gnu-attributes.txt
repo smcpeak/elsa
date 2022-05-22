@@ -1,0 +1,121 @@
+gnu-attributes.txt
+Explanation of handling of GNU __attribute__ syntax.
+
+GNU/GCC attributes, denoted with the "__attribute__((...))" syntax, can
+appear in a wide variety of places in C/C++ syntax.  Depending on the
+syntactic location and the name of the attribute, Elsa has three
+possible ways of dealing with them:
+
+1. Parse and ignore: The Elsa grammar (gnu.gr for GNU extensions)
+   recognizes the presence of the attribute but does not store anything
+   about it in the AST.  This is intended simply to allow Elsa to parse
+   code that uses attributes.
+
+2. Parse and store: In a few cases, detailed below, Elsa retains the
+   parsed attribute information in the AST.  This allows client analyses
+   to inspect the attributes for those of significance to that client.
+   It also allows the Elsa pretty-printer to print them back out,
+   perhaps as part of a source-to-source transformation.
+
+3. Parse and interpret: For now in just one case, the Elsa type checker
+   inspects an attribute, checks it for validity, and stores the
+   information in the "semantic" half of its AST.  That one case is the
+   "alias" attribute, which is recorded as
+   Variable::getGNUAliasTarget().
+
+For #2, the syntactic places that attributes are retained in the AST
+are:
+
+* Declaration specifiers (DeclSpecifier grammar nonterminal, Declaration
+  AST class): Basically, this is any place that a storage class
+  specifier like 'extern' or 'static' could go:
+
+    __attribute__((...)) int x;
+
+* Type specifiers (TypeSpecifier nonterminal and AST class): These are
+  places that a type can go but are not a full declaration, such as the
+  type in a cast, or the type of a parameter:
+
+    (__attribute__((...)) int *)NULL
+
+* Declarators (Declarator nonterminal and AST class): The declarator is
+  the "x" in "int x;", and attributes can go after a declarator, and
+  apply to just the single declared entity.  (Compare that to the
+  Declaration case, where the attribute is before any declarator, and
+  applies to all of the declared entities):
+
+    int noattr, hasattr __attribute__((...)), noattr2;
+
+For Declaration and TypeSpecifier, gnu.ast gives each class a nullable
+'m_attrSpecList' field that carries the attributes.
+
+For Declarators, the D_attribute class carries the attributes.  That
+means declarator attributes must be located by digging down into the
+IDeclarator structure.
+
+Attributes themselves are represented straightforwardly by the
+Attribute, AttributeSpecifier, and AttributeSpecifierList classes in
+gnu.ast.
+
+Grammatically, parsing attributes as part of DeclSpecifier and
+TypeSpecifier is somewhat complicated.  See the comments in gnu.gr above
+DeclSpecifier.  The short version is that every non-attribute rule
+becomes one or more attribute-containing rules, one for each of the gaps
+into which an attribute can be inserted into the original rule.  This
+structure is, unfortunately, repeated for TypeSpecifier.  A possible
+TODO is to combine the DeclSpecifier and TypeSpecifier nonterminals, but
+that may prove difficult.
+
+Arguably, this somewhat contorted structure could be avoided by folding
+attribute processing into the core cc.gr grammar, rather than continuing
+to sequester it in the gnu.gr extension.  Doing so remains an option for
+future consideration.
+
+Adding attributes as I have done introduces one new ambiguity,
+illustrated by test/pprint/gnu-attr-on-conversion-id.cc:
+
+  Interpretation 1:
+
+      operator char __attribute__((...)) __attribute__((...))
+         |      |            |                    |
+         |     UTK   AttributeSpecifier   AttributeSpecifier
+         |      |            |                    |
+         |      |       AttributeSpecifier_UTACVAASLOpt
+         |      |        |
+         |     TypeSpecifier
+         |          |
+       ConversionFunctionId
+                |
+         DirectDeclarator
+                |
+            Declarator
+
+  Intepretation 2:
+
+      operator char __attribute__((...)) __attribute__((...))
+         |      |            |               |
+         |     UTK    AS_UTACVAASLOpt        |
+         |      |       |                    |
+         |     TypeSpecifier                 |
+         |          |                        |
+       ConversionFunctionId                  |
+                |                            |
+         DirectDeclarator    AttributeSpecifierList
+                       |      |
+                      Declarator
+
+This happens because C++ conversion operator functions use a
+TypeSpecifier as part of their Declarator (that is, something like
+"operator char" is the name of the function), so the rules that allow
+attributes in each clash.
+
+The resolution is to use the Elkhound "forbid_next" feature to insist
+that a TypeSpecifier never fully reduce as long as it still has an
+upcoming '__attribute__' token.  Instead, TypeSpecifier (and certain of
+its helper nonterminals) are required to consume every following
+'__attribute__'.  In the above diagram, that means interpretation 2 is
+ruled out.  (I haven't confirmed that GCC agrees, although it seems
+likely, and anyway this is an obscure corner of the language.)
+
+
+EOF

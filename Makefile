@@ -297,8 +297,11 @@ TOCLEAN += cc.gr.gen.h cc.gr.gen.cc cc.gr.gen.out
 # list of modules needed for the parser; ideally they're in an order
 # that finds serious compilation problems earliest (it's ok to
 # rearrange as different parts of the code are in flux)
+#
+# TODO: I should just sort this list.
 ELSA_OBJS :=
 ELSA_OBJS += elsaparse.o
+ELSA_OBJS += ubermods-attrspec.o
 ELSA_OBJS += mtype.o
 ELSA_OBJS += integrity.o
 ELSA_OBJS += astvisit.o

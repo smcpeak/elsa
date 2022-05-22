@@ -1,0 +1,25 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+int var_target = 7;
+
+__attribute__((alias("var_target"))) extern int var_alias;
+
+int target2 = 9;
+
+__attribute__((alias("target2"))) extern int alias2;
+
+int target3 = 29;
+
+__attribute__((alias("target3"))) extern int alias3;
+
+int main()
+{
+  int x = var_alias;
+  return x == 7 && alias2 == 9 && alias3 == 29 && 1? 0 : 1;
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

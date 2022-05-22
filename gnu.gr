@@ -33,9 +33,13 @@
 //   - gcc/C99 complex/imaginary
 
 
+verbatim {
+  #include "ubermods-attrspec.h"       // UberModifiersAndASL
+}
+
 // expected statistics
-option shift_reduce_conflicts 87;
-option reduce_reduce_conflicts 86;
+option shift_reduce_conflicts 80;
+option reduce_reduce_conflicts 94;
 
 
 terminals {
@@ -247,10 +251,10 @@ nonterm(Declaration*) DeclSpecifier {
 
 nonterm(TypeSpecifier*) TypeSpecifier {
   // TS_typeof
-  -> te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt
+  -> te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt   forbid_next("__attribute__")
        { return new_TS_typeof(loc, uberCVFlags(cv2), te); }
 
-  -> cv1:UberCVQualifierSeq te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt
+  -> cv1:UberCVQualifierSeq te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt   forbid_next("__attribute__")
        { UberModifiers cv = uberCombine(loc, cv1, cv2);
          return new_TS_typeof(loc, uberCVFlags(cv), te); }
 }
@@ -545,27 +549,419 @@ nonterm(TS_enumSpec*) EnumSpecifier {
 }
 
 
-// As can be seen in the note at the end of this file, allowing
-// attributes in these two nonterminals is responsible for the
-// majority of the tolerance for them.  However, as UberModifiers are
-// an 'enum', this is also why retaining attributes in the AST is a
-// bit challenging: right here, there is nothing of substance to
-// attach them to!
-//
-// To fix this, one would probably have to find all occurrences of
-// UberModifier and UberCVQualifier, and add an alternative that goes
-// "... attr(one!) attrs-or-others-seq-opt ...", like below where I
-// use CVQualAttrSeqOpt.
-//
-// If all you care about is retaining one specific attribute that has
-// no arguments, you could get by with a new UberModifier flag and
-// associated DeclFlag.
-nonterm(UberModifiers) UberModifier {
-  -> as:AttributeSpecifier      { return as->toUberModifiers(); }
+impl_verbatim {
+  // Build a Declaration that uses TS_name as its type specifier, and
+  // is augmented by up to two UberModifiers and two UMAASLs.
+  //
+  // TODO: There are some factoring opportunities here.
+  Declaration *make_TS_name_Declaration(
+    CCParseShareable &env,
+    SourceLoc loc,
+    PQName *name,
+    UberModifiers m1,
+    UberModifiers m2,
+    UberModifiersAndASL *uma1,
+    UberModifiersAndASL *uma2)
+  {
+    UberModifiers m =
+      env.uberCombine(loc, m1, m2, umaaslUM(uma1), umaaslUM(uma2));
+    DeclFlags df = uberDeclFlags(m);
+    CVFlags cv = uberCVFlags(m);
+    Declaration *ret = new Declaration(df,
+      env.new_TS_name(loc, cv, name, false /*typename*/),
+      NULL /*decllist*/);
+    ret->appendASL(umaaslASL(uma1));
+    ret->appendASL(umaaslASL(uma2));
+    return ret;
+  }
+
+  // Build a Declaration that uses TS_simple.
+  Declaration *make_TS_simple_Declaration(
+    CCParseShareable &env,
+    SourceLoc loc,
+    UberModifiers k,
+    UberModifiers m1,
+    UberModifiers m2,
+    UberModifiersAndASL *uma1,
+    UberModifiersAndASL *uma2)
+  {
+    UberModifiers m =
+      env.uberCombine(loc, k, m1, m2, umaaslUM(uma1), umaaslUM(uma2));
+    DeclFlags df = uberDeclFlags(m);
+    CVFlags cv = uberCVFlags(m);
+    SimpleTypeId id = env.uberSimpleType(loc, m);
+    Declaration *ret = new Declaration(df,
+      env.new_TS_simple(loc, cv, id),
+      NULL /*decllist*/);
+    ret->appendASL(umaaslASL(uma1));
+    ret->appendASL(umaaslASL(uma2));
+    return ret;
+  }
+
+  // Build a Declaration that uses an existing TypeSpecifier that is
+  // TS_elaborated, TS_classSpec, or TS_enumSpec.
+  Declaration *make_TS_elaborated_Declaration(
+    CCParseShareable &env,
+    SourceLoc loc,
+    TypeSpecifier *e,
+    UberModifiers m1,
+    UberModifiers m2,
+    UberModifiersAndASL *uma1,
+    UberModifiersAndASL *uma2)
+  {
+    UberModifiers m =
+      env.uberCombine(loc, m1, m2, umaaslUM(uma1), umaaslUM(uma2));
+    e->cv |= uberCVFlags(m);      // destructive action
+    Declaration *ret =
+      new Declaration(uberDeclFlags(m), e, NULL /*decllist*/);
+    ret->appendASL(umaaslASL(uma1));
+    ret->appendASL(umaaslASL(uma2));
+    return ret;
+  }
+
+  // Build a Declaration out of a TypeSpecifier on an ASTTypeof.
+  Declaration *make_TS_typeof_Declaration(
+    CCParseShareable &env,
+    SourceLoc loc,
+    ASTTypeof *te,
+    UberModifiers m1,
+    UberModifiers m2,
+    UberModifiersAndASL *uma1,
+    UberModifiersAndASL *uma2)
+  {
+    UberModifiers m =
+      env.uberCombine(loc, m1, m2, umaaslUM(uma1), umaaslUM(uma2));
+    DeclFlags df = uberDeclFlags(m);
+    CVFlags cv = uberCVFlags(m);
+    Declaration *ret = new Declaration(df,
+      new_TS_typeof(loc, cv, te), NULL /*decllist*/);
+    ret->appendASL(umaaslASL(uma1));
+    ret->appendASL(umaaslASL(uma2));
+    return ret;
+  }
 }
 
-nonterm(UberModifiers) UberCVQualifier {
-  -> as:AttributeSpecifier      { return as->toUberModifiers(); }
+// Attributes as part of a declaration specifier.
+//
+// Aside from the first rule, the pattern is to replicate the existing
+// productions in cc.gr except with AttributeSpecifier appearing at some
+// point, which acts as a secondary discriminator (the primary being
+// identifier versus type versus elaborated), forcing us to use the rule
+// here instead of there.
+//
+// Above each set of rules here is the cc.gr rule they are derived from,
+// with "(*)" denoting the spot where the rule here insists on finding
+// an attribute.  Each "(*)" generates one rule in this file, and they
+// are in the left-to-right order of those markers.
+//
+// The nonterminal that goes into the "(*)" slot is one that must begin
+// with '__attribute__', then contain a possibly empty sequence of
+// AttributeSpecifiers and whatever UberModifiers were allowed to the
+// left of the "(*)" marker in the original rule, such that when it is
+// finished consuming available input, what remains is the discriminator
+// used to select among the rules.
+//
+// After seeing an attribute, the rules here follow it with
+// U[TA]MAASLOpt to collect whatever modifiers and additional attributes
+// follow the first attribute.
+//
+nonterm(Declaration*) DeclSpecifier {
+  // The case of a declaration specifier beginning with an attribute can
+  // be handled uniformly with one new rule.
+  -> asl:AttributeSpecifierList d:DeclSpecifier
+       { d->prependASL(asl); return d; }
+
+  // ---- PQTypeName ----
+
+  // cc.gr has: n:PQTypeName m2:UberModifierSeqOpt (*)
+  -> n:PQTypeName m2:UberModifierSeqOpt uma:AttributeSpecifier_UMAASLOpt
+       { return make_TS_name_Declaration(*this, loc, n, UM_NONE, m2, uma, NULL_UMA); }
+
+  // cc.gr has: m1:UberModifierSeq (*) n:PQTypeName m2:UberModifierSeqOpt (*)
+  -> m1:UberModifierSeq uma1:AttributeSpecifier_UMAASLOpt n:PQTypeName uma2:UMAASLOpt
+       { return make_TS_name_Declaration(*this, loc, n, m1, UM_NONE, uma1, uma2); }
+  -> m1:UberModifierSeq n:PQTypeName m2:UberModifierSeqOpt uma:AttributeSpecifier_UMAASLOpt
+       { return make_TS_name_Declaration(*this, loc, n, m1, m2, uma, NULL_UMA); }
+
+  // ---- UberTypeKeyword ----
+
+  // cc.gr has: k1:UberTypeKeyword m2:UberTypeAndModifierSeqOpt (*)
+  -> k1:UberTypeKeyword m2:UberTypeAndModifierSeqOpt uma:AttributeSpecifier_UTAMAASLOpt
+       { return make_TS_simple_Declaration(*this, loc, k1, UM_NONE, m2, uma, NULL_UMA); }
+
+  // cc.gr has: m1:UberModifierSeq (*) k1:UberTypeKeyword m2:UberTypeAndModifierSeqOpt (*)
+  -> m1:UberModifierSeq uma1:AttributeSpecifier_UMAASLOpt k1:UberTypeKeyword uma2:UTAMAASLOpt
+       { return make_TS_simple_Declaration(*this, loc, k1, m1, UM_NONE, uma1, uma2); }
+  -> m1:UberModifierSeq k1:UberTypeKeyword m2:UberTypeAndModifierSeqOpt uma:AttributeSpecifier_UTAMAASLOpt
+       { return make_TS_simple_Declaration(*this, loc, k1, m1, m2, uma, NULL_UMA); }
+
+  // ---- ElaboratedOrSpecifier ----
+
+  // cc.gr has: e:ElaboratedOrSpecifier m2:UberModifierSeqOpt (*)
+  -> e:ElaboratedOrSpecifier m2:UberModifierSeqOpt uma:AttributeSpecifier_UMAASLOpt
+       { return make_TS_elaborated_Declaration(*this, loc, e, UM_NONE, m2, uma, NULL_UMA); }
+
+  // cc.gr has: m1:UberModifierSeq (*) e:ElaboratedOrSpecifier m2:UberModifierSeqOpt (*)
+  -> m1:UberModifierSeq uma1:AttributeSpecifier_UMAASLOpt e:ElaboratedOrSpecifier uma2:UMAASLOpt
+       { return make_TS_elaborated_Declaration(*this, loc, e, m1, UM_NONE, uma1, uma2); }
+  -> m1:UberModifierSeq e:ElaboratedOrSpecifier m2:UberModifierSeqOpt uma:AttributeSpecifier_UMAASLOpt
+       { return make_TS_elaborated_Declaration(*this, loc, e, m1, m2, uma, NULL_UMA); }
+
+  // ---- TypeofTypeSpecifier ----
+
+  // This section augments rules from earlier in this same file.  I
+  // choose to follow the same pattern of augmentation, rather than just
+  // fold the attribute possibilities into the rules above, because
+  // UMAASL is a less efficient representation than UberModifiers, so I
+  // only want to use it when there is actually an attribute present.
+
+  // gnu.gr has: te:TypeofTypeSpecifier m2:UberModifierSeqOpt (*)
+  -> te:TypeofTypeSpecifier m2:UberModifierSeqOpt uma:AttributeSpecifier_UMAASLOpt
+       { return make_TS_typeof_Declaration(*this, loc, te, UM_NONE, m2, uma, NULL_UMA); }
+
+  // gnu.gr has: m1:UberModifierSeq (*) te:TypeofTypeSpecifier m2:UberModifierSeqOpt (*)
+  -> m1:UberModifierSeq uma1:AttributeSpecifier_UMAASLOpt te:TypeofTypeSpecifier uma2:UMAASLOpt
+       { return make_TS_typeof_Declaration(*this, loc, te, m1, UM_NONE, uma1, uma2); }
+  -> m1:UberModifierSeq te:TypeofTypeSpecifier m2:UberModifierSeqOpt uma:AttributeSpecifier_UMAASLOpt
+       { return make_TS_typeof_Declaration(*this, loc, te, m1, m2, uma, NULL_UMA); }
+}
+
+
+// An AttributeSpecifier followed by UMAASLOpt.
+nonterm(UberModifiersAndASL*) AttributeSpecifier_UMAASLOpt {
+  -> as:AttributeSpecifier uma:UMAASLOpt
+       { return umaaslPrependAS(as, uma); }
+}
+
+// Possibly empty sequence of UberModifiers and AttributeSpecifiers.
+nonterm(UberModifiersAndASL*) UMAASLOpt {
+  -> empty
+       { return NULL; }
+  -> uma:UMAASLOpt m:UberModifier
+       { return umaaslCombineUM(*this, loc, uma, m); }
+  -> uma:UMAASLOpt as:AttributeSpecifier
+       { return umaaslAppendAS(uma, as); }
+}
+
+// An AttributeSpecifier followed by UTAMAASLOpt.
+nonterm(UberModifiersAndASL*) AttributeSpecifier_UTAMAASLOpt {
+  -> as:AttributeSpecifier uma:UTAMAASLOpt
+       { return umaaslPrependAS(as, uma); }
+}
+
+// Possibly empty sequence of UberTypeAndModifiers and AttributeSpecifiers.
+nonterm(UberModifiersAndASL*) UTAMAASLOpt {
+  -> empty
+       { return NULL; }
+  -> uma:UTAMAASLOpt m:UberModifier
+       { return umaaslCombineUM(*this, loc, uma, m); }
+  -> uma:UTAMAASLOpt k:UberTypeKeyword
+       { return umaaslCombineUM(*this, loc, uma, k); }
+  -> uma:UTAMAASLOpt as:AttributeSpecifier
+       { return umaaslAppendAS(uma, as); }
+}
+
+
+impl_verbatim {
+  // Build a TS_name that is augmented by up to two UberModifiers
+  // (carrying cv-flags only) and two UMAASLs.
+  //
+  // The "_alone" name qualifier distinguishes these from the
+  // "_Declaration" version above.
+  //
+  // TODO: As above, there are some factoring opportunities here.
+  TS_name *make_TS_name_alone(
+    CCParseShareable &env,
+    SourceLoc loc,
+    PQName *name,
+    UberModifiers m1,
+    UberModifiers m2,
+    UberModifiersAndASL *uma1,
+    UberModifiersAndASL *uma2)
+  {
+    UberModifiers m =
+      env.uberCombine(loc, m1, m2, umaaslUM(uma1), umaaslUM(uma2));
+    DeclFlags df = uberDeclFlags(m);
+    xassert(df == DF_NONE);            // Grammar should preclude mods.
+    CVFlags cv = uberCVFlags(m);
+    TS_name *ret = env.new_TS_name(loc, cv, name, false /*typename*/);
+    ret->appendASL(umaaslASL(uma1));
+    ret->appendASL(umaaslASL(uma2));
+    return ret;
+  }
+
+  TS_simple *make_TS_simple_alone(
+    CCParseShareable &env,
+    SourceLoc loc,
+    UberModifiers k,
+    UberModifiers m1,
+    UberModifiers m2,
+    UberModifiersAndASL *uma1,
+    UberModifiersAndASL *uma2)
+  {
+    UberModifiers m =
+      env.uberCombine(loc, k, m1, m2, umaaslUM(uma1), umaaslUM(uma2));
+    DeclFlags df = uberDeclFlags(m);
+    xassert(df == DF_NONE);            // Grammar should preclude mods.
+    CVFlags cv = uberCVFlags(m);
+    SimpleTypeId id = env.uberSimpleType(loc, m);
+    TS_simple *ret = env.new_TS_simple(loc, cv, id);
+    ret->appendASL(umaaslASL(uma1));
+    ret->appendASL(umaaslASL(uma2));
+    return ret;
+  }
+
+  // Augment a TypeSpecifier that is TS_elaborated, TS_classSpec, or
+  // TS_enumSpec.
+  TypeSpecifier *make_TS_elaborated_or_alone(
+    CCParseShareable &env,
+    SourceLoc loc,
+    TypeSpecifier *e,
+    UberModifiers m1,
+    UberModifiers m2,
+    UberModifiersAndASL *uma1,
+    UberModifiersAndASL *uma2)
+  {
+    UberModifiers m =
+      env.uberCombine(loc, m1, m2, umaaslUM(uma1), umaaslUM(uma2));
+    DeclFlags df = uberDeclFlags(m);
+    xassert(df == DF_NONE);            // Grammar should preclude mods.
+    e->cv |= uberCVFlags(m);           // Destructive action.
+    e->appendASL(umaaslASL(uma1));
+    e->appendASL(umaaslASL(uma2));
+    return e;
+  }
+
+  // Build a TypeSpecifier on an ASTTypeof.
+  TS_typeof *make_TS_typeof_alone(
+    CCParseShareable &env,
+    SourceLoc loc,
+    ASTTypeof *te,
+    UberModifiers m1,
+    UberModifiers m2,
+    UberModifiersAndASL *uma1,
+    UberModifiersAndASL *uma2)
+  {
+    UberModifiers m =
+      env.uberCombine(loc, m1, m2, umaaslUM(uma1), umaaslUM(uma2));
+    DeclFlags df = uberDeclFlags(m);
+    xassert(df == DF_NONE);            // Grammar should preclude mods.
+    CVFlags cv = uberCVFlags(m);
+    TS_typeof *ret = new_TS_typeof(loc, cv, te);
+    ret->appendASL(umaaslASL(uma1));
+    ret->appendASL(umaaslASL(uma2));
+    return ret;
+  }
+}
+
+
+// This set of rules augments TypeSpecifier with attributes in the same
+// way as DeclSpecifier.
+//
+// All rules for TypeSpecifier have 'forbid_next("__attribute__")',
+// which ensures we do not reduce a TypeSpecifier until we have consumed
+// all available attributes.  This is also done for a few other related
+// nonterminals that consume attributes.
+//
+// The main reason this is necessary is illustrated in the ambiguity in
+// test/pprint/gnu-attr-on-conversion-id.cc, where the attributes
+// associated with a TypeSpecifier can be confused with those associated
+// with a Declarator.
+//
+// TODO: I would like to add a feature to Elkhound to allow me to attach
+// a single 'forbid_next' to the nonterminal rather than each rule
+// individually.
+//
+// TODO: The duplication between DeclSpecifier and TypeSpecifier is
+// really not good.  I should try to combine them in cc.gr, then here.
+nonterm(TypeSpecifier*) TypeSpecifier {
+  // One rule handles a leading list of attributes.
+  -> asl:AttributeSpecifierList ts:TypeSpecifier   forbid_next("__attribute__")
+       { ts->prependASL(asl); return ts; }
+
+  // ---- TS_name ----
+
+  // cc.gr has: n:PQTypeName cv2:UberCVQualifierSeqOpt (*)
+  -> n:PQTypeName cv2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt   forbid_next("__attribute__")
+       { return make_TS_name_alone(*this, loc, n, UM_NONE, cv2, uma, NULL_UMA); }
+
+  // cc.gr has: cv1:UberCVQualifierSeq (*) n:PQTypeName cv2:UberCVQualifierSeqOpt (*)
+  -> cv1:UberCVQualifierSeq uma1:AttributeSpecifier_UCVAASLOpt n:PQTypeName uma2:UCVAASLOpt   forbid_next("__attribute__")
+       { return make_TS_name_alone(*this, loc, n, cv1, UM_NONE, uma1, uma2); }
+  -> cv1:UberCVQualifierSeq n:PQTypeName cv2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt   forbid_next("__attribute__")
+       { return make_TS_name_alone(*this, loc, n, cv1, cv2, uma, NULL_UMA); }
+
+  // ---- TS_simple ----
+
+  // cc.gr has: k1:UberTypeKeyword m2:UberTypeAndCVQualifierSeqOpt (*)
+  -> k1:UberTypeKeyword m2:UberTypeAndCVQualifierSeqOpt uma:AttributeSpecifier_UTACVAASLOpt   forbid_next("__attribute__")
+       { return make_TS_simple_alone(*this, loc, k1, UM_NONE, m2, uma, NULL_UMA); }
+
+  // cc.gr has: m1:UberCVQualifierSeq (*) k1:UberTypeKeyword m2:UberTypeAndCVQualifierSeqOpt (*)
+  -> m1:UberCVQualifierSeq uma1:AttributeSpecifier_UCVAASLOpt k1:UberTypeKeyword uma2:UTACVAASLOpt   forbid_next("__attribute__")
+       { return make_TS_simple_alone(*this, loc, k1, m1, UM_NONE, uma1, uma2); }
+  -> m1:UberCVQualifierSeq k1:UberTypeKeyword m2:UberTypeAndCVQualifierSeqOpt uma:AttributeSpecifier_UTACVAASLOpt   forbid_next("__attribute__")
+       { return make_TS_simple_alone(*this, loc, k1, m1, m2, uma, NULL_UMA); }
+
+  // ---- TS_elaborated, etc. ----
+
+  // cc.gr has: e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt (*)
+  -> e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt   forbid_next("__attribute__")
+       { return make_TS_elaborated_or_alone(*this, loc, e, UM_NONE, m2, uma, NULL_UMA); }
+
+  // cc.gr has: m1:UberCVQualifierSeq (*) e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt (*)
+  -> m1:UberCVQualifierSeq uma1:AttributeSpecifier_UCVAASLOpt e:ElaboratedOrSpecifier uma2:UCVAASLOpt   forbid_next("__attribute__")
+       { return make_TS_elaborated_or_alone(*this, loc, e, m1, UM_NONE, uma1, uma2); }
+  -> m1:UberCVQualifierSeq e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt   forbid_next("__attribute__")
+       { return make_TS_elaborated_or_alone(*this, loc, e, m1, m2, uma, NULL_UMA); }
+
+  // ---- TS_typeof ----
+
+  // gnu.gr has: te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt (*)
+  -> te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt   forbid_next("__attribute__")
+       { return make_TS_typeof_alone(*this, loc, te, UM_NONE, cv2, uma, NULL_UMA); }
+
+  // gnu.gr has: cv1:UberCVQualifierSeq (*) te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt (*)
+  -> cv1:UberCVQualifierSeq uma1:AttributeSpecifier_UCVAASLOpt te:TypeofTypeSpecifier uma2:UCVAASLOpt   forbid_next("__attribute__")
+       { return make_TS_typeof_alone(*this, loc, te, cv1, UM_NONE, uma1, uma2); }
+  -> cv1:UberCVQualifierSeq te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt   forbid_next("__attribute__")
+       { return make_TS_typeof_alone(*this, loc, te, cv1, cv2, uma, NULL_UMA); }
+}
+
+
+// An AttributeSpecifier followed by UCVAASLOpt.
+nonterm(UberModifiersAndASL*) AttributeSpecifier_UCVAASLOpt {
+  -> as:AttributeSpecifier uma:UCVAASLOpt
+       { return umaaslPrependAS(as, uma); }
+}
+
+// Possibly empty sequence of UberCVQualifiers and AttributeSpecifiers.
+nonterm(UberModifiersAndASL*) UCVAASLOpt {
+  -> empty
+       { return NULL; }
+  -> uma:UCVAASLOpt cv:UberCVQualifier
+       { return umaaslCombineUM(*this, loc, uma, cv); }
+  -> uma:UCVAASLOpt as:AttributeSpecifier
+       { return umaaslAppendAS(uma, as); }
+}
+
+// An AttributeSpecifier followed by UTACVAASLOpt.
+nonterm(UberModifiersAndASL*) AttributeSpecifier_UTACVAASLOpt {
+  // forbid_next: See comments on TypeSpecifier.
+  -> as:AttributeSpecifier uma:UTACVAASLOpt   forbid_next("__attribute__")
+       { return umaaslPrependAS(as, uma); }
+}
+
+// Possibly empty sequence of UberTypeAndCVQualifiers and AttributeSpecifiers.
+nonterm(UberModifiersAndASL*) UTACVAASLOpt {
+  -> empty
+       { return NULL; }
+  -> uma:UTACVAASLOpt cv:UberCVQualifier
+       { return umaaslCombineUM(*this, loc, uma, cv); }
+  -> uma:UTACVAASLOpt k:UberTypeKeyword
+       { return umaaslCombineUM(*this, loc, uma, k); }
+  -> uma:UTACVAASLOpt as:AttributeSpecifier
+       { return umaaslAppendAS(uma, as); }
 }
 
 
@@ -769,7 +1165,8 @@ nonterm(AttributeSpecifierList*) AttributeSpecifierList {
   -> as:AttributeSpecifier
      { return new AttributeSpecifierList(as, NULL /*next*/); }
 
-  -> as:AttributeSpecifier asl:AttributeSpecifierList
+  // forbid_next: See comments on TypeSpecifier.
+  -> as:AttributeSpecifier asl:AttributeSpecifierList  forbid_next("__attribute__")
      { return new AttributeSpecifierList(as, asl); }
 }
 
@@ -787,6 +1184,10 @@ nonterm(NamespaceDecl*) NamespaceDecl {
 
 
 /*
+  2022-05-19: I think I'm now saving all attributes that appear
+  as part of a Declaration or TypeSpecifier (i.e., before any
+  declarator).
+
   2005-08-13: I have now added retention of attributes in some
   places.  All places where it is still *not* retained are now
   marked with "DROPPED".  My plan is to incrementally retain

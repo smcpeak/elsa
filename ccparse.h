@@ -4,6 +4,8 @@
 #ifndef CCPARSE_H
 #define CCPARSE_H
 
+#include "ccparse-fwd.h"   // fwds for this file
+
 #include "strhash.h"       // StringHash
 #include "strtable.h"      // StringTable
 #include "objlist.h"       // ObjList
@@ -47,6 +49,14 @@ public:
   // manipulate UberModifiers
   SimpleTypeId uberSimpleType(SourceLoc loc, UberModifiers m);
   UberModifiers uberCombine(SourceLoc loc, UberModifiers m1, UberModifiers m2);
+
+  // Allow combining up to five at once.
+  UberModifiers uberCombine(SourceLoc loc,
+    UberModifiers m1, UberModifiers m2, UberModifiers m3);
+  UberModifiers uberCombine(SourceLoc loc,
+    UberModifiers m1, UberModifiers m2, UberModifiers m3, UberModifiers m4);
+  UberModifiers uberCombine(SourceLoc loc,
+    UberModifiers m1, UberModifiers m2, UberModifiers m3, UberModifiers m4, UberModifiers m5);
 
   // generate a LocString suitable for use during parsing
   LocString * /*owner*/ ls(SourceLoc loc, char const *name);
