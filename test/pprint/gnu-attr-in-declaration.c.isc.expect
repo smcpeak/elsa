@@ -1,0 +1,107 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+typedef int Integer;
+
+enum E {
+  reeee
+};
+
+int x;
+
+__attribute__((mode(byte))) Integer b1;
+
+extern __attribute__((mode(byte))) Integer b2;
+
+__attribute__((mode(byte))) __attribute__((unused)) Integer b3;
+
+extern __attribute__((mode(byte))) Integer b4;
+
+static __attribute__((mode(byte))) __attribute__((unused)) Integer b5;
+
+static __attribute__((mode(byte))) Integer d1;
+
+static __attribute__((mode(byte))) Integer const d2;
+
+static __attribute__((mode(byte)))
+  __attribute__((unused))
+  Integer const d3;
+
+extern __attribute__((mode(byte))) Integer const d4;
+
+extern __attribute__((mode(byte))) Integer const d5;
+
+static __attribute__((mode(byte))) __attribute__((unused)) Integer d6;
+
+extern __attribute__((mode(byte)))
+  __attribute__((unused))
+  Integer const d7;
+
+extern __attribute__((mode(byte)))
+  __attribute__((unused))
+  Integer const d8;
+
+static __attribute__((mode(byte))) Integer const c1;
+
+extern __attribute__((mode(byte))) Integer volatile c2;
+
+static __attribute__((mode(byte)))
+  __attribute__((unused))
+  Integer volatile c3;
+
+static __attribute__((mode(byte))) Integer const c4;
+
+extern __attribute__((mode(byte)))
+  __attribute__((unused))
+  Integer const volatile c5;
+
+extern __attribute__((unused)) enum E e1;
+
+extern __attribute__((unused)) enum E const e2;
+
+extern __attribute__((unused)) enum E volatile e3;
+
+extern __attribute__((unused)) __attribute__((mode(byte))) enum E e4;
+
+extern __attribute__((unused)) enum E f1;
+
+extern __attribute__((unused)) enum E const f2;
+
+extern __attribute__((unused)) __attribute__((mode(byte))) enum E f3;
+
+__attribute__((unused)) typeof(x) g1;
+
+static __attribute__((unused)) typeof(x) g2;
+
+static __attribute__((unused)) __attribute__((mode(byte))) typeof(x) g3;
+
+__attribute__((unused)) typeof(x) const g4;
+
+__attribute__((unused)) __attribute__((mode(byte))) typeof(x) const g5;
+
+static __attribute__((unused)) typeof(x) h1;
+
+static __attribute__((unused)) typeof(x) const h2;
+
+static __attribute__((unused)) __attribute__((mode(byte))) typeof(x) h3;
+
+static __attribute__((unused))
+  __attribute__((mode(byte)))
+  typeof(x) const h4;
+
+static __attribute__((unused))
+  __attribute__((mode(byte)))
+  typeof(x) const volatile h5;
+
+extern __attribute__((unused)) typeof(x) k1;
+
+extern __attribute__((unused)) typeof(x) const k2;
+
+extern __attribute__((unused))
+  __attribute__((mode(byte)))
+  typeof(x) const k3;
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

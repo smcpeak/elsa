@@ -690,13 +690,13 @@ nonterm(Declaration*) DeclSpecifier {
 
   // cc.gr has: n:PQTypeName m2:UberModifierSeqOpt (*)
   -> n:PQTypeName m2:UberModifierSeqOpt uma:AttributeSpecifier_UMAASLOpt
-       { NEED_COVER; return make_TS_name_Declaration(*this, loc, n, UM_NONE, m2, uma, NULL_UMA); }
+       { HAS_COVER; return make_TS_name_Declaration(*this, loc, n, UM_NONE, m2, uma, NULL_UMA); }
 
   // cc.gr has: m1:UberModifierSeq (*) n:PQTypeName m2:UberModifierSeqOpt (*)
   -> m1:UberModifierSeq uma1:AttributeSpecifier_UMAASLOpt n:PQTypeName uma2:UMAASLOpt
-       { NEED_COVER; return make_TS_name_Declaration(*this, loc, n, m1, UM_NONE, uma1, uma2); }
+       { HAS_COVER; return make_TS_name_Declaration(*this, loc, n, m1, UM_NONE, uma1, uma2); }
   -> m1:UberModifierSeq n:PQTypeName m2:UberModifierSeqOpt uma:AttributeSpecifier_UMAASLOpt
-       { NEED_COVER; return make_TS_name_Declaration(*this, loc, n, m1, m2, uma, NULL_UMA); }
+       { HAS_COVER; return make_TS_name_Declaration(*this, loc, n, m1, m2, uma, NULL_UMA); }
 
   // ---- UberTypeKeyword ----
 
@@ -718,9 +718,9 @@ nonterm(Declaration*) DeclSpecifier {
 
   // cc.gr has: m1:UberModifierSeq (*) e:ElaboratedOrSpecifier m2:UberModifierSeqOpt (*)
   -> m1:UberModifierSeq uma1:AttributeSpecifier_UMAASLOpt e:ElaboratedOrSpecifier uma2:UMAASLOpt
-       { NEED_COVER; return make_TS_elaborated_Declaration(*this, loc, e, m1, UM_NONE, uma1, uma2); }
+       { HAS_COVER; return make_TS_elaborated_Declaration(*this, loc, e, m1, UM_NONE, uma1, uma2); }
   -> m1:UberModifierSeq e:ElaboratedOrSpecifier m2:UberModifierSeqOpt uma:AttributeSpecifier_UMAASLOpt
-       { NEED_COVER; return make_TS_elaborated_Declaration(*this, loc, e, m1, m2, uma, NULL_UMA); }
+       { HAS_COVER; return make_TS_elaborated_Declaration(*this, loc, e, m1, m2, uma, NULL_UMA); }
 
   // ---- TypeofTypeSpecifier ----
 
@@ -732,13 +732,13 @@ nonterm(Declaration*) DeclSpecifier {
 
   // gnu.gr has: te:TypeofTypeSpecifier m2:UberModifierSeqOpt (*)
   -> te:TypeofTypeSpecifier m2:UberModifierSeqOpt uma:AttributeSpecifier_UMAASLOpt
-       { NEED_COVER; return make_TS_typeof_Declaration(*this, loc, te, UM_NONE, m2, uma, NULL_UMA); }
+       { HAS_COVER; return make_TS_typeof_Declaration(*this, loc, te, UM_NONE, m2, uma, NULL_UMA); }
 
   // gnu.gr has: m1:UberModifierSeq (*) te:TypeofTypeSpecifier m2:UberModifierSeqOpt (*)
   -> m1:UberModifierSeq uma1:AttributeSpecifier_UMAASLOpt te:TypeofTypeSpecifier uma2:UMAASLOpt
-       { NEED_COVER; return make_TS_typeof_Declaration(*this, loc, te, m1, UM_NONE, uma1, uma2); }
+       { HAS_COVER; return make_TS_typeof_Declaration(*this, loc, te, m1, UM_NONE, uma1, uma2); }
   -> m1:UberModifierSeq te:TypeofTypeSpecifier m2:UberModifierSeqOpt uma:AttributeSpecifier_UMAASLOpt
-       { NEED_COVER; return make_TS_typeof_Declaration(*this, loc, te, m1, m2, uma, NULL_UMA); }
+       { HAS_COVER; return make_TS_typeof_Declaration(*this, loc, te, m1, m2, uma, NULL_UMA); }
 }
 
 
@@ -753,9 +753,9 @@ nonterm(UberModifiersAndASL*) UMAASLOpt {
   -> empty
        { HAS_COVER; return NULL; }
   -> uma:UMAASLOpt m:UberModifier
-       { NEED_COVER; return umaaslCombineUM(*this, loc, uma, m); }
+       { HAS_COVER; return umaaslCombineUM(*this, loc, uma, m); }
   -> uma:UMAASLOpt as:AttributeSpecifier
-       { NEED_COVER; return umaaslAppendAS(uma, as); }
+       { HAS_COVER; return umaaslAppendAS(uma, as); }
 }
 
 // An AttributeSpecifier followed by UTAMAASLOpt.

@@ -93,6 +93,7 @@ TESTS += pprint/for-loop-no-init.c
 TESTS += pprint/func.c
 TESTS += pprint/func-symbol.c
 TESTS += pprint/funcptr.c
+TESTS += pprint/gnu-attr-in-declaration.c
 TESTS += pprint/gnu-attr-in-type-specifier.c
 TESTS += pprint/gnu-attr-mode.c
 TESTS += pprint/gnu-declaration-attr.c
