@@ -35,6 +35,15 @@
 
 verbatim {
   #include "ubermods-attrspec.h"       // UberModifiersAndASL
+
+  // I'm using these macros to manually evaluate grammar coverage.  My
+  // intent is to only check in while they are disabled.
+  #if 0
+    #define NEED_COVER xfailure("need cover")
+  #else
+    #define NEED_COVER ((void)0)
+  #endif
+  #define HAS_COVER ((void)0)
 }
 
 // expected statistics
@@ -675,43 +684,43 @@ nonterm(Declaration*) DeclSpecifier {
   // be consumed as a single list rather than triggering this rule
   // multiple times.
   -> asl:AttributeSpecifierList d:DeclSpecifier
-       { d->spec->prependASL(asl); return d; }
+       { HAS_COVER; d->spec->prependASL(asl); return d; }
 
   // ---- PQTypeName ----
 
   // cc.gr has: n:PQTypeName m2:UberModifierSeqOpt (*)
   -> n:PQTypeName m2:UberModifierSeqOpt uma:AttributeSpecifier_UMAASLOpt
-       { return make_TS_name_Declaration(*this, loc, n, UM_NONE, m2, uma, NULL_UMA); }
+       { NEED_COVER; return make_TS_name_Declaration(*this, loc, n, UM_NONE, m2, uma, NULL_UMA); }
 
   // cc.gr has: m1:UberModifierSeq (*) n:PQTypeName m2:UberModifierSeqOpt (*)
   -> m1:UberModifierSeq uma1:AttributeSpecifier_UMAASLOpt n:PQTypeName uma2:UMAASLOpt
-       { return make_TS_name_Declaration(*this, loc, n, m1, UM_NONE, uma1, uma2); }
+       { NEED_COVER; return make_TS_name_Declaration(*this, loc, n, m1, UM_NONE, uma1, uma2); }
   -> m1:UberModifierSeq n:PQTypeName m2:UberModifierSeqOpt uma:AttributeSpecifier_UMAASLOpt
-       { return make_TS_name_Declaration(*this, loc, n, m1, m2, uma, NULL_UMA); }
+       { NEED_COVER; return make_TS_name_Declaration(*this, loc, n, m1, m2, uma, NULL_UMA); }
 
   // ---- UberTypeKeyword ----
 
   // cc.gr has: k1:UberTypeKeyword m2:UberTypeAndModifierSeqOpt (*)
   -> k1:UberTypeKeyword m2:UberTypeAndModifierSeqOpt uma:AttributeSpecifier_UTAMAASLOpt
-       { return make_TS_simple_Declaration(*this, loc, k1, UM_NONE, m2, uma, NULL_UMA); }
+       { HAS_COVER; return make_TS_simple_Declaration(*this, loc, k1, UM_NONE, m2, uma, NULL_UMA); }
 
   // cc.gr has: m1:UberModifierSeq (*) k1:UberTypeKeyword m2:UberTypeAndModifierSeqOpt (*)
   -> m1:UberModifierSeq uma1:AttributeSpecifier_UMAASLOpt k1:UberTypeKeyword uma2:UTAMAASLOpt
-       { return make_TS_simple_Declaration(*this, loc, k1, m1, UM_NONE, uma1, uma2); }
+       { HAS_COVER; return make_TS_simple_Declaration(*this, loc, k1, m1, UM_NONE, uma1, uma2); }
   -> m1:UberModifierSeq k1:UberTypeKeyword m2:UberTypeAndModifierSeqOpt uma:AttributeSpecifier_UTAMAASLOpt
-       { return make_TS_simple_Declaration(*this, loc, k1, m1, m2, uma, NULL_UMA); }
+       { HAS_COVER; return make_TS_simple_Declaration(*this, loc, k1, m1, m2, uma, NULL_UMA); }
 
   // ---- ElaboratedOrSpecifier ----
 
   // cc.gr has: e:ElaboratedOrSpecifier m2:UberModifierSeqOpt (*)
   -> e:ElaboratedOrSpecifier m2:UberModifierSeqOpt uma:AttributeSpecifier_UMAASLOpt
-       { return make_TS_elaborated_Declaration(*this, loc, e, UM_NONE, m2, uma, NULL_UMA); }
+       { HAS_COVER; return make_TS_elaborated_Declaration(*this, loc, e, UM_NONE, m2, uma, NULL_UMA); }
 
   // cc.gr has: m1:UberModifierSeq (*) e:ElaboratedOrSpecifier m2:UberModifierSeqOpt (*)
   -> m1:UberModifierSeq uma1:AttributeSpecifier_UMAASLOpt e:ElaboratedOrSpecifier uma2:UMAASLOpt
-       { return make_TS_elaborated_Declaration(*this, loc, e, m1, UM_NONE, uma1, uma2); }
+       { NEED_COVER; return make_TS_elaborated_Declaration(*this, loc, e, m1, UM_NONE, uma1, uma2); }
   -> m1:UberModifierSeq e:ElaboratedOrSpecifier m2:UberModifierSeqOpt uma:AttributeSpecifier_UMAASLOpt
-       { return make_TS_elaborated_Declaration(*this, loc, e, m1, m2, uma, NULL_UMA); }
+       { NEED_COVER; return make_TS_elaborated_Declaration(*this, loc, e, m1, m2, uma, NULL_UMA); }
 
   // ---- TypeofTypeSpecifier ----
 
@@ -723,48 +732,48 @@ nonterm(Declaration*) DeclSpecifier {
 
   // gnu.gr has: te:TypeofTypeSpecifier m2:UberModifierSeqOpt (*)
   -> te:TypeofTypeSpecifier m2:UberModifierSeqOpt uma:AttributeSpecifier_UMAASLOpt
-       { return make_TS_typeof_Declaration(*this, loc, te, UM_NONE, m2, uma, NULL_UMA); }
+       { NEED_COVER; return make_TS_typeof_Declaration(*this, loc, te, UM_NONE, m2, uma, NULL_UMA); }
 
   // gnu.gr has: m1:UberModifierSeq (*) te:TypeofTypeSpecifier m2:UberModifierSeqOpt (*)
   -> m1:UberModifierSeq uma1:AttributeSpecifier_UMAASLOpt te:TypeofTypeSpecifier uma2:UMAASLOpt
-       { return make_TS_typeof_Declaration(*this, loc, te, m1, UM_NONE, uma1, uma2); }
+       { NEED_COVER; return make_TS_typeof_Declaration(*this, loc, te, m1, UM_NONE, uma1, uma2); }
   -> m1:UberModifierSeq te:TypeofTypeSpecifier m2:UberModifierSeqOpt uma:AttributeSpecifier_UMAASLOpt
-       { return make_TS_typeof_Declaration(*this, loc, te, m1, m2, uma, NULL_UMA); }
+       { NEED_COVER; return make_TS_typeof_Declaration(*this, loc, te, m1, m2, uma, NULL_UMA); }
 }
 
 
 // An AttributeSpecifier followed by UMAASLOpt.
 nonterm(UberModifiersAndASL*) AttributeSpecifier_UMAASLOpt {
   -> as:AttributeSpecifier uma:UMAASLOpt
-       { return umaaslPrependAS(as, uma); }
+       { HAS_COVER; return umaaslPrependAS(as, uma); }
 }
 
 // Possibly empty sequence of UberModifiers and AttributeSpecifiers.
 nonterm(UberModifiersAndASL*) UMAASLOpt {
   -> empty
-       { return NULL; }
+       { HAS_COVER; return NULL; }
   -> uma:UMAASLOpt m:UberModifier
-       { return umaaslCombineUM(*this, loc, uma, m); }
+       { NEED_COVER; return umaaslCombineUM(*this, loc, uma, m); }
   -> uma:UMAASLOpt as:AttributeSpecifier
-       { return umaaslAppendAS(uma, as); }
+       { NEED_COVER; return umaaslAppendAS(uma, as); }
 }
 
 // An AttributeSpecifier followed by UTAMAASLOpt.
 nonterm(UberModifiersAndASL*) AttributeSpecifier_UTAMAASLOpt {
   -> as:AttributeSpecifier uma:UTAMAASLOpt
-       { return umaaslPrependAS(as, uma); }
+       { HAS_COVER; return umaaslPrependAS(as, uma); }
 }
 
 // Possibly empty sequence of UberTypeAndModifiers and AttributeSpecifiers.
 nonterm(UberModifiersAndASL*) UTAMAASLOpt {
   -> empty
-       { return NULL; }
+       { HAS_COVER; return NULL; }
   -> uma:UTAMAASLOpt m:UberModifier
-       { return umaaslCombineUM(*this, loc, uma, m); }
+       { HAS_COVER; return umaaslCombineUM(*this, loc, uma, m); }
   -> uma:UTAMAASLOpt k:UberTypeKeyword
-       { return umaaslCombineUM(*this, loc, uma, k); }
+       { HAS_COVER; return umaaslCombineUM(*this, loc, uma, k); }
   -> uma:UTAMAASLOpt as:AttributeSpecifier
-       { return umaaslAppendAS(uma, as); }
+       { HAS_COVER; return umaaslAppendAS(uma, as); }
 }
 
 
@@ -883,91 +892,91 @@ impl_verbatim {
 nonterm(TypeSpecifier*) TypeSpecifier {
   // One rule handles a leading list of attributes.
   -> asl:AttributeSpecifierList ts:TypeSpecifier   forbid_next("__attribute__")
-       { ts->prependASL(asl); return ts; }
+       { HAS_COVER; ts->prependASL(asl); return ts; }
 
   // ---- TS_name ----
 
   // cc.gr has: n:PQTypeName cv2:UberCVQualifierSeqOpt (*)
   -> n:PQTypeName cv2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt   forbid_next("__attribute__")
-       { return make_TS_name_alone(*this, loc, n, UM_NONE, cv2, uma, NULL_UMA); }
+       { NEED_COVER; return make_TS_name_alone(*this, loc, n, UM_NONE, cv2, uma, NULL_UMA); }
 
   // cc.gr has: cv1:UberCVQualifierSeq (*) n:PQTypeName cv2:UberCVQualifierSeqOpt (*)
   -> cv1:UberCVQualifierSeq uma1:AttributeSpecifier_UCVAASLOpt n:PQTypeName uma2:UCVAASLOpt   forbid_next("__attribute__")
-       { return make_TS_name_alone(*this, loc, n, cv1, UM_NONE, uma1, uma2); }
+       { NEED_COVER; return make_TS_name_alone(*this, loc, n, cv1, UM_NONE, uma1, uma2); }
   -> cv1:UberCVQualifierSeq n:PQTypeName cv2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt   forbid_next("__attribute__")
-       { return make_TS_name_alone(*this, loc, n, cv1, cv2, uma, NULL_UMA); }
+       { NEED_COVER; return make_TS_name_alone(*this, loc, n, cv1, cv2, uma, NULL_UMA); }
 
   // ---- TS_simple ----
 
   // cc.gr has: k1:UberTypeKeyword m2:UberTypeAndCVQualifierSeqOpt (*)
   -> k1:UberTypeKeyword m2:UberTypeAndCVQualifierSeqOpt uma:AttributeSpecifier_UTACVAASLOpt   forbid_next("__attribute__")
-       { return make_TS_simple_alone(*this, loc, k1, UM_NONE, m2, uma, NULL_UMA); }
+       { HAS_COVER; return make_TS_simple_alone(*this, loc, k1, UM_NONE, m2, uma, NULL_UMA); }
 
   // cc.gr has: m1:UberCVQualifierSeq (*) k1:UberTypeKeyword m2:UberTypeAndCVQualifierSeqOpt (*)
   -> m1:UberCVQualifierSeq uma1:AttributeSpecifier_UCVAASLOpt k1:UberTypeKeyword uma2:UTACVAASLOpt   forbid_next("__attribute__")
-       { return make_TS_simple_alone(*this, loc, k1, m1, UM_NONE, uma1, uma2); }
+       { NEED_COVER; return make_TS_simple_alone(*this, loc, k1, m1, UM_NONE, uma1, uma2); }
   -> m1:UberCVQualifierSeq k1:UberTypeKeyword m2:UberTypeAndCVQualifierSeqOpt uma:AttributeSpecifier_UTACVAASLOpt   forbid_next("__attribute__")
-       { return make_TS_simple_alone(*this, loc, k1, m1, m2, uma, NULL_UMA); }
+       { HAS_COVER; return make_TS_simple_alone(*this, loc, k1, m1, m2, uma, NULL_UMA); }
 
   // ---- TS_elaborated, etc. ----
 
   // cc.gr has: e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt (*)
   -> e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt   forbid_next("__attribute__")
-       { return make_TS_elaborated_or_alone(*this, loc, e, UM_NONE, m2, uma, NULL_UMA); }
+       { HAS_COVER; return make_TS_elaborated_or_alone(*this, loc, e, UM_NONE, m2, uma, NULL_UMA); }
 
   // cc.gr has: m1:UberCVQualifierSeq (*) e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt (*)
   -> m1:UberCVQualifierSeq uma1:AttributeSpecifier_UCVAASLOpt e:ElaboratedOrSpecifier uma2:UCVAASLOpt   forbid_next("__attribute__")
-       { return make_TS_elaborated_or_alone(*this, loc, e, m1, UM_NONE, uma1, uma2); }
+       { NEED_COVER; return make_TS_elaborated_or_alone(*this, loc, e, m1, UM_NONE, uma1, uma2); }
   -> m1:UberCVQualifierSeq e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt   forbid_next("__attribute__")
-       { return make_TS_elaborated_or_alone(*this, loc, e, m1, m2, uma, NULL_UMA); }
+       { NEED_COVER; return make_TS_elaborated_or_alone(*this, loc, e, m1, m2, uma, NULL_UMA); }
 
   // ---- TS_typeof ----
 
   // gnu.gr has: te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt (*)
   -> te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt   forbid_next("__attribute__")
-       { return make_TS_typeof_alone(*this, loc, te, UM_NONE, cv2, uma, NULL_UMA); }
+       { NEED_COVER; return make_TS_typeof_alone(*this, loc, te, UM_NONE, cv2, uma, NULL_UMA); }
 
   // gnu.gr has: cv1:UberCVQualifierSeq (*) te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt (*)
   -> cv1:UberCVQualifierSeq uma1:AttributeSpecifier_UCVAASLOpt te:TypeofTypeSpecifier uma2:UCVAASLOpt   forbid_next("__attribute__")
-       { return make_TS_typeof_alone(*this, loc, te, cv1, UM_NONE, uma1, uma2); }
+       { NEED_COVER; return make_TS_typeof_alone(*this, loc, te, cv1, UM_NONE, uma1, uma2); }
   -> cv1:UberCVQualifierSeq te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt   forbid_next("__attribute__")
-       { return make_TS_typeof_alone(*this, loc, te, cv1, cv2, uma, NULL_UMA); }
+       { NEED_COVER; return make_TS_typeof_alone(*this, loc, te, cv1, cv2, uma, NULL_UMA); }
 }
 
 
 // An AttributeSpecifier followed by UCVAASLOpt.
 nonterm(UberModifiersAndASL*) AttributeSpecifier_UCVAASLOpt {
   -> as:AttributeSpecifier uma:UCVAASLOpt
-       { return umaaslPrependAS(as, uma); }
+       { HAS_COVER; return umaaslPrependAS(as, uma); }
 }
 
 // Possibly empty sequence of UberCVQualifiers and AttributeSpecifiers.
 nonterm(UberModifiersAndASL*) UCVAASLOpt {
   -> empty
-       { return NULL; }
+       { HAS_COVER; return NULL; }
   -> uma:UCVAASLOpt cv:UberCVQualifier
-       { return umaaslCombineUM(*this, loc, uma, cv); }
+       { NEED_COVER; return umaaslCombineUM(*this, loc, uma, cv); }
   -> uma:UCVAASLOpt as:AttributeSpecifier
-       { return umaaslAppendAS(uma, as); }
+       { NEED_COVER; return umaaslAppendAS(uma, as); }
 }
 
 // An AttributeSpecifier followed by UTACVAASLOpt.
 nonterm(UberModifiersAndASL*) AttributeSpecifier_UTACVAASLOpt {
   // forbid_next: See comments on TypeSpecifier.
   -> as:AttributeSpecifier uma:UTACVAASLOpt   forbid_next("__attribute__")
-       { return umaaslPrependAS(as, uma); }
+       { HAS_COVER; return umaaslPrependAS(as, uma); }
 }
 
 // Possibly empty sequence of UberTypeAndCVQualifiers and AttributeSpecifiers.
 nonterm(UberModifiersAndASL*) UTACVAASLOpt {
   -> empty
-       { return NULL; }
+       { HAS_COVER; return NULL; }
   -> uma:UTACVAASLOpt cv:UberCVQualifier
-       { return umaaslCombineUM(*this, loc, uma, cv); }
+       { HAS_COVER; return umaaslCombineUM(*this, loc, uma, cv); }
   -> uma:UTACVAASLOpt k:UberTypeKeyword
-       { return umaaslCombineUM(*this, loc, uma, k); }
+       { HAS_COVER; return umaaslCombineUM(*this, loc, uma, k); }
   -> uma:UTACVAASLOpt as:AttributeSpecifier
-       { return umaaslAppendAS(uma, as); }
+       { HAS_COVER; return umaaslAppendAS(uma, as); }
 }
 
 

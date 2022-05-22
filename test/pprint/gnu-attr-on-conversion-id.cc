@@ -41,6 +41,9 @@ struct S {
   // Variations on attribute placement.
   operator __attribute__(()) __attribute__(()) int ();
   operator __attribute__(()) float __attribute__(()) ();
+  operator long __attribute__(()) int __attribute__(()) ();
+  operator long __attribute__(()) int __attribute__(()) unsigned ();
+  operator short __attribute__(()) const __attribute__(()) volatile ();
 
   // TODO: More variations.
 };

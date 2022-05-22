@@ -5,6 +5,9 @@ struct S {
   operator __attribute__(()) __attribute__(()) char();
   operator __attribute__(()) __attribute__(()) int();
   operator __attribute__(()) __attribute__(()) float();
+  operator __attribute__(()) __attribute__(()) long();
+  operator __attribute__(()) __attribute__(()) unsigned long();
+  operator __attribute__(()) __attribute__(()) short const volatile();
   S()
   {}
   S(S const &__other)
