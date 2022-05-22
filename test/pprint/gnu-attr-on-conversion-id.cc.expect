@@ -3,6 +3,7 @@
 // -*-c++-*-
 struct S {
   operator __attribute__(()) __attribute__(()) char();
+  operator __attribute__(()) __attribute__(()) int();
   operator __attribute__(()) __attribute__(()) float();
   S()
   {}

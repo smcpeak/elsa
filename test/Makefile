@@ -56,8 +56,7 @@ TESTS += pprint/class.cc
 TESTS += pprint/class2.cc
 TESTS += pprint/conversion-op.cc
 TESTS += pprint/forward.cc
-# Problem is I can't parse the syntax produced by pprint.
-#TESTS += pprint/gnu-attr-on-conversion-id.cc
+TESTS += pprint/gnu-attr-on-conversion-id.cc
 TESTS += pprint/longlines.cc
 TESTS += pprint/pp-decl.cc
 TESTS += pprint/pp-enum.cc

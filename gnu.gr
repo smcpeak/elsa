@@ -38,7 +38,7 @@ verbatim {
 }
 
 // expected statistics
-option shift_reduce_conflicts 80;
+option shift_reduce_conflicts 79;
 option reduce_reduce_conflicts 94;
 
 
@@ -668,6 +668,12 @@ impl_verbatim {
 nonterm(Declaration*) DeclSpecifier {
   // The case of a declaration specifier beginning with an attribute can
   // be handled uniformly with one new rule.
+  //
+  // At first, this looks ambiguous because we could parse a list of two
+  // or more attributes in multiple ways.  But AttributeSpecifierList
+  // has a 'forbid_next' that ensures that all available attributes will
+  // be consumed as a single list rather than triggering this rule
+  // multiple times.
   -> asl:AttributeSpecifierList d:DeclSpecifier
        { d->spec->prependASL(asl); return d; }
 
@@ -1161,12 +1167,14 @@ nonterm(AttributeSpecifier*) AttributeSpecifier {
      { return ap; }
 }
 
+// The 'forbid_next' annotations ensure that each use of ASL will
+// consume all attributes at once, rather than possibly leaving some to
+// be consumed through multiple uses of ASL.
 nonterm(AttributeSpecifierList*) AttributeSpecifierList {
-  -> as:AttributeSpecifier
+  -> as:AttributeSpecifier   forbid_next("__attribute__")
      { return new AttributeSpecifierList(as, NULL /*next*/); }
 
-  // forbid_next: See comments on TypeSpecifier.
-  -> as:AttributeSpecifier asl:AttributeSpecifierList  forbid_next("__attribute__")
+  -> as:AttributeSpecifier asl:AttributeSpecifierList   forbid_next("__attribute__")
      { return new AttributeSpecifierList(as, asl); }
 }
 
