@@ -72,6 +72,9 @@ RANLIB  = ranlib
 DEP     = $(PERL) depend.pl
 SMFLEX  = $(SMFLEXDIR)/smflex -b
 
+# Set of options to pass to Elkhound.
+ELKHOUND_OPTIONS = -v -tr lrtable
+
 
 # ---- Options within this Makefile ----
 # Modules to compile with coverage info, for example 'cc-tcheck'.
@@ -288,7 +291,7 @@ TOCLEAN += cc.gr.gen.h cc.gr.gen.cc cc.gr.gen.out
 %.gr.gen.h %.gr.gen.cc %.gr.gen.out: $(CC_GR_MODS) %-tokens.ids $(ELKHOUND)/elkhound.exe
 	test "x$*" = "xcc"
 	rm -f cc.gr.gen.h cc.gr.gen.cc cc.gr.gen.out
-	$(ELKHOUND)/elkhound.exe -v -tr lrtable -o cc.gr.gen $(CC_GR_MODS)
+	$(ELKHOUND)/elkhound.exe $(ELKHOUND_OPTIONS) -o cc.gr.gen $(CC_GR_MODS)
 	chmod a-w cc.gr.gen.h cc.gr.gen.cc cc.gr.gen.out
 
 # list of modules needed for the parser; ideally they're in an order
