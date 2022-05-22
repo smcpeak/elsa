@@ -44,8 +44,6 @@ struct S {
   operator long __attribute__(()) int __attribute__(()) ();
   operator long __attribute__(()) int __attribute__(()) unsigned ();
   operator short __attribute__(()) const __attribute__(()) volatile ();
-
-  // TODO: More variations.
 };
 
 // EOF

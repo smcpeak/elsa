@@ -10,6 +10,105 @@ int f(__attribute__((mode(byte))) int b1,
   return ISC(SC_LVAL_TO_RVAL, int, b1)+ISC(SC_LVAL_TO_RVAL, int, b2);
 }
 
+typedef int Integer;
+
+enum E {
+  reeee
+};
+
+int x;
+
+int a1(__attribute__((unused)) Integer p1,
+  __attribute__((unused)) Integer const p2,
+  __attribute__((unused)) Integer const volatile p3,
+  __attribute__((unused)) __attribute__((mode(byte)))
+    Integer const volatile p4,
+  __attribute__((unused)) __attribute__((mode(byte)))
+    Integer const volatile p5,
+  __attribute__((unused)) __attribute__((mode(byte)))
+    Integer const volatile p6,
+  int z);
+
+int a2(__attribute__((unused)) Integer const p1,
+  __attribute__((unused)) Integer const volatile p2,
+  __attribute__((unused)) Integer const volatile p3,
+  __attribute__((unused)) __attribute__((mode(byte)))
+    Integer const volatile p4,
+  int z);
+
+int a3(__attribute__((unused)) Integer volatile p1,
+  __attribute__((unused)) Integer const volatile p2,
+  __attribute__((unused)) __attribute__((mode(byte))) Integer volatile p3,
+  __attribute__((unused)) __attribute__((mode(byte)))
+    Integer const volatile p4,
+  int z);
+
+int a4(__attribute__((unused)) int p1,
+  __attribute__((unused)) int const p2,
+  __attribute__((unused)) __attribute__((mode(byte))) int p3,
+  __attribute__((unused)) __attribute__((mode(byte))) int const p4,
+  int z);
+
+int a5(__attribute__((unused)) int const p1,
+  __attribute__((unused)) int const volatile p2,
+  __attribute__((unused)) __attribute__((mode(byte))) int const volatile p3,
+  __attribute__((unused)) __attribute__((mode(byte))) int const p4,
+  __attribute__((unused)) int const volatile p5,
+  __attribute__((unused)) __attribute__((mode(byte))) int const volatile p6,
+  __attribute__((unused)) __attribute__((mode(byte))) long const p7,
+  __attribute__((unused)) __attribute__((mode(byte)))
+    long const volatile p8,
+  int z);
+
+int a6(__attribute__((unused)) int const p1,
+  __attribute__((unused)) int const volatile p2,
+  __attribute__((unused)) long const p3,
+  __attribute__((unused)) __attribute__((mode(byte))) long const p4,
+  int z);
+
+int a7(__attribute__((unused)) enum E p1,
+  __attribute__((unused)) enum E const p2,
+  __attribute__((unused)) enum E const p3,
+  __attribute__((unused)) __attribute__((mode(byte))) enum E const p4,
+  int z);
+
+int a8(__attribute__((unused)) enum E const p1,
+  __attribute__((unused)) enum E const volatile p2,
+  __attribute__((unused)) enum E const volatile p3,
+  __attribute__((unused)) __attribute__((mode(byte)))
+    enum E const volatile p4,
+  int z);
+
+int a9(__attribute__((unused)) enum E const p1,
+  __attribute__((unused)) enum E const volatile p2,
+  __attribute__((unused)) enum E const volatile p3,
+  __attribute__((unused)) __attribute__((mode(byte)))
+    enum E const volatile p5,
+  int z);
+
+int a10(__attribute__((unused)) typeof(x) p1,
+  __attribute__((unused)) typeof(x) const p2,
+  __attribute__((unused)) typeof(x) const p3,
+  __attribute__((unused)) __attribute__((mode(byte))) typeof(x) const p4,
+  int z);
+
+int a11(__attribute__((unused)) typeof(x) const p1,
+  __attribute__((unused)) typeof(x) const volatile p2,
+  __attribute__((unused)) __attribute__((mode(byte)))
+    typeof(x) const volatile p3,
+  __attribute__((unused)) typeof(x) const volatile p4,
+  __attribute__((unused)) __attribute__((mode(byte)))
+    typeof(x) const volatile p5,
+  int z);
+
+int a12(__attribute__((unused)) typeof(x) const p1,
+  __attribute__((unused)) typeof(x) const volatile p2,
+  __attribute__((unused)) __attribute__((mode(byte)))
+    typeof(x) const volatile p3,
+  __attribute__((unused)) __attribute__((mode(byte)))
+    typeof(x) const volatile p4,
+  int z);
+
 ---- STOP ----
 ---- stderr ----
 ---- exit status ----

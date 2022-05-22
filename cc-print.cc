@@ -605,7 +605,7 @@ void TypeSpecifier::print(PrintEnv &env, bool inDeclaration) const
   // parameter lists, I want to have a sequence so the forced break in
   // the list doesn't extend down to the breaks within the specifier.
   if (!inDeclaration) {
-    env.begin(0 /*ind*/);
+    env.begin();
   }
 
   // TODO: I would like to find a better solution to allowing the GNU
