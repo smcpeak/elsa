@@ -167,7 +167,8 @@ validate-extradep: all
 	@echo diff extradep.mk extradep.tmp
 	@if diff extradep.mk extradep.tmp; then true; else \
 	  echo "extradep.mk may need updating; run 'make remake-extradep'"; \
-	  echo "if you have added a new *generated* header file.  Otherwise,"; \
+	  echo "if you have added a new *generated* header file or a new"; \
+	  echo "dependency on a generated header.  Otherwise,"; \
 	  echo "for a new normal header 'git add' it to satisfy this check."; \
 	  exit 2; \
 	fi
