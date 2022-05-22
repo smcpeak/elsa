@@ -1,16 +1,22 @@
 // gnu.cc
 // tcheck and print routines for gnu.ast/gnu.gr extensions
 
-// TODO: Sort and partition this list.
-#include "generic_aux.h"      // C++ AST, and genericPrintAmbiguities, etc.
-#include "cc-env.h"           // Env
-#include "cc-print.h"         // olayer, PrintEnv
-#include "generic_amb.h"      // resolveAmbiguity, etc.
-#include "stdconv.h"          // usualArithmeticConversions
-#include "strutil.h"          // streq
-#include "astvisit.h"         // ASTVisitorEx
+#include "cc-ast.h"                    // contains declarations for this module
+
+// elsa
+#include "astvisit.h"                  // ASTVisitorEx
+#include "cc-env.h"                    // Env
+#include "cc-print.h"                  // olayer, PrintEnv
+#include "generic_amb.h"               // resolveAmbiguity, etc.
+#include "generic_aux.h"               // C++ AST, and genericPrintAmbiguities, etc.
+#include "stdconv.h"                   // usualArithmeticConversions
 #include "ubermods-attrspec.h"         // aslPrependAS, aslAppendASL
-#include <string.h>           // strcmp, strncmp
+
+// smbase
+#include "strutil.h"                   // streq
+
+// libc
+#include <string.h>                    // strcmp, strncmp
 
 
 // fwd in this file
