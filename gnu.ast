@@ -127,7 +127,7 @@ class Expression {
 // types denoted with 'typeof' keyword
 new class ASTTypeof {
   // same as we do for statements
-  public ASTTypeof *ambiguity;  ctor ambiguity=NULL;
+  public ASTTypeof *ambiguity = NULL;
   public void addAmbiguity(ASTTypeof *alternative);
   custom traverse { if (ambiguity) ambiguity->traverse(vis); }
 
@@ -148,7 +148,7 @@ new class ASTTypeof {
 
   // dsw: I had to move this here to deal with the mid_tcheck design
   // pattern that is used to resolve ambiguities.
-  public Type *type;       // TODO: This should be initialized.  Also 'ambiguity' can be initalized more simply.
+  public Type *type = NULL;
 
   // dsw: I'm assuming that ASTTypeof should terminate the top of the
   // Expression tree, but I don't feel absolutely sure about it.
