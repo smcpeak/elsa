@@ -880,6 +880,10 @@ impl_verbatim {
 //
 // TODO: The duplication between DeclSpecifier and TypeSpecifier is
 // really not good.  I should try to combine them in cc.gr, then here.
+// However, that idea is blocked on the problem that TypeSpecifier uses
+// multi-yield while DeclSpecifier does not (and I don't want to just
+// give up on the latter).
+//
 nonterm(TypeSpecifier*) TypeSpecifier {
   // One rule handles a leading list of attributes.
   -> asl:AttributeSpecifierList ts:TypeSpecifier   forbid_next("__attribute__")

@@ -1229,8 +1229,11 @@ nonterm(TypeSpecifier*) ElaboratedTypeSpecifier {
 // for a production, from an extension, so I can remove mention of
 // '__attribute__' from cc.gr.
 nonterm(TypeSpecifier*) TypeSpecifier {
-  // TODO: For DeclSpecifier, we prevent multi-yield in 'dup'.  I expect
-  // the same to be true here, so I should enforce that.
+  // I attempted to prevent multi-yield here, the same way I do for
+  // DeclSpecifier, but that ran into problems, in part because of
+  // conflicts with kandr.gr.  See
+  // test/tcheck/template-default-arg-templ-spec.cc.
+  //fun dup(d) { return NULL; }    // prevent multi-yield
 
   // TS_name
   -> n:PQTypeName cv2:UberCVQualifierSeqOpt   forbid_next("__attribute__")

@@ -242,6 +242,7 @@ out/tcheck/%.c.ok: tcheck/%.c $(CCPARSE)
 
 TESTS += tcheck/builtin-offsetof.cc
 TESTS += tcheck/new-int-star.cc
+TESTS += tcheck/template-default-arg-templ-spec.cc
 
 # Run a C++ tcheck test
 out/tcheck/%.cc.ok: tcheck/%.cc $(CCPARSE)
