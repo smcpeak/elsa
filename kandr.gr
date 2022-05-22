@@ -274,6 +274,10 @@ nonterm(Function*) ImplIntFunctionDefinition {
          CVFlags cv = uberCVFlags(m);
          return new Function(
            df,                                // decl flags
+
+           // TODO: Why does this use ST_CDTOR?  There is an ST_IMPLINT
+           // that seems like the right value to use, while obviously
+           // this is not a C++ constructor or destructor!
            new_TS_simple(loc, cv, ST_CDTOR),  // type specifier: ctor or dtor
            new Declarator(d, NULL),           // declarator with fn name, params
            NULL,                              // ctor member inits
@@ -336,6 +340,8 @@ nonterm(TopForm*) TFDeclaration {
           << ": implicit-int top-level Declaration in non-implicit-int language\n";
         return NULL;
       }
+
+      // TODO: This drops 'const' and 'volatile'.
       return new TF_decl
         (loc,
          new Declaration(uberDeclFlags(m1), new TS_simple(loc, ST_IMPLINT), list));
@@ -373,6 +379,8 @@ nonterm(Statement*) Statement {
           << ": implicit-int statement-level Declaration in non-implicit-int language\n";
         return NULL;
       }
+
+      // TODO: This drops 'const' and 'volatile'.
       return new S_decl (loc,
         new Declaration(uberDeclFlags(m1), new TS_simple(loc, ST_IMPLINT), list));
     }
