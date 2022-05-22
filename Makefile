@@ -294,52 +294,48 @@ TOCLEAN += cc.gr.gen.h cc.gr.gen.cc cc.gr.gen.out
 	$(ELKHOUND)/elkhound.exe $(ELKHOUND_OPTIONS) -o cc.gr.gen $(CC_GR_MODS)
 	chmod a-w cc.gr.gen.h cc.gr.gen.cc cc.gr.gen.out
 
-# list of modules needed for the parser; ideally they're in an order
-# that finds serious compilation problems earliest (it's ok to
-# rearrange as different parts of the code are in flux)
-#
-# TODO: I should just sort this list.
+# List of modules needed for the parser, in LANG=C sorted order.
 ELSA_OBJS :=
-ELSA_OBJS += elsaparse.o
-ELSA_OBJS += ubermods-attrspec.o
-ELSA_OBJS += mtype.o
-ELSA_OBJS += integrity.o
-ELSA_OBJS += astvisit.o
-ELSA_OBJS += template.o
-ELSA_OBJS += cc-env.o
-ELSA_OBJS += cc-tcheck.o
-ELSA_OBJS += const-eval.o
-ELSA_OBJS += implint.o
-ELSA_OBJS += serialno.o
-ELSA_OBJS += cc-scope.o
-ELSA_OBJS += cc-elaborate.o
-ELSA_OBJS += ast_build.o
-ELSA_OBJS += $(LEXER_OBJS)
 ELSA_OBJS += $(EXT_OBJS)
+ELSA_OBJS += $(LEXER_OBJS)
+ELSA_OBJS += ast_build.o
+ELSA_OBJS += astvisit.o
 ELSA_OBJS += builtinops.o
-ELSA_OBJS += cfg.o
-ELSA_OBJS += sprint.o
-ELSA_OBJS += mangle.o
+ELSA_OBJS += cc-ast-aux.o
+ELSA_OBJS += cc-elaborate.o
+ELSA_OBJS += cc-env.o
 ELSA_OBJS += cc-err.o
-ELSA_OBJS += cc-type.o
+ELSA_OBJS += cc-flags.o
+ELSA_OBJS += cc-print.o
+ELSA_OBJS += cc-scope.o
+ELSA_OBJS += cc-tcheck.o
 ELSA_OBJS += cc-type-visitor.o
-ELSA_OBJS += stdconv.o
-ELSA_OBJS += implconv.o
-ELSA_OBJS += overload.o
-ELSA_OBJS += typelistiter.o
+ELSA_OBJS += cc-type.o
 ELSA_OBJS += cc.ast.gen.o
 ELSA_OBJS += cc.gr.gen.o
-ELSA_OBJS += parssppt.o
-ELSA_OBJS += cc-flags.o
-ELSA_OBJS += type-sizes.o
-ELSA_OBJS += cc-print.o
-ELSA_OBJS += type-printer.o
-ELSA_OBJS += cc-ast-aux.o
-ELSA_OBJS += variable.o
-ELSA_OBJS += lookupset.o
 ELSA_OBJS += ccparse.o
+ELSA_OBJS += cfg.o
+ELSA_OBJS += const-eval.o
+ELSA_OBJS += elsaparse.o
+ELSA_OBJS += implconv.o
+ELSA_OBJS += implint.o
+ELSA_OBJS += integrity.o
+ELSA_OBJS += lookupset.o
+ELSA_OBJS += mangle.o
+ELSA_OBJS += mtype.o
+ELSA_OBJS += overload.o
+ELSA_OBJS += parssppt.o
+ELSA_OBJS += serialno.o
+ELSA_OBJS += sprint.o
+ELSA_OBJS += stdconv.o
 ELSA_OBJS += strip-comments.o
+ELSA_OBJS += template.o
 ELSA_OBJS += test-strip-comments.o
+ELSA_OBJS += type-printer.o
+ELSA_OBJS += type-sizes.o
+ELSA_OBJS += typelistiter.o
+ELSA_OBJS += ubermods-attrspec.o
+ELSA_OBJS += variable.o
 
 # Parser as a library.
 TOCLEAN += libelsa.a
