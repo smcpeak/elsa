@@ -346,7 +346,7 @@ static void printTypeSpecifierAndDeclarator(
   if (declaratorIsConstructor(declarator)) {
     // Print the type specifier,  The return type of a constructor says
     // what we build, hence the name of the class.
-    spec->print(env);
+    spec->print(env, true /*inDeclaration*/);
 
     // Now print the declarator.  The special constructor name will be
     // omitted, but we need the parens and the param types.
@@ -361,7 +361,7 @@ static void printTypeSpecifierAndDeclarator(
 
   else {
     // Print both, possibly with a space.
-    spec->print(env);
+    spec->print(env, false /*inDeclaration*/);
     if (ideclaratorWantsSpace(spec, declarator->decl)) {
       env << " ";
     }
@@ -480,7 +480,7 @@ void Declaration::print(PrintEnv &env) const
     TP_H_OR_V;
 
     printDeclFlags(env, dflags);
-    spec->print(env);
+    spec->print(env, true /*inDeclaration*/);
     Declarator *declarator = fl_first(decllist);
     if (ideclaratorWantsSpace(spec, declarator->decl)) {
       env << " ";
@@ -497,7 +497,7 @@ void Declaration::print(PrintEnv &env) const
 
   printDeclFlags(env, dflags);
 
-  spec->print(env);
+  spec->print(env, true /*inDeclaration*/);
 
   // Print the space that follows the specifier before starting the
   // first declarator so breaks within the declarator list return to
@@ -598,10 +598,15 @@ void PQ_template::print(PrintEnv &env) const
 
 
 // --------------------- TypeSpecifier --------------
-void TypeSpecifier::print(PrintEnv &env) const
+void TypeSpecifier::print(PrintEnv &env, bool inDeclaration) const
 {
-  // TODO: I think I want this, but it causes a few pprint differences.
-  //TPSEQUENCE;
+  // Declarations already take care of making sequences as desired, but
+  // for type specifiers outside declarations, particularly for
+  // parameter lists, I want to have a sequence so the forced break in
+  // the list doesn't extend down to the breaks within the specifier.
+  if (!inDeclaration) {
+    env.begin(0 /*ind*/);
+  }
 
   // TODO: I would like to find a better solution to allowing the GNU
   // extension to print attributes than inserting an explicit #ifdef.
@@ -615,6 +620,10 @@ void TypeSpecifier::print(PrintEnv &env) const
   iprint(env);
   if (cv) {
     env << " " << toString(cv);
+  }
+
+  if (!inDeclaration) {
+    env.end();
   }
 }
 
@@ -2235,7 +2244,7 @@ void TD_decl::iprint(PrintEnv &env) const
         CompoundType *instCT = instV->type->asCompoundType();
         if (instCT->syntax) {
           env << env.br;
-          instCT->syntax->print(env);
+          instCT->syntax->print(env, true /*inDeclaration*/);
           env << ";" << env.br;
         }
         else {

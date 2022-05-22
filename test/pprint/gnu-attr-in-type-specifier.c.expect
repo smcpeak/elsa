@@ -1,15 +1,11 @@
 ---- stdout ----
 ---- START ----
 // -*-c++-*-
-int f(__attribute__((mode(byte)))
-  int b1,
-  __attribute__((mode(byte)))
-  int b2);
+int f(__attribute__((mode(byte))) int b1,
+  __attribute__((mode(byte))) int b2);
 
-int f(__attribute__((mode(byte)))
-      int b1,
-      __attribute__((mode(byte)))
-      int b2)
+int f(__attribute__((mode(byte))) int b1,
+      __attribute__((mode(byte))) int b2)
 {
   return b1+b2;
 }

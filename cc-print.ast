@@ -43,7 +43,7 @@ class PQName {
 
 
 class TypeSpecifier {
-  public void print(PrintEnv &env) const;
+  public void print(PrintEnv &env, bool inDeclaration) const;
   pure_virtual void iprint(PrintEnv &env) const;
 }
 
