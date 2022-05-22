@@ -5,6 +5,8 @@
 // are associated with declarators, whereas in this case it is
 // associated with a type specifier.
 
+// 2022-05-22: Now they are retained and used, so the test passes!
+
 typedef struct S {
   int blah;
 } S;

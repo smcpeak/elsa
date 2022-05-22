@@ -1,4 +1,7 @@
 ---- stdout ----
+pprint/gnu-attr-in-type-specifier.c:93:3: warning: Ignoring mode attribute applied to an enum.
+pprint/gnu-attr-in-type-specifier.c:102:42: warning: Ignoring mode attribute applied to an enum.
+pprint/gnu-attr-in-type-specifier.c:111:9: warning: Ignoring mode attribute applied to an enum.
 ---- START ----
 // -*-c++-*-
 int f(__attribute__((mode(byte))) int b1,
@@ -18,16 +21,21 @@ enum E {
 
 int x;
 
-int a1(__attribute__((unused)) Integer p1,
-  __attribute__((unused)) Integer const p2,
-  __attribute__((unused)) Integer const volatile p3,
-  __attribute__((unused)) __attribute__((mode(byte)))
-    Integer const volatile p4,
-  __attribute__((unused)) __attribute__((mode(byte)))
-    Integer const volatile p5,
-  __attribute__((unused)) __attribute__((mode(byte)))
-    Integer const volatile p6,
-  int z);
+void a1(__attribute__((unused)) Integer p1,
+       __attribute__((unused)) Integer const p2,
+       __attribute__((unused)) Integer const volatile p3,
+       __attribute__((unused)) __attribute__((mode(byte)))
+         Integer const volatile p4,
+       __attribute__((unused)) __attribute__((mode(byte)))
+         Integer const volatile p5,
+       __attribute__((unused)) __attribute__((mode(byte)))
+         Integer const volatile p6,
+       int z)
+{
+  {
+    (void)((int (*)(char failed_static_assertion[sizeof(p5) == 1? 1 : -1]))0);
+  }
+}
 
 int a2(__attribute__((unused)) Integer const p1,
   __attribute__((unused)) Integer const volatile p2,

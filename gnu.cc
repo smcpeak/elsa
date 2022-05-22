@@ -708,9 +708,9 @@ Type *TS_typeof_type::itcheck(Env &env, DeclFlags dflags)
 }
 
 
-Type *TS_typeof::itcheck(Env &env, DeclFlags dflags)
+Type *TS_typeof::itcheck(Env &env, Tcheck &tc)
 {
-  atype = atype->tcheck(env, dflags);
+  atype = atype->tcheck(env, tc.m_dflags);
   return atype->type;
 }
 
@@ -1480,6 +1480,48 @@ D_attribute *D_attribute::clone() const
 }
 
 
+void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
+{
+  // tcheck the underlying declarator
+  D_grouping::tcheck(env, dt);
+
+  // tcheck the attribute list.
+  AttributeSpecifierList::Tcheck asltc(dt.type);
+  alist->tcheck(env, asltc);
+
+  // Relay the alias target.
+  if (asltc.m_gnuAliasTarget) {
+    dt.gnuAliasTarget = asltc.m_gnuAliasTarget;
+  }
+}
+
+
+// smcpeak 2021-06-07, 2022-05-17: There used to be a method here
+// called 'tcheck_getAlias' that interpreted
+// 'attribute((alias("aliasTarget")))', but I have replaced that
+// functionality with Variable::getGNUAliasTarget().
+
+
+void D_attribute::print(PrintEnv &env) const
+{
+  base->print(env);
+  env << env.sp;
+  alist->print(env);
+}
+
+
+// --------------------- AttributeSpecifierList ------------------------
+void AttributeSpecifierList::print(PrintEnv &env) const
+{
+  spec->print(env);
+
+  if (next) {
+    env << env.sp;
+    next->print(env);
+  }
+}
+
+
 class AttributeDisambiguator : public ASTVisitorEx {
 public:
   virtual void foundAmbiguous(void *obj, void **ambig, char const *kind) override;
@@ -1495,17 +1537,12 @@ void AttributeDisambiguator::foundAmbiguous(void *obj, void **ambig, char const 
 }
 
 
-void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
+void AttributeSpecifierList::tcheck(Env &env,
+  AttributeSpecifierList::Tcheck &tc)
 {
-  // TODO: I need to type-check the attributes on Declaration and
-  // TypeSpecifier.
-
-  // tcheck the underlying declarator
-  D_grouping::tcheck(env, dt);
-
   // "disambiguate" the attribute list
   AttributeDisambiguator dis;
-  alist->traverse(dis);
+  this->traverse(dis);
 
   // True if we see 'transparent_union'.
   bool transparentUnion = false;
@@ -1517,7 +1554,7 @@ void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
   StringRef foundAlias = NULL;
 
   // Scan the attributes for things we recognize.
-  for (AttributeSpecifierList *l = alist; l; l = l->next) {
+  for (AttributeSpecifierList *l = this; l; l = l->next) {
     for (AttributeSpecifier *s = l->spec; s; s = s->next) {
       if (AT_word *w = s->attr->ifAT_word()) {
         if (streq_GAN(w->w, "transparent_union")) {
@@ -1568,10 +1605,10 @@ void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
 
   // Apply '__mode__'.
   if (modeDesignator) {
-    if (dt.type->isSimpleType()) {
+    if (tc.m_type->isSimpleType()) {
       // get details about current type
-      SimpleTypeId existingId = dt.type->asSimpleTypeC()->type;
-      CVFlags existingCV = dt.type->getCVFlags();
+      SimpleTypeId existingId = tc.m_type->asSimpleTypeC()->type;
+      CVFlags existingCV = tc.m_type->getCVFlags();
       bool uns = isExplicitlyUnsigned(existingId);
 
       // Interpret the mode designator code.
@@ -1594,7 +1631,7 @@ void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
 
       // change the type according to the mode
       if (id != ST_ERROR) {
-        dt.type = env.getSimpleType(id, existingCV);
+        tc.m_type = env.getSimpleType(id, existingCV);
       }
       else {
         env.error(stringb(
@@ -1602,23 +1639,27 @@ void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
           modeDesignator << "'"));
       }
     }
+    else if (tc.m_type->isEnumType()) {
+      // GCC allows it, and maybe even does something with it?
+      env.warning("Ignoring mode attribute applied to an enum.");
+    }
     else {
-      env.error(dt.type, stringb(
+      env.error(tc.m_type, stringb(
         "__mode__ attribute must be applied to a fundamental scalar "
-        "type, not '" << dt.type->toString() << "'"));
+        "type, not '" << tc.m_type->toString() << "'"));
     }
   }
 
   // Apply '__transparent_union__'.
   if (transparentUnion) {
-    if (dt.type->isUnionType()) {
-      CompoundType *u = dt.type->asCompoundType();
+    if (tc.m_type->isUnionType()) {
+      CompoundType *u = tc.m_type->asCompoundType();
       u->isTransparentUnion = true;
     }
     else {
-      env.error(dt.type, stringb(
+      env.error(tc.m_type, stringb(
         "__transparent_union__ attribute must be applied to a union "
-        "type, not '" << dt.type->toString() << "'"));
+        "type, not '" << tc.m_type->toString() << "'"));
     }
   }
 
@@ -1627,38 +1668,12 @@ void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
     // Look up the name.
     Variable *target = env.lookupVariable(foundAlias);
     if (target) {
-      dt.gnuAliasTarget = target;
+      tc.m_gnuAliasTarget = target;
     }
     else {
-      env.error(dt.type, stringb(
+      env.error(tc.m_type, stringb(
         "__alias__ attribute target not found: '" << foundAlias << "'"));
     }
-  }
-}
-
-
-// smcpeak 2021-06-07, 2022-05-17: There used to be a method here
-// called 'tcheck_getAlias' that interpreted
-// 'attribute((alias("aliasTarget")))', but I have replaced that
-// functionality with Variable::getGNUAliasTarget().
-
-
-void D_attribute::print(PrintEnv &env) const
-{
-  base->print(env);
-  env << env.sp;
-  alist->print(env);
-}
-
-
-// --------------------- AttributeSpecifierList ------------------------
-void AttributeSpecifierList::print(PrintEnv &env) const
-{
-  spec->print(env);
-
-  if (next) {
-    env << env.sp;
-    next->print(env);
   }
 }
 

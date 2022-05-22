@@ -442,7 +442,8 @@ void Function::tcheck(Env &env, Variable *instV)
   UninstTemplateErrorFilter errorFilter(env);
 
   // get return type
-  Type *retTypeSpec = retspec->tcheck(env, dflags);
+  TypeSpecifier::Tcheck tstc(dflags);
+  Type *retTypeSpec = retspec->tcheck(env, tstc);
 
   // supply DF_DEFINITION?
   DeclFlags dfDefn = (checkBody? DF_DEFINITION : DF_NONE);
@@ -478,6 +479,7 @@ void Function::tcheck(Env &env, Variable *instV)
                         dflags | dfDefn,
                         DC_FUNCTION);
   dt.existingVar = instV;
+  dt.gnuAliasTarget = tstc.m_gnuAliasTarget;
   nameAndParams = nameAndParams->tcheck(env, dt);
   xassert(nameAndParams->var);
 
@@ -1012,7 +1014,8 @@ void Declaration::tcheck(Env &env, DeclaratorContext context)
   }
 
   // check the specifier in the prevailing environment
-  Type *specType = spec->tcheck(env, dflags);
+  TypeSpecifier::Tcheck tstc(dflags);
+  Type *specType = spec->tcheck(env, tstc);
 
   // ---- the following code is adopted from (the old) tcheckFakeExprList ----
   // (I couldn't just use the same code, templatized as necessary,
@@ -1021,6 +1024,7 @@ void Declaration::tcheck(Env &env, DeclaratorContext context)
   if (decllist) {
     // check first declarator
     Declarator::Tcheck dt1(specType, dflags, context);
+    dt1.gnuAliasTarget = tstc.m_gnuAliasTarget;
     decllist = FakeList<Declarator>::makeList(fl_first(decllist)->tcheck(env, dt1));
 
     // check subsequent declarators
@@ -1031,6 +1035,7 @@ void Declaration::tcheck(Env &env, DeclaratorContext context)
       Type *dupType = specType;
 
       Declarator::Tcheck dt2(dupType, dflags, context);
+      dt2.gnuAliasTarget = tstc.m_gnuAliasTarget;
       prev->next = prev->next->tcheck(env, dt2);
 
       prev = prev->next;
@@ -1072,10 +1077,12 @@ void ASTTypeId::mid_tcheck(Env &env, Tcheck &tc)
   }
 
   // check type specifier
-  Type *specType = spec->tcheck(env, DF_NONE);
+  TypeSpecifier::Tcheck tstc(DF_NONE);
+  Type *specType = spec->tcheck(env, tstc);
 
   // pass contextual info to declarator
   Declarator::Tcheck dt(specType, tc.dflags, tc.context);
+  dt.gnuAliasTarget = tstc.m_gnuAliasTarget;
 
   xassert(!tc.newSizeExpr || tc.context == DC_E_NEW);
 
@@ -1465,11 +1472,11 @@ Variable *maybeReuseNondependent(Env &env, SourceLoc loc, LookupFlags &lflags,
 
 
 // --------------------- TypeSpecifier --------------
-Type *TypeSpecifier::tcheck(Env &env, DeclFlags dflags)
+Type *TypeSpecifier::tcheck(Env &env, Tcheck &tc)
 {
   env.setLoc(loc);
 
-  Type *t = itcheck(env, dflags);
+  Type *t = itcheck(env, tc);
   Type *ret = env.tfac.applyCVToType(loc, cv, t, this);
   if (!ret) {
     if (t->isFunctionType() && env.lang.allowCVAppliedToFunctionTypes) {
@@ -1482,7 +1489,32 @@ Type *TypeSpecifier::tcheck(Env &env, DeclFlags dflags)
         << "cannot apply const/volatile to type '" << t->toString() << "'");
     }
   }
+
+  // TODO: Deal with this dependency!
+  #ifdef GNU_EXTENSION
+    // tcheck the attribute list.
+    if (m_attrSpecList) {
+      AttributeSpecifierList::Tcheck asltc(ret);
+      m_attrSpecList->tcheck(env, asltc);
+
+      if (asltc.m_gnuAliasTarget) {
+        tc.m_gnuAliasTarget = asltc.m_gnuAliasTarget;
+      }
+    }
+  #endif // GNU_EXTENSION
+
   return ret;
+}
+
+
+void TypeSpecifier::Tcheck::ignoreAliasTarget(Env &env,
+  char const *context)
+{
+  if (m_gnuAliasTarget) {
+    env.error(stringb(
+      "I don't know what to do with an 'alias' attribute applied "
+      "to " << context << "."));
+  }
 }
 
 
@@ -1526,7 +1558,7 @@ bool isBuggyGcc2HeaderDQT(Env &env, PQName *name)
 
 
 // 7.1.5.2
-Type *TS_name::itcheck(Env &env, DeclFlags dflags)
+Type *TS_name::itcheck(Env &env, Tcheck &tc)
 {
   tcheckPQName(name, env, NULL /*scope*/, LF_NONE);
 
@@ -1650,7 +1682,7 @@ do_lookup:
 }
 
 
-Type *TS_simple::itcheck(Env &env, DeclFlags dflags)
+Type *TS_simple::itcheck(Env &env, Tcheck &tc)
 {
   // This is the one aspect of the implicit-int solution that cannot
   // be confined to implint.h: having selected an interpretation that
@@ -2057,7 +2089,7 @@ CompoundType *checkClasskeyAndName(
 }
 
 
-Type *TS_elaborated::itcheck(Env &env, DeclFlags dflags)
+Type *TS_elaborated::itcheck(Env &env, Tcheck &tc)
 {
   env.setLoc(loc);
 
@@ -2096,7 +2128,7 @@ Type *TS_elaborated::itcheck(Env &env, DeclFlags dflags)
   }
 
   CompoundType *ct =
-    checkClasskeyAndName(env, env.scope(), loc, dflags, keyword, name);
+    checkClasskeyAndName(env, env.scope(), loc, tc.m_dflags, keyword, name);
   if (!ct) {
     ct = env.errorCompoundType;
   }
@@ -2134,10 +2166,10 @@ void tcheckDeclaratorPQName(Env &env, ScopeSeq &qualifierScopes,
 }
 
 
-Type *TS_classSpec::itcheck(Env &env, DeclFlags dflags)
+Type *TS_classSpec::itcheck(Env &env, Tcheck &tc)
 {
   env.setLoc(loc);
-  dflags |= DF_DEFINITION;
+  DeclFlags dflags = tc.m_dflags | DF_DEFINITION;
 
   // if we're on the second pass, then skip almost everything
   if (env.secondPassTcheck) {
@@ -2381,7 +2413,7 @@ void TS_classSpec::tcheckFunctionBodies(Env &env)
 }
 
 
-Type *TS_enumSpec::itcheck(Env &env, DeclFlags dflags)
+Type *TS_enumSpec::itcheck(Env &env, Tcheck &tc)
 {
   env.setLoc(loc);
 
@@ -2443,7 +2475,9 @@ void MR_decl::tcheck(Env &env)
   if (env.secondPassTcheck) {
     // TS_classSpec is only thing of interest
     if (d->spec->isTS_classSpec()) {
-      d->spec->asTS_classSpec()->tcheck(env, d->dflags);
+      TypeSpecifier::Tcheck tstc(d->dflags);
+      d->spec->asTS_classSpec()->tcheck(env, tstc);
+      tstc.ignoreAliasTarget(env, "a class member declaration");
     }
     return;
   }
@@ -7292,7 +7326,9 @@ Type *E_constructor::itcheck_x(Env &env, Expression *&replacement)
 
 void E_constructor::inner1_itcheck(Env &env)
 {
-  type = spec->tcheck(env, DF_NONE);
+  TypeSpecifier::Tcheck tstc(DF_NONE);
+  type = spec->tcheck(env, tstc);
+  tstc.ignoreAliasTarget(env, "the type in a constructor expression");
 }
 
 Type *E_constructor::inner2_itcheck(Env &env, Expression *&replacement)
@@ -9980,7 +10016,9 @@ void TD_decl::itcheck(Env &env)
   if (env.secondPassTcheck) {
     // TS_classSpec is only thing of interest
     if (d->spec->isTS_classSpec()) {
-      d->spec->asTS_classSpec()->tcheck(env, d->dflags);
+      TypeSpecifier::Tcheck tstc(d->dflags);
+      d->spec->asTS_classSpec()->tcheck(env, tstc);
+      tstc.ignoreAliasTarget(env, "a template declaration");
     }
     return;
   }

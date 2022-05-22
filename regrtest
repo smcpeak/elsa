@@ -1495,7 +1495,10 @@ if $use_gnu; then
   # These do not work because the transparent union attribute is
   # ignored due to it being associated with a type specifier rather than
   # a declarator.
-  failCparse gnu/t0135.c "transparent union attribute ignored"
+  #
+  # 2022-05-22: The first test now passes, but the second fails because
+  # attributes immediately after 'union' are still dropped.
+  testCparse gnu/t0135.c #"transparent union attribute ignored"
   failCparse gnu/t0136.c "transparent union attribute ignored"
 
   # This is here just to document that Elsa does not diagnose something that

@@ -18,7 +18,7 @@ int x;
 
 // nonterm TypeSpecifier:
 
-int a1(
+void a1(
   // -> n:PQTypeName cv2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt   forbid_next("__attribute__")
   // Columns: \S+ \S+ \S+ \S+ \S+ \S+ \S+ \S+ \S+
   Integer /**/  __attribute__((unused)) /**/                        /**/     /**/                        /**/  p1,
@@ -27,7 +27,13 @@ int a1(
   Integer const __attribute__((unused)) /**/                        volatile __attribute__((mode(byte))) /**/  p4,
   Integer /**/  __attribute__((unused)) /**/                        volatile __attribute__((mode(byte))) const p5,
   Integer /**/  __attribute__((unused)) __attribute__((mode(byte))) volatile /**/                        const p6,
-  int z);
+  int z)
+{
+  // Expansion of STATIC_ASSERT from smbase/sm-macros.h.
+  { (void)((int (*)(char failed_static_assertion[(
+      sizeof(p5) == 1       // condition of interest
+    )?1:-1]))0); }
+}
 
 int a2(
   // -> cv1:UberCVQualifierSeq uma1:AttributeSpecifier_UCVAASLOpt n:PQTypeName uma2:UCVAASLOpt   forbid_next("__attribute__")

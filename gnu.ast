@@ -335,6 +335,29 @@ class AttributeSpecifierList(
   AttributeSpecifierList /*nullable*/ next
 ) {
   public void print(PrintEnv &env) const;
+
+  // Data passed into and out of 'tcheck', following a pattern similar
+  // to what is done for Declarator.
+  public class Tcheck {
+  public:      // data
+    // The type of the entity with which the attributes are associated.
+    // The tcheck process may change it, for example to apply a "mode"
+    // attribute.
+    Type *&m_type;
+
+    // If not NULL after tcheck, the attributes included an "alias"
+    // and this is the Variable the alias referred to.
+    Variable *m_gnuAliasTarget;
+
+  public:      // methods
+    explicit Tcheck(Type *&type)
+      : m_type(type),
+        m_gnuAliasTarget(NULL)
+    {}
+  };
+
+  // Check the attributes and update 'tc'.
+  public void tcheck(Env &env, Tcheck &tc);
 }
 
 

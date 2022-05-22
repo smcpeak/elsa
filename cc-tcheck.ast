@@ -215,10 +215,32 @@ class PQName {
 
 
 class TypeSpecifier {
+  // Data passed to/from 'tcheck'.
+  public class Tcheck {
+  public:      // data
+    // Flags present at declaration site, if any.
+    DeclFlags m_dflags;
+
+    // NULL on entry, this can be set based on attributes present.
+    Variable *m_gnuAliasTarget;
+
+  public:      // methods
+    explicit Tcheck(DeclFlags dflags)
+      : m_dflags(dflags),
+        m_gnuAliasTarget(NULL)
+    {}
+
+    // If 'm_gnuAliasTarget' is not NULL, complain because we are about
+    // to ignore it.  Generally, after the TypeSpecifier is tchecked,
+    // the caller must either store the alias target somewhere or call
+    // this function.
+    void ignoreAliasTarget(Env &env, char const *context);
+  };
+
   // yield the type named by the specifier; this type may of course
   // get refined when the declarator is considered
-  public Type *tcheck(Env &env, DeclFlags dflags);
-  pure_virtual Type *itcheck(Env &env, DeclFlags dflags);
+  public Type *tcheck(Env &env, Tcheck &tc);
+  pure_virtual Type *itcheck(Env &env, Tcheck &tc);
 
   // since several of the type specifiers use names, and names are
   // scoped, but we don't want later analyses to have to know about
