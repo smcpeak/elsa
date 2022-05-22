@@ -192,7 +192,12 @@ void test_astbuild(ElsaParse &elsaParse)
                         elsaParse.m_lang, locProvider);
   TestASTBuildVisitor visitor(elsaParse, astBuild);
 
-  elsaParse.m_translationUnit->traverse(visitor);
+  if (elsaParse.m_translationUnit) {
+    elsaParse.m_translationUnit->traverse(visitor);
+  }
+  else {
+    // The TU is missing for "-tr parseTree".  That's fine.
+  }
 }
 
 
