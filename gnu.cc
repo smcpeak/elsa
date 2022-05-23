@@ -1718,7 +1718,7 @@ void AttributeSpecifier::print(PrintEnv &env) const
 }
 
 
-// ---------------------- Attribute -------------------------
+// -------------------------- TypeSpecifier ----------------------------
 void TypeSpecifier::prependASL(AttributeSpecifierList *list)
 {
   m_attrSpecList = aslAppendASL(list, m_attrSpecList);
@@ -1740,6 +1740,22 @@ void TypeSpecifier::preprint_attrSpecList(PrintEnv &env) const
 }
 
 
+void TypeSpecifier::ext_tcheck_attrSpecList(Env &env, Tcheck &tc,
+                                            Type *& /*INOUT*/ ret)
+{
+  // tcheck the attribute list.
+  if (m_attrSpecList) {
+    AttributeSpecifierList::Tcheck asltc(ret);
+    m_attrSpecList->tcheck(env, asltc);
+
+    if (asltc.m_gnuAliasTarget) {
+      tc.m_gnuAliasTarget = asltc.m_gnuAliasTarget;
+    }
+  }
+}
+
+
+// ---------------------- Attribute -------------------------
 UberModifiers AT_empty::toUberModifiers() const
 {
   return UM_NONE;

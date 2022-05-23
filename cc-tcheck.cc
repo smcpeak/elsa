@@ -1490,18 +1490,8 @@ Type *TypeSpecifier::tcheck(Env &env, Tcheck &tc)
     }
   }
 
-  // TODO: Deal with this dependency!
-  #ifdef GNU_EXTENSION
-    // tcheck the attribute list.
-    if (m_attrSpecList) {
-      AttributeSpecifierList::Tcheck asltc(ret);
-      m_attrSpecList->tcheck(env, asltc);
-
-      if (asltc.m_gnuAliasTarget) {
-        tc.m_gnuAliasTarget = asltc.m_gnuAliasTarget;
-      }
-    }
-  #endif // GNU_EXTENSION
+  // Let extensions check additional things.
+  ext_tcheck(env, tc, ret);
 
   return ret;
 }

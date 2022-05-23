@@ -175,6 +175,11 @@ class TypeSpecifier {
   public void preprint_attrSpecList(PrintEnv &env) const;
   custom preprint { preprint_attrSpecList(env); }
 
+  // And also tcheck them.
+  public void ext_tcheck_attrSpecList(Env &env, Tcheck &tc,
+                                      Type *& /*INOUT*/ ret);
+  custom ext_tcheck { ext_tcheck_attrSpecList(env, tc, ret); }
+
   // 'typeof' behaves as a type specifier.
   -> TS_typeof(ASTTypeof atype);
 }

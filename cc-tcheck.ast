@@ -242,6 +242,11 @@ class TypeSpecifier {
   public Type *tcheck(Env &env, Tcheck &tc);
   pure_virtual Type *itcheck(Env &env, Tcheck &tc);
 
+  // Expose a hook for extensions to check added elements.  'ret' is the
+  // type we are about to return from 'tcheck'.
+  define_custom(ext_tcheck)
+    void ext_tcheck(Env &env, Tcheck &tc, Type *& /*INOUT*/ ret);
+
   // since several of the type specifiers use names, and names are
   // scoped, but we don't want later analyses to have to know about
   // scopes, for those specifiers that use names cc-tcheck writes down
