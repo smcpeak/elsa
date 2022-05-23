@@ -48,7 +48,7 @@ class TypeSpecifier {
 
   // This is called during printing just before opening the sequence (if
   // that is done), before printing the main specifier.
-  define_custom(preprint) void preprint(PrintEnv &env) const;
+  define_customizable void preprint(PrintEnv &env) const;
 }
 
 
