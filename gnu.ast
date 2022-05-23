@@ -171,6 +171,10 @@ class TypeSpecifier {
   // Append 'list' to 'm_attrSpecList'.
   public void appendASL(AttributeSpecifierList * /*nullable*/ list);
 
+  // Arrange to print the attributes.
+  public void preprint_attrSpecList(PrintEnv &env) const;
+  custom preprint { preprint_attrSpecList(env); }
+
   // 'typeof' behaves as a type specifier.
   -> TS_typeof(ASTTypeof atype);
 }

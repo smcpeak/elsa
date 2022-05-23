@@ -45,6 +45,10 @@ class PQName {
 class TypeSpecifier {
   public void print(PrintEnv &env, bool inDeclaration) const;
   pure_virtual void iprint(PrintEnv &env) const;
+
+  // This is called during printing just before opening the sequence (if
+  // that is done), before printing the main specifier.
+  define_custom(preprint) void preprint(PrintEnv &env) const;
 }
 
 

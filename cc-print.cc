@@ -608,14 +608,8 @@ void TypeSpecifier::print(PrintEnv &env, bool inDeclaration) const
     env.begin();
   }
 
-  // TODO: I would like to find a better solution to allowing the GNU
-  // extension to print attributes than inserting an explicit #ifdef.
-  #ifdef GNU_EXTENSION
-  if (m_attrSpecList) {
-    m_attrSpecList->print(env);
-    env << env.sp;
-  }
-  #endif // GNU_EXTENSION
+  // Let extension modules have a chance to print things.
+  preprint(env);
 
   iprint(env);
   if (cv) {

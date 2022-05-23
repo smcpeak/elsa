@@ -1731,6 +1731,15 @@ void TypeSpecifier::appendASL(AttributeSpecifierList * /*nullable*/ list)
 }
 
 
+void TypeSpecifier::preprint_attrSpecList(PrintEnv &env) const
+{
+  if (m_attrSpecList) {
+    m_attrSpecList->print(env);
+    env << env.sp;
+  }
+}
+
+
 UberModifiers AT_empty::toUberModifiers() const
 {
   return UM_NONE;
