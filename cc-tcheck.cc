@@ -4270,11 +4270,10 @@ void D_func::tcheck(Env &env, Declarator::Tcheck &dt)
   // of checking them
   FunctionType *ft = env.tfac.syntaxFunctionType(loc, dt.type, this, env.tunit);
   ft->flags = specialFunc;
-  #ifdef KANDR_EXTENSION
-    if (kAndR_params) {
-      ft->setFlag(FF_KANDR_DEFN);
-    }
-  #endif
+  ext_tcheck_adjustFunctionType(env, dt, ft);
+
+  // Make this D_func available for various questionable purposes (see
+  // comments on 'funcSyntax' declaration).
   dt.funcSyntax = this;
 
   // add them, now that the list has been disambiguated

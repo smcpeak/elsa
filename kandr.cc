@@ -37,6 +37,17 @@ void PQ_name::setNext(PQ_name *newNext)
 }
 
 
+// --------------------- D_func type-check support ---------------------
+void D_func::ext_tcheck_adjustFunctionType_kAndR_params(
+  Env &env, Declarator::Tcheck &dt,
+  FunctionType *& /*INOUT*/ ft)
+{
+  if (kAndR_params) {
+    ft->setFlag(FF_KANDR_DEFN);
+  }
+}
+
+
 // ---------------------- parsing support ---------------------
 // return a parameter AST list constructed as if the K&R-defined
 // function had been defined the usual way; NOTE: this imitates

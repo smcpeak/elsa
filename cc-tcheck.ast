@@ -485,6 +485,14 @@ class IDeclarator {
        // functions.. so I set this to true in MR_decl::tcheck and
        // MR_func::tcheck
        public bool isMember = false;
+
+       // Provide a hook for extensions to make adjustments to a
+       // just-created FunctionType during type checking.  (This is
+       // ugly, but so is the way FunctionTypes are created in general.)
+       define_custom(ext_tcheck_adjustFunctionType)
+         void ext_tcheck_adjustFunctionType(
+           Env &env, Declarator::Tcheck &dt,
+           FunctionType *& /*INOUT*/ ft);
      }
 
   -> D_array {

@@ -25,5 +25,13 @@ class IDeclarator {
   // of parameter names that appear within the parentheses, while the
   // normal 'params' is used to record the declarations that appear
   // after the close-paren.
-  -> D_func(FakeList<PQ_name> *kAndR_params = NULL); // params if a K&R function
+  -> D_func(FakeList<PQ_name> *kAndR_params = NULL) { // params if a K&R function
+       // Arrange to set a certain flag on FunctionTypes that are
+       // created from K&R definitions.
+       public void ext_tcheck_adjustFunctionType_kAndR_params(
+         Env &env, Declarator::Tcheck &dt,
+         FunctionType *& /*INOUT*/ ft);
+       custom ext_tcheck_adjustFunctionType
+         { ext_tcheck_adjustFunctionType_kAndR_params(env, dt, ft); }
+  }
 }
