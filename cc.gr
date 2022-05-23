@@ -853,9 +853,7 @@ nonterm(Expression*) ConstantExpressionOpt {
 // ------ A.5 Statements ------
 // pull the label and colon out to make things easier in gnu.gr
 nonterm(StringRef) LabelAndColon {
-  // 10/20/04: The precedence specification here fixes in/c/t0018.c by
-  // telling the parser to shift any __attribute__ that follows the ":".
-  -> n:Identifier ":"    precedence(TOK_PREFER_SHIFT)
+  -> n:Identifier ":"
        { return n; }
 }
 
