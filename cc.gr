@@ -1220,14 +1220,6 @@ nonterm(TypeSpecifier*) ElaboratedTypeSpecifier {
 // plays role of "TypeSpecifierSeq" in cppstd; this is a
 // version of DeclSpecifier restricted to only allow "const" and
 // "volatile" UberModifiers
-//
-// All rules for TypeSpecifier have 'forbid_next("__attribute__")'.  The
-// reason for this is explained in gnu.gr on the TypeSpecifier rules
-// there.
-//
-// TODO: Add a feature to Elkhound to apply 'forbid_next' to all rules
-// for a production, from an extension, so I can remove mention of
-// '__attribute__' from cc.gr.
 nonterm(TypeSpecifier*) TypeSpecifier {
   // I attempted to prevent multi-yield here, the same way I do for
   // DeclSpecifier, but that ran into problems, in part because of
@@ -1236,30 +1228,30 @@ nonterm(TypeSpecifier*) TypeSpecifier {
   //fun dup(d) { return NULL; }    // prevent multi-yield
 
   // TS_name
-  -> n:PQTypeName cv2:UberCVQualifierSeqOpt   forbid_next("__attribute__")
+  -> n:PQTypeName cv2:UberCVQualifierSeqOpt
        { return new_TS_name(loc, uberCVFlags(cv2), n, false /*typename*/); }
 
-  -> cv1:UberCVQualifierSeq n:PQTypeName cv2:UberCVQualifierSeqOpt   forbid_next("__attribute__")
+  -> cv1:UberCVQualifierSeq n:PQTypeName cv2:UberCVQualifierSeqOpt
        { UberModifiers cv = uberCombine(loc, cv1, cv2);
          return new_TS_name(loc, uberCVFlags(cv), n, false /*typename*/); }
 
   // TS_simple
-  -> k1:UberTypeKeyword m2:UberTypeAndCVQualifierSeqOpt   forbid_next("__attribute__")
+  -> k1:UberTypeKeyword m2:UberTypeAndCVQualifierSeqOpt
        { UberModifiers k = uberCombine(loc, k1, m2);
          return new_TS_simple(loc, uberCVFlags(m2), uberSimpleType(loc, k)); }
 
-  -> m1:UberCVQualifierSeq k1:UberTypeKeyword m2:UberTypeAndCVQualifierSeqOpt   forbid_next("__attribute__")
+  -> m1:UberCVQualifierSeq k1:UberTypeKeyword m2:UberTypeAndCVQualifierSeqOpt
        { UberModifiers m = uberCombine(loc, m1, m2);
          UberModifiers k = uberCombine(loc, k1, m2);
          return new_TS_simple(loc, uberCVFlags(m), uberSimpleType(loc, k)); }
 
   // TS_elaborated, TS_classSpec, TS_enumSpec
-  -> e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt   forbid_next("__attribute__")
+  -> e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt
        { xassert(e != NULL && "388cba6d-895c-4acb-ac25-c28fc1c4c2cb");
          e->cv |= uberCVFlags(m2);     // destructive action
          return e; }
 
-  -> m1:UberCVQualifierSeq e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt   forbid_next("__attribute__")
+  -> m1:UberCVQualifierSeq e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt
        { UberModifiers m = uberCombine(loc, m1, m2);
          xassert(e != NULL && "ceae1527-94a7-480d-9134-5dbd8cbfb2aa");
          e->cv |= uberCVFlags(m);      // destructive action

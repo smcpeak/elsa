@@ -251,10 +251,10 @@ nonterm(Declaration*) DeclSpecifier {
 
 nonterm(TypeSpecifier*) TypeSpecifier {
   // TS_typeof
-  -> te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt   forbid_next("__attribute__")
+  -> te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt
        { return new_TS_typeof(loc, uberCVFlags(cv2), te); }
 
-  -> cv1:UberCVQualifierSeq te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt   forbid_next("__attribute__")
+  -> cv1:UberCVQualifierSeq te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt
        { UberModifiers cv = uberCombine(loc, cv1, cv2);
          return new_TS_typeof(loc, uberCVFlags(cv), te); }
 }
@@ -864,19 +864,10 @@ impl_verbatim {
 // This set of rules augments TypeSpecifier with attributes in the same
 // way as DeclSpecifier.
 //
-// All rules for TypeSpecifier have 'forbid_next("__attribute__")',
-// which ensures we do not reduce a TypeSpecifier until we have consumed
-// all available attributes.  This is also done for a few other related
-// nonterminals that consume attributes.
-//
 // The main reason this is necessary is illustrated in the ambiguity in
 // test/pprint/gnu-attr-on-conversion-id.cc, where the attributes
 // associated with a TypeSpecifier can be confused with those associated
 // with a Declarator.
-//
-// TODO: I would like to add a feature to Elkhound to allow me to attach
-// a single 'forbid_next' to the nonterminal rather than each rule
-// individually.
 //
 // TODO: The duplication between DeclSpecifier and TypeSpecifier is
 // really not good.  I should try to combine them in cc.gr, then here.
@@ -885,56 +876,61 @@ impl_verbatim {
 // give up on the latter).
 //
 nonterm(TypeSpecifier*) TypeSpecifier {
+  // Do not reduce a TypeSpecifier until we have consumed all available
+  // attributes.  This is also done for a few other related nonterminals
+  // that consume attributes.
+  forbid_next("__attribute__");
+
   // One rule handles a leading list of attributes.
-  -> asl:AttributeSpecifierList ts:TypeSpecifier   forbid_next("__attribute__")
+  -> asl:AttributeSpecifierList ts:TypeSpecifier
        { ts->prependASL(asl); return ts; }
 
   // ---- TS_name ----
 
   // cc.gr has: n:PQTypeName cv2:UberCVQualifierSeqOpt (*)
-  -> n:PQTypeName cv2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt   forbid_next("__attribute__")
+  -> n:PQTypeName cv2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt
        { return make_TS_name_alone(*this, loc, n, UM_NONE, cv2, uma, NULL_UMA); }
 
   // cc.gr has: cv1:UberCVQualifierSeq (*) n:PQTypeName cv2:UberCVQualifierSeqOpt (*)
-  -> cv1:UberCVQualifierSeq uma1:AttributeSpecifier_UCVAASLOpt n:PQTypeName uma2:UCVAASLOpt   forbid_next("__attribute__")
+  -> cv1:UberCVQualifierSeq uma1:AttributeSpecifier_UCVAASLOpt n:PQTypeName uma2:UCVAASLOpt
        { return make_TS_name_alone(*this, loc, n, cv1, UM_NONE, uma1, uma2); }
-  -> cv1:UberCVQualifierSeq n:PQTypeName cv2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt   forbid_next("__attribute__")
+  -> cv1:UberCVQualifierSeq n:PQTypeName cv2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt
        { return make_TS_name_alone(*this, loc, n, cv1, cv2, uma, NULL_UMA); }
 
   // ---- TS_simple ----
 
   // cc.gr has: k1:UberTypeKeyword m2:UberTypeAndCVQualifierSeqOpt (*)
-  -> k1:UberTypeKeyword m2:UberTypeAndCVQualifierSeqOpt uma:AttributeSpecifier_UTACVAASLOpt   forbid_next("__attribute__")
+  -> k1:UberTypeKeyword m2:UberTypeAndCVQualifierSeqOpt uma:AttributeSpecifier_UTACVAASLOpt
        { return make_TS_simple_alone(*this, loc, k1, UM_NONE, m2, uma, NULL_UMA); }
 
   // cc.gr has: m1:UberCVQualifierSeq (*) k1:UberTypeKeyword m2:UberTypeAndCVQualifierSeqOpt (*)
-  -> m1:UberCVQualifierSeq uma1:AttributeSpecifier_UCVAASLOpt k1:UberTypeKeyword uma2:UTACVAASLOpt   forbid_next("__attribute__")
+  -> m1:UberCVQualifierSeq uma1:AttributeSpecifier_UCVAASLOpt k1:UberTypeKeyword uma2:UTACVAASLOpt
        { return make_TS_simple_alone(*this, loc, k1, m1, UM_NONE, uma1, uma2); }
-  -> m1:UberCVQualifierSeq k1:UberTypeKeyword m2:UberTypeAndCVQualifierSeqOpt uma:AttributeSpecifier_UTACVAASLOpt   forbid_next("__attribute__")
+  -> m1:UberCVQualifierSeq k1:UberTypeKeyword m2:UberTypeAndCVQualifierSeqOpt uma:AttributeSpecifier_UTACVAASLOpt
        { return make_TS_simple_alone(*this, loc, k1, m1, m2, uma, NULL_UMA); }
 
   // ---- TS_elaborated, etc. ----
 
   // cc.gr has: e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt (*)
-  -> e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt   forbid_next("__attribute__")
+  -> e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt
        { return make_TS_elaborated_or_alone(*this, loc, e, UM_NONE, m2, uma, NULL_UMA); }
 
   // cc.gr has: m1:UberCVQualifierSeq (*) e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt (*)
-  -> m1:UberCVQualifierSeq uma1:AttributeSpecifier_UCVAASLOpt e:ElaboratedOrSpecifier uma2:UCVAASLOpt   forbid_next("__attribute__")
+  -> m1:UberCVQualifierSeq uma1:AttributeSpecifier_UCVAASLOpt e:ElaboratedOrSpecifier uma2:UCVAASLOpt
        { return make_TS_elaborated_or_alone(*this, loc, e, m1, UM_NONE, uma1, uma2); }
-  -> m1:UberCVQualifierSeq e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt   forbid_next("__attribute__")
+  -> m1:UberCVQualifierSeq e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt
        { return make_TS_elaborated_or_alone(*this, loc, e, m1, m2, uma, NULL_UMA); }
 
   // ---- TS_typeof ----
 
   // gnu.gr has: te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt (*)
-  -> te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt   forbid_next("__attribute__")
+  -> te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt
        { return make_TS_typeof_alone(*this, loc, te, UM_NONE, cv2, uma, NULL_UMA); }
 
   // gnu.gr has: cv1:UberCVQualifierSeq (*) te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt (*)
-  -> cv1:UberCVQualifierSeq uma1:AttributeSpecifier_UCVAASLOpt te:TypeofTypeSpecifier uma2:UCVAASLOpt   forbid_next("__attribute__")
+  -> cv1:UberCVQualifierSeq uma1:AttributeSpecifier_UCVAASLOpt te:TypeofTypeSpecifier uma2:UCVAASLOpt
        { return make_TS_typeof_alone(*this, loc, te, cv1, UM_NONE, uma1, uma2); }
-  -> cv1:UberCVQualifierSeq te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt   forbid_next("__attribute__")
+  -> cv1:UberCVQualifierSeq te:TypeofTypeSpecifier cv2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt
        { return make_TS_typeof_alone(*this, loc, te, cv1, cv2, uma, NULL_UMA); }
 }
 
@@ -957,8 +953,10 @@ nonterm(UberModifiersAndASL*) UCVAASLOpt {
 
 // An AttributeSpecifier followed by UTACVAASLOpt.
 nonterm(UberModifiersAndASL*) AttributeSpecifier_UTACVAASLOpt {
-  // forbid_next: See comments on TypeSpecifier.
-  -> as:AttributeSpecifier uma:UTACVAASLOpt   forbid_next("__attribute__")
+  // See comments on TypeSpecifier.
+  forbid_next("__attribute__");
+
+  -> as:AttributeSpecifier uma:UTACVAASLOpt
        { return umaaslPrependAS(as, uma); }
 }
 
@@ -1171,14 +1169,16 @@ nonterm(AttributeSpecifier*) AttributeSpecifier {
      { return ap; }
 }
 
-// The 'forbid_next' annotations ensure that each use of ASL will
-// consume all attributes at once, rather than possibly leaving some to
-// be consumed through multiple uses of ASL.
 nonterm(AttributeSpecifierList*) AttributeSpecifierList {
-  -> as:AttributeSpecifier   forbid_next("__attribute__")
+  // Ensure that each use of ASL will consume all attributes at once,
+  // rather than possibly leaving some to be consumed through multiple
+  // uses of ASL.
+  forbid_next("__attribute__");
+
+  -> as:AttributeSpecifier
      { return new AttributeSpecifierList(as, NULL /*next*/); }
 
-  -> as:AttributeSpecifier asl:AttributeSpecifierList   forbid_next("__attribute__")
+  -> as:AttributeSpecifier asl:AttributeSpecifierList
      { return new AttributeSpecifierList(as, asl); }
 }
 
