@@ -402,9 +402,11 @@ class Declarator {
     // the size's AST node pointer here; then E_new can collect it
     Expression *size_E_new;
 
-    // if this is non-NULL, then it points at the D_func responsible
-    // for creating 'type', a FunctionType; this is used to determine
-    // the cv flags of the implicit 'this' parameter of member functions
+    // If this is non-NULL, then it points at the D_func responsible for
+    // creating 'type', a FunctionType.  This is used to determine the
+    // cv flags of the implicit 'this' parameter of member functions, to
+    // know when the FunctionType has had 'doneParams' called on it, and
+    // to pass to certain TypeFactory methods that want to see syntax.
     D_func *funcSyntax;
 
     // syntactic context

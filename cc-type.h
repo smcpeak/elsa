@@ -1188,8 +1188,20 @@ public:
 
 
   // ---- create a type based on another one ----
-  // NOTE: all 'syntax' pointers are nullable, since there are contexts
-  // where I don't have an AST node to pass
+  // NOTE: All 'syntax' pointers are nullable, since there are contexts
+  // where I don't have an AST node to pass.
+  //
+  // 2022-05-23: Moreover, I now regard the 'syntax' pointers as a
+  // mistake.  They were added for the benefit of Oink and CQual, who
+  // effectively wanted to smuggle their extended type qualifiers
+  // amongst regular types, presuming the type checker would do the
+  // right thing with them as a side effect.  But that ties the hands of
+  // the type checker, since it is beholden to the invisible (from this
+  // repo, at least) assumptions of one particular client, and breaks
+  // referential transparency (because different Type objects are
+  // meaningfully different even when all the attributes known to the
+  // C++ core are the same).  I'm strongly tempted to rip them out, but
+  // for the moment they aren't getting directly in my way so I'll wait.
 
   // NOTE: The functions in this section do *not* modify their argument
   // Types, rather they return a new object if the desired Type is different
