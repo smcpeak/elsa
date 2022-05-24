@@ -6,8 +6,30 @@
 #include "ccparse.h"                   // ParseEnv
 
 
-UberModifiersAndASL *umaaslCombineUM(ParseEnv &env, SourceLoc loc,
-  UberModifiersAndASL * /*nullable*/ uma, UberModifiers mods)
+// Decrement the count of 'existing' and make a new object with 'mods'
+// and 'list'.  Except, if the ref count of 'existing' is 1, then just
+// reuse it.
+static UberModifiersAndASL * /*inc*/ umaaslMakeOrReuse(
+  UberModifiersAndASL * /*dec*/ existing,
+  UberModifiers mods,
+  AttributeSpecifierList *list)
+{
+  xassert(existing);
+  if (existing->getRefCount() == 1) {
+    // Reuse it.
+    existing->m_modifiers = mods;
+    existing->m_attrSpecList = list;
+    return existing;
+  }
+  else {
+    decRefCount(existing);
+    return incRefCount(new UberModifiersAndASL(mods, list));
+  }
+}
+
+
+UberModifiersAndASL * /*inc*/ umaaslCombineUM(ParseEnv &env, SourceLoc loc,
+  UberModifiersAndASL * /*nullable dec*/ uma, UberModifiers mods)
 {
   if (!uma) {
     if (mods == UM_NONE) {
@@ -15,7 +37,7 @@ UberModifiersAndASL *umaaslCombineUM(ParseEnv &env, SourceLoc loc,
       return NULL_UMA;
     }
     else {
-      return new UberModifiersAndASL(mods, NULL_ASL /*list*/);
+      return incRefCount(new UberModifiersAndASL(mods, NULL_ASL /*list*/));
     }
   }
   else {
@@ -26,39 +48,37 @@ UberModifiersAndASL *umaaslCombineUM(ParseEnv &env, SourceLoc loc,
       return uma;
     }
     else {
-      return new UberModifiersAndASL(newMods, uma->m_attrSpecList);
+      return umaaslMakeOrReuse(uma, newMods, uma->m_attrSpecList);
     }
   }
 }
 
 
-UberModifiersAndASL *umaaslAppendAS(
-  UberModifiersAndASL * /*nullable*/ uma, AttributeSpecifier *as)
+UberModifiersAndASL * /*inc*/ umaaslAppendAS(
+  UberModifiersAndASL * /*nullable dec*/ uma, AttributeSpecifier *as)
 {
   if (!uma) {
-    return new UberModifiersAndASL(
+    return incRefCount(new UberModifiersAndASL(
       UM_NONE,
-      aslSingleton(as));
+      aslSingleton(as)));
   }
   else {
-    return new UberModifiersAndASL(
-      uma->m_modifiers,
+    return umaaslMakeOrReuse(uma, uma->m_modifiers,
       aslAppendAS(uma->m_attrSpecList, as));
   }
 }
 
 
-UberModifiersAndASL *umaaslPrependAS(
-  AttributeSpecifier *as, UberModifiersAndASL * /*nullable*/ uma)
+UberModifiersAndASL * /*inc*/ umaaslPrependAS(
+  AttributeSpecifier *as, UberModifiersAndASL * /*nullable dec*/ uma)
 {
   if (!uma) {
-    return new UberModifiersAndASL(
+    return incRefCount(new UberModifiersAndASL(
       UM_NONE,
-      aslSingleton(as));
+      aslSingleton(as)));
   }
   else {
-    return new UberModifiersAndASL(
-      uma->m_modifiers,
+    return umaaslMakeOrReuse(uma, uma->m_modifiers,
       aslPrependAS(as, uma->m_attrSpecList));
   }
 }

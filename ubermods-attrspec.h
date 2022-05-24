@@ -6,6 +6,7 @@
 #define ELSA_UBERMODS_ATTRSPEC_H
 
 // smbase
+#include "sm-rc-obj.h"                 // RefCountObject
 #include "srcloc.h"                    // SourceLoc
 
 // elsa
@@ -24,14 +25,14 @@ class AttributeSpecifierList;          // gnu.ast.gen.h
 // to what can be stored in a single 'uintptr_t'.  Consequently, I use a
 // heap-allocated pair.
 //
-// Like AttributeSpecifierList, this class is considered part of the
-// AST familiy of classes (although it only exists during parsing
-// proper, having been consumed and discarded by the time we get to the
-// type-check phase), and its objects are therefore never freed.
+// Objects of this class only exist during parsing proper, having been
+// consumed and discarded by the time we get to the type-check phase.
 //
-// TODO: Perhaps I could use reference counting for these?
+// Although (for now) AttributeSpecifierList objects are never
+// deallocated, the UberModifiersAndASL objects are managed with
+// reference counts and hence freed when we're done with them.
 //
-class UberModifiersAndASL {
+class UberModifiersAndASL : public RefCountObject {
 public:      // data
   // The set of UberModifiers.
   UberModifiers m_modifiers;
@@ -61,22 +62,28 @@ public:      // methods
 // These operate functionally, in the sense that they do not modify
 // the passed object, instead returning a new one if the new value is
 // different from the old.
+//
+// Parameters annotated with "dec" have their reference count
+// decremented (if not NULL).  Return values annotated with "inc" are
+// returning objects that have had their count incremented, and the
+// caller takes responsibility for eventually decrementing it (if not
+// NULL).
 
 // An empty UberModifiersAndASL.
 #define NULL_UMA ((UberModifiersAndASL*)NULL)
 
 // Return the union of 'uma' and 'mods'.  The result could be NULL,
 // and/or equal to 'uma', if either properly represents the union.
-UberModifiersAndASL *umaaslCombineUM(ParseEnv &env, SourceLoc loc,
-  UberModifiersAndASL * /*nullable*/ uma, UberModifiers mods);
+UberModifiersAndASL * /*inc*/ umaaslCombineUM(ParseEnv &env, SourceLoc loc,
+  UberModifiersAndASL * /*nullable dec*/ uma, UberModifiers mods);
 
 // Return the result of appending 'as' to 'uma'.
-UberModifiersAndASL *umaaslAppendAS(
-  UberModifiersAndASL * /*nullable*/ uma, AttributeSpecifier *as);
+UberModifiersAndASL * /*inc*/ umaaslAppendAS(
+  UberModifiersAndASL * /*nullable dec*/ uma, AttributeSpecifier *as);
 
 // Return the result of prepending 'as' to 'uma'.
-UberModifiersAndASL *umaaslPrependAS(
-  AttributeSpecifier *as, UberModifiersAndASL * /*nullable*/ uma);
+UberModifiersAndASL * /*inc*/ umaaslPrependAS(
+  AttributeSpecifier *as, UberModifiersAndASL * /*nullable dec*/ uma);
 
 // Extract the modifiers from 'uma'.
 UberModifiers umaaslUM(UberModifiersAndASL * /*nullable*/ uma);

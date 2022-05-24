@@ -558,7 +558,7 @@ impl_verbatim {
   //
   // Each one combines a discriminator with up to two UberModifiers
   // (carrying cv-flags only) and two UMAASLs (with attributes and
-  // cv-flags).
+  // cv-flags).  The UMAASLs have their ref counts decremented.
   //
   // The "discriminator" is the semantic value associated with the
   // grammar symbol that determined which rule to use of the various
@@ -585,8 +585,8 @@ impl_verbatim {
       DiscriminatorType discriminatorName, /* Used by 'tsObjectExpression'. */ \
       UberModifiers m1,                                                        \
       UberModifiers m2,                                                        \
-      UberModifiersAndASL *uma1,                                               \
-      UberModifiersAndASL *uma2)                                               \
+      UberModifiersAndASL * /*nullable dec*/ uma1,                             \
+      UberModifiersAndASL * /*nullable dec*/ uma2)                             \
     {                                                                          \
       /* Combine all five potential sources of UberModifiers. */               \
       UberModifiers m = env.uberCombine(loc,                                   \
@@ -609,6 +609,11 @@ impl_verbatim {
       typeSpecifier->appendASL(umaaslASL(uma1));                               \
       typeSpecifier->appendASL(umaaslASL(uma2));                               \
                                                                                \
+      /* These functions consume one level of ownership for the                \
+       * UMAASL objects. */                                                    \
+      decRefCount(uma1);                                                       \
+      decRefCount(uma2);                                                       \
+                                                                               \
       return typeSpecifier;                                                    \
     }                                                                          \
                                                                                \
@@ -619,8 +624,8 @@ impl_verbatim {
       DiscriminatorType discriminatorName,                                     \
       UberModifiers m1,                                                        \
       UberModifiers m2,                                                        \
-      UberModifiersAndASL *uma1,                                               \
-      UberModifiersAndASL *uma2)                                               \
+      UberModifiersAndASL * /*nullable dec*/ uma1,                             \
+      UberModifiersAndASL * /*nullable dec*/ uma2)                             \
     {                                                                          \
       DeclFlags df = DF_NONE;          /* Value not used. */                   \
       TSClassName *ts =                                                        \
@@ -640,8 +645,8 @@ impl_verbatim {
       DiscriminatorType discriminatorName,                                     \
       UberModifiers m1,                                                        \
       UberModifiers m2,                                                        \
-      UberModifiersAndASL *uma1,                                               \
-      UberModifiersAndASL *uma2)                                               \
+      UberModifiersAndASL * /*nullable dec*/ uma1,                             \
+      UberModifiersAndASL * /*nullable dec*/ uma2)                             \
     {                                                                          \
       DeclFlags df = DF_NONE;          /* Value not used. */                   \
       TSClassName *ts =                                                        \
@@ -795,12 +800,20 @@ nonterm(Declaration*) DeclSpecifier {
 
 // An AttributeSpecifier followed by UMAASLOpt.
 nonterm(UberModifiersAndASL*) AttributeSpecifier_UMAASLOpt {
+  // TODO: Elkhound feature to repeat this dup/del for all nonterminals
+  // with this type?
+  fun dup(uma) { return incRefCount(uma); }
+  fun del(uma) { decRefCount(uma); }
+
   -> as:AttributeSpecifier uma:UMAASLOpt
        { return umaaslPrependAS(as, uma); }
 }
 
 // Possibly empty sequence of UberModifiers and AttributeSpecifiers.
 nonterm(UberModifiersAndASL*) UMAASLOpt {
+  fun dup(uma) { return incRefCount(uma); }
+  fun del(uma) { decRefCount(uma); }
+
   -> empty
        { return NULL; }
   -> uma:UMAASLOpt m:UberModifier
@@ -811,12 +824,18 @@ nonterm(UberModifiersAndASL*) UMAASLOpt {
 
 // An AttributeSpecifier followed by UTAMAASLOpt.
 nonterm(UberModifiersAndASL*) AttributeSpecifier_UTAMAASLOpt {
+  fun dup(uma) { return incRefCount(uma); }
+  fun del(uma) { decRefCount(uma); }
+
   -> as:AttributeSpecifier uma:UTAMAASLOpt
        { return umaaslPrependAS(as, uma); }
 }
 
 // Possibly empty sequence of UberTypeAndModifiers and AttributeSpecifiers.
 nonterm(UberModifiersAndASL*) UTAMAASLOpt {
+  fun dup(uma) { return incRefCount(uma); }
+  fun del(uma) { decRefCount(uma); }
+
   -> empty
        { return NULL; }
   -> uma:UTAMAASLOpt m:UberModifier
@@ -904,12 +923,18 @@ nonterm(TypeSpecifier*) TypeSpecifier {
 
 // An AttributeSpecifier followed by UCVAASLOpt.
 nonterm(UberModifiersAndASL*) AttributeSpecifier_UCVAASLOpt {
+  fun dup(uma) { return incRefCount(uma); }
+  fun del(uma) { decRefCount(uma); }
+
   -> as:AttributeSpecifier uma:UCVAASLOpt
        { return umaaslPrependAS(as, uma); }
 }
 
 // Possibly empty sequence of UberCVQualifiers and AttributeSpecifiers.
 nonterm(UberModifiersAndASL*) UCVAASLOpt {
+  fun dup(uma) { return incRefCount(uma); }
+  fun del(uma) { decRefCount(uma); }
+
   -> empty
        { return NULL; }
   -> uma:UCVAASLOpt cv:UberCVQualifier
@@ -920,6 +945,9 @@ nonterm(UberModifiersAndASL*) UCVAASLOpt {
 
 // An AttributeSpecifier followed by UTACVAASLOpt.
 nonterm(UberModifiersAndASL*) AttributeSpecifier_UTACVAASLOpt {
+  fun dup(uma) { return incRefCount(uma); }
+  fun del(uma) { decRefCount(uma); }
+
   // See comments on TypeSpecifier.
   forbid_next("__attribute__");
 
@@ -929,6 +957,9 @@ nonterm(UberModifiersAndASL*) AttributeSpecifier_UTACVAASLOpt {
 
 // Possibly empty sequence of UberTypeAndCVQualifiers and AttributeSpecifiers.
 nonterm(UberModifiersAndASL*) UTACVAASLOpt {
+  fun dup(uma) { return incRefCount(uma); }
+  fun del(uma) { decRefCount(uma); }
+
   -> empty
        { return NULL; }
   -> uma:UTACVAASLOpt cv:UberCVQualifier
