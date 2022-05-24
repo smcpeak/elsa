@@ -8,7 +8,7 @@ int f(__attribute__((mode(byte))) int b1,
   __attribute__((mode(byte))) int b2);
 
 int f(__attribute__((mode(byte))) int b1,
-      __attribute__((mode(byte))) int b2)
+  __attribute__((mode(byte))) int b2)
 {
   return b1+b2;
 }
@@ -22,15 +22,14 @@ enum E {
 int x;
 
 void a1(__attribute__((unused)) Integer p1,
-       __attribute__((unused)) Integer const p2,
-       __attribute__((unused)) Integer const volatile p3,
-       __attribute__((unused)) __attribute__((mode(byte)))
-         Integer const volatile p4,
-       __attribute__((unused)) __attribute__((mode(byte)))
-         Integer const volatile p5,
-       __attribute__((unused)) __attribute__((mode(byte)))
-         Integer const volatile p6,
-       int z)
+  __attribute__((unused)) Integer const p2,
+  __attribute__((unused)) Integer const volatile p3,
+  __attribute__((unused)) __attribute__((mode(byte)))
+    Integer const volatile p4,
+  __attribute__((unused)) __attribute__((mode(byte)))
+    Integer const volatile p5,
+  __attribute__((unused)) __attribute__((mode(byte)))
+    Integer const volatile p6, int z)
 {
   {
     (void)((int (*)(char failed_static_assertion[sizeof(p5) == 1? 1 : -1]))0);

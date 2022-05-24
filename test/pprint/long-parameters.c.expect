@@ -1,0 +1,16 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+void foobarbaz(__attribute__((__unused__)) int const x,
+  __attribute__((__unused__)) int const y);
+
+void foobarbaz(__attribute__((__unused__)) int const x,
+  __attribute__((__unused__)) int const y)
+{
+  return;
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

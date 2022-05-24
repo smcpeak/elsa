@@ -341,12 +341,13 @@ static bool ideclaratorWantsSpace(TypeSpecifier const *spec,
 
 // Print a type specifier followed by a declarator.
 static void printTypeSpecifierAndDeclarator(
-  PrintEnv &env, TypeSpecifier *spec, Declarator *declarator)
+  PrintEnv &env, TypeSpecifier *spec, Declarator *declarator,
+  bool inDeclaration)
 {
   if (declaratorIsConstructor(declarator)) {
     // Print the type specifier,  The return type of a constructor says
     // what we build, hence the name of the class.
-    spec->print(env, true /*inDeclaration*/);
+    spec->print(env, inDeclaration);
 
     // Now print the declarator.  The special constructor name will be
     // omitted, but we need the parens and the param types.
@@ -361,7 +362,7 @@ static void printTypeSpecifierAndDeclarator(
 
   else {
     // Print both, possibly with a space.
-    spec->print(env, false /*inDeclaration*/);
+    spec->print(env, inDeclaration);
     if (ideclaratorWantsSpace(spec, declarator->decl)) {
       env << " ";
     }
@@ -375,7 +376,8 @@ void Function::print(PrintEnv &env, DeclFlags declFlagsMask) const
     TPSEQUENCE;
 
     printDeclFlags(env, dflags & declFlagsMask);
-    printTypeSpecifierAndDeclarator(env, retspec, nameAndParams);
+    printTypeSpecifierAndDeclarator(env, retspec, nameAndParams,
+                                    true /*inDeclaration*/);
   }
 
   if (instButNotTchecked()) {
@@ -485,8 +487,7 @@ void Declaration::print(PrintEnv &env) const
     if (ideclaratorWantsSpace(spec, declarator->decl)) {
       env << " ";
     }
-    declarator->decl->print(env);
-    printInitializerOpt(env, declarator->init);
+    declarator->print(env);
     env << ";";
     return;
   }
@@ -518,6 +519,11 @@ void Declaration::print(PrintEnv &env) const
       if (declarator != fl_first(decllist)) {
         env << "," << env.sp;
       }
+
+      // If we break after the '=' before an initializer, we will wrap to
+      // a point indented relative to the start of the declarator.
+      TP_H_OR_V;
+
       declarator->print(env);
     }
     env << ";";
@@ -530,7 +536,8 @@ void Declaration::print(PrintEnv &env) const
 // -------------------- ASTTypeId -------------------
 void ASTTypeId::print(PrintEnv &env) const
 {
-  printTypeSpecifierAndDeclarator(env, spec, decl);
+  printTypeSpecifierAndDeclarator(env, spec, decl,
+                                  false /*inDeclaration*/);
 }
 
 
@@ -768,10 +775,6 @@ void Enumerator::print(PrintEnv &env) const
 // -------------------- Declarator --------------------
 void Declarator::print(PrintEnv &env) const
 {
-  // If we break after the '=' before an initializer, we will wrap to
-  // a point indented relative to the start of the declarator.
-  TP_H_OR_V;
-
   decl->print(env);
   printInitializerOpt(env, init);
 }
