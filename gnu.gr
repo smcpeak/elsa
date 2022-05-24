@@ -553,104 +553,158 @@ nonterm(TS_enumSpec*) EnumSpecifier {
 
 
 impl_verbatim {
-  // Build a Declaration that uses TS_name as its type specifier, and
-  // is augmented by up to two UberModifiers and two UMAASLs.
+  // Create a definition of one of the 'make_TS_XXX_Declaration' and
+  // 'make_TS_XXX_alone' functions.
   //
-  // TODO: There are some factoring opportunities here.
-  Declaration *make_TS_name_Declaration(
-    CCParseShareable &env,
-    SourceLoc loc,
-    PQName *name,
-    UberModifiers m1,
-    UberModifiers m2,
-    UberModifiersAndASL *uma1,
-    UberModifiersAndASL *uma2)
-  {
-    UberModifiers m =
-      env.uberCombine(loc, m1, m2, umaaslUM(uma1), umaaslUM(uma2));
-    DeclFlags df = uberDeclFlags(m);
-    CVFlags cv = uberCVFlags(m);
-    Declaration *ret = new Declaration(df,
-      env.new_TS_name(loc, cv, name, false /*typename*/),
-      NULL /*decllist*/);
-    ret->spec->appendASL(umaaslASL(uma1));
-    ret->spec->appendASL(umaaslASL(uma2));
-    return ret;
-  }
+  // Each one combines a discriminator with up to two UberModifiers
+  // (carrying cv-flags only) and two UMAASLs (with attributes and
+  // cv-flags).
+  //
+  // The "discriminator" is the semantic value associated with the
+  // grammar symbol that determined which rule to use of the various
+  // choices for TypeSpecifier.
+  //
+  // Aside: A large macro like this can be conveniently formatted with:
+  // https://github.com/smcpeak/scripts/blob/master/format-macro.py
+  //
+  #define define_make_TS_XXX_alone_and_Declaration(                            \
+    TSClassName,               /* Name of the TypeSpecifier class. */          \
+    functionName,              /* Base name of the functions to make. */       \
+    DiscriminatorType,         /* Type of the discriminator. */                \
+    discriminatorName,         /* Value of the discriminator. */               \
+    fifthUberModifiers,        /* Possible extra UberModifiers. */             \
+    tsObjectExpression)        /* Expression to create the TypeSpecifier. */   \
+                                                                               \
+    /* Shared core of the '_Declaration' and '_alone' functions.  This         \
+     * returns a TypeSpecifier and stores into 'df' the DeclFlags              \
+     * extracted from the union of the UberModifiers. */                       \
+    TSClassName *functionName##_core(                                          \
+      DeclFlags /*OUT*/ &df,                                                   \
+      CCParseShareable &env,                                                   \
+      SourceLoc loc,                                                           \
+      DiscriminatorType discriminatorName, /* Used by 'tsObjectExpression'. */ \
+      UberModifiers m1,                                                        \
+      UberModifiers m2,                                                        \
+      UberModifiersAndASL *uma1,                                               \
+      UberModifiersAndASL *uma2)                                               \
+    {                                                                          \
+      /* Combine all five potential sources of UberModifiers. */               \
+      UberModifiers m = env.uberCombine(loc,                                   \
+        fifthUberModifiers,                                                    \
+        m1, m2,                                                                \
+        umaaslUM(uma1), umaaslUM(uma2));                                       \
+                                                                               \
+      /* Pull out the declaration flags and return them in 'df'. */            \
+      df = uberDeclFlags(m);                                                   \
+                                                                               \
+      /* Pull out the cv-flags, which 'tsObjectExpression' will use. */        \
+      CVFlags cv = uberCVFlags(m);                                             \
+                                                                               \
+      /* Build the TypeSpecifier object to return. */                          \
+      TSClassName *typeSpecifier = tsObjectExpression;                         \
+                                                                               \
+      /* Add the attributes.  There's always at least one if we have           \
+       * reached this part of the code, since this function is called          \
+       * from productions that have at least one. */                           \
+      typeSpecifier->appendASL(umaaslASL(uma1));                               \
+      typeSpecifier->appendASL(umaaslASL(uma2));                               \
+                                                                               \
+      return typeSpecifier;                                                    \
+    }                                                                          \
+                                                                               \
+    /* Create just the TypeSpecifier. */                                       \
+    TSClassName *functionName##_alone(                                         \
+      CCParseShareable &env,                                                   \
+      SourceLoc loc,                                                           \
+      DiscriminatorType discriminatorName,                                     \
+      UberModifiers m1,                                                        \
+      UberModifiers m2,                                                        \
+      UberModifiersAndASL *uma1,                                               \
+      UberModifiersAndASL *uma2)                                               \
+    {                                                                          \
+      DeclFlags df = DF_NONE;          /* Value not used. */                   \
+      TSClassName *ts =                                                        \
+        functionName##_core(df /*OUT*/, env, loc, discriminatorName,           \
+                            m1, m2, uma1, uma2);                               \
+                                                                               \
+      /* The grammar should preclude declaration modifiers here. */            \
+      xassert(df == DF_NONE);                                                  \
+                                                                               \
+      return ts;                                                               \
+    }                                                                          \
+                                                                               \
+    /* Wrap the TypeSpecifier in a Declaration. */                             \
+    Declaration *functionName##_Declaration(                                   \
+      CCParseShareable &env,                                                   \
+      SourceLoc loc,                                                           \
+      DiscriminatorType discriminatorName,                                     \
+      UberModifiers m1,                                                        \
+      UberModifiers m2,                                                        \
+      UberModifiersAndASL *uma1,                                               \
+      UberModifiersAndASL *uma2)                                               \
+    {                                                                          \
+      DeclFlags df = DF_NONE;          /* Value not used. */                   \
+      TSClassName *ts =                                                        \
+        functionName##_core(df /*OUT*/, env, loc, discriminatorName,           \
+                            m1, m2, uma1, uma2);                               \
+                                                                               \
+      /* Wrap the TypeSpecifier in a Declaration. */                           \
+      return new Declaration(df, ts, NULL /*decllist*/);                       \
+    }
 
-  // Build a Declaration that uses TS_simple.
-  Declaration *make_TS_simple_Declaration(
-    CCParseShareable &env,
-    SourceLoc loc,
-    UberModifiers k,
-    UberModifiers m1,
-    UberModifiers m2,
-    UberModifiersAndASL *uma1,
-    UberModifiersAndASL *uma2)
-  {
-    UberModifiers m =
-      env.uberCombine(loc, k, m1, m2, umaaslUM(uma1), umaaslUM(uma2));
-    DeclFlags df = uberDeclFlags(m);
-    CVFlags cv = uberCVFlags(m);
-    SimpleTypeId id = env.uberSimpleType(loc, m);
-    Declaration *ret = new Declaration(df,
-      env.new_TS_simple(loc, cv, id),
-      NULL /*decllist*/);
-    ret->spec->appendASL(umaaslASL(uma1));
-    ret->spec->appendASL(umaaslASL(uma2));
-    return ret;
-  }
+  // Build a TS_name.
+  //
+  // Defines make_TS_name_alone and make_TS_name_Declaration.
+  define_make_TS_XXX_alone_and_Declaration(
+    TS_name, make_TS_name,
+    PQName *, name,
+    UM_NONE,
+    env.new_TS_name(loc, cv, name, false /*typename*/)
+  );
 
-  // Build a Declaration that uses an existing TypeSpecifier that is
-  // TS_elaborated, TS_classSpec, or TS_enumSpec.
-  Declaration *make_TS_elaborated_Declaration(
-    CCParseShareable &env,
-    SourceLoc loc,
-    TypeSpecifier *e,
-    UberModifiers m1,
-    UberModifiers m2,
-    UberModifiersAndASL *uma1,
-    UberModifiersAndASL *uma2)
-  {
-    UberModifiers m =
-      env.uberCombine(loc, m1, m2, umaaslUM(uma1), umaaslUM(uma2));
-    e->cv |= uberCVFlags(m);      // destructive action
-    Declaration *ret =
-      new Declaration(uberDeclFlags(m), e, NULL /*decllist*/);
-    ret->spec->appendASL(umaaslASL(uma1));
-    ret->spec->appendASL(umaaslASL(uma2));
-    return ret;
-  }
+  // Build a TS_simple.
+  //
+  // Defines make_TS_simple_alone and make_TS_simple_Declaration.
+  define_make_TS_XXX_alone_and_Declaration(
+    TS_simple, make_TS_simple,
+    UberModifiers, k1,
+    k1,
+    env.new_TS_simple(loc, cv, env.uberSimpleType(loc, m))
+  );
 
-  // Build a Declaration out of a TypeSpecifier on an ASTTypeof.
-  Declaration *make_TS_typeof_Declaration(
-    CCParseShareable &env,
-    SourceLoc loc,
-    ASTTypeof *te,
-    UberModifiers m1,
-    UberModifiers m2,
-    UberModifiersAndASL *uma1,
-    UberModifiersAndASL *uma2)
-  {
-    UberModifiers m =
-      env.uberCombine(loc, m1, m2, umaaslUM(uma1), umaaslUM(uma2));
-    DeclFlags df = uberDeclFlags(m);
-    CVFlags cv = uberCVFlags(m);
-    Declaration *ret = new Declaration(df,
-      new_TS_typeof(loc, cv, te), NULL /*decllist*/);
-    ret->spec->appendASL(umaaslASL(uma1));
-    ret->spec->appendASL(umaaslASL(uma2));
-    return ret;
-  }
+  // Augment a TypeSpecifier that is TS_elaborated, TS_classSpec, or
+  // TS_enumSpec.
+  //
+  // Defines make_TS_elaborated_etc_alone and
+  // make_TS_elaborated_etc_Declaration.
+  define_make_TS_XXX_alone_and_Declaration(
+    TypeSpecifier, make_TS_elaborated_etc,
+    TypeSpecifier *, e,                // Existing TypeSpecifier.
+    UM_NONE,
+
+    // Destructively update 'e', then use it as the TypeSpecifier.
+    (e->cv |= cv, e)
+  );
+
+  // Build a TS_typeof.
+  //
+  // Defines make_TS_typeof_alone and make_TS_typeof_Declaration.
+  define_make_TS_XXX_alone_and_Declaration(
+    TS_typeof, make_TS_typeof,
+    ASTTypeof *, te,
+    UM_NONE,
+    new_TS_typeof(loc, cv, te)
+  );
 }
+
 
 // Attributes as part of a declaration specifier.
 //
 // Aside from the first rule, the pattern is to replicate the existing
 // productions in cc.gr except with AttributeSpecifier appearing at some
 // point, which acts as a secondary discriminator (the primary being
-// identifier versus type versus elaborated), forcing us to use the rule
-// here instead of there.
+// identifier versus type versus elaborated versus typeof), forcing us
+// to use the rule here instead of there.
 //
 // Above each set of rules here is the cc.gr rule they are derived from,
 // with "(*)" denoting the spot where the rule here insists on finding
@@ -660,9 +714,9 @@ impl_verbatim {
 // The nonterminal that goes into the "(*)" slot is one that must begin
 // with '__attribute__', then contain a possibly empty sequence of
 // AttributeSpecifiers and whatever UberModifiers were allowed to the
-// left of the "(*)" marker in the original rule, such that when it is
-// finished consuming available input, what remains is the discriminator
-// used to select among the rules.
+// *left* of the "(*)" marker in the original rule, such that when it is
+// finished consuming available input, what remains is the primary
+// discriminator used to select among the rules.
 //
 // After seeing an attribute, the rules here follow it with
 // U[TA]MAASLOpt to collect whatever modifiers and additional attributes
@@ -676,7 +730,10 @@ nonterm(Declaration*) DeclSpecifier {
   // or more attributes in multiple ways.  But AttributeSpecifierList
   // has a 'forbid_next' that ensures that all available attributes will
   // be consumed as a single list rather than triggering this rule
-  // multiple times.
+  // multiple times.  (And while it would seem like we could just change
+  // the rule to use 'AttributeSpecifier' instead of the list, that
+  // causes a shift/reduce conflict with another rule that begins with a
+  // list, and I would like to avoid that.)
   -> asl:AttributeSpecifierList d:DeclSpecifier
        { d->spec->prependASL(asl); return d; }
 
@@ -708,13 +765,13 @@ nonterm(Declaration*) DeclSpecifier {
 
   // cc.gr has: e:ElaboratedOrSpecifier m2:UberModifierSeqOpt (*)
   -> e:ElaboratedOrSpecifier m2:UberModifierSeqOpt uma:AttributeSpecifier_UMAASLOpt
-       { return make_TS_elaborated_Declaration(*this, loc, e, UM_NONE, m2, uma, NULL_UMA); }
+       { return make_TS_elaborated_etc_Declaration(*this, loc, e, UM_NONE, m2, uma, NULL_UMA); }
 
   // cc.gr has: m1:UberModifierSeq (*) e:ElaboratedOrSpecifier m2:UberModifierSeqOpt (*)
   -> m1:UberModifierSeq uma1:AttributeSpecifier_UMAASLOpt e:ElaboratedOrSpecifier uma2:UMAASLOpt
-       { return make_TS_elaborated_Declaration(*this, loc, e, m1, UM_NONE, uma1, uma2); }
+       { return make_TS_elaborated_etc_Declaration(*this, loc, e, m1, UM_NONE, uma1, uma2); }
   -> m1:UberModifierSeq e:ElaboratedOrSpecifier m2:UberModifierSeqOpt uma:AttributeSpecifier_UMAASLOpt
-       { return make_TS_elaborated_Declaration(*this, loc, e, m1, m2, uma, NULL_UMA); }
+       { return make_TS_elaborated_etc_Declaration(*this, loc, e, m1, m2, uma, NULL_UMA); }
 
   // ---- TypeofTypeSpecifier ----
 
@@ -771,99 +828,6 @@ nonterm(UberModifiersAndASL*) UTAMAASLOpt {
 }
 
 
-impl_verbatim {
-  // Build a TS_name that is augmented by up to two UberModifiers
-  // (carrying cv-flags only) and two UMAASLs.
-  //
-  // The "_alone" name qualifier distinguishes these from the
-  // "_Declaration" version above.
-  //
-  // TODO: As above, there are some factoring opportunities here.
-  TS_name *make_TS_name_alone(
-    CCParseShareable &env,
-    SourceLoc loc,
-    PQName *name,
-    UberModifiers m1,
-    UberModifiers m2,
-    UberModifiersAndASL *uma1,
-    UberModifiersAndASL *uma2)
-  {
-    UberModifiers m =
-      env.uberCombine(loc, m1, m2, umaaslUM(uma1), umaaslUM(uma2));
-    DeclFlags df = uberDeclFlags(m);
-    xassert(df == DF_NONE);            // Grammar should preclude mods.
-    CVFlags cv = uberCVFlags(m);
-    TS_name *ret = env.new_TS_name(loc, cv, name, false /*typename*/);
-    ret->appendASL(umaaslASL(uma1));
-    ret->appendASL(umaaslASL(uma2));
-    return ret;
-  }
-
-  TS_simple *make_TS_simple_alone(
-    CCParseShareable &env,
-    SourceLoc loc,
-    UberModifiers k,
-    UberModifiers m1,
-    UberModifiers m2,
-    UberModifiersAndASL *uma1,
-    UberModifiersAndASL *uma2)
-  {
-    UberModifiers m =
-      env.uberCombine(loc, k, m1, m2, umaaslUM(uma1), umaaslUM(uma2));
-    DeclFlags df = uberDeclFlags(m);
-    xassert(df == DF_NONE);            // Grammar should preclude mods.
-    CVFlags cv = uberCVFlags(m);
-    SimpleTypeId id = env.uberSimpleType(loc, m);
-    TS_simple *ret = env.new_TS_simple(loc, cv, id);
-    ret->appendASL(umaaslASL(uma1));
-    ret->appendASL(umaaslASL(uma2));
-    return ret;
-  }
-
-  // Augment a TypeSpecifier that is TS_elaborated, TS_classSpec, or
-  // TS_enumSpec.
-  TypeSpecifier *make_TS_elaborated_or_alone(
-    CCParseShareable &env,
-    SourceLoc loc,
-    TypeSpecifier *e,
-    UberModifiers m1,
-    UberModifiers m2,
-    UberModifiersAndASL *uma1,
-    UberModifiersAndASL *uma2)
-  {
-    UberModifiers m =
-      env.uberCombine(loc, m1, m2, umaaslUM(uma1), umaaslUM(uma2));
-    DeclFlags df = uberDeclFlags(m);
-    xassert(df == DF_NONE);            // Grammar should preclude mods.
-    e->cv |= uberCVFlags(m);           // Destructive action.
-    e->appendASL(umaaslASL(uma1));
-    e->appendASL(umaaslASL(uma2));
-    return e;
-  }
-
-  // Build a TypeSpecifier on an ASTTypeof.
-  TS_typeof *make_TS_typeof_alone(
-    CCParseShareable &env,
-    SourceLoc loc,
-    ASTTypeof *te,
-    UberModifiers m1,
-    UberModifiers m2,
-    UberModifiersAndASL *uma1,
-    UberModifiersAndASL *uma2)
-  {
-    UberModifiers m =
-      env.uberCombine(loc, m1, m2, umaaslUM(uma1), umaaslUM(uma2));
-    DeclFlags df = uberDeclFlags(m);
-    xassert(df == DF_NONE);            // Grammar should preclude mods.
-    CVFlags cv = uberCVFlags(m);
-    TS_typeof *ret = new_TS_typeof(loc, cv, te);
-    ret->appendASL(umaaslASL(uma1));
-    ret->appendASL(umaaslASL(uma2));
-    return ret;
-  }
-}
-
-
 // This set of rules augments TypeSpecifier with attributes in the same
 // way as DeclSpecifier.
 //
@@ -916,13 +880,13 @@ nonterm(TypeSpecifier*) TypeSpecifier {
 
   // cc.gr has: e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt (*)
   -> e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt
-       { return make_TS_elaborated_or_alone(*this, loc, e, UM_NONE, m2, uma, NULL_UMA); }
+       { return make_TS_elaborated_etc_alone(*this, loc, e, UM_NONE, m2, uma, NULL_UMA); }
 
   // cc.gr has: m1:UberCVQualifierSeq (*) e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt (*)
   -> m1:UberCVQualifierSeq uma1:AttributeSpecifier_UCVAASLOpt e:ElaboratedOrSpecifier uma2:UCVAASLOpt
-       { return make_TS_elaborated_or_alone(*this, loc, e, m1, UM_NONE, uma1, uma2); }
+       { return make_TS_elaborated_etc_alone(*this, loc, e, m1, UM_NONE, uma1, uma2); }
   -> m1:UberCVQualifierSeq e:ElaboratedOrSpecifier m2:UberCVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt
-       { return make_TS_elaborated_or_alone(*this, loc, e, m1, m2, uma, NULL_UMA); }
+       { return make_TS_elaborated_etc_alone(*this, loc, e, m1, m2, uma, NULL_UMA); }
 
   // ---- TS_typeof ----
 
