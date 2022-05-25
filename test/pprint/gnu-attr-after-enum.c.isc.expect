@@ -1,0 +1,45 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+enum __attribute__((deprecated)) E1 {
+  enumerator1
+};
+
+enum E1 e1;
+
+__attribute__((deprecated)) enum E2 {
+                              enumerator2
+                            };
+
+enum E2 e2;
+
+enum __attribute__((deprecated)) E3 {
+  enumerator3
+};
+
+enum __attribute__((deprecated)) E4 {
+  enumerator4
+} const e4;
+
+enum __attribute__((deprecated)) E3 e3;
+
+enum __attribute__((deprecated)) __anon_enum_1 {
+  enumerator5
+} e5;
+
+__attribute__((deprecated)) enum E6 {
+                              enumerator6
+                            } e6a, e6b;
+
+enum E6 e6c;
+
+void f()
+{
+  e6a = enumerator6;
+  e6b = enumerator6;
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

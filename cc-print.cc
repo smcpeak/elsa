@@ -649,6 +649,7 @@ void TS_simple::iprint(PrintEnv &env) const
 void TS_elaborated::iprint(PrintEnv &env) const
 {
   env << toString(keyword) << " ";
+  ext_printAfterClassKey(env);
   name->print(env);
 }
 
@@ -657,6 +658,7 @@ void TS_classSpec::iprint(PrintEnv &env) const
 {
   env << toString(ql);          // see string toString(class dummyType*) above
   env << toString(keyword) << ' ';
+  ext_printAfterClassKey(env);
   if (name) env << name->toString();
 
   if (fl_isNotEmpty(bases)) {
@@ -699,6 +701,7 @@ void TS_enumSpec::iprint(PrintEnv &env) const
 
   env << toString(ql);          // see string toString(class dummyType*) above
   env << "enum ";
+  ext_printAfterClassKey(env);
   if (name) {
     env << name << ' ';
   }

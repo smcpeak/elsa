@@ -48,7 +48,16 @@ class TypeSpecifier {
 
   // This is called during printing just before opening the sequence (if
   // that is done), before printing the main specifier.
+  //
+  // TODO: Rename this to 'ext_preprint' for consistency with other
+  // hooks.
   define_customizable void preprint(PrintEnv &env) const;
+
+  // For TS_elaborated, TS_classSpec, and TS_enumSpec, this is called
+  // right after printing the type introducing keyword, which here I'm
+  // calling "ClassKey", although that's slightly inaccurate because
+  // "enum" is also a possibility.
+  define_customizable void ext_printAfterClassKey(PrintEnv &env) const;
 }
 
 

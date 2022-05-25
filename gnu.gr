@@ -534,21 +534,35 @@ nonterm(enum TypeIntr) ClassKey {
   -> k:ClassKey /*DROPPED*/AttributeSpecifier       { return k; }
 }
 
+
+impl_verbatim {
+  // Prepend 'asl' onto 'typeSpecifier' and return the latter.
+  template <class T>
+  T *tsPrependElaboratedASL(AttributeSpecifierList *asl, T *typeSpecifier)
+  {
+    typeSpecifier->prependElaboratedASL(asl);
+    return typeSpecifier;
+  }
+}
+
 // attributes after "enum"
 nonterm(TypeSpecifier*) ElaboratedTypeSpecifier {
-  -> "enum" /*DROPPED*/AttributeSpecifierList n:PQTypeName
-       { return new TS_elaborated(loc, TI_ENUM, n); }
+  -> "enum" asl:AttributeSpecifierList n:PQTypeName
+       { return tsPrependElaboratedASL(asl,
+           new TS_elaborated(loc, TI_ENUM, n)); }
 }
 
 nonterm(TS_enumSpec*) EnumSpecifier {
-  -> "enum" /*DROPPED*/AttributeSpecifierList "{" list:EnumeratorListOpt "}"
-       { return new TS_enumSpec(loc, NULL /*name*/, list); }
+  -> "enum" asl:AttributeSpecifierList "{" list:EnumeratorListOpt "}"
+       { return tsPrependElaboratedASL(asl,
+           new TS_enumSpec(loc, NULL /*name*/, list)); }
 
   // Adding this adds one S/R conflict... it was 3 until I changed
   // Identifier to PQTypeName.  I think cc.gr should similarly use
   // PQName instead of Identifier, and catch qualifiers in tcheck...
-  -> "enum" /*DROPPED*/AttributeSpecifierList n:PQTypeName "{" list:EnumeratorListOpt "}"
-       { return new TS_enumSpec(loc, n->getName(), list); }
+  -> "enum" asl:AttributeSpecifierList n:PQTypeName "{" list:EnumeratorListOpt "}"
+       { return tsPrependElaboratedASL(asl,
+           new TS_enumSpec(loc, n->getName(), list)); }
 }
 
 

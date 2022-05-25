@@ -161,8 +161,33 @@ new class ASTTypeof {
 class TypeSpecifier {
   // Nullable list of attribute specifiers.
   public AttributeSpecifierList *m_attrSpecList = NULL;
+
+  // We have a second list of attributes that can appear in
+  // TS_elaborated, TS_classSpec, and TS_enumSpec between the ClassKey
+  // or "enum" and the type name.  Whereas the attributes in
+  // 'm_attrSpecList' are associated with the entire declaration this
+  // type specifier appears in, these are associated just with the type.
+  //
+  // Examples (see test/pprint/gnu-attr-after-enum.c):
+  //
+  //   // Uses 'm_attrSpecList'.  'e1' and 'e2' are deprecated, but 'E'
+  //   // itself is not.  A warning is issued only when 'e1' or 'e2' is
+  //   // later used, but not when 'E' is used.
+  //   __attribute__((deprecated)) enum E {} e1, e2;
+  //
+  //   // Uses 'm_elaboratedAttrSpecList'.  'E' itself is deprecated,
+  //   // so we get warnings for 'e1' and 'e2' immediately, plus for any
+  //   // subsequent use of 'E'.
+  //   enum __attribute__((deprecated)) E {} e1, e2;
+  //
+  // I'm not entirely satisfied with having two lists like this, but
+  // we'll see how it works out.
+  //
+  public AttributeSpecifierList *m_elaboratedAttrSpecList = NULL;
+
   custom debugPrint {
     PRINT_SUBTREE(m_attrSpecList);
+    PRINT_SUBTREE(m_elaboratedAttrSpecList);
   }
 
   // Prepend 'list' to 'm_attrSpecList'.
@@ -171,9 +196,14 @@ class TypeSpecifier {
   // Append 'list' to 'm_attrSpecList'.
   public void appendASL(AttributeSpecifierList * /*nullable*/ list);
 
+  // Prepend 'list' to 'm_elaboratedAttrSpecList'.
+  public void prependElaboratedASL(AttributeSpecifierList *list);
+
   // Arrange to print the attributes.
   public void preprint_attrSpecList(PrintEnv &env) const;
   custom preprint { preprint_attrSpecList(env); }
+  public void ext_printAfterClassKey_gnu(PrintEnv &env) const;
+  custom ext_printAfterClassKey { ext_printAfterClassKey_gnu(env); }
 
   // And also tcheck them.
   public void ext_tcheck_attrSpecList(Env &env, Tcheck &tc,

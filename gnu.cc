@@ -1720,10 +1720,27 @@ void TypeSpecifier::appendASL(AttributeSpecifierList * /*nullable*/ list)
 }
 
 
+void TypeSpecifier::prependElaboratedASL(AttributeSpecifierList *list)
+{
+  m_elaboratedAttrSpecList =
+    aslAppendASL(list, m_elaboratedAttrSpecList);
+}
+
+
 void TypeSpecifier::preprint_attrSpecList(PrintEnv &env) const
 {
   if (m_attrSpecList) {
     m_attrSpecList->print(env);
+    env << env.sp;
+  }
+}
+
+
+void TypeSpecifier::ext_printAfterClassKey_gnu(PrintEnv &env) const
+{
+  // These attributes go between the ClassKey and the type name.
+  if (m_elaboratedAttrSpecList) {
+    m_elaboratedAttrSpecList->print(env);
     env << env.sp;
   }
 }
