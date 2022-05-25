@@ -1,0 +1,11 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+int foo = 2;
+
+int foo2 __attribute__((unused)) = 2;
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

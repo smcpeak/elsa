@@ -95,6 +95,7 @@ TESTS += pprint/for-loop-no-init.c
 TESTS += pprint/func.c
 TESTS += pprint/func-symbol.c
 TESTS += pprint/funcptr.c
+TESTS += pprint/gnu-attr-after-asm-label.c
 TESTS += pprint/gnu-attr-after-enum.c
 TESTS += pprint/gnu-attr-after-struct.c
 TESTS += pprint/gnu-attr-in-declaration.c

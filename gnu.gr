@@ -364,8 +364,8 @@ nonterm(IDeclarator*) Declarator {
        { return d; }
 
   // asm label + attributes ...
-  -> d:DirectDeclarator "asm" "(" StringLiteral ")" /*DROPPED*/AttributeSpecifierList
-       { return d; }
+  -> d:DirectDeclarator "asm" "(" StringLiteral ")" asl:AttributeSpecifierList
+       { d->appendASL(asl); return d; }
 }
 
 
