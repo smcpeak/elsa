@@ -14,13 +14,14 @@ int AV_ORD_PTR_REGISTER_LOCAL(int);
 void f(int p, int q, int r, int buf)
 {
   int __ptr_to_buf;
-  for (; av_ord_ptr_cmp_lt(ISC(SC_LVAL_TO_RVAL, int, p),
-           av_ord_ptr_add(
-             ISC(SC_LVAL_TO_RVAL, int,
-               __ptr_to_buf =
-                 AV_ORD_PTR_REGISTER_LOCAL(
-                   ISC(SC_LVAL_TO_RVAL, int, buf))),
-             ISC(SC_INT_CONV, int, 5 * sizeof(char))));
+  for (; ISC(SC_BOOL_CONV, bool,
+           av_ord_ptr_cmp_lt(ISC(SC_LVAL_TO_RVAL, int, p),
+             av_ord_ptr_add(
+               ISC(SC_LVAL_TO_RVAL, int,
+                 __ptr_to_buf =
+                   AV_ORD_PTR_REGISTER_LOCAL(
+                     ISC(SC_LVAL_TO_RVAL, int, buf))),
+               ISC(SC_INT_CONV, int, 5 * sizeof(char)))));
          av_ord_ptr_preincrement(&p,
            ISC(SC_INT_CONV, int, sizeof(char))),
            av_ord_ptr_preincrement(&q,

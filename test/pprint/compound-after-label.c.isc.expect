@@ -26,7 +26,7 @@ static int f2()
 
 static int f3(int x)
 {
-  switch (x) {
+  switch (ISC(SC_LVAL_TO_RVAL, int, x)) {
     case 1:
       {
         return 3;

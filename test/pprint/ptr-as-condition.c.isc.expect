@@ -1,0 +1,30 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+void f(int *p)
+{
+  if (ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p)) {
+  }
+  if (ISC(SC_BOOL_CONV, bool,
+        !ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p))) {
+  }
+  ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p) &&
+    ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p);
+  ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p) ||
+    ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p);
+  ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p)? p : p;
+  for (; ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p); 1) {
+    break;
+  }
+  while (ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p)) {
+    break;
+  }
+  do {
+    break;
+  } while (ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p));
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

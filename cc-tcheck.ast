@@ -571,9 +571,17 @@ class Statement {
 class Condition {
   // typecheck, and return which Condition is selected from among
   // syntactically ambiguous choices
-  public /*no_ignore*/ Condition *tcheck(Env &env);
-  public void mid_tcheck(Env &env, int &) { itcheck(env); };
-  pure_virtual void itcheck(Env &env);
+  public /*no_ignore*/ Condition *tcheck(Env &env, bool wantBool);
+
+  // This accepts a bool reference because that is necessary for the
+  // 'resolveAmbiguity' template, but 'wantBool' is purely an input
+  // argument.
+  public void mid_tcheck(Env &env, bool &wantBool)
+    { itcheck(env, wantBool); };
+
+  // If 'wantBool' is true, we want the condition to yield a boolean
+  // value.  Otherwise, it is an 'int' for 'switch'.
+  pure_virtual void itcheck(Env &env, bool wantBool);
 }
 
 

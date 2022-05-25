@@ -1,0 +1,27 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+void f(int *p)
+{
+  if (p) {
+  }
+  if (!p) {
+  }
+  p && p;
+  p || p;
+  p? p : p;
+  for (; p; 1) {
+    break;
+  }
+  while (p) {
+    break;
+  }
+  do {
+    break;
+  } while (p);
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

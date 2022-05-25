@@ -114,6 +114,7 @@ TESTS += pprint/longlines2.c
 TESTS += pprint/longlines3.c
 TESTS += pprint/nested-block.c
 TESTS += pprint/printf-cond-arg.c
+TESTS += pprint/ptr-as-condition.c
 TESTS += pprint/range-case.c
 TESTS += pprint/return-zero-as-ptr.c
 TESTS += pprint/stdconv.c

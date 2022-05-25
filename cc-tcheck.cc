@@ -4837,7 +4837,7 @@ void S_if::itcheck(Env &env)
   implicitLocalScope(thenBranch);
   implicitLocalScope(elseBranch);
 
-  cond = cond->tcheck(env);
+  cond = cond->tcheck(env, true /*wantBool*/);
   thenBranch = thenBranch->tcheck(env);
   elseBranch = elseBranch->tcheck(env);
 
@@ -4852,7 +4852,7 @@ void S_switch::itcheck(Env &env)
   // 6.4 para 1
   implicitLocalScope(branches);
 
-  cond = cond->tcheck(env);
+  cond = cond->tcheck(env, false /*wantBool*/);
   branches = branches->tcheck(env);
 
   env.exitScope(scope);
@@ -4866,7 +4866,7 @@ void S_while::itcheck(Env &env)
   // 6.5 para 2
   implicitLocalScope(body);
 
-  cond = cond->tcheck(env);
+  cond = cond->tcheck(env, true /*wantBool*/);
   body = body->tcheck(env);
 
   env.exitScope(scope);
@@ -4881,6 +4881,8 @@ void S_doWhile::itcheck(Env &env)
   body = body->tcheck(env);
   expr->tcheck(env);
 
+  env.insertOperandRvalConversion(expr->expr, true /*wantBool*/);
+
   // TODO: verify that 'expr' makes sense in a boolean context
 }
 
@@ -4893,7 +4895,7 @@ void S_for::itcheck(Env &env)
   implicitLocalScope(body);
 
   init = init->tcheck(env);
-  cond = cond->tcheck(env);
+  cond = cond->tcheck(env, true /*wantBool*/);
   after->tcheck(env);
   body = body->tcheck(env);
 
@@ -5005,31 +5007,38 @@ void S_namespaceDecl::itcheck(Env &env)
 
 
 // ------------------- Condition --------------------
-Condition *Condition::tcheck(Env &env)
+Condition *Condition::tcheck(Env &env, bool wantBool)
 {
-  int dummy;
   if (!ambiguity) {
     // easy case
-    mid_tcheck(env, dummy);
+    mid_tcheck(env, wantBool);
     return this;
   }
 
   // generic resolution: whatever tchecks is selected
-  return resolveAmbiguity(this, env, "Condition", false /*priority*/, dummy);
+  return resolveAmbiguity(this, env, "Condition", false /*priority*/,
+                          wantBool);
 }
 
-void CN_expr::itcheck(Env &env)
+void CN_expr::itcheck(Env &env, bool wantBool)
 {
   expr->tcheck(env);
+
+  env.insertOperandRvalConversion(expr->expr, wantBool);
 
   // TODO: verify 'expr' makes sense in a boolean or switch context
 }
 
 
-void CN_decl::itcheck(Env &env)
+void CN_decl::itcheck(Env &env, bool /*wantBool*/)
 {
   ASTTypeId::Tcheck tc(DF_NONE, DC_CN_DECL);
   typeId = typeId->tcheck(env, tc);
+
+  // TODO: I can't call 'insertOperandRvalConversion' because I have no
+  // place for it to go, given that the declaration has to have its
+  // correct type.  Perhaps I could add a field to CN_decl that contains
+  // the required conversion stacked on top of an E_variable.
 
   // TODO: verify the type of the variable declared makes sense
   // in a boolean or switch context
@@ -8291,6 +8300,13 @@ Type *E_unary::itcheck_x(Env &env, Expression *&replacement)
             "The operand of unary '!' must have scalar type; '" <<
             t->toString() << "' is not."));
         }
+
+        // Despite the final result being 'int', I'm going to say that
+        // we first implicitly convert to '_Bool' before negating, since
+        // in the instrumentor I want to see every place that a
+        // possibly-non-booelan expression is evaluated as a boolean.
+        env.insertOperandRvalConversion(expr, true /*wantBool*/);
+
         return env.getSimpleType(ST_INT);
       }
     }
@@ -8934,7 +8950,7 @@ Type *E_cond::itcheck_x(Env &env, Expression *&replacement)
       << "cannot convert '" << cond->type->toString()
       << "' to bool for conditional of ?:");
   }
-  // TODO (elaboration): rewrite AST if a user-defined conversion was used
+  env.insertOperandRvalConversion(cond, true /*wantBool*/);
 
   th->tcheck(env, th);
   el->tcheck(env, el);

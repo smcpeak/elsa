@@ -3,7 +3,7 @@
 // -*-c++-*-
 int f(int x)
 {
-  switch (x) {
+  switch (ISC(SC_LVAL_TO_RVAL, int, x)) {
     case 0:
       return 0;
     case 1 ... 2:
