@@ -24,6 +24,16 @@ int (in_paren1b), (__attribute__((unused)) in_paren2b);
 
 int (in_paren1c), (__attribute__((unused)) in_paren2c), in_paren3c;
 
+// Attribute after ',' without grouping parens.
+int ac1a, __attribute__((unused)) ac1b;
+int ac2a, __attribute__((unused)) ac2b, ac2c;
+int ac3a, __attribute__((unused)) ac3b,
+          __attribute__((unused)) __attribute__((mode(byte))) ac3c;
+
+int *acp1a, __attribute__((unused)) *acp1b;
+int *acp2a, __attribute__((unused)) *acp2b, *acp2c;
+int *acp3a, __attribute__((unused)) *acp3b,
+            __attribute__((unused)) __attribute__((aligned(16))) *acp3c;
 
 int f()
 {

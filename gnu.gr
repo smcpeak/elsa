@@ -971,11 +971,31 @@ nonterm(UberModifiersAndASL*) UTACVAASLOpt {
 }
 
 
-// attribute after the "," in a sequence of declarators
+// Attribute after the "," in a sequence of declarators.
 nonterm(FakeList<Declarator>*) InitDeclaratorList {
-  -> d:InitDeclarator "," /*DROPPED*/AttributeSpecifierList list:InitDeclaratorList
-       { d->setNext(fl_first(list));
-         return FakeList<Declarator>::makeList(d); }
+  -> d:InitDeclarator "," asl:AttributeSpecifierList decllist:InitDeclaratorList
+       {
+         Declarator *firstAfter = fl_first(decllist);
+
+         // I can't just stick the attributes on 'firstAfter->decl'
+         // because they'll mean something different there if it is
+         // something like D_pointer that denotes a type constructor.
+         // So, instead, synthesize a D_grouping.
+         //
+         // For maximum fidelity, I could allow attributes to be
+         // associated with Declarator (rather than IDeclarator), but
+         // that seems unnecessary, and greater proliferation of
+         // attributes is undesirable.
+         D_grouping *g = new D_grouping(loc, firstAfter->decl);
+         g->prependASL(asl);
+
+         // Insert 'g' where 'firstAfter->decl' was.
+         firstAfter->decl = g;
+
+         // Connect 'd' at the head of the list.
+         d->setNext(firstAfter);
+         return FakeList<Declarator>::makeList(d);
+       }
 }
 
 
