@@ -18,7 +18,6 @@
 //   - gcc statement expression: "({ ... })"
 //   - gcc compound literals: "(struct Foo){ ... }"
 //   - gcc misc: __FUNCTION__, __alignof__, etc.
-//   - gcc dangling labels: "{ ... foo: }"
 //   - gcc typeof
 //   - gcc C++ min and max operators ">?" and "<?"
 //   - gcc asm with register constraints, etc.
@@ -181,45 +180,12 @@ nonterm(Statement*) Statement {
 }
 
 
-// ----------- gcc dangling labels -----------
-// gcc allows a compound statement to end with a label, whereas the C
-// and C++ grammars require a statement after every label; I can't
-// find any place in the gcc docs that specifically addresses this
-// extension; linux uses it heavily
-//
-// 10/17/04: It seems that gcc-3, even in C mode, rejects labels at
-// the end of compound blocks.  Therefore I suspect the tolerance in
-// gcc-2 was unintentional.  Oh well, Elsa allows it in all gcc modes..
-
-nonterm(S_compound*) CompoundStatement {
-  // special case for a block that ends in a label; Warning: no don't
-  // do this by making a label, case and/or default form not contain
-  // the statement that follows; It wouldn't work in this case:
-  //   if (0) gronk: printf("hello\n");
-  // The then branch would only contain the gronk label, whereas, at
-  // least in gcc, it also includes the printf() call.
-  -> seq:CompoundStmtHelper lesl:LabeledEmptyStatementList "}"
-       { seq->stmts.append(lesl); return seq; }
-}
-
-// a sequence of labels with no statement following, not even a skip
-nonterm(Statement*) LabeledEmptyStatementList {
-  -> n:LabelAndColon s:LabeledEmptyStatementListOpt
-       { return new S_label(loc, n, s); }
-  -> "case" e:ConstantExpression ":" s:LabeledEmptyStatementListOpt
-       { return new S_case(loc, e, s); }
-  -> "case" e:ConstantExpression "..." e2:ConstantExpression ":" s:LabeledEmptyStatementListOpt
-       { return new S_rangeCase(loc, e, e2, s); }
-  -> "default" ":" s:LabeledEmptyStatementListOpt
-       { return new S_default(loc, s); }
-}
-
-nonterm(Statement*) LabeledEmptyStatementListOpt {
-  -> empty
-       { return new S_skip(loc, MI_IMPLICIT); }
-  -> s:LabeledEmptyStatementList
-       { return s; }
-}
+// 2022-05-25: There previously was support here for a label at the end
+// of a compound statement, like: "{ label: }", which was accepted by
+// the nonterminal LabeledEmptyStatementList.  That is invalid C and
+// C++.  GCC 2.x accepts it, but GCC 3 and later do not.  It was
+// somewhat in my way while adding support for attributes on labels, so
+// I removed it entirely.
 
 
 // ----------- gcc typeof -----------

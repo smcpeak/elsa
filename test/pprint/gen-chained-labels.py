@@ -11,9 +11,6 @@ print(
 // Label-like elements are default, case, GNU range case, and actual
 // goto labels.
 
-// Some versions of GCC do not require the trailing semicolon, so Elsa
-// accepts that as a GNU extension.
-
 // Repeated 'default' is not valid C/C++, but Elsa currently accepts
 // it, so this script generates it.
 """)
@@ -30,22 +27,20 @@ def get_label(index, start):
   elif index==3:
     return f"label{start}";
 
-# Loop over all 32 combinations.
-for has_semicolon in range(0, 2):
-  for label_index1 in range(0, 4):
-    for label_index2 in range(0, 4):
-      label1 = get_label(label_index1, 1)
-      label2 = get_label(label_index2, 3)
-      end = ";" if has_semicolon==1 else ""
+# Loop over all 16 combinations.
+for label_index1 in range(0, 4):
+  for label_index2 in range(0, 4):
+    label1 = get_label(label_index1, 1)
+    label2 = get_label(label_index2, 3)
 
-      # Emit one function definition.
-      print(f"""
-void f_{has_semicolon}_{label_index1}_{label_index2}(int x)
+    # Emit one function definition.
+    print(f"""
+void f_{label_index1}_{label_index2}(int x)
 {{
   switch (x) {{
     {label1}:
     {label2}:
-      {end}
+      ;
   }}
 }}""")
 
