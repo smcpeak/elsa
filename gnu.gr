@@ -1049,18 +1049,19 @@ nonterm(IDeclarator*) DirectAbstractDeclarator {
        { return make_D_grouping(loc, list, d); }
 }
 
-// dsw: attributes after bitfields; from the kernel:
+
+// Attributes after bitfields, for example in Linux:
 // UCHAR8 SampleResolution:2 __attribute__ ((packed));
-//
-// sm: the reason this wasn't handled by my catch-all Declarator
-// case above is that the bitfield syntax doesn't explicitly refer
-// to the Declarator nonterminal
 nonterm(Declarator*) MemberDeclarator {
-  -> n:IdentifierOpt ":" e:ConstantExpression /*DROPPED*/AttributeSpecifierList    // bitfield
-       // this body is an exact copy of the cc.gr one without attributes
-       { return new Declarator(new D_bitfield(loc, n? new PQ_name(loc, n) : NULL, e),
-                               NULL /*init*/); }
+  -> n:IdentifierOpt ":" e:ConstantExpression list:AttributeSpecifierList
+       {
+         PQName *name = n? new PQ_name(loc, n) : NULL;
+         D_bitfield *bf = new D_bitfield(loc, name, e);
+         bf->appendASL(list);
+         return new Declarator(bf, NULL /*init*/);
+       }
 }
+
 
 // -- attributes themselves --
 // http://gcc.gnu.org/onlinedocs/gcc-3.2.2/gcc/Attribute-Syntax.html

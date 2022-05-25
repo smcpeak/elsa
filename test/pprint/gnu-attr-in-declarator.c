@@ -48,4 +48,11 @@ int *g(int *p)
 int (*fp1)(int);
 int (__attribute__((unused)) *fp2)(int);
 
+// Attributes on bitfields.
+struct S1 {
+  int a : 1;
+  int b : 1 __attribute__((packed));
+  int c : 1 __attribute__((packed)) __attribute__((unused));
+};
+
 // EOF
