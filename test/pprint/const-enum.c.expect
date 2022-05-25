@@ -1,0 +1,27 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+enum E1 {
+  enumerator1
+} const e1;
+
+enum E2 {
+  enumerator2
+} const volatile e2;
+
+enum E1 const e1b;
+
+enum E1 const e1c;
+
+enum __anon_enum_1 {
+  enumerator3
+} const e3;
+
+enum __anon_enum_2 {
+  enumerator4
+} const volatile e4;
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

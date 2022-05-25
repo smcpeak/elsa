@@ -1,0 +1,19 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+struct S1 {
+} const s1;
+
+struct S2 {
+} const volatile s2;
+
+union U1 {
+} const u1;
+
+union U2 {
+} const volatile u2;
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

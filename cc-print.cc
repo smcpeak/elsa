@@ -656,7 +656,6 @@ void TS_elaborated::iprint(PrintEnv &env) const
 void TS_classSpec::iprint(PrintEnv &env) const
 {
   env << toString(ql);          // see string toString(class dummyType*) above
-  env << toString(cv);
   env << toString(keyword) << ' ';
   if (name) env << name->toString();
 
@@ -699,7 +698,6 @@ void TS_enumSpec::iprint(PrintEnv &env) const
   TPSEQUENCE;
 
   env << toString(ql);          // see string toString(class dummyType*) above
-  env << toString(cv);
   env << "enum ";
   if (name) {
     env << name << ' ';
