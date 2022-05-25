@@ -775,7 +775,10 @@ void Enumerator::print(PrintEnv &env) const
 // -------------------- Declarator --------------------
 void Declarator::print(PrintEnv &env) const
 {
+  ext_pre_print(env);
   decl->print(env);
+  ext_post_print(env);
+
   printInitializerOpt(env, init);
 }
 

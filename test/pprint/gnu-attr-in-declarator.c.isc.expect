@@ -5,7 +5,35 @@ int x __attribute__((unused)), y __attribute__((mode(byte)));
 
 int * __attribute__((may_alias)) * __attribute__((may_alias)) ma2;
 
-int in_paren;
+int (__attribute__((unused)) in_paren);
+
+int (__attribute__((unused)) in_paren1), in_paren2;
+
+int in_paren1b, (__attribute__((unused)) in_paren2b);
+
+int in_paren1c, (__attribute__((unused)) in_paren2c), in_paren3c;
+
+int f()
+{
+  int x = 0;
+  x += (int)3;
+  x += (__attribute__((mode(byte))) int)4;
+  x += (__attribute__((mode(byte))) int)5;
+  return ISC(SC_LVAL_TO_RVAL, int, x);
+}
+
+int *g(int *p)
+{
+  p = (int *)3;
+  p = (int * __attribute__((may_alias)) )4;
+  p = (int *)5;
+  p = (int * __attribute__((may_alias)) )6;
+  return ISC(SC_LVAL_TO_RVAL, int *, p);
+}
+
+int (*fp1)(int);
+
+int (__attribute__((unused)) *fp2)(int);
 
 ---- STOP ----
 ---- stderr ----

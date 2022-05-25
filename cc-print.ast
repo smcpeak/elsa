@@ -69,6 +69,10 @@ class Enumerator {
 
 class Declarator {
   public void print(PrintEnv &env) const;
+
+  // These are called just before and after printing 'decl'.
+  define_customizable void ext_pre_print(PrintEnv &env) const;
+  define_customizable void ext_post_print(PrintEnv &env) const;
 }
 
 

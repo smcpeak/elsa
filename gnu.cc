@@ -1432,6 +1432,36 @@ void S_computedGoto::icfg(CFGEnv &env)
 }
 
 
+// -------------------------- Declarator -------------------------------
+void Declarator::ext_pre_print_gnu(PrintEnv &env) const
+{
+  if (decl->m_attrSpecList &&
+      decl->isD_grouping()) {
+    // A top-level grouping declarator would not normally print a pair
+    // of parentheses because they would be redundant according to the
+    // standard grammar.  But if there are attributes associated with
+    // the D_grouping, and it is the first of multiple declarators in a
+    // declaration, the parentheses are required in order to keep the
+    // attribute associated with just that declarator.  See
+    // test/pprint/gnu-attr-in-declarator.c.
+    //
+    // This also fixes a minor potential issue with achieving a
+    // pretty-printing fixpoint, since even with only one declarator, if
+    // we drop the parens and therefore associate the attribute with the
+    // declaration, it prints in a different location.
+    env << "(";
+  }
+}
+
+void Declarator::ext_post_print_gnu(PrintEnv &env) const
+{
+  if (decl->m_attrSpecList &&
+      decl->isD_grouping()) {
+    env << ")";
+  }
+}
+
+
 // -------------------------- IDeclarator ------------------------------
 void IDeclarator::prependASL(AttributeSpecifierList *list)
 {
@@ -1447,7 +1477,15 @@ void IDeclarator::appendASL(AttributeSpecifierList * /*nullable*/ list)
 void IDeclarator::ext_print_attrSpecList(PrintEnv &env) const
 {
   if (m_attrSpecList) {
-    env << env.sp;
+    if (this->isD_grouping()) {
+      // We don't need additional space in front because the parent
+      // will have added space in anticipation of following syntax,
+      // and the grouping doesn't print any itself.
+    }
+    else {
+      env << env.sp;
+    }
+
     m_attrSpecList->print(env);
 
     if (this->isD_array() || this->isD_func()) {

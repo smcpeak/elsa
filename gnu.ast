@@ -406,6 +406,16 @@ class Attribute(SourceLoc loc) {
 }
 
 
+// Hook into top-level declarator printing.
+class Declarator {
+  public void ext_pre_print_gnu(PrintEnv &env) const;
+  custom ext_pre_print { ext_pre_print_gnu(env); }
+
+  public void ext_post_print_gnu(PrintEnv &env) const;
+  custom ext_post_print { ext_post_print_gnu(env); }
+}
+
+
 // Like for TypeSpecifier, augment declarators with an optional list of
 // attributes.
 class IDeclarator {

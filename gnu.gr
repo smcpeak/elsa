@@ -1000,6 +1000,18 @@ impl_verbatim {
 
     return ret;
   }
+
+  // Make a D_grouping with 'list' on top of 'base'.
+  static D_grouping *make_D_grouping(
+    SourceLoc loc,
+    AttributeSpecifierList *list,
+    IDeclarator *base)
+  {
+    D_grouping *ret = new D_grouping(loc, base);
+    ret->prependASL(list);
+    return ret;
+  }
+
 }
 
 nonterm(IDeclarator*) Declarator {
@@ -1019,8 +1031,8 @@ nonterm(IDeclarator*) Declarator {
 
 
 nonterm(IDeclarator*) DirectDeclarator {
-  -> "(" /*DROPPED*/AttributeSpecifierList d:Declarator ")"
-       { return new D_grouping(loc, d); }
+  -> "(" list:AttributeSpecifierList d:Declarator ")"
+       { return make_D_grouping(loc, list, d); }
 }
 
 
@@ -1033,8 +1045,8 @@ nonterm(IDeclarator*) AbstractDeclarator {
 }
 
 nonterm(IDeclarator*) DirectAbstractDeclarator {
-  -> "(" /*DROPPED*/AttributeSpecifierList d:AbstractDeclarator ")"
-       { return new D_grouping(loc, d); }
+  -> "(" list:AttributeSpecifierList d:AbstractDeclarator ")"
+       { return make_D_grouping(loc, list, d); }
 }
 
 // dsw: attributes after bitfields; from the kernel:
