@@ -541,6 +541,11 @@ class Statement {
   public void mid_tcheck(Env &env, int &);
   pure_virtual void itcheck(Env &env);
 
+  // This is called right after 'itcheck' returns, so the extension will
+  // see a tchecked Statement, although it might still be within an
+  // ambiguity.
+  define_customizable void ext_tcheck(Env &env);
+
   -> S_case {
        // the case label must be an integer; this its value
        public int labelVal = 0;

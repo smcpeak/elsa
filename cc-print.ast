@@ -140,6 +140,13 @@ enum StatementContext {
 class Statement {
   public void print(PrintEnv &env, StatementContext context) const;
   pure_virtual void iprint(PrintEnv &env, StatementContext context) const;
+
+  -> S_label {
+       // This is called right after the ":" is printed, before the line
+       // break that follows it.
+       define_customizable
+         void ext_print(PrintEnv &env, StatementContext context) const;
+     }
 }
 
 

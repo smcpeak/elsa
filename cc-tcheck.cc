@@ -4744,11 +4744,10 @@ Statement *Statement::tcheck(Env &env)
 }
 
 
-// dsw: it is too slow to have emacs reload cc.ast.gen.h just to display
-// the body of this method when I'm looking around in the stack in gdb
 void Statement::mid_tcheck(Env &env, int &)
 {
   itcheck(env);
+  ext_tcheck(env);
 }
 
 

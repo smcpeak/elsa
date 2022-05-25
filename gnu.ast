@@ -159,6 +159,8 @@ new class ASTTypeof {
 
 
 class TypeSpecifier {
+  // TODO: Move the attribute stuff lower in this file.
+
   // Nullable list of attribute specifiers.
   public AttributeSpecifierList *m_attrSpecList = NULL;
 
@@ -382,7 +384,12 @@ class AttributeSpecifierList(
     // The type of the entity with which the attributes are associated.
     // The tcheck process may change it, for example to apply a "mode"
     // attribute.
-    Type *&m_type;
+    //
+    // This might be a reference to a NULL pointer, meaning the entity
+    // to which the attribute was applied does not have a type (e.g.,
+    // it is a label).
+    //
+    Type * /*nullable*/ &m_type;
 
     // If not NULL after tcheck, the attributes included an "alias"
     // and this is the Variable the alias referred to.
@@ -468,6 +475,33 @@ class IDeclarator {
   // And also tcheck them.
   public void ext_tcheck_attrSpecList(Env &env, Declarator::Tcheck &tc);
   custom ext_tcheck { ext_tcheck_attrSpecList(env, tc); }
+}
+
+
+class Statement {
+  // Type-check GNU statement extensions.
+  public void ext_tcheck_gnu(Env &env);
+  custom ext_tcheck { ext_tcheck_gnu(env); }
+
+  // Labels can have attributes.
+  -> S_label {
+       // Nullable list of attribute specifiers.
+       public AttributeSpecifierList *m_attrSpecList = NULL;
+       custom debugPrint {
+         PRINT_SUBTREE(m_attrSpecList);
+       }
+
+       // Append 'list' to 'm_attrSpecList'.
+       public void appendASL(AttributeSpecifierList *list);
+
+       // Type-check attributes.
+       public void tcheckAttributes(Env &env);
+
+       // Print the attributes.
+       public void ext_print_gnu(PrintEnv &env,
+                                 StatementContext context) const;
+       custom ext_print { ext_print_gnu(env, context); }
+     }
 }
 
 

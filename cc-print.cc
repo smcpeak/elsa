@@ -968,9 +968,11 @@ void S_skip::iprint(PrintEnv &env, StatementContext) const
   env << ";";
 }
 
-void S_label::iprint(PrintEnv &env, StatementContext) const
+void S_label::iprint(PrintEnv &env, StatementContext context) const
 {
-  env << env.und << name << ":" << env.br;
+  env << env.und << name << ":";
+  ext_print(env, context);
+  env << env.br;
   s->print(env, SC_LABEL);
 }
 

@@ -488,9 +488,18 @@ nonterm(Expression*) PrimaryExpression {
 nonterm(StringRef) LabelAndColon {
   // Do not reduce this nonterminal with unconsumed attributes.
   forbid_next("__attribute__");
+}
 
-  -> n:Identifier ":" /*DROPPED*/AttributeSpecifierList
-       { return n; }
+
+nonterm(Statement*) Statement {
+  // Attribute applied to a label.
+  //
+  // Here, I do not use 'LabelAndColon' because that is prevented from
+  // reducing when an "__attribute__" token is next.
+  -> n:Identifier ":" asl:AttributeSpecifierList s:Statement
+       { S_label *lbl = new S_label(loc, n, s);
+         lbl->appendASL(asl);
+         return lbl; }
 }
 
 

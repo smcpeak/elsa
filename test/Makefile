@@ -101,6 +101,7 @@ TESTS += pprint/gnu-attr-in-declaration.c
 TESTS += pprint/gnu-attr-in-declarator.c
 TESTS += pprint/gnu-attr-in-type-specifier.c
 TESTS += pprint/gnu-attr-mode.c
+TESTS += pprint/gnu-attr-on-label.c
 TESTS += pprint/gnu-declaration-attr.c
 TESTS += pprint/if-without-else.c
 TESTS += pprint/init-struct-with-string.c

@@ -1,0 +1,22 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+int f(int x)
+{
+  if (ISC(SC_LVAL_TO_RVAL, int, x) == 1) {
+    goto label1;
+  }
+  if (ISC(SC_LVAL_TO_RVAL, int, x) == 2) {
+    goto label2;
+  }
+  x++;
+label1: __attribute__((unused))
+  x++;
+label2: __attribute__((unused)) __attribute__((hot))
+  return ISC(SC_LVAL_TO_RVAL, int, x);
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

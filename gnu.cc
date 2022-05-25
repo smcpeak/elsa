@@ -1610,7 +1610,10 @@ void AttributeSpecifierList::tcheck(Env &env,
 
   // Apply '__mode__'.
   if (modeDesignator) {
-    if (tc.m_type->isSimpleType()) {
+    if (!tc.m_type) {
+      env.error("'mode' attribute applied to something that is not a type.");
+    }
+    else if (tc.m_type->isSimpleType()) {
       // get details about current type
       SimpleTypeId existingId = tc.m_type->asSimpleTypeC()->type;
       CVFlags existingCV = tc.m_type->getCVFlags();
@@ -1657,7 +1660,10 @@ void AttributeSpecifierList::tcheck(Env &env,
 
   // Apply '__transparent_union__'.
   if (transparentUnion) {
-    if (tc.m_type->isUnionType()) {
+    if (!tc.m_type) {
+      env.error("'transparent_union' attribute applied to something that is not a type.");
+    }
+    else if (tc.m_type->isUnionType()) {
       CompoundType *u = tc.m_type->asCompoundType();
       u->isTransparentUnion = true;
     }
@@ -1670,14 +1676,19 @@ void AttributeSpecifierList::tcheck(Env &env,
 
   // Apply '__alias__'.
   if (foundAlias) {
-    // Look up the name.
-    Variable *target = env.lookupVariable(foundAlias);
-    if (target) {
-      tc.m_gnuAliasTarget = target;
+    if (!tc.m_type) {
+      env.error("'alias' attribute applied to something that cannot be an alias.");
     }
     else {
-      env.error(tc.m_type, stringb(
-        "__alias__ attribute target not found: '" << foundAlias << "'"));
+      // Look up the name.
+      Variable *target = env.lookupVariable(foundAlias);
+      if (target) {
+        tc.m_gnuAliasTarget = target;
+      }
+      else {
+        env.error(tc.m_type, stringb(
+          "__alias__ attribute target not found: '" << foundAlias << "'"));
+      }
     }
   }
 }
@@ -1791,6 +1802,41 @@ void AT_func::print(PrintEnv &env) const
   env << ")";
 
   env.end();
+}
+
+
+// ---------------------------- Statement ------------------------------
+void Statement::ext_tcheck_gnu(Env &env)
+{
+  if (S_label *lbl = this->ifS_label()) {
+    lbl->tcheckAttributes(env);
+  }
+}
+
+
+// ----------------------------- S_label -------------------------------
+void S_label::appendASL(AttributeSpecifierList *list)
+{
+  m_attrSpecList = aslAppendASL(m_attrSpecList, list);
+}
+
+
+void S_label::tcheckAttributes(Env &env)
+{
+  if (m_attrSpecList) {
+    Type *dummy = NULL;
+    AttributeSpecifierList::Tcheck asltc(dummy);
+    m_attrSpecList->tcheck(env, asltc);
+  }
+}
+
+
+void S_label::ext_print_gnu(PrintEnv &env, StatementContext) const
+{
+  if (m_attrSpecList) {
+    env << env.sp;
+    m_attrSpecList->print(env);
+  }
 }
 
 
