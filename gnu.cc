@@ -1727,7 +1727,7 @@ void TypeSpecifier::prependElaboratedASL(AttributeSpecifierList *list)
 }
 
 
-void TypeSpecifier::preprint_attrSpecList(PrintEnv &env) const
+void TypeSpecifier::ext_preprint_gnu(PrintEnv &env) const
 {
   if (m_attrSpecList) {
     m_attrSpecList->print(env);

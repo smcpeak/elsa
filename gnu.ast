@@ -200,8 +200,8 @@ class TypeSpecifier {
   public void prependElaboratedASL(AttributeSpecifierList *list);
 
   // Arrange to print the attributes.
-  public void preprint_attrSpecList(PrintEnv &env) const;
-  custom preprint { preprint_attrSpecList(env); }
+  public void ext_preprint_gnu(PrintEnv &env) const;
+  custom ext_preprint { ext_preprint_gnu(env); }
   public void ext_printAfterClassKey_gnu(PrintEnv &env) const;
   custom ext_printAfterClassKey { ext_printAfterClassKey_gnu(env); }
 

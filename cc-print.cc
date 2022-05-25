@@ -616,7 +616,7 @@ void TypeSpecifier::print(PrintEnv &env, bool inDeclaration) const
   }
 
   // Let extension modules have a chance to print things.
-  preprint(env);
+  ext_preprint(env);
 
   iprint(env);
   if (cv) {
