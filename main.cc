@@ -7,6 +7,7 @@
 #include "strip-comments.h"            // strip_comments_unit_tests
 
 // smbase
+#include "objcount.h"                  // CheckObjectCount
 #include "trace.h"                     // tracingSys
 
 
@@ -338,7 +339,15 @@ static int doit(int argc, char **argv)
 int main(int argc, char **argv)
 {
   try {
-    return doit(argc, argv);
+    try {
+      return doit(argc, argv);
+    }
+    catch (...) {
+      // If we die by exception, leaks are routine, and the message can
+      // misdirect attention.
+      CheckObjectCount::s_suppressLeakReports = true;
+      throw;
+    }
   }
   catch (XUnimp &x) {
     HANDLER();
