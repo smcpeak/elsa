@@ -1453,6 +1453,9 @@ void IDeclarator::ext_print_attrSpecList(PrintEnv &env) const
     if (this->isD_array() || this->isD_func()) {
       // For suffix declarators, we don't need the extra space.
     }
+    else if (this->isD_name() || this->isD_bitfield()) {
+      // Also don't need it for these since the declarator is over.
+    }
     else {
       env << env.sp;
     }

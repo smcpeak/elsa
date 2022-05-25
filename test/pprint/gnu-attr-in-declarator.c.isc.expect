@@ -1,0 +1,13 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+int x __attribute__((unused)), y __attribute__((mode(byte)));
+
+int * __attribute__((may_alias)) * __attribute__((may_alias)) ma2;
+
+int in_paren;
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0
