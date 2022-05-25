@@ -36,4 +36,14 @@ int main()
   return 0;
 }
 
+
+// Associate the attribute with a declarator.
+// Columns: \S+ \S+ \S+ \S+ \S+ \S+ \S+ \S+ \S+ \S+
+int * /**/  __attribute__((may_alias)) /**/     /**/                    a1;
+int * const __attribute__((may_alias)) /**/     /**/                    a2;
+int * const __attribute__((may_alias)) volatile /**/                    a3;
+int * /**/  __attribute__((may_alias)) volatile __attribute__((unused)) a4;
+int * /**/  __attribute__((may_alias)) /**/     __attribute__((unused)) a5;
+
+
 // EOF

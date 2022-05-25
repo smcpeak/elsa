@@ -1449,6 +1449,13 @@ void IDeclarator::ext_print_attrSpecList(PrintEnv &env) const
   if (m_attrSpecList) {
     env << env.sp;
     m_attrSpecList->print(env);
+
+    if (this->isD_array() || this->isD_func()) {
+      // For suffix declarators, we don't need the extra space.
+    }
+    else {
+      env << env.sp;
+    }
   }
 }
 
@@ -1636,22 +1643,6 @@ void AttributeSpecifierList::tcheck(Env &env,
 
 
 // ---------------------- AttributeSpecifier -------------------------
-UberModifiers AttributeSpecifier::toUberModifiers() const
-{
-  UberModifiers ret = attr->toUberModifiers();
-  if (next) {
-    ret = (UberModifiers)(ret | next->toUberModifiers());
-  }
-  return ret;
-}
-
-
-CVFlags AttributeSpecifier::toCVFlags() const
-{
-  return uberCVFlags(toUberModifiers());
-}
-
-
 void AttributeSpecifier::print(PrintEnv &env) const
 {
   env.begin();
@@ -1713,34 +1704,6 @@ void TypeSpecifier::ext_tcheck_attrSpecList(Env &env, Tcheck &tc,
 
 
 // ---------------------- Attribute -------------------------
-UberModifiers AT_empty::toUberModifiers() const
-{
-  return UM_NONE;
-}
-
-
-UberModifiers AT_word::toUberModifiers() const
-{
-  if (streq_GAN(w, "may_alias")) {
-    return UM_MAY_ALIAS;
-  }
-
-  return UM_NONE;
-}
-
-
-UberModifiers AT_func::toUberModifiers() const
-{
-  return UM_NONE;
-}
-
-
-CVFlags Attribute::toCVFlags() const
-{
-  return uberCVFlags(toUberModifiers());
-}
-
-
 void AT_empty::print(PrintEnv &env) const
 {
   // Nothing to print.

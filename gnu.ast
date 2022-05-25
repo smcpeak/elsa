@@ -376,8 +376,6 @@ class AttributeSpecifier(
   Attribute attr,
   AttributeSpecifier /*nullable*/ next
 ) {
-  public UberModifiers toUberModifiers() const;
-  public CVFlags toCVFlags() const;
   public void print(PrintEnv &env) const;
 }
 
@@ -385,8 +383,6 @@ class AttributeSpecifier(
 // one attribute, somewhere inside __attribute((...)); syntactically,
 // attributes are separated by commas in the parens
 class Attribute(SourceLoc loc) {
-  pure_virtual UberModifiers toUberModifiers() const;
-  public CVFlags toCVFlags() const;
   pure_virtual void print(PrintEnv &env) const;
 
   // e.g., __attribute__(( ))

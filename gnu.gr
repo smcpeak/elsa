@@ -979,28 +979,34 @@ nonterm(FakeList<Declarator>*) InitDeclaratorList {
 }
 
 
-// cv-qualifiers mixed with __attribute__ arbitrarily
-nonterm(enum CVFlags) CVQualAttrSeqOpt {
-  -> empty                             { return CV_NONE; }
-  -> s:CVQualAttrSeq                   { return s; }
-}
+impl_verbatim {
+  // Make a D_pointer with flags and attributes from 'cv1' and 'uma',
+  // and on top of 'base'.
+  static D_pointer *make_D_pointer(
+    SourceLoc loc,
+    CVFlags cv1,
+    UberModifiersAndASL * /*dec*/ uma,
+    IDeclarator *base)
+  {
+    // Get the combined cv-flags.
+    CVFlags cv = cv1 | uberCVFlags(umaaslUM(uma));
 
-nonterm(enum CVFlags) CVQualAttrSeq {
-  -> q:CVQualAttr                      { return q; }
-  -> q:CVQualAttr s:CVQualAttrSeq      { return q | s; }
-}
+    // Build our desired D_pointer.
+    D_pointer *ret = new D_pointer(loc, cv, base);
+    ret->appendASL(umaaslASL(uma));
 
-nonterm(enum CVFlags) CVQualAttr {
-  -> q:CVQualifier                     { return q; }
-  -> as:AttributeSpecifier             { return as->toCVFlags(); }
-}
+    // Consume 'uma'.
+    decRefCount(uma);
 
+    return ret;
+  }
+}
 
 nonterm(IDeclarator*) Declarator {
   // "*", then some cv, then *one* __attribute__, which causes the
   // parser to commit to this production, then cv+attr seq
-  -> "*" cv:CVQualifierSeqOpt as:AttributeSpecifier cv2:CVQualAttrSeqOpt d:Declarator
-       { return new D_pointer(loc, cv | as->toCVFlags() | cv2, d); }
+  -> "*" cv:CVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt d:Declarator
+       { return make_D_pointer(loc, cv, uma, d); }
 
   // perhaps attributes should be allowed after "&" and "C::*"?
 
@@ -1019,8 +1025,8 @@ nonterm(IDeclarator*) DirectDeclarator {
 
 
 nonterm(IDeclarator*) AbstractDeclarator {
-  -> "*" cv:CVQualifierSeqOpt as:AttributeSpecifier cv2:CVQualAttrSeqOpt d:AbstractDeclaratorOpt
-       { return new D_pointer(loc, cv | as->toCVFlags() | cv2, d); }
+  -> "*" cv:CVQualifierSeqOpt uma:AttributeSpecifier_UCVAASLOpt d:AbstractDeclaratorOpt
+       { return make_D_pointer(loc, cv, uma, d); }
 
   -> d:DirectAbstractDeclarator list:AttributeSpecifierList
        { d->appendASL(list); return d; }

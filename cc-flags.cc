@@ -85,7 +85,6 @@ char const * const cvFlagNames[NUM_CVFLAGS] = {
   "const",
   "volatile",
   "restrict",
-  "__attribute__((__may_alias__))"
 };
 
 
@@ -668,7 +667,8 @@ char const * const uberModifierNames[UM_NUM_FLAGS] = {
   "const",
   "volatile",
   "restrict",        // 0x00001000
-  "__attribute__((__may_alias__))",
+
+  "(unused)",
 
   "bool",
   "short",
@@ -695,11 +695,10 @@ string toString(UberModifiers m)
   ASSERT_SAME_VALUE(CONST);
   ASSERT_SAME_VALUE(VOLATILE);
   ASSERT_SAME_VALUE(RESTRICT);
-  ASSERT_SAME_VALUE(MAY_ALIAS);
   #undef ASSERT_SAME_VALUE
 
   // Check that the masks make sense.
-  STATIC_ASSERT((UM_DECLFLAGS | UM_CVFLAGS | UM_TYPEKEYS) == UM_ALL_FLAGS);
+  STATIC_ASSERT((UM_DECLFLAGS | UM_CVFLAGS | UM_UNUSED | UM_TYPEKEYS) == UM_ALL_FLAGS);
   STATIC_ASSERT((UM_DECLFLAGS & UM_CVFLAGS) == 0);
   STATIC_ASSERT((UM_DECLFLAGS & UM_TYPEKEYS) == 0);
   STATIC_ASSERT((UM_TYPEKEYS & UM_CVFLAGS) == 0);

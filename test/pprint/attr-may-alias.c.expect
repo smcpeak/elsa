@@ -14,6 +14,16 @@ int main()
   return 0;
 }
 
+int * __attribute__((may_alias)) a1;
+
+int * const  __attribute__((may_alias)) a2;
+
+int * const volatile  __attribute__((may_alias)) a3;
+
+int * volatile  __attribute__((may_alias)) __attribute__((unused)) a4;
+
+int * __attribute__((may_alias)) __attribute__((unused)) a5;
+
 ---- STOP ----
 ---- stderr ----
 ---- exit status ----
