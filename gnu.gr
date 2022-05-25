@@ -528,13 +528,6 @@ nonterm(StringRef) LabelAndColon {
 }
 
 
-// attributes between classkeys and their names
-nonterm(enum TypeIntr) ClassKey {
-  // *not* AttributeSpecifierList; this context is naturally repeating
-  -> k:ClassKey /*DROPPED*/AttributeSpecifier       { return k; }
-}
-
-
 impl_verbatim {
   // Prepend 'asl' onto 'typeSpecifier' and return the latter.
   template <class T>
@@ -545,11 +538,23 @@ impl_verbatim {
   }
 }
 
-// attributes after "enum"
+// Attributes after "class", "struct", "union", or "enum".
 nonterm(TypeSpecifier*) ElaboratedTypeSpecifier {
+  -> k:ClassKey asl:AttributeSpecifierList n:PQTypeName
+       { return tsPrependElaboratedASL(asl,
+           new TS_elaborated(loc, k, n)); }
+
   -> "enum" asl:AttributeSpecifierList n:PQTypeName
        { return tsPrependElaboratedASL(asl,
            new TS_elaborated(loc, TI_ENUM, n)); }
+}
+
+nonterm(TS_classSpec*) ClassSpecifier {
+  -> k:ClassKey asl:AttributeSpecifierList n:ClassHeadNameOpt
+                  b:BaseClauseOpt "{" memb:MemberDeclarationSeqOpt "}"
+       { popClassName();
+         return tsPrependElaboratedASL(asl,
+           new TS_classSpec(loc, k, n, b, memb)); }
 }
 
 nonterm(TS_enumSpec*) EnumSpecifier {
