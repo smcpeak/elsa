@@ -1213,6 +1213,7 @@ nonterm(AttributeSpecifierList*) AttributeSpecifierList {
      { return new AttributeSpecifierList(as, asl); }
 }
 
+
 // quarl 2006-06-14
 //    'using namespace N __attribute__(__strong__)'
 //    see in/gnu/k0009.cc or
@@ -1224,137 +1225,6 @@ nonterm(NamespaceDecl*) NamespaceDecl {
                 " (a86c8a1e-2cd7-41bd-8a23-f9049358c166)");
          return new ND_usingDir(n); }
 }
-
-
-/*
-  2022-05-19: I think I'm now saving all attributes that appear
-  as part of a Declaration or TypeSpecifier (i.e., before any
-  declarator).
-
-  2005-08-13: I have now added retention of attributes in some
-  places.  All places where it is still *not* retained are now
-  marked with "DROPPED".  My plan is to incrementally retain
-  more of the attributes as the need arises.
-
-  Implementation of __attribute__ (sm, 8/21/04).
-
-  NOTE: The current implementation drops all __attribute__s on the
-  floor after parsing them!  That is not ideal.  However, as
-  attributes can go in places that don't have ready access to (say) a
-  Type or a Declarator to attach them to, retaining them in the AST
-  isn't a trivial change.
-
-  The spec at
-  http://gcc.gnu.org/onlinedocs/gcc-3.1/gcc/Attribute-Syntax.html does
-  a reasonably good job of documenting where __attribute__ can go and
-  what it means.  There are a number of things unclear about that
-  description, so I explored a bit with gcc-2 and gcc-2.
-  in/gnu/attr02.c contains a variety of syntax that gcc-3 accepts;
-  gcc-2 accepts most of it.
-
-  Based on this exploration, I decided to put attributes in a number
-  of places in cc.gr (via this gnu.gr extension grammar), listed
-  below.  In some cases I also determined (manually) the set of
-  contexts in which the modified construct would appear, so I could
-  better predict the effect of the modifications.
-
-    * right after ":" in labeled statement (did this with LabelAndColon)
-
-    * after ClassKey and "enum" where they occur
-
-    * UberModifer
-        - in DeclSpecifier
-          - in SimpleDeclaration
-            - in ForInitStatement
-            - in BlockDeclaration
-              - as a Statement
-              - as a TopForm
-              - in an ExplicitInstantiation
-          - in FunctionDefinition
-          - in MemberDeclaration
-          - in TemplateDeclaration, after the "template <...>"
-
-    * UberCVQualifier
-        - in TypeSpecifier
-          - in ParameterDeclaration
-          - in Condition
-          - in NewTypeId      ------------+   below here are places attr would
-            - in E_new                    |   be allowed, even though I don't
-          - in TypeId                     V   really want it to ...
-            - in E_keywordCast
-            - in E_typeidType
-            - in E_sizeofType
-            - in E_new
-            - in E_cast
-            - in TemplateTypeParameter default type
-            - in TemplateArgument (TA_type)
-            - in throw() cause
-          - in ConversionTypeId
-          - in HandlerParameter
-
-    * after "," in InitDeclaratorList's 2nd clause
-        - gets attr at outermost declarator level for 2nd or later declarator
-
-    * after "*" in (Abstract)Declarator
-    * after "(" in Direct(Abstract)Declarator D_grouping
-    / after "C::*" in (Abstract)Declarator
-    / after "&" in (Abstract)Declarator
-
-    * likewise for AbstractDeclarator
-
-      every place that (Abstract)Declarator occurs, other than in its recursive
-      structure, add an alternative with attrs after the Declarator
-    ~   - in fact, generalize that to let the "Asm Labels" go there too
-    *   - better: in Declarator after the Direct(Abstract)Declarator
-
-  The two "/" above means I didn't end up putting them after the C++
-  type constructors, since I doubt I'll need them there.
-
-  I found it useful to keep track, while I was modifying the grammar, of
-  the conflict totals.  This table shows the effect on conflicts of my
-  changes:
-
-    conflicts at various stages                               S/R   R/R
-    -------------------------------------------------------   ---------
-    starting                                                  142   104
-
-    removed attrs after ClassSpecifier in ElaboratedOrSpec    140   104
-
-    removed attrs between "*" and cv in Declarator            139   104
-    added attrs after cv in Declarator                        140   104
-    added cvattrseqopt after attr (one!) in Declarator        140   104
-
-    removed attrs between "*" and cv in AbstractDeclarator    138   104
-    removed attrs after DAD in AbstractDeclarator             138   104
-    added attrs after cv in AbstractDeclarator                140   111
-    added cvattrseqopt after attr (one!) in ADeclarator       140   104
-    added attrs after DAD in AbstractDeclarator               140   104
-
-    added attrs after class/enum in ElaboratedTypeSpecifier   140   104
-    for class, added to ClassKey instead                      140   104
-
-    added attrs after "enum" in EnumSpecifier                 141   104
-
-    removed attrspec from SimpleDeclaration (printk thing)     75   104
-
-    added attr to UberModifier                                 75   176
-
-    removed attr after labeled statements                      75   110
-
-    added attr to UberCVQualifier                              84   114
-
-    added attr after "," in InitDeclarator                     84   114
-
-    added attr after ":" in LabeledEmptyStatementList          84   116
-
-    removed attr after ":" in LabeledEmptyStatementList        84   114
-
-    created LabelAndColon in cc.gr                             81   108
-    added attrs after LabelAndColon                            83   108
-    added attrs after LabelAndColon with high precedence       82   108
-    added LabelAndColon to the LabeledEmptyStatementList       82   108
-
-*/
 
 
 // EOF
