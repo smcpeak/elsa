@@ -578,7 +578,7 @@ impl_verbatim {
     /* Shared core of the '_Declaration' and '_alone' functions.  This         \
      * returns a TypeSpecifier and stores into 'df' the DeclFlags              \
      * extracted from the union of the UberModifiers. */                       \
-    TSClassName *functionName##_core(                                          \
+    static TSClassName *functionName##_core(                                   \
       DeclFlags /*OUT*/ &df,                                                   \
       CCParseShareable &env,                                                   \
       SourceLoc loc,                                                           \
@@ -618,7 +618,7 @@ impl_verbatim {
     }                                                                          \
                                                                                \
     /* Create just the TypeSpecifier. */                                       \
-    TSClassName *functionName##_alone(                                         \
+    static TSClassName *functionName##_alone(                                  \
       CCParseShareable &env,                                                   \
       SourceLoc loc,                                                           \
       DiscriminatorType discriminatorName,                                     \
@@ -639,7 +639,7 @@ impl_verbatim {
     }                                                                          \
                                                                                \
     /* Wrap the TypeSpecifier in a Declaration. */                             \
-    Declaration *functionName##_Declaration(                                   \
+    static Declaration *functionName##_Declaration(                            \
       CCParseShareable &env,                                                   \
       SourceLoc loc,                                                           \
       DiscriminatorType discriminatorName,                                     \
