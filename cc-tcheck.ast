@@ -474,6 +474,20 @@ class IDeclarator {
   // IDeclarator to 'dt.type'
   pure_virtual void tcheck(Env &env, Declarator::Tcheck &dt);
 
+  // Every D_XXX::tcheck calls this when it is ready to tcheck its base,
+  // or (for leaves) when it is done with its own processing (passing
+  // NULL as the base).  It provides a uniform place to invoke
+  // 'ext_tcheck'.
+  protected void tcheck_base(Env &env, Declarator::Tcheck &dtc,
+    IDeclarator * /*nullable*/ base);
+
+  // Expose a hook for extensions to check added elements.  This is
+  // called after the effect of this IDeclarator has been incorporated
+  // into 'tc.type' but before the base IDeclarator (if any) has been
+  // checked.
+  define_customizable
+    void ext_tcheck(Env &env, Declarator::Tcheck &tc);
+
   // returns true if there is a D_grouping that does not have
   // any D_pointer, D_reference or D_ptrToMember inside it
   public bool hasInnerGrouping() const;

@@ -74,6 +74,23 @@ class Declarator {
 
 class IDeclarator {
   pure_virtual void print(PrintEnv &env) const;
+
+  // Print base declarator 'base' in the context of a suffix declarator.
+  protected void printBaseDeclaratorOfSuffixDeclarator(
+    PrintEnv &env, IDeclarator const *base) const;
+
+  // Hook for extension printing.  This is called after we have printed
+  // all of the syntax associated with this specific IDeclarator.  For
+  // the prefix declarators (pointer, reference, ptm), that is just
+  // before the base declarator.  For the suffix declarators (function,
+  // array) that is at the end.
+  //
+  // The current design is specifically aimed at being able to print GNU
+  // '__attribute__' specifiers in the right place.  If another
+  // extension has different syntactic requirements, 'ext_print' will
+  // need further generalization.
+  //
+  define_customizable void ext_print(PrintEnv &env) const;
 }
 
 

@@ -49,9 +49,9 @@ are:
 For type specifier attributes, gnu.ast gives TypeSpecifier a nullable
 'm_attrSpecList' field that carries the attributes.
 
-For Declarators, the D_attribute class carries the attributes.  That
-means declarator attributes must be located by digging down into the
-IDeclarator structure.
+For declarators, IDeclarator has been augmented with 'm_attrSpecList' in
+a similar way.  That means declarator attributes must be located by
+digging down into the IDeclarator structure.
 
 Attributes themselves are represented straightforwardly by the
 Attribute, AttributeSpecifier, and AttributeSpecifierList classes in

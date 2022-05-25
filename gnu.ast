@@ -410,41 +410,29 @@ class Attribute(SourceLoc loc) {
 }
 
 
-// Here's a clever idea: rather than making a completely new node to
-// carry the attributes, I will inherit from D_grouping!  Then
-// everyone will treat D_attribute like D_grouping, basically ignoring
-// it, except the few pieces of code that want to know about it.  This
-// seems much better than polluting the code with explicit knowledge
-// of D_attribute.
-//
-// My astgen tool does not know how to introduce ad-hoc inheritance,
-// so I will write this one by hand.
-verbatim {
-  // __attribute__ occurring directly after a declarator
-  class D_attribute : public D_grouping {
-  public:
-    // NOTE: 'traverse' does *not* automatically go into this field,
-    // because I want most clients to be oblivious to its presence.
-    // They can explicitly intercept D_grouping and check for
-    // D_attribute if traversal is desired.
-    AttributeSpecifierList *alist;       // owner
+// Like for TypeSpecifier, augment declarators with an optional list of
+// attributes.
+class IDeclarator {
+  // Nullable list of attribute specifiers.
+  public AttributeSpecifierList *m_attrSpecList = NULL;
+  custom debugPrint {
+    PRINT_SUBTREE(m_attrSpecList);
+  }
 
-  public:
-    D_attribute(SourceLoc loc, IDeclarator *base,
-                AttributeSpecifierList *alist);
-    virtual ~D_attribute();
+  // Prepend 'list' to 'm_attrSpecList'.
+  public void prependASL(AttributeSpecifierList *list);
 
-    virtual void debugPrint(ostream &os, int indent, char const *subtreeName = "tree") const override;
-    virtual void traverse(ASTVisitor &vis) override;
+  // Append 'list' to 'm_attrSpecList'.
+  public void appendASL(AttributeSpecifierList * /*nullable*/ list);
 
-    virtual D_attribute *clone() const override;
+  // Arrange to print the attributes.
+  public void ext_print_attrSpecList(PrintEnv &env) const;
+  custom ext_print { ext_print_attrSpecList(env); }
 
-    virtual void tcheck(Env &env, Declarator::Tcheck &dt) override;
-    virtual void print(PrintEnv &env) const override;
-  };
+  // And also tcheck them.
+  public void ext_tcheck_attrSpecList(Env &env, Declarator::Tcheck &tc);
+  custom ext_tcheck { ext_tcheck_attrSpecList(env, tc); }
 }
-// TODO: IDeclarator::isD_attribute(), asD_attribute(), ifD_attribute().
-// Until then, use dynamic_cast.
 
 
 // EOF

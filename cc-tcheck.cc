@@ -3986,6 +3986,19 @@ void Declarator::tcheck_init(Env &env)
 
 
 // ------------------ IDeclarator ------------------
+void IDeclarator::tcheck_base(Env &env, Declarator::Tcheck &dtc,
+  IDeclarator * /*nullable*/ base)
+{
+  // Let extensions work on 'dtc'.
+  ext_tcheck(env, dtc);
+
+  // Recursively check the base IDeclarator if there is one.
+  if (base) {
+    base->tcheck(env, dtc);
+  }
+}
+
+
 void D_name::tcheck(Env &env, Declarator::Tcheck &dt)
 {
   env.setLoc(loc);
@@ -4011,6 +4024,8 @@ void D_name::tcheck(Env &env, Declarator::Tcheck &dt)
 
   // do *not* call 'possiblyConsumeFunctionType', since declareNewVariable
   // will do so if necessary, and in a different way
+
+  tcheck_base(env, dt, NULL /*base*/);
 }
 
 
@@ -4034,7 +4049,7 @@ void D_pointer::tcheck(Env &env, Declarator::Tcheck &dt)
   }
 
   // recurse
-  base->tcheck(env, dt);
+  tcheck_base(env, dt, base);
 }
 
 // almost identical to D_pointer ....
@@ -4054,7 +4069,7 @@ void D_reference::tcheck(Env &env, Declarator::Tcheck &dt)
   }
 
   // recurse
-  base->tcheck(env, dt);
+  tcheck_base(env, dt, base);
 }
 
 
@@ -4350,7 +4365,7 @@ void D_func::tcheck(Env &env, Declarator::Tcheck &dt)
   // the 'base' on to the next-lower declarator
   dt.type = ft;
 
-  base->tcheck(env, dt);
+  tcheck_base(env, dt, base);
 }
 
 
@@ -4496,7 +4511,7 @@ void D_array::tcheck(Env &env, Declarator::Tcheck &dt)
   // having added this D_array's contribution to the type, pass
   // that on to the next declarator
   dt.type = at;
-  base->tcheck(env, dt);
+  tcheck_base(env, dt, base);
 }
 
 
@@ -4523,6 +4538,8 @@ void D_bitfield::tcheck(Env &env, Declarator::Tcheck &dt)
   }
 
   dt.dflags |= DF_BITFIELD;
+
+  tcheck_base(env, dt, NULL /*base*/);
 }
 
 
@@ -4580,7 +4597,7 @@ void D_ptrToMember::tcheck(Env &env, Declarator::Tcheck &dt)
   dt.type = env.tfac.syntaxPointerToMemberType(loc, nat, cv, dt.type, this);
 
   // recurse
-  base->tcheck(env, dt);
+  tcheck_base(env, dt, base);
 }
 
 
@@ -4591,7 +4608,7 @@ void D_grouping::tcheck(Env &env, Declarator::Tcheck &dt)
   // don't call 'possiblyConsumeFunctionType', since the
   // D_grouping is supposed to be transparent
 
-  base->tcheck(env, dt);
+  tcheck_base(env, dt, base);
 }
 
 

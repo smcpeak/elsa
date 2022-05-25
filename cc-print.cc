@@ -786,6 +786,8 @@ void D_name::print(PrintEnv &env) const
   if (name) {
     name->print(env);
   }
+
+  ext_print(env);
 }
 
 
@@ -795,6 +797,7 @@ void D_pointer::print(PrintEnv &env) const
   if (cv) {
     env << " " << toString(cv) << " ";
   }
+  ext_print(env);
   base->print(env);
 }
 
@@ -802,6 +805,7 @@ void D_pointer::print(PrintEnv &env) const
 void D_reference::print(PrintEnv &env) const
 {
   env << "&";
+  ext_print(env);
   base->print(env);
 }
 
@@ -822,8 +826,8 @@ static bool isPrefixDeclarator(IDeclarator const *idecl)
 
 
 // Print base declarator 'base' in the context of a suffix declarator.
-static void printBaseDeclaratorOfSuffixDeclarator(
-  PrintEnv &env, IDeclarator const *base)
+void IDeclarator::printBaseDeclaratorOfSuffixDeclarator(
+  PrintEnv &env, IDeclarator const *base) const
 {
   if (isPrefixDeclarator(base)) {
     env << "(";
@@ -858,6 +862,8 @@ void D_func::print(PrintEnv &env) const
     env << " ";
     exnSpec->print(env);
   }
+
+  ext_print(env);
 }
 
 
@@ -870,6 +876,8 @@ void D_array::print(PrintEnv &env) const
     size->print(env, OPREC_LOWEST);
   }
   env << "]";
+
+  ext_print(env);
 }
 
 
@@ -882,6 +890,8 @@ void D_bitfield::print(PrintEnv &env) const
   env << " : ";
 
   bits->print(env, OPREC_LOWEST);
+
+  ext_print(env);
 }
 
 
@@ -892,6 +902,7 @@ void D_ptrToMember::print(PrintEnv &env) const
   if (cv) {
     env << " " << toString(cv) << " ";
   }
+  ext_print(env);
   base->print(env);
 }
 
@@ -900,6 +911,7 @@ void D_grouping::print(PrintEnv &env) const
 {
   // Like with E_grouping, we will drop the parens here, and instead
   // supply them automatically where needed.
+  ext_print(env);
   base->print(env);
 }
 

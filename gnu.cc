@@ -1432,81 +1432,38 @@ void S_computedGoto::icfg(CFGEnv &env)
 }
 
 
-// ---------------------- D_attribute -------------------------
-D_attribute::D_attribute(SourceLoc loc, IDeclarator *base,
-                         AttributeSpecifierList *alist_)
-  : D_grouping(loc, base),
-    alist(alist_)
-{}
-
-D_attribute::~D_attribute()
+// -------------------------- IDeclarator ------------------------------
+void IDeclarator::prependASL(AttributeSpecifierList *list)
 {
-  delete alist;
+  m_attrSpecList = aslAppendASL(list, m_attrSpecList);
+}
+
+void IDeclarator::appendASL(AttributeSpecifierList * /*nullable*/ list)
+{
+  m_attrSpecList = aslAppendASL(m_attrSpecList, list);
 }
 
 
-void D_attribute::debugPrint(ostream &os, int indent, char const *subtreeName) const
+void IDeclarator::ext_print_attrSpecList(PrintEnv &env) const
 {
-  // I don't call D_grouping::debugPrint because I want the
-  // output to say "D_attribute", not "D_grouping".
-
-  PRINT_HEADER(subtreeName, D_attribute);
-
-  IDeclarator::debugPrint(os, indent, subtreeName);
-
-  PRINT_SUBTREE(base);
-  PRINT_SUBTREE(alist);
-}
-
-
-void D_attribute::traverse(ASTVisitor &vis)
-{
-  // I chose to override this method purely so that I would be able to
-  // put a breakpoint in it if desired, and to have a place to
-  // document this intention: its behavior is intended to remain
-  // identical to D_grouping.  Don't change it without asking me first.
-  D_grouping::traverse(vis);
-}
-
-
-D_attribute *D_attribute::clone() const
-{
-  D_attribute *ret = new D_attribute(
-    loc,
-    base? base->clone() : NULL,
-    alist? alist->clone() : NULL
-  );
-  return ret;
-}
-
-
-void D_attribute::tcheck(Env &env, Declarator::Tcheck &dt)
-{
-  // tcheck the underlying declarator
-  D_grouping::tcheck(env, dt);
-
-  // tcheck the attribute list.
-  AttributeSpecifierList::Tcheck asltc(dt.type);
-  alist->tcheck(env, asltc);
-
-  // Relay the alias target.
-  if (asltc.m_gnuAliasTarget) {
-    dt.gnuAliasTarget = asltc.m_gnuAliasTarget;
+  if (m_attrSpecList) {
+    env << env.sp;
+    m_attrSpecList->print(env);
   }
 }
 
 
-// smcpeak 2021-06-07, 2022-05-17: There used to be a method here
-// called 'tcheck_getAlias' that interpreted
-// 'attribute((alias("aliasTarget")))', but I have replaced that
-// functionality with Variable::getGNUAliasTarget().
-
-
-void D_attribute::print(PrintEnv &env) const
+void IDeclarator::ext_tcheck_attrSpecList(Env &env, Declarator::Tcheck &tc)
 {
-  base->print(env);
-  env << env.sp;
-  alist->print(env);
+  // tcheck the attribute list.
+  if (m_attrSpecList) {
+    AttributeSpecifierList::Tcheck asltc(tc.type);
+    m_attrSpecList->tcheck(env, asltc);
+
+    if (asltc.m_gnuAliasTarget) {
+      tc.gnuAliasTarget = asltc.m_gnuAliasTarget;
+    }
+  }
 }
 
 
