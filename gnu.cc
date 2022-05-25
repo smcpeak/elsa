@@ -1809,7 +1809,7 @@ void AT_func::print(PrintEnv &env) const
 void Statement::ext_tcheck_gnu(Env &env)
 {
   if (S_label *lbl = this->ifS_label()) {
-    lbl->tcheckAttributes(env);
+    lbl->tcheckLabelAttributes(env);
   }
 }
 
@@ -1821,7 +1821,7 @@ void S_label::appendASL(AttributeSpecifierList *list)
 }
 
 
-void S_label::tcheckAttributes(Env &env)
+void S_label::tcheckLabelAttributes(Env &env)
 {
   if (m_attrSpecList) {
     Type *dummy = NULL;

@@ -159,59 +159,6 @@ new class ASTTypeof {
 
 
 class TypeSpecifier {
-  // TODO: Move the attribute stuff lower in this file.
-
-  // Nullable list of attribute specifiers.
-  public AttributeSpecifierList *m_attrSpecList = NULL;
-
-  // We have a second list of attributes that can appear in
-  // TS_elaborated, TS_classSpec, and TS_enumSpec between the ClassKey
-  // or "enum" and the type name.  Whereas the attributes in
-  // 'm_attrSpecList' are associated with the entire declaration this
-  // type specifier appears in, these are associated just with the type.
-  //
-  // Examples (see test/pprint/gnu-attr-after-enum.c):
-  //
-  //   // Uses 'm_attrSpecList'.  'e1' and 'e2' are deprecated, but 'E'
-  //   // itself is not.  A warning is issued only when 'e1' or 'e2' is
-  //   // later used, but not when 'E' is used.
-  //   __attribute__((deprecated)) enum E {} e1, e2;
-  //
-  //   // Uses 'm_elaboratedAttrSpecList'.  'E' itself is deprecated,
-  //   // so we get warnings for 'e1' and 'e2' immediately, plus for any
-  //   // subsequent use of 'E'.
-  //   enum __attribute__((deprecated)) E {} e1, e2;
-  //
-  // I'm not entirely satisfied with having two lists like this, but
-  // we'll see how it works out.
-  //
-  public AttributeSpecifierList *m_elaboratedAttrSpecList = NULL;
-
-  custom debugPrint {
-    PRINT_SUBTREE(m_attrSpecList);
-    PRINT_SUBTREE(m_elaboratedAttrSpecList);
-  }
-
-  // Prepend 'list' to 'm_attrSpecList'.
-  public void prependASL(AttributeSpecifierList *list);
-
-  // Append 'list' to 'm_attrSpecList'.
-  public void appendASL(AttributeSpecifierList * /*nullable*/ list);
-
-  // Prepend 'list' to 'm_elaboratedAttrSpecList'.
-  public void prependElaboratedASL(AttributeSpecifierList *list);
-
-  // Arrange to print the attributes.
-  public void ext_preprint_gnu(PrintEnv &env) const;
-  custom ext_preprint { ext_preprint_gnu(env); }
-  public void ext_printAfterClassKey_gnu(PrintEnv &env) const;
-  custom ext_printAfterClassKey { ext_printAfterClassKey_gnu(env); }
-
-  // And also tcheck them.
-  public void ext_tcheck_attrSpecList(Env &env, Tcheck &tc,
-                                      Type *& /*INOUT*/ ret);
-  custom ext_tcheck { ext_tcheck_attrSpecList(env, tc, ret); }
-
   // 'typeof' behaves as a type specifier.
   -> TS_typeof(ASTTypeof atype);
 }
@@ -363,14 +310,8 @@ class Expression {
 }
 
 
-// ----------- gcc __attribute__ -----------
-// For now, this is a very literal, parse-tree-like representation of
-// attributes.  I don't know very much about how they will be used (I
-// don't know much about what they *mean*), so it is hard to do any
-// semantic digestion.  Therefore, I will not try.
-
-
-// a sequence of __attribute__((...)) specifiers
+// ----------------------- gcc __attribute__ ---------------------------
+// A sequence of __attribute__((...)) specifiers.
 class AttributeSpecifierList(
   AttributeSpecifier spec,
   AttributeSpecifierList /*nullable*/ next
@@ -407,8 +348,8 @@ class AttributeSpecifierList(
 }
 
 
-// a single __attribute__((...)) specifier; there may be many
-// individual attributes inside the parens
+// A single __attribute__((...)) specifier; there may be many individual
+// attributes inside the parens.
 class AttributeSpecifier(
   Attribute attr,
   AttributeSpecifier /*nullable*/ next
@@ -417,8 +358,8 @@ class AttributeSpecifier(
 }
 
 
-// one attribute, somewhere inside __attribute((...)); syntactically,
-// attributes are separated by commas in the parens
+// One attribute, somewhere inside __attribute((...)); syntactically,
+// attributes are separated by commas in the parens.
 class Attribute(SourceLoc loc) {
   pure_virtual void print(PrintEnv &env) const;
 
@@ -443,13 +384,57 @@ class Attribute(SourceLoc loc) {
 }
 
 
-// Hook into top-level declarator printing.
-class Declarator {
-  public void ext_pre_print_gnu(PrintEnv &env) const;
-  custom ext_pre_print { ext_pre_print_gnu(env); }
+class TypeSpecifier {
+  // Nullable list of attribute specifiers.
+  public AttributeSpecifierList *m_attrSpecList = NULL;
 
-  public void ext_post_print_gnu(PrintEnv &env) const;
-  custom ext_post_print { ext_post_print_gnu(env); }
+  // We have a second list of attributes that can appear in
+  // TS_elaborated, TS_classSpec, and TS_enumSpec between the ClassKey
+  // or "enum" and the type name.  Whereas the attributes in
+  // 'm_attrSpecList' are associated with the entire declaration this
+  // type specifier appears in, these are associated just with the type.
+  //
+  // Examples (see test/pprint/gnu-attr-after-enum.c):
+  //
+  //   // Uses 'm_attrSpecList'.  'e1' and 'e2' are deprecated, but 'E'
+  //   // itself is not.  A warning is issued only when 'e1' or 'e2' is
+  //   // later used, but not when 'E' is used.
+  //   __attribute__((deprecated)) enum E {} e1, e2;
+  //
+  //   // Uses 'm_elaboratedAttrSpecList'.  'E' itself is deprecated,
+  //   // so we get warnings for 'e1' and 'e2' immediately, plus for any
+  //   // subsequent use of 'E'.
+  //   enum __attribute__((deprecated)) E {} e1, e2;
+  //
+  // I'm not entirely satisfied with having two lists like this, but
+  // we'll see how it works out.
+  //
+  public AttributeSpecifierList *m_elaboratedAttrSpecList = NULL;
+
+  custom debugPrint {
+    PRINT_SUBTREE(m_attrSpecList);
+    PRINT_SUBTREE(m_elaboratedAttrSpecList);
+  }
+
+  // Prepend 'list' to 'm_attrSpecList'.
+  public void prependASL(AttributeSpecifierList *list);
+
+  // Append 'list' to 'm_attrSpecList'.
+  public void appendASL(AttributeSpecifierList * /*nullable*/ list);
+
+  // Prepend 'list' to 'm_elaboratedAttrSpecList'.
+  public void prependElaboratedASL(AttributeSpecifierList *list);
+
+  // Arrange to print the attributes.
+  public void ext_preprint_gnu(PrintEnv &env) const;
+  custom ext_preprint { ext_preprint_gnu(env); }
+  public void ext_printAfterClassKey_gnu(PrintEnv &env) const;
+  custom ext_printAfterClassKey { ext_printAfterClassKey_gnu(env); }
+
+  // And also tcheck them.
+  public void ext_tcheck_attrSpecList(Env &env, Tcheck &tc,
+                                      Type *& /*INOUT*/ ret);
+  custom ext_tcheck { ext_tcheck_attrSpecList(env, tc, ret); }
 }
 
 
@@ -478,6 +463,17 @@ class IDeclarator {
 }
 
 
+// Hook into top-level declarator printing to assist with printing
+// attributes associated with IDeclarators.
+class Declarator {
+  public void ext_pre_print_gnu(PrintEnv &env) const;
+  custom ext_pre_print { ext_pre_print_gnu(env); }
+
+  public void ext_post_print_gnu(PrintEnv &env) const;
+  custom ext_post_print { ext_post_print_gnu(env); }
+}
+
+
 class Statement {
   // Type-check GNU statement extensions.
   public void ext_tcheck_gnu(Env &env);
@@ -495,7 +491,7 @@ class Statement {
        public void appendASL(AttributeSpecifierList *list);
 
        // Type-check attributes.
-       public void tcheckAttributes(Env &env);
+       public void tcheckLabelAttributes(Env &env);
 
        // Print the attributes.
        public void ext_print_gnu(PrintEnv &env,
