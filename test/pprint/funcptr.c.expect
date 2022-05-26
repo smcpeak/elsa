@@ -34,7 +34,7 @@ void client()
   x = *(*(array_of_array_of_int+0) + 1);
   x = *(*ptr_to_func_returning_ptr_to_int)(5);
   x = (*(*ptr_to_func_returning_ptr_to_func_returning_int)(5))(6);
-  x = (ptr_to_func_returning_ptr_to_func_returning_int(5))(6);
+  x = ptr_to_func_returning_ptr_to_func_returning_int(5)(6);
   x = *(*ptr_to_array_of_int + 1);
   x = (*(*(*ptr_to_array_of_ptr_to_func_returning_int + 1)))(5);
   x = *(*(*ptr_to_func_returning_ptr_to_array_of_int)(5) + 1);

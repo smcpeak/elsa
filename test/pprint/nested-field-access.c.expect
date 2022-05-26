@@ -1,0 +1,22 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+struct A {
+  int x;
+};
+
+struct B {
+  struct A a;
+};
+
+struct B b;
+
+int f()
+{
+  return b.a.x;
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

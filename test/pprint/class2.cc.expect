@@ -36,7 +36,7 @@ public:
   {}
   Derived1 &operator=(Derived1 const &__other)
   {
-    ((*this).operator=)(__other);
+    (*this).operator=(__other);
     return *this;
   }
   ~Derived1()
@@ -55,8 +55,8 @@ public:
   {}
   Derived2 &operator=(Derived2 const &__other)
   {
-    ((*this).operator=)(__other);
-    ((*this).operator=)(__other);
+    (*this).operator=(__other);
+    (*this).operator=(__other);
     return *this;
   }
   ~Derived2()

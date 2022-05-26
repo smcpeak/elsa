@@ -1263,15 +1263,22 @@ void FullExpression::print(PrintEnv &env) const
 void Expression::print(PrintEnv &env, OperatorPrecedence parentPrec) const
 {
   OperatorPrecedence thisPrec = this->getPrecedence();
-  if (thisPrec >= parentPrec) {
-    env << "(";
-    env.iprintExpression(this);
-    env << ")";
-  }
-  else {
+
+  if (thisPrec < parentPrec) {
     // 'this' expression has higher precedence than its parent, so does
     // not need parentheses.
     env.iprintExpression(this);
+  }
+  else if (thisPrec==OPREC_POSTFIX && parentPrec==OPREC_POSTFIX) {
+    // Although they both have the same precedence, postfix operators
+    // can only associate one way, so no parens are needed.
+    env.iprintExpression(this);
+  }
+  else {
+    // Parens may be needed.
+    env << "(";
+    env.iprintExpression(this);
+    env << ")";
   }
 }
 

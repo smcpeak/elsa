@@ -40,7 +40,7 @@ void client()
           1));
   x = ISC(SC_LVAL_TO_RVAL, int, *(*ptr_to_func_returning_ptr_to_int)(5));
   x = (*(*ptr_to_func_returning_ptr_to_func_returning_int)(5))(6);
-  x = (ptr_to_func_returning_ptr_to_func_returning_int(5))(6);
+  x = ptr_to_func_returning_ptr_to_func_returning_int(5)(6);
   x =
     ISC(SC_LVAL_TO_RVAL, int,
       *(ISC(SC_ARRAY_TO_PTR, int *, *ptr_to_array_of_int) + 1));

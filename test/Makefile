@@ -113,6 +113,7 @@ TESTS += pprint/long-parameters.c
 TESTS += pprint/longlines2.c
 TESTS += pprint/longlines3.c
 TESTS += pprint/nested-block.c
+TESTS += pprint/nested-field-access.c
 TESTS += pprint/printf-cond-arg.c
 TESTS += pprint/ptr-as-condition.c
 TESTS += pprint/range-case.c
