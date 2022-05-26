@@ -423,20 +423,20 @@ nonterm(UberModifiers) UberCVQualifier {
 nonterm(IDeclarator*) DirectDeclarator {
   // array with qualifier in the brackets; see the version for
   // DirectAbstractDeclarator for comments
-  -> d:DirectDeclarator "[" q:CVQualifierSeq "]"
+  -> d:DirectDeclarator "[" q:CVQualifierSeq sz:ConstantExpressionOpt "]"
     {
       // FIX: CVQualifierSeq goes on the array
-      return new D_array(loc, d, NULL /*size*/);
+      return new D_array(loc, d, sz);
     }
 }
 
 nonterm(IDeclarator*) DirectAbstractDeclarator {
   // array with qualifier in the brackets
-  -> d:DirectAbstractDeclaratorOpt "[" q:CVQualifierSeq "]"
+  -> d:DirectAbstractDeclaratorOpt "[" q:CVQualifierSeq sz:ConstantExpressionOpt "]"
     {
       // FIX: Ben says the CVQualifierSeq goes on the array itself,
       // just as if the array were a pointer and it was on the pointer
-      return new D_array(loc, d, NULL /*size*/);
+      return new D_array(loc, d, sz);
     }
 }
 
