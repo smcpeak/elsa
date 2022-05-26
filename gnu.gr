@@ -25,9 +25,9 @@
 //   - C99 designated initializers: "... = { .x=..., .y=... }"
 //     including gcc range extension: "[ 1 ... 3 ] = ..."
 //   - C99 restrict keyword
-//   - C99 qualifiers in array brackets: "[const ...]"
+//   - C99 qualifiers in array declarator: "[const ...]"
+//   - C11 'static' in an array declarator
 //   - gcc __attribute__
-//   - gcc bug: typedef names + type modifiers: "u32 long"
 //   - gcc computed gotos
 //   - gcc/C99 complex/imaginary
 
@@ -420,24 +420,32 @@ nonterm(UberModifiers) UberCVQualifier {
 
 
 // ----------- C99 qualifiers in array brackets -----------
+// Array declarator with cv-qualifiers and/or 'static' inside the
+// brackets.  The grammar rules here follow C11 6.7.6 for declarators,
+// and 6.7.7 for abstract declarators.
+//
+// TODO: Retain which cv-qualifiers and 'static' were present.
+//
+// TODO: Allow '*' as the size.
+//
 nonterm(IDeclarator*) DirectDeclarator {
-  // array with qualifier in the brackets; see the version for
-  // DirectAbstractDeclarator for comments
-  -> d:DirectDeclarator "[" q:CVQualifierSeq sz:ConstantExpressionOpt "]"
-    {
-      // FIX: CVQualifierSeq goes on the array
-      return new D_array(loc, d, sz);
-    }
+  // The original rule, with just ConstantExpressionOpt, is in cc.gr.
+
+  -> d:DirectDeclarator "[" CVQualifierSeq sz:ConstantExpressionOpt "]"
+    { return new D_array(loc, d, sz); }
+  -> d:DirectDeclarator "[" "static" CVQualifierSeqOpt sz:ConstantExpression "]"
+    { return new D_array(loc, d, sz); }
+  -> d:DirectDeclarator "[" CVQualifierSeq "static" sz:ConstantExpression "]"
+    { return new D_array(loc, d, sz); }
 }
 
 nonterm(IDeclarator*) DirectAbstractDeclarator {
-  // array with qualifier in the brackets
-  -> d:DirectAbstractDeclaratorOpt "[" q:CVQualifierSeq sz:ConstantExpressionOpt "]"
-    {
-      // FIX: Ben says the CVQualifierSeq goes on the array itself,
-      // just as if the array were a pointer and it was on the pointer
-      return new D_array(loc, d, sz);
-    }
+  -> d:DirectAbstractDeclaratorOpt "[" CVQualifierSeq sz:ConstantExpressionOpt "]"
+    { return new D_array(loc, d, sz); }
+  -> d:DirectAbstractDeclaratorOpt "[" "static" CVQualifierSeqOpt sz:ConstantExpression "]"
+    { return new D_array(loc, d, sz); }
+  -> d:DirectAbstractDeclaratorOpt "[" CVQualifierSeq "static" sz:ConstantExpression "]"
+    { return new D_array(loc, d, sz); }
 }
 
 
