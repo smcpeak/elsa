@@ -682,6 +682,16 @@ E_offsetof *ElsaASTBuild::makeE_offsetof(Type *structType, Variable *field)
 
 
 #ifdef GNU_EXTENSION
+E_compoundLit *ElsaASTBuild::makeE_compoundLit(Type *type,
+  IN_compound *init)
+{
+  ASTTypeId *tid = makeASTTypeId(type, NULL /*name*/, DC_E_COMPOUNDLIT);
+  E_compoundLit *ec = new E_compoundLit(tid, init);
+  ec->type = type;
+  return ec;
+}
+
+
 E___builtin_va_arg *ElsaASTBuild::makeE___builtin_va_arg(SourceLoc loc,
   Expression *expr, ASTTypeId *atype)
 {
