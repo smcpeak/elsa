@@ -50,6 +50,25 @@ string ambiguousNodeName(Expression const *e);
 // Generic ambiguity resolution:  We check all the alternatives, and
 // select the one which typechecks without errors.  Complain if the
 // number of successful alternatives is not 1.
+//
+// 2022-05-27: I think this "generic" mechanism is kind of broken.  It
+// does not do enough to isolate changes made to the environment and AST
+// in one possible interpretation from the others, leading to
+// cross-contamination (I'm pretty sure that's the problem with
+// tcheck/cast-of-union-literal.c, but it's tricky to debug).
+//
+// To fix this, I should, save/restore all Scope maps for each
+// alternative during the resolution phase, and then do a final tcheck
+// after picking one interpretation to ensure the AST and environment
+// reflects it alone.
+//
+// But, my immediate problem is E_cast versus E_fieldAcc, and that can
+// be resolved directly and non-destructively (by looking up the E_cast
+// type), so that's what I'll do.  And as I encounter other symptoms of
+// broken ambiguity resolution, I'll attempt to transition away from
+// using the generic mechanism at all, and only do proper save/restore
+// if I see no other choice.
+//
 template <class NODE, class EXTRA>
 NODE *resolveAmbiguity(
   // pointer to the first alternative; we find other alternatives
