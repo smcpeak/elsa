@@ -10,7 +10,8 @@ IntegrityVisitor::IntegrityVisitor(CCLang const &lang, bool inTemplate)
   : ASTVisitorEx(),
     m_enclosingSyntaxStack(),
     m_lang(lang),
-    m_checkVariableScopes(true)
+    m_checkVariableScopes(true),
+    m_requireExpressionTypes(false)
 {
   m_inTemplate = inTemplate;
 }
@@ -308,8 +309,10 @@ bool IntegrityVisitor::visitExpression(Expression *obj)
   #endif // 0
 
   // why was I not doing this before?  detects problem in/t0584.cc
-  if (!m_inTemplate && obj->type) {
-    checkNontemplateType(obj->type);
+  if (!m_inTemplate) {
+    if (m_requireExpressionTypes || obj->type) {
+      checkNontemplateType(obj->type);
+    }
   }
 
   return true;

@@ -53,6 +53,13 @@ public:      // data
   // DF_GLOBAL flag.
   bool m_checkVariableScopes;
 
+  // When true, insist that all Expressions have a non-NULL type outside
+  // of templates.  False by default since tcheck does not always
+  // satisfy this, although I do not remember why not.
+  //
+  // TODO: Dig into that.
+  bool m_requireExpressionTypes;
+
 private:     // funcs
   // Check the typedef Variable of a class or enum type whose definition
   // we have encountered.
