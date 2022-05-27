@@ -1,6 +1,10 @@
 // cc-tcheck.cc            see license.txt for copyright and terms of use
 // C++ typechecker, implemented as methods declared in cc-tcheck.ast
 
+// This file is the core of the Elsa parser.  It is long and
+// complicated.  There are also many TODOs because there are a lot of
+// rules that aren't implemented, and some that are not correct.
+
 // Throughout, references are made to the ISO C++ Standard:
 //
 // International Organization for Standardization.
@@ -9,7 +13,10 @@
 // Switzerland, September 1998.
 //
 // These references are all marked with the string "cppstd".
+//
+// TODO: Replace "cppstd" with "C++98".
 
+// TODO: Sort this list.
 #include "cc-ast.h"         // C++ AST
 #include "cc-ast-aux.h"     // class LoweredASTVisitor
 #include "cc-env.h"         // Env
@@ -28,6 +35,8 @@
 #include "typelistiter.h"   // TypeListIter_FakeList
 #include "owner.h"          // Owner
 #include "mtype.h"          // MType
+
+#include <algorithm>        // std::sort
 
 #include <stdlib.h>         // strtoul, strtod
 #include <ctype.h>          // isdigit
@@ -1979,6 +1988,7 @@ CompoundType *checkClasskeyAndName(
         ct->forward = false;
       }
       else {
+        breaker();
         env.error(stringc << ct->keywordAndName() << " has already been defined");
       }
     }
@@ -5118,6 +5128,20 @@ Type *makeFieldLvalType(Env &env, Variable *var, CVFlags cv)
 }
 
 
+// Get the sort priority for 'e' for use when sorting ambiguous
+// alternatives.  We want to pull certain kinds to the front.
+static int exprKindPriority(Expression const *e)
+{
+  Expression::Kind k = e->kind();
+  if (k == Expression::E_FUNCALL) {
+    return -1;
+  }
+  else {
+    return (int)k;
+  }
+}
+
+
 // There are several things going on with the replacement pointer.
 //
 // First, since Expressions can be ambiguous, when we select among
@@ -5135,8 +5159,7 @@ Type *makeFieldLvalType(Env &env, Variable *var, CVFlags cv)
 // to forget to update the original pointer.  So I changed the
 // interface so that the original pointer cannot be forgotten, since
 // a reference to it is now a parameter.
-
-
+//
 void Expression::tcheck(Env &env, Expression *&replacement)
 {
   // the replacement point should always start out in agreement with
@@ -5149,26 +5172,31 @@ void Expression::tcheck(Env &env, Expression *&replacement)
     return;
   }
 
+  // In order to more easily check for certain ambiguity combinations
+  // without having to look for permutations, sort the possibilities by
+  // their AST node kinds.
+  //
+  // Note: It *is* possible to have multiple alternatives of the same
+  // kind(); in/t0082.cc is one example.
+  ArrayStackEmbed <Expression*, 2> alternatives;
+  for (Expression *e = this; e != NULL; e = e->ambiguity) {
+    alternatives.push_back(e);
+  }
+  std::sort(alternatives.begin(), alternatives.end(),
+            [](Expression const *a, Expression const *b) -> bool {
+              return exprKindPriority(a) < exprKindPriority(b);
+            });
+
   // There is one very common ambiguity, between E_funCall and
   // E_constructor, and this ambiguity happens to frequently stack
   // upon itself, leading to worst-case exponential tcheck time.
   // Since it can be resolved easily in most cases, I special-case the
   // resolution.
-  if ( ( (this->isE_funCall() &&
-          this->ambiguity->isE_constructor() ) ||
-         (this->isE_constructor() &&
-          this->ambiguity->isE_funCall()) ) &&
-      this->ambiguity->ambiguity == NULL) {
-    E_funCall *call;
-    E_constructor *ctor;
-    if (this->isE_funCall()) {
-      call = this->asE_funCall();             // gcov-begin-ignore
-      ctor = ambiguity->asE_constructor();
-    }
-    else {
-      ctor = this->asE_constructor();
-      call = ambiguity->asE_funCall();
-    }                                         // gcov-end-ignore
+  if (alternatives.size() == 2 &&
+      alternatives[0]->isE_funCall() &&
+      alternatives[1]->isE_constructor()) {
+    E_funCall     *call = alternatives[0]->asE_funCall();
+    E_constructor *ctor = alternatives[1]->asE_constructor();
 
     // The code that follows is essentially resolveAmbiguity(),
     // specialized to two particular kinds of nodes, but only
