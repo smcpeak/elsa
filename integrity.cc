@@ -6,7 +6,7 @@
 #include "vector-utils.h"              // back_or_null, vec_contains
 
 
-IntegrityVisitor::IntegrityVisitor(CCLang &lang, bool inTemplate)
+IntegrityVisitor::IntegrityVisitor(CCLang const &lang, bool inTemplate)
   : ASTVisitorEx(),
     m_enclosingSyntaxStack(),
     m_lang(lang),
@@ -316,7 +316,7 @@ bool IntegrityVisitor::visitExpression(Expression *obj)
 }
 
 
-void integrityCheckTU(CCLang &lang, TranslationUnit *tu)
+void integrityCheckTU(CCLang const &lang, TranslationUnit *tu)
 {
   IntegrityVisitor ivis(lang, false /*inTemplate*/);
   ivis.checkTU(tu);

@@ -47,7 +47,7 @@ private:     // data
 
 public:      // data
   // Language rules in effect when translation unit was parsed.
-  CCLang &m_lang;
+  CCLang const &m_lang;
 
   // When true (which is the default), check Variable scopes and
   // DF_GLOBAL flag.
@@ -75,7 +75,7 @@ public:      // funcs
   // If this visitor is being launched from another visitor, pass the
   // outer visitor's 'inTemplate'.  Otherwise, one would usually pass
   // 'false'.
-  IntegrityVisitor(CCLang &lang, bool inTemplate);
+  IntegrityVisitor(CCLang const &lang, bool inTemplate);
 
   // Run the checks on 'tu'.  This is the main entry point after
   // constructing the visitor.
@@ -110,7 +110,7 @@ public:      // funcs
 };
 
 // Run the checks on an entire TU.
-void integrityCheckTU(CCLang &lang, TranslationUnit *tu);
+void integrityCheckTU(CCLang const &lang, TranslationUnit *tu);
 
 
 #endif // INTEGRITY_H
