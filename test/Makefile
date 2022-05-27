@@ -273,6 +273,16 @@ out/unit-tests.ok: $(CCPARSE)
 check: out/unit-tests.ok
 
 
+out/test-astbuild.ok: $(CCPARSE) test-astbuild.expect
+	@mkdir -p $(dir $@)
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/test-astbuild.actual \
+	  --expect test-astbuild.expect \
+	  $(CCPARSE) --test-print-astbuild
+
+check: out/test-astbuild.ok
+
+
 # ---------------------------- check rule ------------------------------
 check: $(patsubst %,out/%.ok,$(TESTS))
 	@echo "All tests in test/ passed."

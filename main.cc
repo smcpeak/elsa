@@ -128,6 +128,10 @@ static char *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
       runUnitTests();
       exit(0);
     }
+    else if (streq(argv[1], "--test-print-astbuild")) {
+      test_print_astbuild();
+      exit(0);
+    }
     else if (argv[1][0] == '-') {
       xfatal("unknown option: " << argv[1]);
     }

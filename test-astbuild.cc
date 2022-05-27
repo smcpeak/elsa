@@ -201,4 +201,134 @@ void test_astbuild(ElsaParse &elsaParse)
 }
 
 
+// ----------------------- test_print_astbuild -------------------------
+// Class to conveniently test AST synthesis.
+//
+// The AST synthesis methods are primarily used by Elsa clients as part
+// of various tasks.  This class exists to exercise those methods in the
+// Elsa repository and do a basic sanity check on the results.
+//
+class TestASTSynth : ElsaASTBuild {
+public:      // data
+  // Just a location I can conveniently use whenever one is required.
+  SourceLoc loc;
+
+public:      // methods
+  TestASTSynth(StringTable &stringTable, TypeFactory &tfac,
+               CCLang const &lang, SourceLocProvider &locProvider);
+
+  Variable *makeVar(char const *name, Type *type,
+                    DeclFlags declFlags = DF_NONE);
+
+  E_compoundLit *testMakeE_compoundLit();
+
+  // Synthesize AST for the body of a function to test the synthesis.
+  void populateBody(S_compound *body);
+
+  void buildAndPrint();
+};
+
+
+TestASTSynth::TestASTSynth(
+  StringTable &stringTable, TypeFactory &tfac,
+  CCLang const &lang, SourceLocProvider &locProvider)
+:
+  ElsaASTBuild(stringTable, tfac, lang, locProvider),
+  loc(SL_INIT)
+{}
+
+
+Variable *TestASTSynth::makeVar(char const *name, Type *type,
+                                DeclFlags declFlags)
+{
+  return m_typeFactory.makeVariable(loc,
+    m_stringTable.add(name), type, declFlags);
+}
+
+
+E_compoundLit *TestASTSynth::testMakeE_compoundLit()
+{
+  CompoundType *ct = m_typeFactory.makeCompoundType(
+    CompoundType::K_STRUCT, m_stringTable.add("S"));
+
+  Type *t_int = m_typeFactory.getSimpleType(ST_INT);
+  Variable *vx = makeVar("x", t_int);
+  Variable *vy = makeVar("y", t_int);
+  ct->addVariable(vx);
+  ct->addVariable(vy);
+
+  Type *t_ct = m_typeFactory.makeCVAtomicType(ct, CV_NONE);
+
+  ct->typedefVar = makeVar("S", t_ct, DF_TYPEDEF);
+
+  IN_compound *inc = new IN_compound(loc, NULL /*inits*/);
+  inc->inits.append(new IN_expr(loc, makeE_intLit(3)));
+  inc->inits.append(new IN_expr(loc, makeE_intLit(4)));
+
+  return makeE_compoundLit(t_ct, inc);
+}
+
+
+void TestASTSynth::populateBody(S_compound *body)
+{
+  // TODO: Test more of the Expression builders.
+
+  body->stmts.append(new S_return(loc, new FullExpression(
+    testMakeE_compoundLit())));
+}
+
+
+void TestASTSynth::buildAndPrint()
+{
+  TranslationUnit *tu = new TranslationUnit(NULL /*topForms*/);
+
+  // Type: int ()()
+  Type *t_int = m_typeFactory.getSimpleType(ST_INT);
+  FunctionType *t_func = m_typeFactory.makeFunctionType(t_int);
+  m_typeFactory.doneParams(t_func);
+
+  S_compound *body = new S_compound(loc, NULL /*stmts*/);
+  populateBody(body);
+
+  Variable *funcVar = makeVar("main", t_func);
+  auto pr = makeTSandDeclarator(funcVar, DC_FUNCTION);
+
+  Function *func = new Function(
+    DF_NONE,
+    pr.first,
+    pr.second,
+    NULL /*inits*/,
+    body,
+    NULL /*handlers*/);
+
+  tu->topForms.append(new TF_func(loc, func));
+
+  // Check invariants.
+  {
+    IntegrityVisitor ivis(m_lang, false /*inTemplate*/);
+    ivis.m_requireExpressionTypes = true;
+    ivis.checkTU(tu);
+  }
+
+  // Print.
+  CTypePrinter typePrinter(m_lang);
+  PrintEnv printEnv(typePrinter, m_lang);
+  tu->print(printEnv);
+  cout << printEnv.getResult();
+}
+
+
+void test_print_astbuild()
+{
+  StringTable stringTable;
+  BasicTypeFactory typeFactory;
+  CCLang lang;
+  lang.GNU_C();
+  SourceLocProvider locProvider;
+  TestASTSynth tpab(stringTable, typeFactory, lang, locProvider);
+
+  tpab.buildAndPrint();
+}
+
+
 // EOF

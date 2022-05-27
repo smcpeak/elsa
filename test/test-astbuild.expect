@@ -1,0 +1,9 @@
+---- stdout ----
+int main(void)
+{
+  return (struct S){ 3, 4 };
+}
+
+---- stderr ----
+---- exit status ----
+Exit 0

@@ -208,6 +208,12 @@ public:      // methods
 
 
 // Run tests of this module after parsing.
+// Defined in test-astbuild.cc.
 void test_astbuild(ElsaParse &elsaParse);
+
+
+// Run a different test that makes and prints synthetic AST.
+void test_print_astbuild();
+
 
 #endif // AST_BUILD_H
