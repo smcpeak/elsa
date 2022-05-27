@@ -5133,7 +5133,10 @@ Type *makeFieldLvalType(Env &env, Variable *var, CVFlags cv)
 static int exprKindPriority(Expression const *e)
 {
   Expression::Kind k = e->kind();
-  if (k == Expression::E_FUNCALL) {
+  if (k == Expression::E_CAST) {
+    return -2;
+  }
+  else if (k == Expression::E_FUNCALL) {
     return -1;
   }
   else {
@@ -5256,6 +5259,39 @@ void Expression::tcheck(Env &env, Expression *&replacement)
 
     // finish up
     replacement = this;     // redundant but harmless
+    return;
+  }
+
+  // When one alternative is E_cast and the other is not ...
+  if (alternatives.size() == 2 &&
+      alternatives[0]->isE_cast() &&
+      !alternatives[1]->isE_cast()) {
+    Expression *cast = alternatives[0];
+    Expression *other = alternatives[1];
+
+    IFDEBUG( SourceLoc loc = env.loc(); )
+    TRACE("disamb", toString(loc) <<
+      ": ambiguous: E_cast vs. " << other->kindName());
+
+    // I thought this case could be handled by checking the target type
+    // of the cast, but that's wrong, as shown by in/t0328.cc, where an
+    // E_cast with a valid type is on top of an interpretation that is
+    // wrong for a different reason.  The correct interpretation still
+    // sees the leading "(t)" as a cast, but it is not at the top of the
+    // tree.
+    //
+    // So instead of simplistically checking the type, I'm going to try
+    // using a priority resolution that stops if the E_cast succeeds.
+    // This is not sufficient in general, but should be enough to solve
+    // my problem with tcheck/cast-of-union-literal.c since we won't
+    // check the union literal twice.  (TODO: Fix this properly.)
+    //
+    // Rebuild the list with E_cast in front.
+    cast->ambiguity = other;
+    other->ambiguity = NULL;
+
+    // Now we can use priority resolution.
+    resolveAmbiguity(cast, env, "Expression", true /*priority*/, replacement);
     return;
   }
 
