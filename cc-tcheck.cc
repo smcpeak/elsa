@@ -16,31 +16,30 @@
 //
 // TODO: Replace "cppstd" with "C++98".
 
-// TODO: Sort this list.
-#include "cc-ast.h"         // C++ AST
-#include "cc-ast-aux.h"     // class LoweredASTVisitor
-#include "cc-env.h"         // Env
-#include "trace.h"          // trace
-#include "cc-print.h"       // PrintEnv
-#include "strutil.h"        // decodeEscapes
-#include "cc-lang.h"        // CCLang
-#include "stdconv.h"        // test_getStandardConversion
-#include "implconv.h"       // test_getImplicitConversion
-#include "overload.h"       // resolveOverload
-#include "generic_amb.h"    // resolveAmbiguity, etc.
-#include "implint.h"        // resolveImplIntAmbig
-#include "ast_build.h"      // makeExprList1, etc.
-#include "strutil.h"        // prefixEquals, pluraln
-#include "sm-macros.h"      // Restorer
-#include "typelistiter.h"   // TypeListIter_FakeList
-#include "owner.h"          // Owner
-#include "mtype.h"          // MType
+#include "ast_build.h"                 // makeExprList1, etc.
+#include "cc-ast-aux.h"                // class LoweredASTVisitor
+#include "cc-ast.h"                    // C++ AST
+#include "cc-env.h"                    // Env
+#include "cc-lang.h"                   // CCLang
+#include "cc-print.h"                  // PrintEnv
+#include "generic_amb.h"               // resolveAmbiguity, etc.
+#include "implconv.h"                  // test_getImplicitConversion
+#include "implint.h"                   // resolveImplIntAmbig
+#include "mtype.h"                     // MType
+#include "overload.h"                  // resolveOverload
+#include "owner.h"                     // Owner
+#include "sm-macros.h"                 // Restorer
+#include "stdconv.h"                   // test_getStandardConversion
+#include "strutil.h"                   // decodeEscapes
+#include "strutil.h"                   // prefixEquals, pluraln
+#include "trace.h"                     // trace
+#include "typelistiter.h"              // TypeListIter_FakeList
 
-#include <algorithm>        // std::sort
+#include <algorithm>                   // std::sort
 
-#include <stdlib.h>         // strtoul, strtod
-#include <ctype.h>          // isdigit
-#include <limits.h>         // INT_MAX, UINT_MAX, LONG_MAX
+#include <ctype.h>                     // isdigit
+#include <limits.h>                    // INT_MAX, UINT_MAX, LONG_MAX
+#include <stdlib.h>                    // strtoul, strtod
 
 // D(): debug code
 #ifdef NDEBUG
