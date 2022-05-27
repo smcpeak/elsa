@@ -82,6 +82,7 @@ out/pprint/%.cc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
 	touch $@
 
 
+TESTS += pprint/ambig-cast-vs-funcall.c
 TESTS += pprint/array-plus-int.c
 TESTS += pprint/attr-may-alias.c
 TESTS += pprint/big-for-loop.c

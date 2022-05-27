@@ -1,0 +1,32 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+typedef struct S {
+  int c;
+} S;
+
+int f1(S b, int choice)
+{
+  typedef int a;
+  if (ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, choice)) {
+    return ISC(SC_LVAL_TO_RVAL, int, (a)b.c);
+  }
+  else {
+    return ISC(SC_LVAL_TO_RVAL, int, (a)b.c);
+  }
+}
+
+int f2(S (*a)(int), int b, int choice)
+{
+  if (ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, choice)) {
+    return a(ISC(SC_LVAL_TO_RVAL, int, b)).c;
+  }
+  else {
+    return a(ISC(SC_LVAL_TO_RVAL, int, b)).c;
+  }
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0
