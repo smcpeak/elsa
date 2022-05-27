@@ -1,5 +1,5 @@
 // builtinops.h
-// data structures to represent cppstd 13.6
+// data structures to represent C++98 13.6
 
 #ifndef BUILTINOPS_H
 #define BUILTINOPS_H

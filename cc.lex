@@ -227,7 +227,7 @@ PPCHAR        ([^\\\n]|{BACKSL}{NOTNL})
 "{"                return tok(TOK_LBRACE);
 "}"                return tok(TOK_RBRACE);
 
-  /* "alternative tokens" of cppstd 2.5p2 */
+  /* "alternative tokens" of C++98 2.5p2 */
 "<%"               return alternateKeyword_tok(TOK_LBRACE);
 "%>"               return alternateKeyword_tok(TOK_RBRACE);
 "<:"               return alternateKeyword_tok(TOK_LBRACKET);
@@ -398,7 +398,7 @@ PPCHAR        ([^\\\n]|{BACKSL}{NOTNL})
   /* whitespace */
   /* 10/20/02: added '\r' to accomodate files coming from Windows; this
    * could be seen as part of the mapping from physical source file
-   * characters to the basic character set (cppstd 2.1 para 1 phase 1),
+   * characters to the basic character set (C++98 2.1 para 1 phase 1),
    * except that it doesn't happen for chars in string/char literals... */
 [ \t\n\f\v\r]+  {
   whitespace();

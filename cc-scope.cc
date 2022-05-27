@@ -337,7 +337,7 @@ Variable *Scope::lookupVariable_inner
 {
   Variable *v1 = NULL;
 
-  // [cppstd sec. 10.2]: class members hide all members from
+  // [C++98 sec. 10.2]: class members hide all members from
   // base classes
   //
   // 2005-08-14: calling 'lookupSingleVariable' to fix in/t0527.cc;
@@ -680,12 +680,12 @@ void Scope::lookup(LookupSet &set, StringRef name, Env *env, LookupFlags flags)
 
       if (v) {
         // allow same entity, and static or type or enumerator
-        // (cppstd 10.2 para 5)
+        // (C++98 10.2 para 5)
         if (v==v2 && v->hasAnyFlags(DF_STATIC | DF_TYPEDEF | DF_ENUMERATOR)) {
           continue;
         }
 
-        // allow hidden entities (cppstd 10.2 para 6)
+        // allow hidden entities (C++98 10.2 para 6)
         if (hasAncestor(v2Obj, vObj)) {
           // ok, just go ahead and let 'v2' replace 'v'
           TRACE("lookup", "DAG ancestor conflict suppressed (v2 is lower)");

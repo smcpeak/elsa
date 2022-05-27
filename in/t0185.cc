@@ -1,6 +1,6 @@
 // t0185.cc
 // explicit specialization of template class constructor
-// cppstd 14.7.3 para 4
+// C++98 14.7.3 para 4
 
 template <class T>
 struct A {

@@ -1,6 +1,6 @@
 // t0274.cc
 // namespace names vs. template param names
-// variation on cppstd 14.6.1p6.cc
+// variation on C++98 14.6.1p6.cc
 
 namespace N {
   // all uses of "C" below will cause an error if

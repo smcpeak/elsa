@@ -2,7 +2,7 @@
 // forward-declared template class, and the template param
 // names of the forward and actual decl are different
 
-// relevant cppstd parts:
+// relevant C++98 parts:
 //   14.1 para 3: "... defines identifier ... in the scope of
 //                the template declaration", i.e. and not
 //                anywhere else

@@ -26,7 +26,7 @@ enum ErrorFlags {
   // Most errors inside templates are suppressed since they may be due
   // to having incomplete information; but an EF_STRONG error is one
   // where we are sure that the code really is invalid.  In theory, as
-  // cppstd does not require diagnosis of errors in uninstantiated
+  // C++98 does not require diagnosis of errors in uninstantiated
   // template code, changing an EF_STRONG to EF_NONE should not cause
   // Elsa to become nonconformant, merely less convenient.  Nevertheless,
   // some of our regression tests contain (intentional) errors that are

@@ -821,7 +821,7 @@ void ElabVisitor::completeNoArgMemberInits(Function *ctor, CompoundType *ct)
   FOREACH_OBJLIST(BaseClass, ct->bases, iter) {
     BaseClass const *base = iter.data();
     // omit initialization of virtual base classes, whether direct
-    // virtual or indirect virtual.  See cppstd 12.6.2 and the
+    // virtual or indirect virtual.  See C++98 12.6.2 and the
     // implementation of Function::tcheck_memberInits()
     //
     // FIX: We really should be initializing the direct virtual bases,
@@ -994,7 +994,7 @@ MR_func *ElabVisitor::makeCopyCtorBody(CompoundType *ct, Variable *ctor)
     FOREACH_OBJLIST(BaseClass, ct->bases, iter) {
       BaseClass const *base = iter.data();
       // omit initialization of virtual base classes, whether direct
-      // virtual or indirect virtual.  See cppstd 12.6.2 and the
+      // virtual or indirect virtual.  See C++98 12.6.2 and the
       // implementation of Function::tcheck_memberInits()
       //
       // FIX: We really should be initializing the direct virtual bases,
@@ -1154,7 +1154,7 @@ MR_func *ElabVisitor::makeCopyAssignBody
     FOREACH_OBJLIST(BaseClass, ct->bases, iter) {
       BaseClass const *base = iter.data();
       // omit initialization of virtual base classes, whether direct
-      // virtual or indirect virtual.  See cppstd 12.6.2 and the
+      // virtual or indirect virtual.  See C++98 12.6.2 and the
       // implementation of Function::tcheck_memberInits()
       //
       // FIX: We really should be initializing the direct virtual bases,
@@ -1219,7 +1219,7 @@ void ElabVisitor::completeDtorCalls(
   FOREACH_OBJLIST(BaseClass, ct->bases, iter) {
     BaseClass const *base = iter.data();
     // omit initialization of virtual base classes, whether direct
-    // virtual or indirect virtual.  See cppstd 12.6.2 and the
+    // virtual or indirect virtual.  See C++98 12.6.2 and the
     // implementation of Function::tcheck_memberInits()
     //
     // FIX: We really should be initializing the direct virtual bases,
@@ -1526,7 +1526,7 @@ bool E_delete::elaborate(ElabVisitor &env)
   PointerType *to = t->asPointerType();
   if (to->atType->isCompoundType()) {
     if (!to->atType->asCompoundType()->isComplete()) {
-      // 10/03/04: cppstd 5.3.5 para 5 explains that, while it *is*
+      // 10/03/04: C++98 5.3.5 para 5 explains that, while it *is*
       // legal to delete an incomplete type, the destructor (once the
       // type is completed) must be trivial (otherwise the program has
       // undefined behavior); so Elsa will assume that the dtor is in

@@ -1192,7 +1192,7 @@ bool Env::inferTemplArgsFromFuncArgs
     // 2005-08-09: If the parameter does not have any template
     // parameters, after substitution of explicitly-provided
     // arguments, then strict matching is not required so we skip it
-    // during template argument deduction.  [cppstd 14.8.1p4]
+    // during template argument deduction.  [C++98 14.8.1p4]
     // (in/t0324.cc, in/t0534.cc)
     Variable *param = paramIter.data();
     if (!param->type->containsVariables(&origMatch)) {
@@ -1259,7 +1259,7 @@ bool Env::inferTemplArgsFromFuncArgs
       }
 
       if (!argUnifies) {
-        // cppstd 14.8.2.1 para 3 bullet 3: if 'paramType' is a
+        // C++98 14.8.2.1 para 3 bullet 3: if 'paramType' is a
         // template-id, then 'argType' can be derived from
         // 'paramType'; assume that 'containsVariables' is
         // sufficient evidence that 'paramType' is a template-id
@@ -1287,7 +1287,7 @@ bool Env::inferTemplArgsFromFuncArgs
             // does not match but the second does, when the first
             // fails to match it may change the bindings in 'match'
             // in such a way as to cause the second match to
-            // spuriously fail.  Second, cppstd says that we must
+            // spuriously fail.  Second, C++98 says that we must
             // report an error if more than one base class matches,
             // but we will not be able to, since one successful
             // match will (in all likelihood) modify the bindings so
@@ -1592,7 +1592,7 @@ bool Env::insertTemplateArgBindings_oneParamList
         // has it been normalized?  are these things necessary?  so
         // I'll wait for a testcase to remove this assertion... before
         // this assertion *is* removed, someone should read over the
-        // applicable parts of cppstd
+        // applicable parts of C++98
         xunimp("default non-type argument");
       }
       switch (sarg->kind) {
@@ -1843,7 +1843,7 @@ Variable *Env::findMostSpecific
 // remove scopes from the environment until the innermost
 // scope on the scope stack is the same one that the template
 // definition appeared in; template definitions can see names
-// visible from their defining scope only [cppstd 14.6 para 1]
+// visible from their defining scope only [C++98 14.6 para 1]
 //
 // update: (e.g. t0188.cc) pop scopes until we reach one that
 // *contains* (or equals) the defining scope
@@ -2135,7 +2135,7 @@ void syncDefaultArgsWithDefinition(Variable *instV, TemplateInfo *instTI)
 }
 
 
-// cppstd 14.7.1 para 11
+// C++98 14.7.1 para 11
 //
 // 'neededDefaults' says how many default arguments were needed at
 // some call site.  We will use that to determine how many default
@@ -2950,7 +2950,7 @@ STemplateArgument *Env::makeDefaultTemplateArgument
 
 void Env::setSTemplArgFromExpr(STemplateArgument &sarg, Expression *expr)
 {
-  // see cppstd 14.3.2 para 1
+  // see C++98 14.3.2 para 1
 
   if (expr->type->containsGeneralizedDependent()) {
     // then certainly the value is dependent too, right?  in/k0003.cc

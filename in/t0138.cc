@@ -1,5 +1,5 @@
 // t0138.cc
-// testing cppstd 13.6 para 17
+// testing C++98 13.6 para 17
 
 void dummy();            // line 4
 

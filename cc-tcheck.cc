@@ -12,9 +12,7 @@
 // International Organization for Standardization, Geneva,
 // Switzerland, September 1998.
 //
-// These references are all marked with the string "cppstd".
-//
-// TODO: Replace "cppstd" with "C++98".
+// These references are all marked with the string "C++98".
 
 #include "ast_build.h"                 // makeExprList1, etc.
 #include "cc-ast-aux.h"                // class LoweredASTVisitor
@@ -339,7 +337,7 @@ void TF_one_linkage::itcheck(Env &env)
   env.setLoc(loc);
 
   // we need to dig down into the form to apply 'extern'
-  // [cppstd 7.5 para 7]
+  // [C++98 7.5 para 7]
   DeclFlags toApply = DF_EXTERN;
   if (linkageType == env.quote_C_quote) {
     toApply |= DF_EXTERN_C;
@@ -753,7 +751,7 @@ bool hasDependentActualArgs(FakeList<ArgExpression> *args)
 }
 
 
-// cppstd 12.6.2 covers member initializers
+// C++98 12.6.2 covers member initializers
 void Function::tcheck_memberInits(Env &env)
 {
   if (inits ||
@@ -1572,7 +1570,7 @@ Type *TS_name::itcheck(Env &env, Tcheck &tc)
 
   if (typenameUsed) {
     if (!name->hasQualifiers()) {
-      // cppstd 14.6 para 5, excerpt:
+      // C++98 14.6 para 5, excerpt:
       //   "The keyword typename shall only be applied to qualified
       //    names, but those names need not be dependent."
       env.error("the 'typename' keyword can only be used with a qualified name");
@@ -1918,7 +1916,7 @@ CompoundType *checkClasskeyAndName(
           spec->templateInfo()->changeToExplicitSpec();
         }
         else {
-          // cppstd 14.7.3p6
+          // C++98 14.7.3p6
           env.error(stringc
             << ct->instName << " has already been implicitly instantiated, "
             << "so it's too late to provide an explicit specialization");
@@ -2026,7 +2024,7 @@ CompoundType *checkClasskeyAndName(
       SObjList<STemplateArgument> const &ssargs = objToSObjListC(*templateArgs);
 
       // make a new type, since a specialization is a distinct template
-      // [cppstd 14.5.4 and 14.7]; but don't add it to any scopes
+      // [C++98 14.5.4 and 14.7]; but don't add it to any scopes
       env.makeNewCompound(ct, NULL /*scope*/, stringName, loc, keyword,
                           !definition /*forward*/, false /*builtin*/);
 
@@ -2262,7 +2260,7 @@ void TS_classSpec::tcheckIntoCompound(
       // resolve any template arguments in the base class name
       tcheckPQName(iter->name, env, NULL /*scope*/, LF_NONE);
 
-      // cppstd 10, para 1: ignore non-types when looking up
+      // C++98 10, para 1: ignore non-types when looking up
       // base class names
       Variable *baseVar = env.lookupPQ_one(iter->name, LF_ONLY_TYPES);
       if (!baseVar) {
@@ -2285,7 +2283,7 @@ void TS_classSpec::tcheckIntoCompound(
         continue;
       }
 
-      // cppstd 10, para 1: must be a class type
+      // C++98 10, para 1: must be a class type
       CompoundType *base = baseVar->type->ifCompoundType();
       if (!base) {
         env.error(stringc
@@ -2300,7 +2298,7 @@ void TS_classSpec::tcheckIntoCompound(
       }
 
       // fill in the default access mode if the user didn't provide one
-      // [cppstd 11.2 para 2]
+      // [C++98 11.2 para 2]
       AccessKeyword acc = iter->access;
       if (acc == AK_UNSPECIFIED) {
         acc = (ct->keyword==CompoundType::K_CLASS? AK_PRIVATE : AK_PUBLIC);
@@ -2379,7 +2377,7 @@ void TS_classSpec::tcheckIntoCompound(
     // set the constructed scope's 'parentScope' pointer now that
     // we've removed 'ct' from the Environment scope stack; future
     // (unqualified) lookups in 'ct' will thus be able to see
-    // into the containing class [cppstd 3.4.1 para 8]
+    // into the containing class [C++98 3.4.1 para 8]
     ct->parentScope = containingClass;
   }
 
@@ -2451,7 +2449,7 @@ Type *TS_enumSpec::itcheck(Env &env, Tcheck &tc)
 // MemberList
 
 // ---------------------- Member ----------------------
-// cppstd 9.2 para 6:
+// C++98 9.2 para 6:
 //   "A member shall not be auto, extern, or register."
 void checkMemberFlags(Env &env, DeclFlags flags)
 {
@@ -2511,7 +2509,7 @@ void MR_func::tcheck(Env &env)
   // we check the bodies in a second pass, after all the class
   // members have been added to the class, so that the potential
   // scope of all class members includes all function bodies
-  // [cppstd sec. 3.3.6]
+  // [C++98 sec. 3.3.6]
   //
   // the check-body suppression is now handled via a flag in 'env', so
   // this call site doesn't directly reflect that that is happening
@@ -2561,7 +2559,7 @@ void Enumerator::tcheck(Env &env, EnumType *parentEnum, Type *parentType)
   parentEnum->addValue(name, enumValue, var);
   parentEnum->nextValue = enumValue + 1;
 
-  // cppstd sec. 3.3.1:
+  // C++98 sec. 3.3.1:
   //   "The point of declaration for an enumerator is immediately after
   //   its enumerator-definition. [Example:
   //     const int x = 12;
@@ -2705,7 +2703,7 @@ void checkOperatorOverload(Env &env, Declarator::Tcheck &dt,
     ASTNEXTC(ON_operator, o)
       static int/*OperatorDesc*/ const map[] = {
         // each group of similar operators is prefixed with a comment
-        // that says which section of cppstd specifies the restrictions
+        // that says which section of C++98 specifies the restrictions
         // that are enforced here
 
         // 13.5.1
@@ -3011,7 +3009,7 @@ realStart:
 
       // the main effect of 'friend' in my implementation is to
       // declare the variable in the innermost non-class, non-
-      // template scope (this isn't perfect; see cppstd 11.4)
+      // template scope (this isn't perfect; see C++98 11.4)
       //
       // Unfortunately, both GCC and ICC seem to do name injection,
       // even though that is not what the standard specifies.  So,
@@ -3028,7 +3026,7 @@ realStart:
   // ambiguous grouped declarator in a paramter list?
   if (dt.hasFlag(DF_PARAMETER) && inGrouping) {
     // the name must *not* correspond to an existing type; this is
-    // how I implement cppstd 8.2 para 7
+    // how I implement C++98 8.2 para 7
     Variable *v = env.lookupPQ_one(name, LF_NONE);
     if (v && v->hasFlag(DF_TYPEDEF)) {
       TRACE("disamb", "discarding grouped param declarator of type name");
@@ -3232,7 +3230,7 @@ Declarator *Declarator::tcheck(Env &env, Tcheck &dt)
   // which ambiguous alternatives are presented.  So, I tell 'mygcov'
   // not to count coverage in the affected region.
 
-  // As best as I can tell from the standard, cppstd sections 6.8 and
+  // As best as I can tell from the standard, C++98 sections 6.8 and
   // 8.2, we always prefer a Declarator interpretation which has no
   // initializer (if that's valid) to one that does.  I'm not
   // completely sure because, ironically, the English text there ("the
@@ -3290,7 +3288,7 @@ Type *Env::computeArraySizeFromCompoundInit
       tgt_type = tfac.setArraySize(tgt_loc, at, initLen);
     }
     else {
-      // TODO: cppstd wants me to check that there aren't more
+      // TODO: C++98 wants me to check that there aren't more
       // initializers than the array's specified size, but I
       // don't want to do that check since I might have an error
       // in my const-eval logic which could break a Mozilla parse
@@ -3483,7 +3481,7 @@ void Declarator::mid_tcheck(Env &env, Tcheck &dt)
     this->setDeclaratorId(name);
   }
 
-  // cppstd sec. 3.4.3 para 3:
+  // C++98 sec. 3.4.3 para 3:
   //    "In a declaration in which the declarator-id is a
   //    qualified-id, names used before the qualified-id
   //    being declared are looked up in the defining
@@ -3767,7 +3765,7 @@ void Declarator::mid_tcheck(Env &env, Tcheck &dt)
     }
   }
 
-  // cppstd, sec. 3.3.1:
+  // C++98, sec. 3.3.1:
   //   "The point of declaration for a name is immediately after
   //   its complete declarator (clause 8) and before its initializer
   //   (if any), except as noted below."
@@ -3790,7 +3788,7 @@ void Declarator::mid_tcheck(Env &env, Tcheck &dt)
     // that arbitrary computation could be happening...
     if (var->type->isCompoundType()) {            // class-valued
       if (!init) {
-        // cppstd 8.5 paras 7,8,9: treat
+        // C++98 8.5 paras 7,8,9: treat
         //   C c;
         // like
         //   C c();
@@ -4038,7 +4036,7 @@ void D_name::tcheck(Env &env, Declarator::Tcheck &dt)
 }
 
 
-// cppstd, 8.3.2 para 4:
+// C++98, 8.3.2 para 4:
 //   "There shall be no references to references, no arrays of
 //    references, and no pointers to references."
 
@@ -4110,7 +4108,7 @@ FakeList<ASTTypeId> *tcheckFakeASTTypeIdList(
   return ret;
 }
 
-// implement cppstd 8.3.5 para 3:
+// implement C++98 8.3.5 para 3:
 //   "array of T" -> "pointer to T"
 //   "function returning T" -> "pointer to function returning T"
 // also, since f(int) and f(int const) are the same function (not
@@ -4315,7 +4313,7 @@ void D_func::tcheck(Env &env, Declarator::Tcheck &dt)
         // same as empty param list
         break;
       }
-      // cppstd 8.3.5p2
+      // C++98 8.3.5p2
       env.error("cannot have parameter of type 'void', unless it is "
                 "the only parameter, has no parameter name, and has "
                 "no default value");
@@ -4383,7 +4381,7 @@ void D_array::tcheck(Env &env, Declarator::Tcheck &dt)
   env.setLoc(loc);
   possiblyConsumeFunctionType(env, dt);
 
-  // check restrictions in cppstd 8.3.4 para 1
+  // check restrictions in C++98 8.3.4 para 1
   if (dt.type->isReference()) {
     env.error("cannot create an array of references");
     return;
@@ -4398,7 +4396,7 @@ void D_array::tcheck(Env &env, Declarator::Tcheck &dt)
   }
   // TODO: check for abstract classes
 
-  // cppstd 8.3.4 para 1:
+  // C++98 8.3.4 para 1:
   //   "cv-qualifier array of T" -> "array of cv-qualifier T"
   // hmmm.. I don't know what syntax would give rise to
   // the former, or at least my AST can't represent it.. oh well
@@ -4493,7 +4491,7 @@ void D_array::tcheck(Env &env, Declarator::Tcheck &dt)
       else if (val.isIntegral()) {
         sz = val.getIntegralValue();
 
-        // check restrictions on array size (c.f. cppstd 8.3.4 para 1)
+        // check restrictions on array size (c.f. C++98 8.3.4 para 1)
         if (env.lang.strictArraySizeRequirements) {
           if (sz <= 0) {
             env.error(loc, stringc << "array size must be positive (it is " << sz << ")");
@@ -4559,7 +4557,7 @@ void D_ptrToMember::tcheck(Env &env, Declarator::Tcheck &dt)
   // typecheck the nested name
   tcheckPQName(nestedName, env, NULL /*scope*/, LF_NONE);
 
-  // enforce [cppstd 8.3.3 para 3]
+  // enforce [C++98 8.3.3 para 3]
   if (dt.type->isReference()) {
     env.error("you can't make a pointer-to-member refer to a reference type");
     return;
@@ -4735,7 +4733,7 @@ Statement *Statement::tcheck(Env &env)
 
   // the only ambiguity for Statements I know if is S_decl vs. S_expr,
   // and this one is always resolved in favor of S_decl if the S_decl
-  // is a valid interpretation [cppstd, sec. 6.8]
+  // is a valid interpretation [C++98, sec. 6.8]
   if (this->isS_decl() && ambiguity->isS_expr() &&
       ambiguity->ambiguity == NULL) {                  // gcov-begin-ignore
     // S_decl is first, run resolver with priority enabled
@@ -4821,7 +4819,7 @@ void S_compound::itcheck(Env &env)
 
 // Given a (reference to) a pointer to a statement, make it into an
 // S_compound if it isn't already, so that it will be treated as having
-// its own local scope (cppstd 6.4 para 1, 6.5 para 2).  Note that we
+// its own local scope (C++98 6.4 para 1, 6.5 para 2).  Note that we
 // don't need this for try-blocks, because their substatements are
 // *required* to be compound statements already.
 void implicitLocalScope(Statement *&stmt)
@@ -5348,7 +5346,7 @@ void Expression::mid_tcheck(Env &env, Expression *&replacement)
 
 Type *E_boolLit::itcheck_x(Env &env, Expression *&replacement)
 {
-  // cppstd 2.13.5 para 1
+  // C++98 2.13.5 para 1
   return env.getSimpleType(ST_BOOL);
 }
 
@@ -5382,7 +5380,7 @@ bool canRepresent(SimpleTypeId id, unsigned long i)
 
 Type *E_intLit::itcheck_x(Env &env, Expression *&replacement)
 {
-  // cppstd 2.13.1 para 2
+  // C++98 2.13.1 para 2
 
   char const *p = text;
 
@@ -5472,7 +5470,7 @@ Type *E_intLit::itcheck_x(Env &env, Expression *&replacement)
   };
 
   // The difference is in C++, the radix is only relevant when there
-  // is no suffix.  Also, cppstd doesn't specify anything for 'long
+  // is no suffix.  Also, C++98 doesn't specify anything for 'long
   // long' (since that type does not exist in that language), so I'm
   // extrapolating its rules to that case.  Entries in the cppMap
   // that differ from c99Map are marked with "/*d*/".
@@ -5568,7 +5566,7 @@ static unsigned hexToInt(unsigned char c)
 
 Type *E_stringLit::itcheck_x(Env &env, Expression *&replacement)
 {
-  // cppstd 2.13.4 para 1
+  // C++98 2.13.4 para 1
 
   // wide character?
   SimpleTypeId id = text[0]=='L'? ST_WCHAR_T : ST_CHAR;
@@ -5750,7 +5748,7 @@ void quotedUnescape(ArrayStack<char> &dest, char const *src,
 // TODO: This should share logic with E_stringLit decoding.
 Type *E_charLit::itcheck_x(Env &env, Expression *&replacement)
 {
-  // cppstd 2.13.2 paras 1 and 2
+  // C++98 2.13.2 paras 1 and 2
 
   SimpleTypeId id = ST_CHAR;
 
@@ -5907,7 +5905,7 @@ Type *E_variable::itcheck_var_set(Env &env, Expression *&replacement,
         EF_DISAMBIGUATES);
     }
 
-    // 2005-02-18: cppstd 14.2 para 2: if template arguments are
+    // 2005-02-18: C++98 14.2 para 2: if template arguments are
     // supplied, then the name must look up to a template name
     if (v != env.dependentVar &&
         name->getUnqualifiedName()->isPQ_template()) {
@@ -5948,7 +5946,7 @@ Type *E_variable::itcheck_var_set(Env &env, Expression *&replacement,
         else {
           // 10/23/02: I've now changed this to non-disambiguating,
           // prompted by the need to allow template bodies to call
-          // undeclared functions in a "dependent" context [cppstd 14.6
+          // undeclared functions in a "dependent" context [C++98 14.6
           // para 8].  See the note in TS_name::itcheck.
           return env.error(name->loc, stringc
                            << "there is no variable called '" << *name << "'",
@@ -6438,7 +6436,7 @@ int compareArgsToParams(Env &env, FunctionType *ft, FakeList<ArgExpression> *arg
     xassert(!argInfo[paramIndex].type ||
             arg->getType() == argInfo[paramIndex].type);
 
-    // is the argument the name of an overloaded function? [cppstd 13.4]
+    // is the argument the name of an overloaded function? [C++98 13.4]
     env.possiblySetOverloadedFunctionVar(arg->expr, param->type,
                                          argInfo[paramIndex].overloadSet);
 
@@ -6634,7 +6632,7 @@ void E_funCall::inner1_itcheck(Env &env, LookupSet &candidates)
   if (func->isE_variable() &&
       !func->asE_variable()->name->hasQualifiers()) {
       // Unqualified name being looked up in the context of a function
-      // call; cppstd 3.4.2 applies, which is implemented in
+      // call; C++98 3.4.2 applies, which is implemented in
       // inner2_itcheck.  So, here, we don't report an error because
       // inner2 will do another lookup and report an error if that one
       // fails too.
@@ -7544,7 +7542,7 @@ bool sameCompounds(Variable *var1, Variable *var2)
 }
 
 
-// cppstd sections: 5.2.4, 5.2.5 and 3.4.5
+// C++98 sections: 5.2.4, 5.2.5 and 3.4.5
 Type *E_fieldAcc::itcheck_x(Env &env, Expression *&replacement)
 {
   return itcheck_fieldAcc(env, LF_NONE);
@@ -8580,7 +8578,7 @@ Type *E_binary::itcheck_x(Env &env, Expression *&replacement)
 
     case BIN_DOT_STAR:            // .*
     case BIN_ARROW_STAR:          // ->*
-      // [cppstd 5.5]
+      // [C++98 5.5]
       if (op == BIN_ARROW_STAR) {
         // left side should be a pointer to a class
         if (!lhsType->isPointer()) {
@@ -8633,7 +8631,7 @@ Type *E_binary::itcheck_x(Env &env, Expression *&replacement)
       // here.
       xassert(!ret->isReference());
 
-      // [cppstd 5.5 para 6]
+      // [C++98 5.5 para 6]
       // but it might be an lvalue if it is a pointer to a data
       // member, and either
       //   - op==BIN_ARROW_STAR, or
@@ -8657,7 +8655,7 @@ Type *E_binary::itcheck_x(Env &env, Expression *&replacement)
 // the PointerToMemberType of that construct
 static Type *makePTMType(Env &env, Variable *var, SourceLoc loc)
 {
-  // cppstd: 8.3.3 para 3, can't be static
+  // C++98: 8.3.3 para 3, can't be static
   xassert(!var->hasFlag(DF_STATIC));
 
   // this is essentially a consequence of not being static
@@ -8665,11 +8663,11 @@ static Type *makePTMType(Env &env, Variable *var, SourceLoc loc)
     xassert(var->type->asFunctionType()->isMethod());
   }
 
-  // cppstd: 8.3.3 para 3, can't be cv void
+  // C++98: 8.3.3 para 3, can't be cv void
   if (var->type->isVoid()) {
     return env.error(loc, "attempted to make a pointer to member to void");
   }
-  // cppstd: 8.3.3 para 3, can't be a reference
+  // C++98: 8.3.3 para 3, can't be a reference
   if (var->type->isReference()) {
     return env.error(loc, "attempted to make a pointer to member to a reference");
   }
@@ -8694,13 +8692,13 @@ Type *E_addrOf::itcheck_addrOf_set(Env &env, Expression *&replacement,
   bool possiblePTM = false;
   E_variable *evar = NULL;
   // NOTE: do *not* unwrap any layers of parens:
-  // cppstd 5.3.1 para 3: "A pointer to member is only formed when
+  // C++98 5.3.1 para 3: "A pointer to member is only formed when
   // an explicit & is used and its operand is a qualified-id not
   // enclosed in parentheses."
   if (expr->isE_variable()) {
     evar = expr->asE_variable();
 
-    // cppstd 5.3.1 para 3: Nor is &unqualified-id a pointer to
+    // C++98 5.3.1 para 3: Nor is &unqualified-id a pointer to
     // member, even within the scope of the unqualified-id's
     // class.
     // dsw: Consider the following situation: How do you know you
@@ -8922,7 +8920,7 @@ Type *attemptCondConversion(Env &env, ImplicitConversion &ic /*OUT*/,
 // "array-to-pointer (4.2) and function-to-pointer (4.3) standard
 // conversions"; (for the moment) functionally identical to
 // 'normalizeParameterType' but specified by a different part of
-// cppstd...
+// C++98...
 Type *arrAndFuncToPtr(Env &env, Type *t)
 {
   if (t->isArrayType()) {
@@ -8935,7 +8933,7 @@ Type *arrAndFuncToPtr(Env &env, Type *t)
 }
 
 
-// cppstd 5.9 "composite pointer type" computation
+// C++98 5.9 "composite pointer type" computation
 Type *compositePointerType
   (Env &env, PointerType *t1, PointerType *t2)
 {
@@ -8962,7 +8960,7 @@ Type *compositePointerType
   return computeLUB(env, t1, t2, whatev);
 }
 
-// cppstd 5.16 computation similar to composite pointer but
+// C++98 5.16 computation similar to composite pointer but
 // for pointer-to-member
 Type *compositePointerToMemberType
   (Env &env, PointerToMemberType *t1, PointerToMemberType *t2)
@@ -9001,7 +8999,7 @@ static bool isNullPointerConstant(Expression const *e)
 }
 
 
-// cppstd 5.16
+// C++98 5.16
 Type *E_cond::itcheck_x(Env &env, Expression *&replacement)
 {
   cond->tcheck(env, cond);
@@ -9378,9 +9376,9 @@ Type *E_new::itcheck_x(Env &env, Expression *&replacement)
   // below and beyond
 
   // The AST has the capability of recording whether argument parens
-  // (the 'new-initializer' in the terminology of cppstd)
+  // (the 'new-initializer' in the terminology of C++98)
   // syntactically appeared, and this does matter for static
-  // semantics; see cppstd 5.3.4 para 15.  However, for our purposes,
+  // semantics; see C++98 5.3.4 para 15.  However, for our purposes,
   // it will likely suffice to simply pretend that anytime 't' refers
   // to a class type, missing parens were actually present.
   if (t->isCompoundType() && !ctorArgs) {
@@ -9555,7 +9553,7 @@ Type *E_offsetof::itcheck_x(Env &env, Expression *&replacement)
 
 // --------------------- Expression constEval ------------------
 // TODO: Currently I do not implement the notion of "value-dependent
-// expression" (cppstd 14.6.2.3).  But, I believe a good way to do
+// expression" (C++98 14.6.2.3).  But, I believe a good way to do
 // that is to extend 'constEval' so it can return a code indicating
 // that the expression *is* constant, but is also value-dependent.
 
@@ -9734,9 +9732,9 @@ SpecialExpr Expression::getSpecial(CCLang &lang) const
     ASTNEXTC(E_grouping, e)
       return e->expr->getSpecial(lang);
 
-    // 9/24/04: cppstd 4.10: null pointer constant is integral constant
+    // 9/24/04: C++98 4.10: null pointer constant is integral constant
     // expression (5.19) that evaluates to 0.
-    // cppstd 5.19: "... only type conversions to integral or enumeration
+    // C++98 5.19: "... only type conversions to integral or enumeration
     // types can be used ..."
     ASTNEXTC(E_cast, e)
       if (allowableNullPtrCastDest(lang, e->ctype->getType()) &&
@@ -10107,7 +10105,7 @@ void TD_decl::itcheck(Env &env)
     return;
   }
 
-  // cppstd 14 para 3: there can be at most one declarator
+  // C++98 14 para 3: there can be at most one declarator
   // in a template declaration
   if (fl_count(d->decllist) > 1) {
     env.error("there can be at most one declarator in a template declaration");
@@ -10159,7 +10157,7 @@ void TP_type::itcheck(Env &env, int&)
     name = env.getAnonName("tparam", NULL);
   }
 
-  // cppstd 14.1 is a little unclear about whether the type name is
+  // C++98 14.1 is a little unclear about whether the type name is
   // visible to its own default argument; but that would make no
   // sense, so I'm going to check the default type first
   //
@@ -10321,7 +10319,7 @@ void ND_usingDecl::tcheck(Env &env)
   }
 
   if (name->getUnqualifiedName()->isPQ_template()) {
-    // cppstd 7.3.3 para 5
+    // C++98 7.3.3 para 5
     env.error("you can't use a template-id (template name + template arguments) "
               "in a using-declaration");
     return;

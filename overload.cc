@@ -2,7 +2,7 @@
 // code for overload.h
 
 // This module intends to implement the overload resolution procedure
-// described in cppstd clause 13.  However, there is a large gap
+// described in C++98 clause 13.  However, there is a large gap
 // between the English description there and an implementation in
 // code, so it's likely there are omissions and deviations.
 
@@ -601,7 +601,7 @@ void OverloadResolver::addBuiltinBinaryCandidates(OverloadableOp op,
 
 
 // this is a simple tournament, as suggested in footnote 123,
-// cppstd 13.3.3 para 2
+// C++98 13.3.3 para 2
 template <class RESOLVER, class CANDIDATE>
 CANDIDATE *tournament(RESOLVER &resolver, int low, int high, CANDIDATE *dummy)
 {
@@ -821,7 +821,7 @@ Variable *OverloadResolver::resolve()
 
 // for each parameter, determine an ICS, and return the resulting
 // Candidate; return NULL if the function isn't viable; this
-// implements cppstd 13.3.2
+// implements C++98 13.3.2
 Candidate * /*owner*/ OverloadResolver::makeCandidate
   (Variable *var, Variable *instFrom)
 {
@@ -924,7 +924,7 @@ Candidate * /*owner*/ OverloadResolver::makeCandidate
       // the next parameter has a default value, which implies all
       // subsequent parameters have default values as well; for
       // purposes of overload resolution, we simply ignore the extra
-      // parameters [cppstd 13.3.2 para 2, third bullet]
+      // parameters [C++98 13.3.2 para 2, third bullet]
     }
     else {
       // no default value, argument must be supplied but is not,
@@ -955,7 +955,7 @@ bool atLeastAsSpecializedAs(Env &env, Type *concrete, Type *pattern)
 //   -1 if left is better
 //    0 if they are indistinguishable
 //   +1 if right is better
-// this is cppstd 13.3.3 para 1, second group of bullets
+// this is C++98 13.3.3 para 1, second group of bullets
 int OverloadResolver::compareCandidates(Candidate const *left, Candidate const *right)
 {
   // decision so far
@@ -1056,7 +1056,7 @@ int OverloadResolver::compareCandidates(Candidate const *left, Candidate const *
     // no notion of partial specialization for function templates, so
     // all the old stuff about primaries doesn't make sense
 
-    // this section implements cppstd 14.5.5.2
+    // this section implements C++98 14.5.5.2
 
     // NOTE: we use the instFrom field here instead of the var
     Type *leftType = left->instFrom->type;
@@ -1103,7 +1103,7 @@ int OverloadResolver::compareCandidates(Candidate const *left, Candidate const *
 // compare two conversion sequences, returning the same choice code
 // as above; we need to know the source type and the destination types,
 // because some of the comparison criteria use them; this implements
-// cppstd 13.3.3.2
+// C++98 13.3.3.2
 int compareConversions(ArgumentInfo const &src,
   ImplicitConversion const &left, Type const *leftDest,
   ImplicitConversion const &right, Type const *rightDest)
@@ -1325,9 +1325,9 @@ int compareStandardConversions
     }
 
     // if one is a reference and the other is not, I don't see a basis
-    // for comparison in cppstd, so I skip the extra reference
+    // for comparison in C++98, so I skip the extra reference
     //
-    // update: 13.3.3.2b.cc suggests that in fact cppstd intends
+    // update: 13.3.3.2b.cc suggests that in fact C++98 intends
     // 'int' and 'int const &' to be indistinguishable, so I *don't*
     // strip extra references
     #if 0   // I think this was wrong

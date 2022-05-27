@@ -364,7 +364,7 @@ public:
   virtual string namePrintSuffix() const;    // default: ""
 
   // if this is variable is actually an alias for another one, via a
-  // "using declaration" (cppstd 7.3.3), then this points to the one
+  // "using declaration" (C++98 7.3.3), then this points to the one
   // it is an alias of; otherwise NULL; see comments near
   // implementation of skipAliasC
   Variable *getUsingAlias() const;

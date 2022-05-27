@@ -727,7 +727,7 @@ public:      // funcs
   bool ensureCompleteType(char const *action, Type *type);
   bool ensureCompleteCompound(char const *action, CompoundType *ct);
 
-  // support for cppstd 13.4; see implementations for more details
+  // support for C++98 13.4; see implementations for more details
   Variable *getOverloadedFunctionVar(Expression *e);
   void setOverloadedFunctionVar(Expression *e, Variable *selVar);
   Variable *pickMatchingOverloadedFunctionVar(LookupSet &set, Type *type);

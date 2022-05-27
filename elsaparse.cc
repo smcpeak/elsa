@@ -38,7 +38,7 @@
 // .. no, because it's true for class members too ..
 // .. it's also true of arrays declared [] but then inited ..
 // .. finally, it's true of parameters whose types get
-//    normalized as per cppstd 8.3.5 para 3; I didn't include
+//    normalized as per C++98 8.3.5 para 3; I didn't include
 //    that case below because there's no easy way to test for it ..
 // Intended to be used with LoweredASTVisitor
 class DeclTypeChecker : private ASTVisitor {

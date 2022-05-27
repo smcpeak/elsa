@@ -395,7 +395,7 @@ nonterm(Expression*) PostfixExpression {
   -> f:PostfixExpression a:ArgumentList
        { return new E_funCall(f, a); }
 
-  // cppstd has two things with "typename", but I can't find anyplace
+  // C++98 has two things with "typename", but I can't find anyplace
   // where their semantics are spelled out.. I have some code from
   // a gcc header which seems to be using them to mean E_constructor,
   // so I will assume that is the right interpretation
@@ -403,7 +403,7 @@ nonterm(Expression*) PostfixExpression {
   // Note 1: The two "typename" rules are folded into one, with the
   // variation (planned to be) captured down inside 'IdExpression'.
   //
-  // Note 2: cppstd uses the grammar to enforce the restriction that
+  // Note 2: C++98 uses the grammar to enforce the restriction that
   // "typename" can only be used with a qualified name, whereas I
   // enforce that in the type checker (more informative message).
   -> "typename" t:IdExpression a:ArgumentList
@@ -644,7 +644,7 @@ nonterm(PQName*) NAD1 {
 }
 
 // can only begin with Identifier or "operator"; this is essentially
-// what follows "::" in cppstd's qualified-id
+// what follows "::" in C++98's qualified-id
 nonterm(PQName*) NAD2 {
   fun merge(L,R) { return L->mergeAmbiguous(R); }
 
@@ -824,7 +824,7 @@ nonterm(Expression*) ExpressionOpt {
 // (the name exists simply to help document that fact; the grammar
 // cannot enforce it)
 nonterm(Expression*) ConstantExpression {
-  // cppstd says 'ConditionalExpression', but gcc allows assignments
+  // C++98 says 'ConditionalExpression', but gcc allows assignments
   // here too, for its dynamically-sized arrays extension; if that
   // extension is *not* enabled, we will still reject an assignment
   // expression here, but because it is not const-eval'able, rather
@@ -1209,13 +1209,13 @@ nonterm(TypeSpecifier*) ElaboratedTypeSpecifier {
   -> k:ClassKey n:PQTypeName    { return new TS_elaborated(loc, k, n); }
   -> "enum" n:PQTypeName        { return new TS_elaborated(loc, TI_ENUM, n); }
 
-  // cppstd grammar ensures "typename" is only applied to qualified
+  // C++98 grammar ensures "typename" is only applied to qualified
   // names, but I find that more natural to enforce during typechecking
   -> "typename" n:PQTypeName    { return new TS_name(loc, n, true /*typename*/); }
 }
 
 
-// plays role of "TypeSpecifierSeq" in cppstd; this is a
+// plays role of "TypeSpecifierSeq" in C++98; this is a
 // version of DeclSpecifier restricted to only allow "const" and
 // "volatile" UberModifiers
 nonterm(TypeSpecifier*) TypeSpecifier {
@@ -1403,7 +1403,7 @@ nonterm(Initializer*) Initializer {
        { return new IN_ctor(loc, args); }
 
   // NOTE: there is no alternative for "(" ")"!
-  // see [cppstd. sec. 8.5 para 8]
+  // see [C++98. sec. 8.5 para 8]
 }
 
 nonterm(Initializer*) SimpleInitializerClause {
@@ -1535,7 +1535,7 @@ nonterm(PQName*) PQDtorName {
   -> "template" q:Identifier "<" targs:TemplateArgumentListOpt ">" "::" rhs:PQDtorName
        { return new PQ_qualifier(loc, q, templateUsed(targs), rhs); }
 
-  // this rule from cppstd is partially subsumed by the "template" hack
+  // this rule from C++98 is partially subsumed by the "template" hack
   //-> ColonColonOpt NestedNameSpecifier "template" TemplateId "::" "~" TypeName;
 }
 
@@ -1548,7 +1548,7 @@ nonterm(PQName*) PtrToMemberName {
 }
 
 
-// I'll leave this here because it's harmless and the cppstd has it;
+// I'll leave this here because it's harmless and the C++98 has it;
 // also, it reminds me that every place I've substituted PtrOperator
 // into the syntaxes elsewhere has an implicit TODO for the
 // pointer-to-member syntax
@@ -1617,7 +1617,7 @@ nonterm(IDeclarator*) DirectAbstractDeclarator {
   //   int foo(int (x));
   // Is the parameter an int, or a function accepting an 'x'?
   //
-  // This is addressed by cppstd 8.2 para 7; see D_name_tcheck.
+  // This is addressed by C++98 8.2 para 7; see D_name_tcheck.
   //
   // This ambiguity doesn't show up until ParameterDeclaration, below.
 
@@ -1720,7 +1720,7 @@ nonterm(Function*) FunctionDefinition {
   // it can be a definition of a function G in the global scope, with
   // return type F
   //
-  // cppstd isn't clear about this, but both gcc and icc eagerly consume
+  // C++98 isn't clear about this, but both gcc and icc eagerly consume
   // "::" after an identifier, so I cancel a function definition if the
   // retspec is a typedef and the name begins with "::"
 
@@ -1973,7 +1973,7 @@ nonterm(Member*) MemberDeclaration {
        { // if the type specifier doesn't start with 'class'
          // or 'enum' then this is useless, and might be
          // ambiguous with superclass member publication, so
-         // cancel it [cppstd 9.2 para 7]
+         // cancel it [C++98 9.2 para 7]
          if (spec->spec->isTS_elaborated() ||
              spec->spec->isTS_classSpec() ||
              spec->spec->isTS_enumSpec()) {
@@ -2178,7 +2178,7 @@ nonterm(ASTTypeId*) ConversionTypeId {
 nonterm(IDeclarator*) ConversionDeclaratorOpt {
   // this rule is given low precedence so that if there are
   // stars (etc.) following, they will be considered to be part
-  // of the conversion operator's name (cppstd 12.3.2 para 4);
+  // of the conversion operator's name (C++98 12.3.2 para 4);
   // there is still an S/R conflict for "::" and I'm not sure how
   // to resolve that one...
   -> empty                             precedence(TOK_PREFER_SHIFT)
@@ -2379,7 +2379,7 @@ nonterm(/*fakelist*/TemplateParameter*) TemplateParameterList {
   -> p:ParameterDeclaration
      {
        // if the specifier is a TS_elaborated, then it could be a type
-       // parameter; cppstd 14.1 para 3 seems to say that in that case it
+       // parameter; C++98 14.1 para 3 seems to say that in that case it
        // always *is* a type parameter
        if (p->spec->canBeTypeParam()) {
          TRACE("cancel", loc << ": template parameter can be type param");
@@ -2481,7 +2481,7 @@ nonterm(TemplateArgument*) TemplateArgument {
        if (Expression::hasUnparenthesizedGT(e)) {
          // this is the wrong interpretation because template argument
          // expressions aren't allowed to have unparenthesized
-         // greater-than operators [cppstd 14.1 para 15]
+         // greater-than operators [C++98 14.1 para 15]
          //
          // this helps eliminate a nasty ambiguity in function
          // declarators, as otherwise
@@ -2600,7 +2600,7 @@ nonterm(NamespaceDecl*) NamespaceDecl {
   -> "namespace" alias:Identifier "=" orig:IdExpression ";"
        { return new ND_alias(alias, orig); }
 
-  // cppstd allows "typename" after "using", but doesn't specify what
+  // C++98 allows "typename" after "using", but doesn't specify what
   // it means; I assume they mean to use its semantics as described
   // elsewhere, but I don't feel like tracking that down now
   -> "using" /*typename?*/ n:IdExpression ";"

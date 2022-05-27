@@ -53,7 +53,7 @@ static bool isRefToCt(Type const *t, CompoundType *ct)
 }
 
 
-// cppstd 12.8 para 2: "A non-template constructor for a class X is a
+// C++98 12.8 para 2: "A non-template constructor for a class X is a
 // _copy_ constructor if its first parameter is of type X&, const X&,
 // volatile X&, or const volatile X&, and either there are no other
 // parameters or else all other parameters have default arguments
@@ -83,7 +83,7 @@ bool isCopyConstructor(Variable const *funcVar, CompoundType *ct)
 }
 
 
-// cppstd 12.8 para 9: "A user-declared _copy_ assignment operator
+// C++98 12.8 para 9: "A user-declared _copy_ assignment operator
 // X::operator= is a non-static non-template member function of class
 // X with exactly one parameter of type X, X&, const X&, volatile X&
 // or const volatile X&."
@@ -161,7 +161,7 @@ void addCompilerSuppliedDecls(Env &env, SourceLoc loc, CompoundType *ct)
     return;
   }
 
-  // **** implicit no-arg (aka "default") ctor: cppstd 12.1 para 5:
+  // **** implicit no-arg (aka "default") ctor: C++98 12.1 para 5:
   // "If there is no user-declared constructor for class X, a default
   // constructor is implicitly declared."
   if (!ct->getNamedField(env.constructorSpecialName, env, LF_INNER_ONLY)) {
@@ -179,7 +179,7 @@ void addCompilerSuppliedDecls(Env &env, SourceLoc loc, CompoundType *ct)
     env.madeUpVariables.push(v);
   }
 
-  // **** implicit copy ctor: cppstd 12.8 para 4: "If the class
+  // **** implicit copy ctor: C++98 12.8 para 4: "If the class
   // definition does not explicitly declare a copy constructor, one
   // is declared implicitly."
   Variable *ctor0 = ct->getNamedField(env.constructorSpecialName, env, LF_INNER_ONLY);
@@ -187,7 +187,7 @@ void addCompilerSuppliedDecls(Env &env, SourceLoc loc, CompoundType *ct)
 
   // is there a copy constructor?  I'm rolling my own here.
   if (!testAmongOverloadSet(isCopyConstructor, ctor0, ct)) {
-    // cppstd 12.8 para 5: "The implicitly-declared copy constructor
+    // C++98 12.8 para 5: "The implicitly-declared copy constructor
     // for a class X will have the form
     //
     //   X::X(const X&)
@@ -433,7 +433,7 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
   errorCompoundType->typedefVar = errorTypeVar;
 
   // create declarations for some built-in operators
-  // [cppstd 3.7.3 para 2]
+  // [C++98 3.7.3 para 2]
   Type *t_void = getSimpleType(ST_VOID);
   Type *t_voidptr = makePtrType(t_void);
 
@@ -1808,7 +1808,7 @@ Variable *Env::lookupOneQualifier_bareName(
   // a typedef which names a scope, and use that typedef'd name as
   // a qualifier
   //
-  // however, this still is not quite right, see cppstd 3.4.3 para 1
+  // however, this still is not quite right, see C++98 3.4.3 para 1
   //
   // update: LF_TYPES_NAMESPACES now gets it right, I think
   lflags |= LF_TYPES_NAMESPACES | LF_SELFNAME;
@@ -2115,7 +2115,7 @@ Variable *Env::applyPQNameTemplateArguments
   if (var->hasFlag(DF_SELFNAME)) {
     xassert(!final->isPQ_template());    // otherwise how'd LF_SELFNAME get set?
 
-    // cppstd 14.6.1 para 1: if the name refers to a template
+    // C++98 14.6.1 para 1: if the name refers to a template
     // in whose scope we are, then it need not have arguments
     TRACE("template", "found bare reference to enclosing template: " << var->name);
     return var;
@@ -2457,7 +2457,7 @@ Type *Env::makeNewCompound(CompoundType *&ct, Scope * /*nullable*/ scope,
     xassert(ok);     // already checked that it was ok
   }
 
-  // cppstd section 9, para 2: add to class' scope itself, too
+  // C++98 section 9, para 2: add to class' scope itself, too
   #if 0
   // It turns out this causes infinite loops elsewhere, and is in
   // fact unnecessary, because any lookup that would find 'ct' in
@@ -3242,7 +3242,7 @@ Variable *Env::createDeclaration(
 
   // is there a prior declaration?
   if (prior) {
-    // check for exception given by [cppstd 7.1.3 para 2]:
+    // check for exception given by [C++98 7.1.3 para 2]:
     //   "In a given scope, a typedef specifier can be used to redefine
     //    the name of any type declared in that scope to refer to the
     //    type to which it already refers."
@@ -3307,7 +3307,7 @@ Variable *Env::createDeclaration(
       }
 
       // check for violation of rule disallowing multiple
-      // declarations of the same class member; cppstd sec. 9.2:
+      // declarations of the same class member; C++98 sec. 9.2:
       //   "A member shall not be declared twice in the
       //   member-specification, except that a nested class or member
       //   class template can be declared and then later defined."
@@ -3600,7 +3600,7 @@ Variable *Env::createDeclaration(
     }
 
     // TODO: enforce restrictions on successive declarations'
-    // DeclFlags; see cppstd 7.1.1, around para 7
+    // DeclFlags; see C++98 7.1.1, around para 7
 
     // it's an allowed, repeated declaration
     return prior;
@@ -3653,7 +3653,7 @@ noPriorDeclaration:
 //     unit will have the benefit of the default arguments
 //   - the resulting type should have all the default arguments
 //     contiguous, and at the end of the parameter list
-// reference: cppstd, 8.3.6
+// reference: C++98, 8.3.6
 void Env::mergeDefaultArguments(SourceLoc loc, Variable *prior, FunctionType *type)
 {
   if (prior->name == string_main && prior->isGlobal()) {
@@ -4167,7 +4167,7 @@ void Env::setOverloadedFunctionVar(Expression *e, Variable *selVar)
 
 // given an overload set, and the type to which the overloaded name is
 // being converted, select the element that matches that type, if any
-// [cppstd 13.4 para 1]
+// [C++98 13.4 para 1]
 Variable *Env::pickMatchingOverloadedFunctionVar(LookupSet &set, Type *type)
 {
   // normalize 'type' to just be a FunctionType
@@ -4180,13 +4180,13 @@ Variable *Env::pickMatchingOverloadedFunctionVar(LookupSet &set, Type *type)
   }
 
   // as there are no standard conversions for function types or
-  // pointer to function types [cppstd 13.4 para 7], simply find an
+  // pointer to function types [C++98 13.4 para 7], simply find an
   // element with an equal type
   SFOREACH_OBJLIST_NC(Variable, set, iter) {
     Variable *v = iter.data();
 
     if (v->isTemplate()) {
-      // TODO: cppstd 13.4 paras 2,3,4
+      // TODO: C++98 13.4 paras 2,3,4
       unimp("address of overloaded name, with a templatized element");
     }
 
@@ -4238,7 +4238,7 @@ SourceLoc getExprNameLoc(Expression const *e)
 // name of an overloaded function, resolve it and return true.
 // Otherwise (not an overloaded conversion), return false.
 //
-// part of the implementation of cppstd 13.4
+// part of the implementation of C++98 13.4
 bool Env::possiblySetOverloadedFunctionVar(Expression *expr, Type *paramType,
                                            LookupSet &set)
 {
@@ -4264,7 +4264,7 @@ bool Env::possiblySetOverloadedFunctionVar(Expression *expr, Type *paramType,
 }
 
 
-// get scopes associated with 'type'; cppstd 3.4.2 para 2
+// get scopes associated with 'type'; C++98 3.4.2 para 2
 //
 // this could perhaps be made faster by using a hash table set
 void Env::getAssociatedScopes(SObjList<Scope> &associated, Type *type)
@@ -4407,7 +4407,7 @@ void Env::getAssociatedScopes(SObjList<Scope> &associated, Type *type)
 }
 
 
-// cppstd 3.4.2; returns entries for 'name' in scopes
+// C++98 3.4.2; returns entries for 'name' in scopes
 // that are associated with the types in 'args'
 void Env::associatedScopeLookup(LookupSet &candidates, StringRef name,
                                 ArrayStack<Type*> const &argTypes, LookupFlags flags)
@@ -4985,7 +4985,7 @@ void Env::unqualifiedFinalNameLookup(LookupSet &set, Scope *scope,
   if ((flags & LF_EXPECTING_TYPE) &&
       !set.first()->isType()) {
     // we are expecting a type, and intend only to apply template
-    // args to a type, not to a function (cppstdex/14.5.2p4.cc)
+    // args to a type, not to a function (C++98ex/14.5.2p4.cc)
     return;    // yield the primary, caller will report the problem
   }
 
@@ -5698,7 +5698,7 @@ bool DefaultArgumentChecker::visitIDeclarator(IDeclarator *obj)
         else {
           // if this is an instantiation, then we want to postpone
           // instantiating the default arguments until the method
-          // is called (cppstd 14.7.1 para 11); we remove the default
+          // is called (C++98 14.7.1 para 11); we remove the default
           // arg from the AST and attach it to the Variable
           xassert(d->init->isIN_expr());    // should be parse failure otherwise, I think
           IN_expr *ie = d->init->asIN_expr();

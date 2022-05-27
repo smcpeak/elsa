@@ -26,7 +26,7 @@ void X::foo()
   //printf("test 3\n");
   //X::~X();
 
-  // nominally ambiguous, but cppstd says prefer conversion + bitwise
+  // nominally ambiguous, but C++98 says prefer conversion + bitwise
   // complement (can see that Elsa agrees with "--pretty-print" ... I
   // can't think of a way to make that automatic here...)
   printf("test 4\n");

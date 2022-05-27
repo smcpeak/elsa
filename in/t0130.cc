@@ -1,6 +1,6 @@
 // t0130.cc
 // some specific cases where we want to allow 0-length arrays,
-// despite cppstd 8.3.4 para 1
+// despite C++98 8.3.4 para 1
 
 // dsw: I turned the 0-length ones off since I now allow them to get
 // the kernel through.  See in/gnu/dC0006.c

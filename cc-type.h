@@ -205,7 +205,7 @@ public:
 // represent an instance of a base class in a particular class'
 // inheritance hierarchy; it is these things that represent things
 // like diamond inheritance patterns; the terminology comes from
-// [cppstd 10.1 para 4]
+// [C++98 10.1 para 4]
 class BaseClassSubobj : public BaseClass {
 public:
   // classes that this one inherits from; non-owning since the
@@ -853,7 +853,7 @@ enum FunctionFlags {
   FF_CONVERSION    = 0x0004,  // conversion operator function
   FF_CTOR          = 0x0008,  // constructor
   FF_DTOR          = 0x0010,  // destructor
-  FF_BUILTINOP     = 0x0020,  // built-in operator function (cppstd 13.6)
+  FF_BUILTINOP     = 0x0020,  // built-in operator function (C++98 13.6)
   FF_NO_PARAM_INFO = 0x0040,  // C parameter list "()" (C99 6.7.5.3 para 14)
   FF_DEFAULT_ALLOC = 0x0080,  // is a default [de]alloc function from 3.7.3p2
   FF_KANDR_DEFN    = 0x0100,  // derived from a K&R-style function definition

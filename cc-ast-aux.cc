@@ -795,7 +795,7 @@ void TypeSpecifier::printExtras(ostream &os, int indent) const
 }
 
 
-// disambiguation for cppstd 14.1 para 3
+// disambiguation for C++98 14.1 para 3
 bool TypeSpecifier::canBeTypeParam() const
 {
   if (isTS_elaborated() &&
@@ -804,7 +804,7 @@ bool TypeSpecifier::canBeTypeParam() const
   }
 
   // quarl 2006-06-06
-  //    cppstd 14.1 para 2 "typename followed by a qualified-name denotes the
+  //    C++98 14.1 para 2 "typename followed by a qualified-name denotes the
   //    type in a non-type parameter-declaration."  If the specifier is
   //    qualified, then "typename" is not used as a type param.
   if (isTS_name() &&

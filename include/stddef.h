@@ -1,5 +1,5 @@
 // stddef.h
-// cppstd section 18.1
+// C++98 section 18.1
 
 #ifndef __STDDEF_H
 #define __STDDEF_H

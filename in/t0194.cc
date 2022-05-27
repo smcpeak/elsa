@@ -22,6 +22,6 @@ int *f()
   return c.p;
 }
 
-// cppstd 7.3.3 para 5 disallows this
+// C++98 7.3.3 para 5 disallows this
 //ERROR(1): using N::C<float>;
 

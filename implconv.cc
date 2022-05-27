@@ -290,7 +290,7 @@ ImplicitConversion getImplicitConversion
 }
 
 
-// cppstd 5.2.2/7
+// C++98 5.2.2/7
 ImplicitConversion getImplicitConversionToVararg
   (Env &env, SpecialExpr special, Type *src)
 {

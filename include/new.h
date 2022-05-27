@@ -20,7 +20,7 @@
 
   // sm: the ones marked with a trailing "// implicit" are supposed
   // to be implicitly declared, so the declarations here are
-  // actually redundant [cppstd 3.7.3 para 2]
+  // actually redundant [C++98 3.7.3 para 2]
 
   void* operator new(/*std::*/size_t size) throw(/*std::*/bad_alloc);            // implicit
   void* operator new(/*std::*/size_t size, const /*std::*/nothrow_t&) throw();

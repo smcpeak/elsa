@@ -46,7 +46,7 @@ enum MatchFlags {
 
   // allow the cv qualifications to differ up to the first type
   // constructor that is not a pointer or pointer-to-member; this
-  // is cppstd 4.4 para 4 "similar"; implies MF_IGNORE_TOP_CV
+  // is C++98 4.4 para 4 "similar"; implies MF_IGNORE_TOP_CV
   MF_SIMILAR         = 0x0040,
 
   // when the second type in the comparison is polymorphic (for

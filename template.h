@@ -391,9 +391,9 @@ public:      // funcs
 
 
 // semantic template argument (semantic as opposed to syntactic); this
-// breaks the argument down into the cases described in cppstd 14.3.2
+// breaks the argument down into the cases described in C++98 14.3.2
 // para 1, plus types, minus template parameters, then grouped into
-// equivalence classes as implied by cppstd 14.4 para 1
+// equivalence classes as implied by C++98 14.4 para 1
 class STemplateArgument {
 public:
   enum Kind {

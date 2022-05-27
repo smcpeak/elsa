@@ -11,7 +11,7 @@
 
 // ---
 
-//  cppstd: 14.8.2.4 para 9:
+//  C++98: 14.8.2.4 para 9:
 
 //  A template type argument T, a template template argument TT or a
 //  template non-type argument i can be deduced if P and A have one of
@@ -115,7 +115,7 @@ template<class T> void g17( T (T::*x)(T y) ) {}
 //      type[i]
 // 14 April 2004: Scott decided that this feature is more work than it
 // is worth so we omit it for now.
-// cppstd 14.8.2.4 para 13: Note: except for reference and pointer
+// C++98 14.8.2.4 para 13: Note: except for reference and pointer
 // types, a major array bound is not part of a function parameter type
 // and cannot be deduced from an argument.
 template<int i> void f1(int a[10][i]);

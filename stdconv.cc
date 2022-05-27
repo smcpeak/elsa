@@ -427,7 +427,7 @@ StandardConversion getStandardConversion
 
     if (!destIsReceiver) {
       // are we trying to bind to a non-const reference?  if so,
-      // then we can't do it (cppstd 13.3.3.1.4 para 3)
+      // then we can't do it (C++98 13.3.3.1.4 para 3)
       ReferenceType const *destPT = dest->asReferenceTypeC();
       if (!destPT->atType->isConst()) {
         // can't form the conversion
@@ -441,7 +441,7 @@ StandardConversion getStandardConversion
     // now, one final exception: ordinarily, there's no standard
     // conversion from C to P (where C inherits from P); but it *is*
     // legal to bind an rvalue of type C to a const reference to P
-    // (cppstd 13.3.3.1.4 para 1)
+    // (C++98 13.3.3.1.4 para 1)
     if (dest->isCompoundType() &&
         src->isCompoundType() &&
         src->asCompoundTypeC()->hasStrictBaseClass(dest->asCompoundTypeC())) {
@@ -450,7 +450,7 @@ StandardConversion getStandardConversion
     }
   }
   else if (src->asRvalC()->isArrayType() && dest->isPointer()) {
-    // 7/19/03: 'src' can be an lvalue (cppstd 4.2 para 1)
+    // 7/19/03: 'src' can be an lvalue (C++98 4.2 para 1)
 
     conv.ret |= SC_ARRAY_TO_PTR;
 
@@ -543,7 +543,7 @@ StandardConversion getStandardConversion
         dest = dest->getAtType();
 
         // we look at the cv flags one level down because all of the
-        // rules in cppstd talk about things like "pointer to cv T",
+        // rules in C++98 talk about things like "pointer to cv T",
         // i.e. pairing the * with the cv one level down in their
         // descriptive patterns
         CVFlags srcCV = getSrcCVFlags(src);
@@ -562,7 +562,7 @@ StandardConversion getStandardConversion
         //   int (*)(Base*)
         // where
         //   int (*)(Derived*)
-        // is expected, but I don't see such a provision in cppstd
+        // is expected, but I don't see such a provision in C++98
         //
         // 2005-04-15: Actually, 13.4p7 address this directly, and
         // explains that it is indeed illegal.
@@ -986,7 +986,7 @@ void getIntegerStats(SimpleTypeId id, int &length, int &uns)
 // implemented below
 static SimpleTypeId uacHelper(SimpleTypeId leftId, SimpleTypeId rightId);
 
-// cppstd section 5 para 9
+// C++98 section 5 para 9
 // and C99 secton 6.3.1.8 para 1
 Type *usualArithmeticConversions(TypeFactory &tfac, Type *left, Type *right)
 {
@@ -1044,7 +1044,7 @@ SimpleTypeId usualArithmeticConversions(SimpleTypeId leftId, SimpleTypeId rightI
 
 static SimpleTypeId uacHelper(SimpleTypeId leftId, SimpleTypeId rightId)
 {
-  // At this point, both cppstd and C99 go into gory detail
+  // At this point, both C++98 and C99 go into gory detail
   // case-analyzing the types (which are both integral types at least
   // 'int' or bigger/wider).  However, the effect of both analyses is
   // to simply compute the least upper bound over the lattice of the
@@ -1088,7 +1088,7 @@ static SimpleTypeId uacHelper(SimpleTypeId leftId, SimpleTypeId rightId)
 }
 
 
-// cppstd 4.5
+// C++98 4.5
 SimpleTypeId applyIntegralPromotions(Type *t)
 {
   // since I only promote to 'int', this is easy

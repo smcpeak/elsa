@@ -137,13 +137,13 @@ class TopForm (SourceLoc loc) {
   -> TF_linkage(StringRef linkageType, TranslationUnit forms);
 
   // linkage spec with one form and no braces; it turns out this has
-  // different semantics [cppstd 7.5 para 7]
+  // different semantics [C++98 7.5 para 7]
   -> TF_one_linkage(StringRef linkageType, TopForm form);
 
   // assembly definition at toplevel
   -> TF_asm(AsmDefinition ad);
 
-  // namespace definition [cppstd 7.3.1]
+  // namespace definition [C++98 7.3.1]
   -> TF_namespaceDefn(StringRef /*nullable*/ name, ASTList<TopForm> forms);
 
   // one of three namespace-related declarations that can occur
@@ -329,7 +329,7 @@ class TypeSpecifier(SourceLoc loc) {
        //     has template arguments
        //   - it could be a definition or specialization of a class
        //     declared in another namespace
-       // See cppstd 14.5.4 para 6 for an example of both at once.
+       // See C++98 14.5.4 para 6 for an example of both at once.
        PQName /*nullable*/ name,
 
        FakeList<BaseClassSpec> *bases,       // base classes
@@ -729,7 +729,7 @@ class Expression {
 
 
 // maximal expressions: the parent is not an expression
-// (cppstd 1.9 para 12)
+// (C++98 1.9 para 12)
 class FullExpression (Expression expr) {
   // We do not make lists of FullExpressions.
 
@@ -899,16 +899,16 @@ class TemplateArgument(/*first*/)(/*last*/ TemplateArgument next) {
 // (or in a namespace) or inside a function, I've collected them
 // together; also, ND_usingDecl can appear as a class member
 class NamespaceDecl {
-  // [cppstd 7.3.2] namespace alias definition: defines 'alias'
+  // [C++98 7.3.2] namespace alias definition: defines 'alias'
   // to refer to the same namespace as 'original'
   -> ND_alias(StringRef alias, PQName original);
 
-  // [cppstd 7.3.3] using declaration: the given name's unqualified
+  // [C++98 7.3.3] using declaration: the given name's unqualified
   // form is imported into the current scope as an alias for the named
   // entity; 'name' must be qualified
   -> ND_usingDecl(PQName name);
 
-  // [cppstd 7.3.4] using directive: names from the given namespace
+  // [C++98 7.3.4] using directive: names from the given namespace
   // are accessible in the current scope without qualification, among
   // other effects (of the three NamespaceDecls, this is the most
   // complicated)

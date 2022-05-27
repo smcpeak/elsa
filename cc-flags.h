@@ -216,7 +216,7 @@ enum SimpleTypeId {
   ST_IMPLINT,                // implicit-int for K&R C
   ST_NOTFOUND,               // delayed ST_ERROR
 
-  // for polymorphic built-in operators (cppstd 13.6)
+  // for polymorphic built-in operators (C++98 13.6)
   ST_PROMOTED_INTEGRAL,      // int,uint,long,ulong
   ST_PROMOTED_ARITHMETIC,    // promoted integral + float,double,longdouble
   ST_INTEGRAL,               // has STF_INTEGER

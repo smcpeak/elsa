@@ -37,7 +37,7 @@ SimpleTypeId ParseEnv::uberSimpleType(SourceLoc loc, UberModifiers m)
 {
   m = (UberModifiers)(m & UM_TYPEKEYS);
 
-  // implement cppstd Table 7, p.109
+  // implement C++98 Table 7, p.109
   switch ((int /*suppress GCC warning*/)m) {
     case UM_CHAR:                         return ST_CHAR;
     case UM_UNSIGNED | UM_CHAR:           return ST_UNSIGNED_CHAR;

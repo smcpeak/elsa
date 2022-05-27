@@ -186,7 +186,7 @@ class Expression {
 
 
 class Initializer {
-  // [cppstd 1.9 para 12 and 13] "A full-expression is an expression
+  // [C++98 1.9 para 12 and 13] "A full-expression is an expression
   // that is not a subexpression of another expression.  If a language
   // construct is defined to produce an implicit call of a function, a
   // use of the language construct is considered to be an expression

@@ -717,7 +717,7 @@ class Expression {
        // means a no-op, and for a copy ctor it means member-wise
        // assignment implementable with a memcpy.  (This is a
        // generalization of the Standard's notion of "trivial"; see
-       // cppstd 12.1p5,6.)
+       // C++98 12.1p5,6.)
        public Variable *ctorVar = NULL;
        custom clone { ret->ctorVar = ctorVar; }
      }

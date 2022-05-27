@@ -1209,8 +1209,8 @@ done
 runTest ./ccparse.exe -tr printHierarchies,ansi in/std/3.4.5.cc
 
 # more in another (private) repository, if present
-if [ -f ../cppstdex/regrtest_inner ]; then
-  source ../cppstdex/regrtest_inner
+if [ -f ../C++98ex/regrtest_inner ]; then
+  source ../C++98ex/regrtest_inner
 fi
 
 # Is the gnu extension built?
@@ -1604,7 +1604,7 @@ echo "use_kandr: $use_kandr"
 echo "Successful tests               :    $success"
 echo "Failed as expected (known bugs):    $failure"
 if [ $skipdiagnose -ne 0 ]; then
-  echo "Fail to diag. cppstdex errors  :    $skipdiagnose"
+  echo "Fail to diag. C++98ex errors  :    $skipdiagnose"
 fi
 if [ $contin = 1 ]; then
   echo "Unexpected success:    $unexSuccess"

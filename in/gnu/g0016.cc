@@ -19,7 +19,7 @@
 # 19
 
 // this declaration has "throw()" whereas the rest do not; according
-// to cppstd, that is an error
+// to C++98, that is an error
 int isatty (int __fd) throw () ;
 
 # 7 "else.h"

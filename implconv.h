@@ -1,5 +1,5 @@
 // implconv.h                       see license.txt for copyright and terms of use
-// implicit conversion sequences: cppstd 13.3.3.1, 13.3.3.2
+// implicit conversion sequences: C++98 13.3.3.1, 13.3.3.2
 
 // implicit conversions occur most prominently when binding
 // an argument to a parameter at a call site; they're "implicit"

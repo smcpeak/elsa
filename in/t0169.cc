@@ -4,7 +4,7 @@
 void f()
 {
   // are all three different decls, and therefore allowed?
-  // yes: cppstd 6.4 para 1
+  // yes: C++98 6.4 para 1
 
   if (true)
     int x;

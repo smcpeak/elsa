@@ -439,7 +439,7 @@ static void printInitializerOpt(PrintEnv &env, Initializer /*nullable*/ *init)
   if (init) {
     IN_ctor *ctor = dynamic_cast<IN_ctor*>(init);
     if (ctor) {
-      // sm: don't print "()" as an IN_ctor initializer (cppstd 8.5 para 8)
+      // sm: don't print "()" as an IN_ctor initializer (C++98 8.5 para 8)
       if (fl_isEmpty(ctor->args)) {
         // Don't print anything.
       }

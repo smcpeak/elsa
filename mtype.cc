@@ -365,7 +365,7 @@ bool IMType::imatchPQName(PQName const *conc, PQName const *pat, MatchFlags flag
       // the template arguments can be compared semantically because
       // the standard does specify that they are looked up in a
       // context that is effectively independent of what appears to
-      // the left in the qualified name (cppstd 3.4.3.1p1b3)
+      // the left in the qualified name (C++98 3.4.3.1p1b3)
       if (!imatchSTemplateArguments(cq->sargs, pq->sargs, flags)) {
         return false;
       }
@@ -673,7 +673,7 @@ bool IMType::imatchTypeWithPolymorphic(Type const *conc, SimpleTypeId polyId,
     SimpleTypeId concId = conc->asSimpleTypeC()->type;
     SimpleTypeFlags concFlags = simpleTypeInfo(concId).flags;
 
-    // see cppstd 13.6 para 2
+    // see C++98 13.6 para 2
     if (polyId == ST_PROMOTED_INTEGRAL) {
       return (concFlags & (STF_INTEGER | STF_PROM)) == (STF_INTEGER | STF_PROM);
     }

@@ -1,8 +1,8 @@
 // stdconv.h                       see license.txt for copyright and terms of use
-// Standard Conversions, i.e. Section ("clause") 4 of cppstd
+// Standard Conversions, i.e. Section ("clause") 4 of C++98
 
 // A Standard Conversion is one of a dozen or so type coercions
-// described in section 4 of cppstd.  A Standard Conversion Sequence
+// described in section 4 of C++98.  A Standard Conversion Sequence
 // is up to three Standard Conversions, drawn from particular
 // subsets of such conversions, to be applied in sequence.
 
@@ -84,7 +84,7 @@ StandardConversion removeLval(StandardConversion scs);
 bool isSubsequenceOf(StandardConversion left, StandardConversion right);
 
 
-// standard conversion rank, as classified by cppstd Table 9
+// standard conversion rank, as classified by C++98 Table 9
 // (section 13.3.3.1.1 para 3)
 enum SCRank {
   SCR_EXACT,
@@ -118,11 +118,11 @@ Type *getConcreteDestType(TypeFactory &tfac, Type *srcType,
                           StandardConversion sconv,
                           SimpleTypeId destPolyType);
 
-// cppstd section 5, para 9
+// C++98 section 5, para 9
 Type *usualArithmeticConversions(TypeFactory &tfac, Type *left, Type *right);
 SimpleTypeId usualArithmeticConversions(SimpleTypeId leftId, SimpleTypeId rightId);
 
-// cppstd 4.5
+// C++98 4.5
 bool isIntegerPromotion(AtomicType const *src, AtomicType const *dest);
 SimpleTypeId applyIntegralPromotions(Type *t);
 SimpleTypeId applyIntegralPromotions(SimpleTypeId id);
