@@ -832,7 +832,7 @@ class Initializer {
   // the thing it initializes
   pure_virtual void tcheck(Env &env, Type *type);
 
-  -> IN_ctor() {
+  -> IN_ctor {
        // constructor function being called
        public Variable *ctorVar = NULL;
 
@@ -844,6 +844,19 @@ class Initializer {
          ret->ctorVar = ctorVar;
          ret->was_IN_expr = was_IN_expr;
        }
+     }
+
+  -> IN_compound {
+       // Allow an extension to intercept and modify the count of
+       // initializers that is are present to initialize 'arrayType'.
+       // The initial value of 'count' is what is computed by the core
+       // logic, and an extension can set it to something else to
+       // override that.
+       //
+       // This is called after the initialzer has been tchecked.
+       define_customizable
+         void ext_adjustArrayInitializerCount(Env &env,
+           ArrayType const *arrayType, int &count) const;
      }
 }
 

@@ -3873,9 +3873,12 @@ void Env::checkFuncAnnotations(FunctionType *, D_func *)
 void Env::addedNewCompound(CompoundType *)
 {}
 
-int Env::countInitializers(SourceLoc loc, Type *type, IN_compound const *cpd)
+int Env::countInitializers(SourceLoc loc, ArrayType const *arrayType,
+  IN_compound const *cpd)
 {
-  return cpd->inits.count();
+  int ret = cpd->inits.count();
+  cpd->ext_adjustArrayInitializerCount(*this, arrayType, ret);
+  return ret;
 }
 
 void Env::addedNewVariable(Scope *, Variable *)

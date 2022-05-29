@@ -15,6 +15,9 @@
 // smbase
 #include "strutil.h"                   // streq
 
+// libc++
+#include <algorithm>                   // std::max
+
 // libc
 #include <string.h>                    // strcmp, strncmp
 
@@ -1085,6 +1088,119 @@ void IN_designated::tcheck(Env &env, Type *type)
   init->tcheck(env, env.getSimpleType(ST_ERROR));
 
   check_designator_list(env, designator_list);
+}
+
+
+// Advance 'iter' by as many elements as would be consumed in order to
+// initialize 'type'.  This must always advance it at least once,
+// otherwise there is a risk of the caller going into an infinite loop,
+// but do not advance it not beyond the done point of course.
+//
+// TODO: This replicates logic in cc-tcheck.cc, initializeAggregate().
+// Ideally these should be folded together.  The problem at the moment
+// is 'initializeAggregate' is kind of broken (I think), so I'm sort of
+// experimenting with implementing it again (here) in hopes of learning
+// how to do this properly.  But the job here, of just advancing the
+// iterator, is only a portion of what 'initializeAggregate' does, so
+// the insight gained is limited...
+//
+static void advanceInitIterForType(Env &env,
+  ASTListIter<Initializer> &iter, Type const *type)
+{
+  xassert(!iter.isDone());
+
+  if (iter.data()->isIN_compound()) {
+    // A brace-enclosed initializer matches 'type' exactly.
+    iter.adv();
+    return;
+  }
+
+  if (ArrayType const *arrayType = type->ifArrayTypeC()) {
+    int size = arrayType->getSize();
+    if (size == 0) {
+      env.error("Nested array type has zero size.");
+      size = 1;      // Advance at least once.
+    }
+
+    // This loop deliberately runs without limit on 'i' if 'size' is
+    // negative (unspecified).
+    for (int i=0; i != size && !iter.isDone(); i++) {
+      advanceInitIterForType(env, iter, arrayType->eltType);
+    }
+  }
+
+  else if (CompoundType const *ct = type->ifCompoundTypeC()) {
+    if (ct->isAggregate()) {
+      if (ct->dataMembers.isEmpty()) {
+        env.error("Nested compound type has no members.");
+        iter.adv();    // Advance at least once.
+      }
+      else {
+        SFOREACH_OBJLIST(Variable, ct->dataMembers, membIter) {
+          advanceInitIterForType(env, iter, membIter.data()->type);
+          if (iter.isDone()) {
+            break;
+          }
+        }
+      }
+    }
+    else {
+      // Non-"aggregate" classes have a constructor and consume one
+      // initializer.
+      iter.adv();
+    }
+  }
+
+  else {
+    // Assume the value is initialized by one initializer.
+    iter.adv();
+  }
+}
+
+
+void IN_compound::gnu_adjustArrayInitializerCount(Env &env,
+  ArrayType const *arrayType, int &count) const
+{
+  // The core logic uses a crude method.  Start over.
+  count = 0;
+
+  // Index of next array element to set.
+  int curIndex = 0;
+
+  // Walk the initializer list.  This is more complicated than might at
+  // first seem necessary because C and C++ allow the initializer to
+  // omit braces when initializing a nested array or compound type.
+  ASTListIter<Initializer> iter(inits);
+  while (!iter.isDone()) {
+    Initializer const *init = iter.data();
+
+    // If we see a designator, reset 'curIndex' to match it.  That is
+    // the primary purpose of this entire function.
+    if (IN_designated const *id = init->ifIN_designatedC()) {
+      Designator const *d = fl_firstC(id->designator_list);
+      if (SubscriptDesignator const *sd = d->ifSubscriptDesignatorC()) {
+        curIndex = sd->idx_computed;
+        if (sd->idx_expr2) {
+          curIndex = sd->idx_computed2;
+        }
+      }
+      else {
+        env.error("Found a field designator while trying to count "
+                  "initializers to determine an array size.");
+      }
+    }
+
+    // Conceptually, here is where we initialize element 'curIndex'.
+
+    // Consequently, the array must have at least 'curIndex+1' elements.
+    count = std::max(count, curIndex+1);
+
+    // Advance 'iter'.  How far depends on the element type, but it will
+    // be advanced at least once.
+    advanceInitIterForType(env, iter, arrayType->eltType);
+
+    curIndex++;
+  }
 }
 
 

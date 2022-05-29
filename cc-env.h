@@ -674,7 +674,8 @@ public:      // funcs
   virtual void addedNewCompound(CompoundType *ct);
 
   // return # of array elements initialized
-  virtual int countInitializers(SourceLoc loc, Type *type, IN_compound const *cpd);
+  virtual int countInitializers(SourceLoc loc,
+    ArrayType const *arrayType, IN_compound const *cpd);
 
   // called when a variable is successfully added; note that there
   // is a similar mechanism in Scope itself, which can be used when

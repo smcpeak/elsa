@@ -3275,11 +3275,11 @@ Type *Env::computeArraySizeFromCompoundInit
   tgt_type = tgt_type->asRval();
   if (tgt_type->isArrayType() && init->isIN_compound()) {
     ArrayType *at = tgt_type->asArrayType();
+    ArrayType const *srcAT = src_type->asArrayType();
     IN_compound const *cpd = init->asIN_compoundC();
 
-    // count the initializers; this is done via the environment
-    // so the designated-initializer extension can intercept
-    int initLen = countInitializers(loc(), src_type, cpd);
+    // Count the initializers to get the implied minimum array size.
+    int initLen = countInitializers(loc(), srcAT, cpd);
 
     if (!at->hasSize()) {
       // replace the computed type with another that has
@@ -3287,12 +3287,11 @@ Type *Env::computeArraySizeFromCompoundInit
       // getting the right one is a bit of work
       tgt_type = tfac.setArraySize(tgt_loc, at, initLen);
     }
-    else {
-      // TODO: C++98 wants me to check that there aren't more
-      // initializers than the array's specified size, but I
-      // don't want to do that check since I might have an error
-      // in my const-eval logic which could break a Mozilla parse
-      // if my count is short
+    else if (initLen > at->getSize()) {
+      env.error(stringb(
+        "Initializer has " << initLen <<
+        " elements, but array has only " << at->getSize() <<
+        " elements."));
     }
   }
   return tgt_type_isRef ? makeReferenceType(tgt_type): tgt_type;

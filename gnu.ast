@@ -238,6 +238,15 @@ class Initializer {
   // undesignated initializer
   -> IN_designated(FakeList<Designator> *designator_list,
                    Initializer init);
+
+  -> IN_compound {
+       // Incorporate the effect of designators into 'count'.
+       public void gnu_adjustArrayInitializerCount(Env &env,
+         ArrayType const *arrayType, int &count) const;
+       custom ext_adjustArrayInitializerCount {
+         gnu_adjustArrayInitializerCount(env, arrayType, count);
+       }
+     }
 }
 
 class Designator (SourceLoc loc) {
@@ -266,6 +275,9 @@ class Designator (SourceLoc loc) {
 
   -> FieldDesignator(StringRef id);
 
+  // Represent "[idx_expr]" or "[idx_expr ... idx_expr2]".  The latter
+  // initializes an entire range, inclusive of both endpoints, and is
+  // a GNU extension on top of C99 designated initializers.
   -> SubscriptDesignator(Expression idx_expr, // taken from D_array
                          Expression /*nullable*/ idx_expr2)
   {

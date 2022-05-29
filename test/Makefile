@@ -238,6 +238,7 @@ TESTS += tcheck/c99-array-declarator-qualifier.c
 TESTS += tcheck/cast-of-union-literal.c
 TESTS += tcheck/complex-operands.c
 TESTS += tcheck/conv-void-ptr.c
+TESTS += tcheck/designated-init-array-size.c
 TESTS += tcheck/enum.c
 TESTS += tcheck/expr-type.c
 TESTS += tcheck/func-ret-func.c

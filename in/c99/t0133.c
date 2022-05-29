@@ -64,6 +64,13 @@ void a() {
   };
 
   // array with no size
+  //
+  // This is not valid per C11 6.7.9/3: "The type of the entity to be
+  // initialized shall be an array of unknown size or a complete object
+  // type that is not a variable length array type."  But I'm keeping it
+  // for the moment since Elsa has historically tolerated it, and I
+  // think I can continue to do so.
+  //
   struct foo10d {int xd; int yd[];};
   struct foo10d f10d = {3, 4, 5, 6};
   struct foo10e {int xe; int ye[]; int ze; int z2e;};
