@@ -7027,6 +7027,41 @@ Type *E_funCall::inner2_itcheck(Env &env, LookupSet &candidates)
 }
 
 
+// Evaluate a call to '_Static_assert'.
+void evalStaticAssert(Env &env, FakeList<ArgExpression> *args)
+{
+  int argCount = fl_count(args);
+  if (argCount == 1 || argCount == 2) {
+    E_stringLit const *message = NULL;
+    if (argCount == 2) {
+      message = fl_nth(args, 1)->expr->ifE_stringLitC();
+      if (!message) {
+        env.error("Second argument to _Static_assert must be a string literal.");
+      }
+    }
+
+    ConstEval cenv(env.lang.m_typeSizes, env.dependentVar);
+    ArgExpression const *cond = fl_nth(args, 0);
+    CValue v = cond->constEval(cenv);
+    if (v.isZero()) {
+      if (message) {
+        env.error(stringb(
+          "static_assert failed: " << message->m_stringData.toString()));
+      }
+      else {
+        env.error(stringb(
+          "static_assert failed: " << cond->expr->asString()));
+      }
+    }
+  }
+  else {
+    env.error(stringb(
+      "Invalid call to _Static_assert; must pass 1 or 2 arguments, "
+      "not " << argCount << "."));
+  }
+}
+
+
 // special hooks for testing internal algorithms; returns a type
 // for the entire E_funCall expression if it recognizes the form
 // and typechecks it in its entirety
@@ -7069,6 +7104,10 @@ static Type *internalTestingHooks
     else {
       env.error("invalid call to __elsa_constEval");
     }
+  }
+
+  if (funcName == env.special__Static_assert) {
+    evalStaticAssert(env, args);
   }
 
   // test vector for 'getStandardConversion'

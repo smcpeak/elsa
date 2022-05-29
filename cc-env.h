@@ -187,6 +187,7 @@ public:      // data
   StringRef special_cause_xfailure;
   StringRef special_checkMakeASTTypeId;
   StringRef special_checkIsGNUAlias;
+  StringRef special__Static_assert;
   // ---- END: special names ----
 
   // The type of 'size_t'.

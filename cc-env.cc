@@ -353,6 +353,7 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
     special_test_mtype(NULL),
     special_cause_xfailure(NULL),
     special_checkMakeASTTypeId(NULL),
+    special__Static_assert(NULL),
 
     m_size_t_Type(getSimpleType(L.m_typeSizes.m_type_of_size_t)),
 
@@ -534,6 +535,10 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
   special_cause_xfailure = declareSpecialFunction("__cause_xfailure")->name;
   special_checkMakeASTTypeId = declareSpecialFunction("__elsa_checkMakeASTTypeId")->name;
   special_checkIsGNUAlias = declareSpecialFunction2("__elsa_checkIsGNUAlias")->name;
+
+  // This is standard as of C11, and suitable as a standard replacement
+  // for many uses of '__elsa_constEval'.
+  special__Static_assert = declareSpecialFunction2("_Static_assert")->name;
 
   setupOperatorOverloading();
 

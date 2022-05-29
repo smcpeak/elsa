@@ -247,6 +247,7 @@ TESTS += tcheck/init-global-struct.c
 TESTS += tcheck/hello-world.c
 TESTS += tcheck/make-typedef.c
 TESTS += tcheck/ptr-plus-equals.c
+TESTS += tcheck/static-assert.c
 
 # Run a C tcheck test
 out/tcheck/%.c.ok: tcheck/%.c $(CCPARSE)
