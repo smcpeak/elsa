@@ -3968,9 +3968,6 @@ void Declarator::tcheck_init(Env &env)
   // TODO: check the initializer for compatibility with
   // the declared type
 
-  // TODO: check compatibility with dflags; e.g. we can't allow
-  // an initializer for a global variable declared with 'extern'
-
   // remember the initializing value, for const values
   if (init->isIN_expr()) {
     var->setValue(init->asIN_exprC()->e);
