@@ -615,6 +615,9 @@ public:      // funcs
   // get 'std::type_info const &'
   Type *type_info_const_ref();
 
+  // Return ST_BOOL in C++ but ST_INT in C.
+  CVAtomicType *getBooleanOperatorResultType();
+
   // create a built-in candidate for operator overload resolution
   Variable *createBuiltinUnaryOp(Type *retType, OverloadableOp op, Type *x);
   Variable *createBuiltinBinaryOp(Type *retType, OverloadableOp op, Type *x, Type *y);

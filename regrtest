@@ -1118,7 +1118,7 @@ failparse k0081.cc "template instantiated through inferred type instantiating an
 failparse k0082.cc "const register function parameter"
 failparse k0083.cc "friend template class declaration"
 failparse k0084.cc "complex literals"
-failparse k0085.cc "complex double * int"
+testparse k0085.cc #"complex double * int"
 failparse k0086.cc "enable_if: template argument expressions"
 failparse k0087.cc "implicit conversion to "bool const &" via "bool" via "operator bool""
 failparse k0088.cc "inferring const member function template parameter type"

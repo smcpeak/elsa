@@ -2624,9 +2624,28 @@ Type *Env::insertOperandRvalConversion(Expression *&expr, bool wantBool)
   }
 
   // Certain operators also convert to boolean.
-  if (wantBool && !t->isBool()) {
-    t = getSimpleType(ST_BOOL);
-    sc |= SC_BOOL_CONV;
+  if (wantBool) {
+    if (lang.isCplusplus) {
+      if (!t->isBool()) {
+        t = getSimpleType(ST_BOOL);
+        sc |= SC_BOOL_CONV;
+      }
+    }
+    else {
+      // C does not have a "boolean conversion" in the way C++ does, as
+      // its boolean operators merely require scalar inputs, and produce
+      // 'int' as the result type.  I'm going to say that if an operand
+      // is not '_Bool' or an integral type, there is a "boolean
+      // conversion" to 'int', with the intent that analyses can treat
+      // such things mostly uniformly with the C++ case.  In particular,
+      // using a pointer or a floating-point value as a boolean will
+      // trigger SC_BOOL_CONV, which is an indicator that each require
+      // some non-trivial treatment.
+      if (!( t->isBool() || t->isIntegerType() )) {
+        t = getSimpleType(ST_INT);
+        sc |= SC_BOOL_CONV;
+      }
+    }
   }
 
   if (sc != SC_IDENTITY && !onlyDisambiguating()) {
@@ -2662,6 +2681,17 @@ Type *Env::type_info_const_ref()
   }
   else {
     return error("must #include <typeinfo> before using typeid");
+  }
+}
+
+
+CVAtomicType *Env::getBooleanOperatorResultType()
+{
+  if (lang.isCplusplus) {
+    return getSimpleType(ST_BOOL);
+  }
+  else {
+    return getSimpleType(ST_INT);
   }
 }
 

@@ -8518,19 +8518,19 @@ Type *E_binary::itcheck_x(Env &env, Expression *&replacement)
       else if (rhsType->isPointerType() && (special1 & SE_ZERO)) {
         e1 = env.getAndInsertImplicitConversion(rhsType, e1);
       }
-      return env.getSimpleType(ST_BOOL);
+      return env.getBooleanOperatorResultType();
 
     case BIN_LESS:                // <
     case BIN_GREATER:             // >
     case BIN_LESSEQ:              // <=
     case BIN_GREATEREQ:           // >=
-      return env.getSimpleType(ST_BOOL);
+      return env.getBooleanOperatorResultType();
 
     case BIN_AND:                 // &&
     case BIN_OR:                  // ||
     case BIN_IMPLIES:             // ==>
     case BIN_EQUIVALENT:          // <==>
-      return env.getSimpleType(ST_BOOL);
+      return env.getBooleanOperatorResultType();
 
     case BIN_PLUS:                // +
       // case: p + n

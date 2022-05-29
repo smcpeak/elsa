@@ -236,6 +236,7 @@ out/pqname/%.c.ok: pqname/%.c pqname/%.c.expect $(CCPARSE)
 TESTS += tcheck/builtin-offsetof.c
 TESTS += tcheck/c99-array-declarator-qualifier.c
 TESTS += tcheck/cast-of-union-literal.c
+TESTS += tcheck/complex-operands.c
 TESTS += tcheck/conv-void-ptr.c
 TESTS += tcheck/enum.c
 TESTS += tcheck/expr-type.c

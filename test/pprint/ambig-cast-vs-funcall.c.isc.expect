@@ -8,7 +8,7 @@ typedef struct S {
 int f1(S b, int choice)
 {
   typedef int a;
-  if (ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, choice)) {
+  if (ISC(SC_LVAL_TO_RVAL, int, choice)) {
     return ISC(SC_LVAL_TO_RVAL, int, (a)b.c);
   }
   else {
@@ -18,7 +18,7 @@ int f1(S b, int choice)
 
 int f2(S (*a)(int), int b, int choice)
 {
-  if (ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, choice)) {
+  if (ISC(SC_LVAL_TO_RVAL, int, choice)) {
     return a(ISC(SC_LVAL_TO_RVAL, int, b)).c;
   }
   else {

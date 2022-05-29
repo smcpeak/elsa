@@ -12,10 +12,9 @@ void f(void *p)
 
 void g()
 {
-  if (ISC(SC_BOOL_CONV, bool,
-        !ISC(SC_BOOL_CONV, bool,
-           ISC(SC_ARRAY_TO_PTR, char *,
-             "this is an idiom for forcing an assert failure")))) {
+  if (!ISC(SC_BOOL_CONV, int,
+         ISC(SC_ARRAY_TO_PTR, char *,
+           "this is an idiom for forcing an assert failure"))) {
   }
 }
 

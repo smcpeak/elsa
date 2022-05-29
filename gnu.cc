@@ -917,7 +917,7 @@ Type *E_addrOfLabel::itcheck_x(Env &env, Expression *&replacement)
 
 
 // decompose a real/imaginary/complex type:
-//   prec: 0=float, 1=double, 2=longdouble
+//   prec: -1=integral, 0=float, 1=double, 2=longdouble
 //   axis: 0=real, 1=imag, 2=complex
 // return false if not among the nine floating types
 bool dissectFloatingType(int &prec, int &axis, Type *t)
@@ -942,7 +942,15 @@ bool dissectFloatingType(int &prec, int &axis, Type *t)
     case ST_DOUBLE_COMPLEX:         prec=1; axis=2; return true;
     case ST_LONG_DOUBLE_COMPLEX:    prec=2; axis=2; return true;
 
-    default: return false;
+    default:
+      if (isIntegerType(id)) {
+        prec = -1;
+        axis = 0;
+        return true;
+      }
+      else {
+        return false;
+      }
   }
 }
 
@@ -968,6 +976,7 @@ Type *E_fieldAcc::itcheck_complex_selector(Env &env, LookupFlags flags,
 
   int prec, axis;
   if (!dissectFloatingType(prec, axis, obj->type) ||
+      prec == -1/*integral*/ ||
       axis != 2/*complex*/) {
     return env.error(stringc << "can only apply " << fieldName->getName()
                              << " to complex types, not '"
@@ -998,6 +1007,14 @@ Type *E_binary::itcheck_complex_arith(Env &env)
   // result axis
   int axis;
   switch (op) {
+    case BIN_EQUAL:
+    case BIN_NOTEQUAL:
+    case BIN_LESS:
+    case BIN_GREATER:
+    case BIN_LESSEQ:
+    case BIN_GREATEREQ:
+      return env.getBooleanOperatorResultType();
+
     case BIN_PLUS:
     case BIN_MINUS:
       if (axis1 == axis2) {

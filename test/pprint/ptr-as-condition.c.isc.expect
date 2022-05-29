@@ -3,25 +3,24 @@
 // -*-c++-*-
 void f(int *p)
 {
-  if (ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p)) {
+  if (ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, int, p)) {
   }
-  if (ISC(SC_BOOL_CONV, bool,
-        !ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p))) {
+  if (!ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, int, p)) {
   }
-  ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p) &&
-    ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p);
-  ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p) ||
-    ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p);
-  ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p)? p : p;
-  for (; ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p); 1) {
+  ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, int, p) &&
+    ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, int, p);
+  ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, int, p) ||
+    ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, int, p);
+  ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, int, p)? p : p;
+  for (; ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, int, p); 1) {
     break;
   }
-  while (ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p)) {
+  while (ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, int, p)) {
     break;
   }
   do {
     break;
-  } while (ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, p));
+  } while (ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, int, p));
 }
 
 ---- STOP ----

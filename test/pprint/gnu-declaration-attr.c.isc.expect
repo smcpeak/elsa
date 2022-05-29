@@ -18,8 +18,7 @@ int main()
   int x = ISC(SC_LVAL_TO_RVAL, int, var_alias);
   return ISC(SC_LVAL_TO_RVAL, int, x) == 7 &&
            ISC(SC_LVAL_TO_RVAL, int, alias2) == 9 &&
-           ISC(SC_LVAL_TO_RVAL, int, alias3) == 29 &&
-           ISC(SC_BOOL_CONV, bool, 1)?
+           ISC(SC_LVAL_TO_RVAL, int, alias3) == 29 && 1?
            0 :
            1;
 }

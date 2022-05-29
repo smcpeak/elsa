@@ -8,14 +8,14 @@ void *retzero()
 
 void *f2(int n, char *s)
 {
-  return ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, n)?
+  return ISC(SC_LVAL_TO_RVAL, int, n)?
            (void *)s :
            ISC(SC_PTR_CONV, void *, 0);
 }
 
 void *f3(int n, char *s)
 {
-  return ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, bool, n)?
+  return ISC(SC_LVAL_TO_RVAL, int, n)?
            ISC(SC_PTR_CONV, void *, 0) :
            (void *)s;
 }
