@@ -47,8 +47,8 @@ out/elsa-check/%.c: %.c
 	touch $@
 
 
-# Test all of them.  (Will be.  Elsa still out right now.)
-out/all-check/%.c: out/gcc-check/%.c out/clang-check/%.c
+# Test all of them.
+out/all-check/%.c: out/gcc-check/%.c out/clang-check/%.c out/elsa-check/%.c
 	$(CREATE_OUTPUT_DIRECTORY)
 	touch $@
 

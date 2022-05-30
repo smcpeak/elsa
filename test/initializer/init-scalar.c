@@ -12,10 +12,12 @@ static int test_scalars()
   // Clang will give an error with -pedantic-errors.
   //ERROR(double-braces): int c = { { 3 } };
   //NOTWORKING(gcc): GCC only warns.
+  //NOTWORKING(elsa): Rule not enforced.
 
   // Same here.
   //ERROR(triple-braces): int d = { { { 4 } } };
   //NOTWORKING(gcc): GCC only warns.
+  //NOTWORKING(elsa): Rule not enforced.
 
   // Conversions work like for assignment.
   unsigned e = (signed char)(-1);

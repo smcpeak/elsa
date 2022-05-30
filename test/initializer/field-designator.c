@@ -11,6 +11,7 @@ S s1 = { 3,4 };
 S s2 = { .x = 3, .y = 4 };
 
 //ERROR(bad-field): S s3 = { .x = 3, .z = 4 };
+//NOTWORKING(elsa): Rule not enforced.
 
 static int test_s1_s2()
 {
@@ -43,6 +44,7 @@ S sarr2a[2] = { 1, 2, 3, 4 };
 // Despite the error message, this does not seem to be accepted.
 //ERROR(field-for-array-nest1): S sarr2b[2] = { .x = 1,      2, 3, 4 };
 //ERROR(field-for-array-nest2): S sarr2c[2] = {      1, .y = 2, 3, 4 };
+//NOTWORKING(elsa): Rule not enforced.
 
 static int test_sarr2a()
 {
@@ -67,6 +69,7 @@ U u2 = { .i = 0x0302 };
 U u3 = { .c = -1 };
 
 //ERROR(bad-field2): U u4 = { .x = -1 };
+//NOTWORKING(elsa): Rule not enforced.
 
 // Permissible to initialize multiple union elements, and last wins.
 U u5 = { .c = -1, .i = 0x0302 };

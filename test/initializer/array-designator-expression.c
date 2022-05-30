@@ -12,6 +12,7 @@ int arr2a[2] = { [0] = 0, [1] = 1 };
 //ERROR(non-const-desig-expr): int arr2b[2] = { [0] = 0, [one()] = 1 };
 
 //ERROR(negative-desig-expr):  int arr2c[2] = { [0] = 0, [-1] = 1 };
+//NOTWORKING(elsa): Rule not enforced.
 
 static int test_arr2a()
 {
@@ -30,6 +31,7 @@ typedef struct S {
 S s1 = { 1, 2 };
 
 //ERROR(index-for-non-array): S s2 = { [0] = 1, 2 };
+//NOTWORKING(elsa): Rule not enforced.
 
 static int test_s1()
 {
@@ -45,6 +47,7 @@ int arr1000a[] = { 0, 1, 2, [999] = 999 };
 
 // But not negative.
 //ERROR(negative-for-unspec-size): int arr1000b[] = { 0, 1, 2, [-1] = 999 };
+//NOTWORKING(elsa): Rule not enforced.
 
 static int test_arr1000()
 {

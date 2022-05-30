@@ -12,6 +12,7 @@ int one()
 int arr2a[2] = { 1+2, 3+4 };
 
 //ERROR(non-const-global-init): int arr2b[2] = { one()+2, 3+4 };
+//NOTWORKING(elsa): Rule not enforced.
 
 static int test_arr2a()
 {
@@ -43,6 +44,7 @@ static int test_static_local_arr2a()
   static int arr2a[2] = { 1+2, 3+4 };
 
   //ERROR(non-const-static-init): static int arr2b[2] = { one()+2, 3+4 };
+  //NOTWORKING(elsa): Rule not enforced.
 
   return
     arr2a[0] == 3 &&
