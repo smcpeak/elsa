@@ -60,6 +60,7 @@ check: out/all-check/array-of-char-in-func.c
 check: out/all-check/block-scope-linkage.c
 check: out/all-check/complete-object.c
 check: out/all-check/constant-exprs.c
+check: out/all-check/eval-sequence.c
 check: out/all-check/field-designator.c
 check: out/all-check/init-scalar.c
 check: out/all-check/override-eval.c
