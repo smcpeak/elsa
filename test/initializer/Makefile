@@ -35,7 +35,7 @@ out/gcc-check/%.c: %.c
 out/clang-check/%.c: %.c
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(MULTITEST) -sut clang $(CLANG) -c -o /dev/null -std=c11 -pedantic-errors $*.c
-	$(GCC) -o out/clang-check/$*.exe $*.c
+	$(CLANG) -o out/clang-check/$*.exe $*.c
 	./out/clang-check/$*.exe
 	touch $@
 
