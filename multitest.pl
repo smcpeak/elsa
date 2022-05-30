@@ -9,6 +9,7 @@ $comment = "//";    # comment syntax
 $selectedError = "";
 $keepTemps = 0;
 $contin = 0;
+$curSUT = "";
 @failures = ();     # if $contin, track which configurations failed
 
 $me = "multitest";
@@ -19,6 +20,12 @@ while (@ARGV && $ARGV[0] =~ m/^-/) {
 
   if ($opt eq "-err") {
     $selectedError = $ARGV[0];
+    shift @ARGV;
+    next;
+  }
+
+  if ($opt eq "-sut") {
+    $curSUT = $ARGV[0];
     shift @ARGV;
     next;
   }
@@ -54,8 +61,18 @@ again.  These additional runs should fail.
 
 Each 'name' must match the regex: [a-zA-Z0-9_-]+
 
+After any ERROR/IFMISSING line, before the next one, you can write:
+
+  ${comment}NOTWORKING(sut): explanation
+
+to indicate that the preceding test does not work with the given
+System Under Test (SUT).  When this script is invoked with the matching
+-sut option, it will run the test but expect no failure.  The default
+SUT is "".
+
 options:
   -err name     Only test ERROR(name) (does not test original).
+  -sut sut      Set current SUT for NOTWORKING lines.
   -keep         Keep temporaries even when they succeed.
 EOF
 
@@ -117,13 +134,25 @@ open(IN, "<$fname") or die("can't open $fname: $!\n");
 @lines = <IN>;
 close(IN) or die;
 
-# see what ERROR/ERRORIFMISSING lines are present
+# Set of codes marked as not working with the current SUT.
+%notworking = ();
+
+# Set of ERROR/ERRORIFMISSING codes that are present.
 %codes = ();
+
+# Scan the file to populate %notworking and %codes.
+$lastCode = "";
 foreach $line (@lines) {
   my ($miss, $code) = ($line =~ m|${comment}ERROR(IFMISSING)?\(([a-zA-Z0-9_-]+)\):|);
   if (defined($code)) {
     $codes{$code} = 1;
     $miss .= " ";     # pretend used
+    $lastCode = $code;
+  }
+
+  my ($sut) = ($line =~ m|${comment}NOTWORKING\(([a-zA-Z0-9_-]*)\):|);
+  if (defined($sut) && $sut eq $curSUT) {
+    $notworking{$lastCode} = 1;
   }
 }
 
@@ -144,7 +173,8 @@ foreach $selcode (@allkeys) {
   }
   $testedVariations++;
 
-  print("-- selecting ERROR($selcode) --\n");
+  my $label = $notworking{$selcode}? "NOTWORKING" : "ERROR";
+  print("-- selecting $label($selcode) --\n");
 
   my $tempfname = "${fnameBase}.error.${selcode}${fnameExt}";
 
@@ -183,15 +213,30 @@ foreach $selcode (@allkeys) {
 
   #print("command: ", join(' ', @args), "\n");
   $code = mysystem(@args);
-  if ($code == 0) {
-    print("ERROR($selcode): expected this to fail:\n",
-          "  ", join(' ', @args), "\n");
-    failed($selcode, 4);
+
+  if ($notworking{$selcode}) {
+    if ($code == 0) {
+      print("$selcode: No error, as expected.\n");
+      if (!$keepTemps) {
+        unlink($tempfname);
+      }
+    }
+    else {
+      print("NOTWORKING ERROR($selcode): Test failed.  Maybe the bug is fixed?\n");
+      failed($selcode, 4);
+    }
   }
   else {
-    print("$selcode: failed as expected (code $code)\n");
-    if (!$keepTemps) {
-      unlink($tempfname);
+    if ($code == 0) {
+      print("ERROR($selcode): expected this to fail:\n",
+            "  ", join(' ', @args), "\n");
+      failed($selcode, 4);
+    }
+    else {
+      print("$selcode: failed as expected (code $code)\n");
+      if (!$keepTemps) {
+        unlink($tempfname);
+      }
     }
   }
 }

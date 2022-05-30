@@ -1,0 +1,12 @@
+---- stdout ----
+-- selecting ERROR(1) --
+1: failed as expected (code 1)
+-- selecting NOTWORKING(2) --
+2: No error, as expected.
+-- selecting ERROR(3) --
+3: failed as expected (code 3)
+
+multitest: success: all 3 variations failed as expected
+---- stderr ----
+---- exit status ----
+Exit 0

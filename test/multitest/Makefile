@@ -31,6 +31,7 @@ out/gcc-run/%.c: %.c %.c.expect $(MULTITEST_SCRIPT)
 	touch $@
 
 check: out/gcc-run/simple.c
+check: out/gcc-run/notworking.c
 
 
 # Run multitest with a certain argument.
@@ -45,6 +46,18 @@ out/args/%.args: %.args %.args.expect $(MULTITEST_SCRIPT)
 check: out/args/err-1.args
 check: out/args/err-named-error.args
 check: out/args/err-unknown.args
+
+
+# Run with -sut sut1
+out/sut1/%.c: %.c %.sut1.c.expect $(MULTITEST_SCRIPT)
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/sut1/$*.c.actual \
+	  --expect $*.sut1.c.expect \
+	  $(MULTITEST) -sut sut1 ./gcc-run $*.c
+	touch $@
+
+check: out/sut1/notworking.c
 
 
 clean:
