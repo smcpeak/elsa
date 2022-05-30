@@ -176,7 +176,11 @@ foreach $selcode (@allkeys) {
   my $label = $notworking{$selcode}? "NOTWORKING" : "ERROR";
   print("-- selecting $label($selcode) --\n");
 
-  my $tempfname = "${fnameBase}.error.${selcode}${fnameExt}";
+  # Include $sut in the generated file name so we can run tests for
+  # other SUTs in parallel.
+  my $sutPrefix = $curSUT? "${curSUT}-" : "";
+
+  my $tempfname = "${fnameBase}.error.${sutPrefix}${selcode}${fnameExt}";
 
   # run through the lines in the file, generating a new file
   # that has the selected lines uncommented
