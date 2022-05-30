@@ -40,6 +40,7 @@ out/both-check/%.c: out/cc-check/%.c out/elsa-check/%.c
 
 
 # Elsa wrongly accepts some of the errors.
+check: out/cc-check/block-scope-linkage.c
 check: out/cc-check/complete-object.c
 check: out/cc-check/constant-exprs.c
 
