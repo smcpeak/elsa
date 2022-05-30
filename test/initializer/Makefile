@@ -12,17 +12,17 @@ include $(SMBASE)/sm-lib.mk
 
 # Tools.
 PERL      = perl
-CC        = gcc
+GCC       = gcc
 MULTITEST = $(PERL) ../../multitest.pl
 CCPARSE   = ../../ccparse.exe
 
 
 # Use $(CC) and multitest to check %.c.
-out/cc-check/%.c: %.c
+out/gcc-check/%.c: %.c
 	$(CREATE_OUTPUT_DIRECTORY)
-	$(MULTITEST) -sut gcc $(CC) -c -o /dev/null -std=c11 -pedantic-errors $*.c
-	$(CC) -o out/cc-check/$*.exe $*.c
-	./out/cc-check/$*.exe
+	$(MULTITEST) -sut gcc $(GCC) -c -o /dev/null -std=c11 -pedantic-errors $*.c
+	$(GCC) -o out/gcc-check/$*.exe $*.c
+	./out/gcc-check/$*.exe
 	touch $@
 
 
@@ -40,12 +40,12 @@ out/both-check/%.c: out/cc-check/%.c out/elsa-check/%.c
 
 
 # Elsa wrongly accepts some of the errors, so I'm using cc-check.
-check: out/cc-check/array-designator-expression.c
-check: out/cc-check/block-scope-linkage.c
-check: out/cc-check/complete-object.c
-check: out/cc-check/constant-exprs.c
-check: out/cc-check/field-designator.c
-check: out/cc-check/init-scalar.c
+check: out/gcc-check/array-designator-expression.c
+check: out/gcc-check/block-scope-linkage.c
+check: out/gcc-check/complete-object.c
+check: out/gcc-check/constant-exprs.c
+check: out/gcc-check/field-designator.c
+check: out/gcc-check/init-scalar.c
 
 
 clean:
