@@ -12,17 +12,31 @@ include $(SMBASE)/sm-lib.mk
 
 # Tools.
 PERL      = perl
-GCC       = gcc
 MULTITEST = $(PERL) ../../multitest.pl
 CCPARSE   = ../../ccparse.exe
 
+# Currently I'm using GCC-9.3.0.
+GCC       = gcc
 
-# Use $(CC) and multitest to check %.c.
+# Currently I'm using Clang-14.0.0.
+CLANG     = clang
+
+
+# Use $(GCC) and multitest to check %.c.
 out/gcc-check/%.c: %.c
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(MULTITEST) -sut gcc $(GCC) -c -o /dev/null -std=c11 -pedantic-errors $*.c
 	$(GCC) -o out/gcc-check/$*.exe $*.c
 	./out/gcc-check/$*.exe
+	touch $@
+
+
+# Use $(CLANG) and multitest to check %.c.
+out/clang-check/%.c: %.c
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(MULTITEST) -sut clang $(CLANG) -c -o /dev/null -std=c11 -pedantic-errors $*.c
+	$(GCC) -o out/clang-check/$*.exe $*.c
+	./out/clang-check/$*.exe
 	touch $@
 
 
@@ -33,19 +47,19 @@ out/elsa-check/%.c: %.c
 	touch $@
 
 
-# Test both of them.
-out/both-check/%.c: out/cc-check/%.c out/elsa-check/%.c
+# Test all of them.  (Will be.  Elsa still out right now.)
+out/all-check/%.c: out/gcc-check/%.c out/clang-check/%.c
 	$(CREATE_OUTPUT_DIRECTORY)
 	touch $@
 
 
-# Elsa wrongly accepts some of the errors, so I'm using cc-check.
-check: out/gcc-check/array-designator-expression.c
-check: out/gcc-check/block-scope-linkage.c
-check: out/gcc-check/complete-object.c
-check: out/gcc-check/constant-exprs.c
-check: out/gcc-check/field-designator.c
-check: out/gcc-check/init-scalar.c
+# Elsa wrongly accepts some of the errors, so I'm using gcc-check.
+check: out/all-check/array-designator-expression.c
+check: out/all-check/block-scope-linkage.c
+check: out/all-check/complete-object.c
+check: out/all-check/constant-exprs.c
+check: out/all-check/field-designator.c
+check: out/all-check/init-scalar.c
 
 
 clean:
