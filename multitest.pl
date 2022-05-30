@@ -87,6 +87,10 @@ if (!defined($fnameExt)) {
 
 # try once with no modifications
 if (!$selectedError) {
+  # I do not print any header line here because I invoke this script
+  # a very large number of times as part of 'regrtest', and I do not
+  # want the clutter of repeated banners there.
+
   $code = mysystem(@ARGV);
   if ($code != 0) {
     failed("original", $code);
@@ -147,8 +151,8 @@ foreach $selcode (@allkeys) {
   open(OUT, ">$tempfname") or die("can't create $tempfname: $!\n");
   foreach $line (@lines) {
     my ($miss, $code, $rest) =
+      #                          miss          code    rest
       ($line =~ m|${comment}ERROR(IFMISSING)?\((\d+)\):(.*)$|);
-      #                  miss          code    rest
     if (defined($code) && $selcode == $code) {
       if ($miss) {
         # ERRORIFMISSING: we want to comment the whole line
