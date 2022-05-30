@@ -146,7 +146,7 @@ foreach $selcode (@allkeys) {
 
   print("-- selecting ERROR($selcode) --\n");
 
-  my $tempfname = "${fnameBase}.error${selcode}${fnameExt}";
+  my $tempfname = "${fnameBase}.error.${selcode}${fnameExt}";
 
   # run through the lines in the file, generating a new file
   # that has the selected lines uncommented
