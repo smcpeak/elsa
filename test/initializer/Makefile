@@ -62,6 +62,7 @@ check: out/all-check/complete-object.c
 check: out/all-check/constant-exprs.c
 check: out/all-check/field-designator.c
 check: out/all-check/init-scalar.c
+check: out/all-check/override-eval.c
 check: out/all-check/struct-single-expression.c
 
 
