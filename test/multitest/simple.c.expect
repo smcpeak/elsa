@@ -5,8 +5,10 @@
 2: failed as expected (code 2)
 -- selecting ERROR(3) --
 3: failed as expected (code 3)
+-- selecting ERROR(named-error) --
+named-error: failed as expected (code 4)
 
-multitest: success: all 3 variations failed as expected
+multitest: success: all 4 variations failed as expected
 ---- stderr ----
 ---- exit status ----
 Exit 0

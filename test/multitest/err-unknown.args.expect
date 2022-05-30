@@ -1,0 +1,6 @@
+---- stdout ----
+
+multitest: There is no error unknown in simple.c.
+---- stderr ----
+---- exit status ----
+Exit 0

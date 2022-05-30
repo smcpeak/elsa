@@ -1,0 +1,8 @@
+---- stdout ----
+-- selecting ERROR(1) --
+1: failed as expected (code 1)
+
+multitest: success: error 1 failed as expected
+---- stderr ----
+---- exit status ----
+Exit 0

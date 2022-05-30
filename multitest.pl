@@ -17,7 +17,7 @@ while (@ARGV && $ARGV[0] =~ m/^-/) {
   my $opt = $ARGV[0];
   shift @ARGV;
 
-  if ($opt eq "-errnum") {
+  if ($opt eq "-err") {
     $selectedError = $ARGV[0];
     shift @ARGV;
     next;
@@ -44,16 +44,18 @@ This will first invoke the command line as given, expecting that to
 succeed.  Then, it will scan input.cc (which must be the last argument
 on the command line) for any lines of the forms:
 
-  ${comment}ERROR(n): <some code>
-  <some code>     ${comment}ERRORIFMISSING(n):
+  ${comment}ERROR(name): <some code>
+  <some code>     ${comment}ERRORIFMISSING(name):
 
-If it finds them, then for each such 'n' the lines ERROR(n) will be
-uncommented (and "ERROR(n)" removed), and lines ERRORIFMISSING(n)
-commented-out, and the original command executed again.  These
-additional runs should fail.
+If it finds them, then for each such 'name' the lines ERROR(name) will
+be uncommented (and "ERROR(name)" removed), and lines
+ERRORIFMISSING(name) commented-out, and the original command executed
+again.  These additional runs should fail.
+
+Each 'name' must match the regex: [a-zA-Z0-9_-]+
 
 options:
-  -errnum n     Only test ERROR(n) (does not test original).
+  -err name     Only test ERROR(name) (does not test original).
   -keep         Keep temporaries even when they succeed.
 EOF
 
@@ -118,7 +120,7 @@ close(IN) or die;
 # see what ERROR/ERRORIFMISSING lines are present
 %codes = ();
 foreach $line (@lines) {
-  my ($miss, $code) = ($line =~ m|${comment}ERROR(IFMISSING)?\((\d+)\):|);
+  my ($miss, $code) = ($line =~ m|${comment}ERROR(IFMISSING)?\(([a-zA-Z0-9_-]+)\):|);
   if (defined($code)) {
     $codes{$code} = 1;
     $miss .= " ";     # pretend used
@@ -126,7 +128,7 @@ foreach $line (@lines) {
 }
 
 # get sorted keys
-@allkeys = (sort {$a <=> $b} (keys %codes));
+@allkeys = (sort (keys %codes));
 $numkeys = @allkeys;
 if ($numkeys == 0) {
   # no error tags
@@ -151,9 +153,9 @@ foreach $selcode (@allkeys) {
   open(OUT, ">$tempfname") or die("can't create $tempfname: $!\n");
   foreach $line (@lines) {
     my ($miss, $code, $rest) =
-      #                          miss          code    rest
-      ($line =~ m|${comment}ERROR(IFMISSING)?\((\d+)\):(.*)$|);
-    if (defined($code) && $selcode == $code) {
+      #                          miss          code               rest
+      ($line =~ m|${comment}ERROR(IFMISSING)?\(([a-zA-Z0-9_-]+)\):(.*)$|);
+    if (defined($code) && $selcode eq $code) {
       if ($miss) {
         # ERRORIFMISSING: we want to comment the whole line
         print OUT ("${comment} $line");
@@ -207,7 +209,7 @@ elsif ($testedVariations) {
   print("success: error $selectedError failed as expected\n");
 }
 else {
-  print("nop: there is no error $selectedError in $fname\n");
+  print("There is no error $selectedError in $fname.\n");
 }
 
 exit(0);

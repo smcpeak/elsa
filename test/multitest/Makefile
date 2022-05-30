@@ -11,7 +11,8 @@ include $(SMBASE)/sm-lib.mk
 PYTHON3            = python3
 PERL               = perl
 CC                 = gcc
-MULTITEST          = $(PERL) ../../multitest.pl
+MULTITEST_SCRIPT   = ../../multitest.pl
+MULTITEST          = $(PERL) $(MULTITEST_SCRIPT)
 RUN_COMPARE_EXPECT = $(PYTHON3) $(SMBASE)/run-compare-expect.py
 
 
@@ -21,7 +22,7 @@ RUN_COMPARE_EXPECT = $(PYTHON3) $(SMBASE)/run-compare-expect.py
 
 
 # Run multitest gcc-run under RCE.
-out/gcc-run/%.c: %.c %.c.expect
+out/gcc-run/%.c: %.c %.c.expect $(MULTITEST_SCRIPT)
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/gcc-run/$*.c.actual \
@@ -29,8 +30,21 @@ out/gcc-run/%.c: %.c %.c.expect
 	  $(MULTITEST) ./gcc-run $*.c
 	touch $@
 
-
 check: out/gcc-run/simple.c
+
+
+# Run multitest with a certain argument.
+out/args/%.args: %.args %.args.expect $(MULTITEST_SCRIPT)
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/args/$*.args.actual \
+	  --expect $*.args.expect \
+	  $(MULTITEST) $(shell cat $*.args) ./gcc-run simple.c
+	touch $@
+
+check: out/args/err-1.args
+check: out/args/err-named-error.args
+check: out/args/err-unknown.args
 
 
 clean:

@@ -1,0 +1,8 @@
+---- stdout ----
+-- selecting ERROR(named-error) --
+named-error: failed as expected (code 4)
+
+multitest: success: error named-error failed as expected
+---- stderr ----
+---- exit status ----
+Exit 0
