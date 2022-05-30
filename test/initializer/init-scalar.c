@@ -9,12 +9,13 @@ static int test_scalars()
   // "... optionally enclosed in braces."
   int b = { 2 };
 
-  // GCC will warn about this, although I think it is invalid.  Clang
-  // will give an error with -pedantic-errors.
-  //TODO: int c = { { 3 } };
+  // Clang will give an error with -pedantic-errors.
+  //ERROR(double-braces): int c = { { 3 } };
+  //NOTWORKING(gcc): GCC only warns.
 
   // Same here.
-  //TODO: int d = { { { 4 } } };
+  //ERROR(triple-braces): int d = { { { 4 } } };
+  //NOTWORKING(gcc): GCC only warns.
 
   // Conversions work like for assignment.
   unsigned e = (signed char)(-1);

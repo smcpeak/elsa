@@ -20,7 +20,7 @@ CCPARSE   = ../../ccparse.exe
 # Use $(CC) and multitest to check %.c.
 out/cc-check/%.c: %.c
 	$(CREATE_OUTPUT_DIRECTORY)
-	$(MULTITEST) $(CC) -c -o /dev/null -std=c11 -pedantic-errors $*.c
+	$(MULTITEST) -sut gcc $(CC) -c -o /dev/null -std=c11 -pedantic-errors $*.c
 	$(CC) -o out/cc-check/$*.exe $*.c
 	./out/cc-check/$*.exe
 	touch $@
@@ -29,7 +29,7 @@ out/cc-check/%.c: %.c
 # Use $(CCPARSE) and multitest to check %.c.
 out/elsa-check/%.c: %.c
 	$(CREATE_OUTPUT_DIRECTORY)
-	$(MULTITEST) $(CCPARSE) -xc $*.c
+	$(MULTITEST) -sut elsa $(CCPARSE) -xc $*.c
 	touch $@
 
 
