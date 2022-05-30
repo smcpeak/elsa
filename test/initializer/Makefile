@@ -54,18 +54,18 @@ out/all-check/%.c: out/gcc-check/%.c out/clang-check/%.c out/elsa-check/%.c
 
 
 # Elsa wrongly accepts some of the errors, so I'm using gcc-check.
-check: out/all-check/array-designator-expression.c
-check: out/all-check/array-of-char.c
-check: out/all-check/array-of-char-in-func.c
-check: out/all-check/block-scope-linkage.c
-check: out/all-check/complete-object.c
-check: out/all-check/constant-exprs.c
-check: out/all-check/eval-sequence.c
-check: out/all-check/field-designator.c
-check: out/all-check/init-scalar.c
-check: out/all-check/init-non-contained.c
-check: out/all-check/override-eval.c
-check: out/all-check/struct-single-expression.c
+check: out/all-check/p02-init-non-contained.c
+check: out/all-check/p03-complete-object.c
+check: out/all-check/p04-constant-exprs.c
+check: out/all-check/p05-block-scope-linkage.c
+check: out/all-check/p06-array-designator-expression.c
+check: out/all-check/p07-field-designator.c
+check: out/all-check/p11-init-scalar.c
+check: out/all-check/p13-struct-single-expression.c
+check: out/all-check/p14-array-of-char-in-func.c
+check: out/all-check/p14-array-of-char.c
+check: out/all-check/p19-override-eval.c
+check: out/all-check/p23-eval-sequence.c
 
 
 clean:
