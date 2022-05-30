@@ -63,6 +63,7 @@ check: out/all-check/constant-exprs.c
 check: out/all-check/eval-sequence.c
 check: out/all-check/field-designator.c
 check: out/all-check/init-scalar.c
+check: out/all-check/init-non-contained.c
 check: out/all-check/override-eval.c
 check: out/all-check/struct-single-expression.c
 

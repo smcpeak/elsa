@@ -11,9 +11,6 @@ int arr2a[2] = { [0] = 0, [1] = 1 };
 
 //ERROR(non-const-desig-expr): int arr2b[2] = { [0] = 0, [one()] = 1 };
 
-//ERROR(negative-desig-expr):  int arr2c[2] = { [0] = 0, [-1] = 1 };
-//NOTWORKING(elsa): Rule not enforced.
-
 static int test_arr2a()
 {
   return
