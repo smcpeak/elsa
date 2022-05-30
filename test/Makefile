@@ -290,6 +290,7 @@ check: out/test-astbuild.ok
 .PHONY: check-subdirs
 check-subdirs:
 	$(MAKE) -C multitest check
+	$(MAKE) -C initializer check
 
 check: check-subdirs
 
@@ -297,6 +298,7 @@ check: check-subdirs
 .PHONY: clean-subdirs
 clean-subdirs:
 	$(MAKE) -C multitest clean
+	$(MAKE) -C initializer clean
 
 clean: clean-subdirs
 
