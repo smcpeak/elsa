@@ -44,6 +44,7 @@ check: out/cc-check/array-designator-expression.c
 check: out/cc-check/block-scope-linkage.c
 check: out/cc-check/complete-object.c
 check: out/cc-check/constant-exprs.c
+check: out/cc-check/field-designator.c
 
 
 clean:
