@@ -36,7 +36,18 @@ static int test_str_short_init()
     str_short_init[0] == 'h' &&
     str_short_init[1] == 'i' &&
     str_short_init[2] == '\0' &&
-    // Elements 3, 4, 5 have indeterminate value.
+
+    // These elements *are* definitely zero-initialized.  C11 6.7.9/10,
+    // regarding automatic storage duration, only applies if the entire
+    // declared object has no initializer.  Here, C11 6.7.9/19 applies:
+    // "all subobjects that are not initialized explicitly shall be
+    // initialized implicitly the same as objects that have static
+    // storage duration."  Also C11 6.7.9/21 applies, explicitly
+    // covering string literals.
+    str_short_init[3] == '\0' &&
+    str_short_init[4] == '\0' &&
+    str_short_init[5] == '\0' &&
+
     sizeof(str_short_init) == 6 &&
     1;
 }
