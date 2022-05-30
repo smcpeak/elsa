@@ -1,5 +1,5 @@
 // array-of-char-in-func.c
-// Like array-of-char.c, but inside functions (block scope).
+// C11 6.7.9/14: Like array-of-char.c, but inside functions (block scope).
 
 // This set of tests was made by copying those tests from
 // array-of-char.c that seemed potentially interesting to also exercise

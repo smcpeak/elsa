@@ -1,6 +1,6 @@
 // complete-object.c
-// Test C11 6.7.9/3: "The type of the entity to be initialized shall be
-// an array of unknown size or a complete object type that is not a
+// C11 6.7.9/3: "The type of the entity to be initialized shall be an
+// array of unknown size or a complete object type that is not a
 // variable length array type."
 
 

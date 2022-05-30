@@ -1,5 +1,5 @@
 // override-eval.c
-// Testing evaluation of overridden initializer expressions.
+// C11 6.7.9/19: Testing evaluation of overridden initializer expressions.
 
 // C11 6.7.9/19: "The initialization shall occur in initializer list
 // order, each initializer provided for a particular subobject
