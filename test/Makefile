@@ -286,6 +286,21 @@ out/test-astbuild.ok: $(CCPARSE) test-astbuild.expect
 check: out/test-astbuild.ok
 
 
+# ----------------------------- subdirs --------------------------------
+.PHONY: check-subdirs
+check-subdirs:
+	$(MAKE) -C multitest check
+
+check: check-subdirs
+
+
+.PHONY: clean-subdirs
+clean-subdirs:
+	$(MAKE) -C multitest clean
+
+clean: clean-subdirs
+
+
 # ---------------------------- check rule ------------------------------
 check: $(patsubst %,out/%.ok,$(TESTS))
 	@echo "All tests in test/ passed."

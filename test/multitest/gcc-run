@@ -1,0 +1,24 @@
+#!/bin/sh
+# Compile and run a C/C++ file.
+
+if [ "x$1" = "x" ]; then
+  echo "usage: $0 file.c [args...]"
+  exit 2
+fi
+
+src="$1"
+shift
+
+exe="$HOME/tmp/gcc-run-$$.exe"
+mkdir -p "$HOME/tmp" || exit
+
+gcc -o "$exe" "$src" || exit
+
+"$exe" "$@"
+code=$?
+
+rm "$exe"
+
+exit $code
+
+# EOF
