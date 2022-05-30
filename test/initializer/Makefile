@@ -55,6 +55,8 @@ out/all-check/%.c: out/gcc-check/%.c out/clang-check/%.c out/elsa-check/%.c
 
 # Elsa wrongly accepts some of the errors, so I'm using gcc-check.
 check: out/all-check/array-designator-expression.c
+check: out/all-check/array-of-char.c
+check: out/all-check/array-of-char-in-func.c
 check: out/all-check/block-scope-linkage.c
 check: out/all-check/complete-object.c
 check: out/all-check/constant-exprs.c
