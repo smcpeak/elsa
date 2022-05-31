@@ -53,19 +53,31 @@ out/all-check/%.c: out/gcc-check/%.c out/clang-check/%.c out/elsa-check/%.c
 	touch $@
 
 
+# p01 is the grammar syntax.
 check: out/all-check/p02-init-non-contained.c
 check: out/all-check/p03-complete-object.c
 check: out/all-check/p04-constant-exprs.c
 check: out/all-check/p05-block-scope-linkage.c
 check: out/all-check/p06-array-designator-expression.c
 check: out/all-check/p07-field-designator.c
+# p08 ("specifies the initial value") is tested by all.
+# p09 ("unnamed indeterminate") cannot be tested.
 check: out/all-check/p10-zero-init.c
 check: out/all-check/p11-init-scalar.c
+# p12 ("rest of this subclause deals with ...") is informative.
 check: out/all-check/p13-struct-single-expression.c
 check: out/all-check/p14-array-of-char-in-func.c
 check: out/all-check/p14-array-of-char.c
+# p15 ("wchar_t") is a TODO.
+# p16 is covered by p13-struct-single-expression.c.
+# p17: TODO: Designator tests.
+# p18: Would be covered by p17 tests.
 check: out/all-check/p19-override-eval.c
+# p20: Also p17.
+# p21: TODO: Short initializer list.
+# p22: TODO: Unspecified size.
 check: out/all-check/p23-eval-sequence.c
+# p24 and later: TODO: Make these examples into tests.
 
 
 clean:
