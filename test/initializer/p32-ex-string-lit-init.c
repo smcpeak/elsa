@@ -1,0 +1,45 @@
+// p32-ex-string-lit-init.c
+// Demonstrate using a string literal to initialze a char array.
+
+char s1[] = "abc", t1[3] = "abc";
+
+char s2[] = { 'a', 'b', 'c', '\0' },
+     t2[] = { 'a', 'b', 'c' };
+
+char *p = "abc";
+
+int main()
+{
+  _Static_assert(sizeof(s1) == 4, "");
+  _Static_assert(sizeof(t1) == 3, "");
+  _Static_assert(sizeof(s2) == 4, "");
+  _Static_assert(sizeof(t2) == 3, "");
+
+  return
+    s1[0] == 'a' &&
+    s1[1] == 'b' &&
+    s1[2] == 'c' &&
+    s1[3] == '\0' &&
+
+    t1[0] == 'a' &&
+    t1[1] == 'b' &&
+    t1[2] == 'c' &&
+
+    s2[0] == 'a' &&
+    s2[1] == 'b' &&
+    s2[2] == 'c' &&
+    s2[3] == '\0' &&
+
+    t2[0] == 'a' &&
+    t2[1] == 'b' &&
+    t2[2] == 'c' &&
+
+    p[0] == 'a' &&
+    p[1] == 'b' &&
+    p[2] == 'c' &&
+    p[3] == '\0' &&
+
+    1? 0 : 1;
+}
+
+// EOF

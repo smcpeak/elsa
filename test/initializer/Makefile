@@ -53,6 +53,12 @@ out/all-check/%.c: out/gcc-check/%.c out/clang-check/%.c out/elsa-check/%.c
 	touch $@
 
 
+# Test just gcc and clang.  This is for elsa bugs.
+out/non-elsa-check/%.c: out/gcc-check/%.c out/clang-check/%.c
+	$(CREATE_OUTPUT_DIRECTORY)
+	touch $@
+
+
 # p01 is the grammar syntax.
 check: out/all-check/p02-init-non-contained.c
 check: out/all-check/p03-complete-object.c
@@ -70,16 +76,28 @@ check: out/all-check/p14-array-of-char-in-func.c
 check: out/all-check/p14-array-of-char.c
 # p15 ("wchar_t") is a TODO.
 # p16 is covered by p13-struct-single-expression.c.
-#check: out/all-check/p17-designators.c # elsa chokes
-check: out/gcc-check/p17-designators.c
-check: out/clang-check/p17-designators.c
+check: out/non-elsa-check/p17-designators.c
 # p18: Covered by p17-designators.c.
 check: out/all-check/p19-override-eval.c
 # p20: Covered by p17-designators.c.
 check: out/all-check/p21-short-init.c
 check: out/all-check/p22-array-unspec-size.c
 check: out/all-check/p23-eval-sequence.c
-# p24 and later: TODO: Make these examples into tests.
+check: out/all-check/p24-ex-single-expr-init.c
+check: out/all-check/p25-ex-array-unspec-size.c
+check: out/all-check/p26-ex-2d-array.c
+check: out/all-check/p27-ex-2d-array-one-column.c
+check: out/non-elsa-check/p28-ex-inconsistent-brackets.c
+check: out/all-check/p29-ex-partial-brackets.c
+# p30 ("less likely to cause confusion") is informative.
+check: out/non-elsa-check/p31-ex-typedef-incomplete-array.c
+check: out/all-check/p32-ex-string-lit-init.c
+check: out/all-check/p33-ex-enum-array-desig.c
+check: out/all-check/p34-ex-field-desig.c
+check: out/all-check/p35-ex-designator-to-clarify.c
+check: out/non-elsa-check/p36-ex-alloc-both-ends.c
+# p37 is additional commentary on the example in p36.
+check: out/all-check/p38-ex-any-union-member.c
 
 
 clean:
