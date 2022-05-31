@@ -119,6 +119,29 @@ static int test_arr45c()
 }
 
 
+// First-level designator followed by second-level initializer
+// expression.
+int arr45d[4][5] = {
+  0, 1, 2, 3, 4,
+  { 5, 6, 7, 8, 9 },
+  [2] = 10, 11, 12, 13, 14,
+  { 15, 16, 17, 18, 19 },
+};
+
+static int test_arr45d()
+{
+  for (int i=0; i < 4; i++) {
+    for (int j=0; j < 5; j++) {
+      if (!( arr45d[i][j] == i*5 + j )) {
+        return 0;
+      }
+    }
+  }
+
+  return 1;
+}
+
+
 typedef struct S {
   int x;
   int a[3];
@@ -148,6 +171,13 @@ S s3 = {
   .x = 1,
 };
 
+S s4 = {
+  .a = 2, 3, 4,    // Level-one design, level-two expr.
+  { 5, 6, 7, 8, 9 },
+  10,
+  .x = 1,
+};
+
 static int check_s(S *s)
 {
   return
@@ -170,6 +200,7 @@ static int test_s()
     check_s(&s1) &&
     check_s(&s2) &&
     check_s(&s3) &&
+    check_s(&s4) &&
     1;
 }
 
@@ -209,6 +240,16 @@ T t2 = {
   .s2.a[1] = 3, 4,
 };
 
+// Implicitly digging down further after a designator.
+T t3 = {
+  .c = 20, 21,
+  { 1, { 2, 3, 4 } },
+  .s1.b = 5, 6, 7, 8, 9, 10,
+  22,
+  .s2 = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+  23,
+};
+
 static int check_t(T *t)
 {
   return
@@ -226,6 +267,7 @@ static int test_t()
   return
     check_t(&t1) &&
     check_t(&t2) &&
+    check_t(&t3) &&
     1;
 }
 
@@ -235,11 +277,13 @@ typedef union U {
   char c[4];
 } U;
 
-U uarr[5] = {
+U uarr[] = {
   0x44434241,
   { .c = "ABCD" },
   [2] = { .c = { [2] = 'C', 'D', [0] = 'A', 'B' }  },
   0x44434241,
+  0x44434241,
+  [5] = 0x44434241,
   0x44434241,
 };
 
@@ -261,13 +305,15 @@ static int check_u(U *u)
 
 static int test_uarr()
 {
-  return
-    check_u(uarr+0) &&
-    check_u(uarr+1) &&
-    check_u(uarr+2) &&
-    check_u(uarr+3) &&
-    check_u(uarr+4) &&
-    1;
+  _Static_assert(sizeof(uarr) / sizeof(uarr[0]) == 7, "");
+
+  for (int i=0; i < sizeof(uarr) / sizeof(uarr[0]); i++) {
+    if (!check_u(uarr+i)) {
+      return 0;
+    }
+  }
+
+  return 1;
 }
 
 
@@ -279,6 +325,7 @@ int main()
     test_arr45a() &&
     test_arr45b() &&
     test_arr45c() &&
+    test_arr45d() &&
     test_s() &&
     test_t() &&
     test_uarr() &&
