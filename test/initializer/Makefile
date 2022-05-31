@@ -53,13 +53,13 @@ out/all-check/%.c: out/gcc-check/%.c out/clang-check/%.c out/elsa-check/%.c
 	touch $@
 
 
-# Elsa wrongly accepts some of the errors, so I'm using gcc-check.
 check: out/all-check/p02-init-non-contained.c
 check: out/all-check/p03-complete-object.c
 check: out/all-check/p04-constant-exprs.c
 check: out/all-check/p05-block-scope-linkage.c
 check: out/all-check/p06-array-designator-expression.c
 check: out/all-check/p07-field-designator.c
+check: out/all-check/p10-zero-init.c
 check: out/all-check/p11-init-scalar.c
 check: out/all-check/p13-struct-single-expression.c
 check: out/all-check/p14-array-of-char-in-func.c
