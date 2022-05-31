@@ -70,10 +70,12 @@ check: out/all-check/p14-array-of-char-in-func.c
 check: out/all-check/p14-array-of-char.c
 # p15 ("wchar_t") is a TODO.
 # p16 is covered by p13-struct-single-expression.c.
-# p17: TODO: Designator tests.
-# p18: Would be covered by p17 tests.
+#check: out/all-check/p17-designators.c # elsa chokes
+check: out/gcc-check/p17-designators.c
+check: out/clang-check/p17-designators.c
+# p18: Covered by p17-designators.c.
 check: out/all-check/p19-override-eval.c
-# p20: Also p17.
+# p20: Covered by p17-designators.c.
 check: out/all-check/p21-short-init.c
 check: out/all-check/p22-array-unspec-size.c
 check: out/all-check/p23-eval-sequence.c
