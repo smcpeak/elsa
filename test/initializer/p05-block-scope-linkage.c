@@ -1,4 +1,4 @@
-// block-scope-linkage.c
+// p05-block-scope-linkage.c
 // C11 6.7.9/5: "If the declaration of an identifier has block scope,
 // and the identifier has external or internal linkage, the declaration
 // shall have no initializer for the identifier.

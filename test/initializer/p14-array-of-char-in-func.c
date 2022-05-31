@@ -1,4 +1,4 @@
-// array-of-char-in-func.c
+// p14-array-of-char-in-func.c
 // C11 6.7.9/14: Like array-of-char.c, but inside functions (block scope).
 
 // This set of tests was made by copying those tests from

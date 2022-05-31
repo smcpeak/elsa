@@ -1,4 +1,4 @@
-// constant-exprs.c
+// p04-constant-exprs.c
 // C11 6.7.9/4: "All the expressions in an initializer for an object
 // that has static or thread storage duration shall be constant
 // expressions or string literals."

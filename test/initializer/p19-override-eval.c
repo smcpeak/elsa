@@ -1,4 +1,4 @@
-// override-eval.c
+// p19-override-eval.c
 // C11 6.7.9/19: Testing evaluation of overridden initializer expressions.
 
 // C11 6.7.9/19: "The initialization shall occur in initializer list

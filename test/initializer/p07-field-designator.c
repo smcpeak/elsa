@@ -1,4 +1,4 @@
-// field-designator.c
+// p07-field-designator.c
 // C11 6.7.9/7: Field designator must name a field of current object.
 
 typedef struct S {

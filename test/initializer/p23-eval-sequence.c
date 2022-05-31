@@ -1,4 +1,4 @@
-// eval-sequence.c
+// p23-eval-sequence.c
 // C11 6.7.9/23: Testing evaluation order of initializers.
 
 // C11 6.7.9/23: "The evaluations of the initialization list expressions

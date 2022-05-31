@@ -1,4 +1,4 @@
-// struct-single-expression.c
+// p13-struct-single-expression.c
 // C11 6.7.9/13: Initialize struct/union with single expression.
 // Also p16 is covered by test "not-auto-struct".
 

@@ -1,4 +1,4 @@
-// init-non-contained.c
+// p02-init-non-contained.c
 // C11 6.7.9/2: "No initializer shall attempt to provide a value for an
 // object not contained within the entity being initialized."
 

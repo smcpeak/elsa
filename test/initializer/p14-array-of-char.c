@@ -1,4 +1,4 @@
-// array-of-char.c
+// p14-array-of-char.c
 // C11 6.7.9/14: Initialize array of char with string literal.
 
 // Also test C11 6.7.9/22, initializing array of unknown size, in the

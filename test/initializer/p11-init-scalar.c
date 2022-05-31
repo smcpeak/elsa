@@ -1,4 +1,4 @@
-// init-scalar.c
+// p11-init-scalar.c
 // C11 6.7.9/11: Initializer for a scalar.
 
 static int test_scalars()

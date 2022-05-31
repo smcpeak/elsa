@@ -1,4 +1,4 @@
-// array-designator-expression.c
+// p06-array-designator-expression.c
 // C11 6.7.9/6: Array designator must be constant, etc.
 
 int one()
