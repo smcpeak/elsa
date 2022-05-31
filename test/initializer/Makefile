@@ -75,7 +75,7 @@ check: out/all-check/p14-array-of-char.c
 check: out/all-check/p19-override-eval.c
 # p20: Also p17.
 # p21: TODO: Short initializer list.
-# p22: TODO: Unspecified size.
+check: out/all-check/p22-array-unspec-size.c
 check: out/all-check/p23-eval-sequence.c
 # p24 and later: TODO: Make these examples into tests.
 
