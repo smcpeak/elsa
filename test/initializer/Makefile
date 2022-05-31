@@ -30,6 +30,17 @@ out/gcc-check/%.c: %.c
 	./out/gcc-check/$*.exe
 	touch $@
 
+# GCC without -pedantic-errors.
+#
+# Although most of this directory is about testing conformance to the
+# C11 standard, I also want to test some GNU extensions.
+out/gcc-relaxed-check/%.c: %.c
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(MULTITEST) -sut gcc-relaxed $(GCC) -c -o /dev/null -std=c11 $*.c
+	$(GCC) -o out/gcc-relaxed-check/$*.exe $*.c
+	./out/gcc-relaxed-check/$*.exe
+	touch $@
+
 
 # Use $(CLANG) and multitest to check %.c.
 out/clang-check/%.c: %.c
@@ -39,6 +50,14 @@ out/clang-check/%.c: %.c
 	./out/clang-check/$*.exe
 	touch $@
 
+# Clang without -pedantic-errors.
+out/clang-relaxed-check/%.c: %.c
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(MULTITEST) -sut clang-relaxed $(CLANG) -c -o /dev/null -std=c11 $*.c
+	$(CLANG) -o out/clang-relaxed-check/$*.exe $*.c
+	./out/clang-relaxed-check/$*.exe
+	touch $@
+
 
 # Use $(CCPARSE) and multitest to check %.c.
 out/elsa-check/%.c: %.c
@@ -46,14 +65,24 @@ out/elsa-check/%.c: %.c
 	$(MULTITEST) -sut elsa $(CCPARSE) -xc $*.c
 	touch $@
 
+# There is no elsa-relaxed-check yet because there are not command line
+# flags to control that behavior.  And Elsa currently enforces very few
+# of the relevant rules anyway.
+
 
 # Test all of them.
 out/all-check/%.c: out/gcc-check/%.c out/clang-check/%.c out/elsa-check/%.c
 	$(CREATE_OUTPUT_DIRECTORY)
 	touch $@
 
+# All in relaxed mode.
+out/all-relaxed-check/%.c: out/gcc-relaxed-check/%.c out/clang-relaxed-check/%.c
+	$(CREATE_OUTPUT_DIRECTORY)
+	touch $@
 
-# Test just gcc and clang.  This is for elsa bugs.
+
+# Test just gcc and clang.  This is for elsa bugs where it cannot even
+# parse the main file without any syntax errors in it.
 out/non-elsa-check/%.c: out/gcc-check/%.c out/clang-check/%.c
 	$(CREATE_OUTPUT_DIRECTORY)
 	touch $@
@@ -102,6 +131,9 @@ check: out/all-check/p38-ex-any-union-member.c
 # Other sections.
 check: out/all-check/c11-6.7.2.1p1-no-empty-struct.c
 check: out/all-check/c11-6.7.6.2p1-no-empty-array.c
+
+# Other tests, not specifically tied to sections in C11 standard.
+check: out/all-relaxed-check/empty-aggregate.c
 
 
 clean:
