@@ -74,7 +74,7 @@ check: out/all-check/p14-array-of-char.c
 # p18: Would be covered by p17 tests.
 check: out/all-check/p19-override-eval.c
 # p20: Also p17.
-# p21: TODO: Short initializer list.
+check: out/all-check/p21-short-init.c
 check: out/all-check/p22-array-unspec-size.c
 check: out/all-check/p23-eval-sequence.c
 # p24 and later: TODO: Make these examples into tests.
