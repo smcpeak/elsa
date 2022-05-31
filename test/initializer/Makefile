@@ -99,6 +99,10 @@ check: out/non-elsa-check/p36-ex-alloc-both-ends.c
 # p37 is additional commentary on the example in p36.
 check: out/all-check/p38-ex-any-union-member.c
 
+# Other sections.
+check: out/all-check/c11-6.7.2.1p1-no-empty-struct.c
+check: out/all-check/c11-6.7.6.2p1-no-empty-array.c
+
 
 clean:
 	rm -rf out
