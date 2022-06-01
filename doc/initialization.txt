@@ -1,0 +1,519 @@
+initialization.txt
+Notes and algorithm for processing initializers.
+
+The pseudo-code algorithm below captures my understanding of how
+initializers work in C.
+
+Algorithm:
+
+  let Inputs = {
+    // Declared type of the variable to initialze.
+    type: let Type = one of {
+      scalar: let ScalarType = one of {
+        int;
+        float;
+        pointer: (CVQualifiers, Type);
+        ...
+      };
+
+      array: {
+        elementType: Type;
+
+        // Can only be absent for the top-most Type.
+        size: optional non_negative int;
+      };
+
+      struct_or_union: let StructOrUnionType = {
+        kind: one of { struct, union };
+        fields: sequence of FieldDeclaration;
+      }
+
+      let FieldDeclaration = {
+        name: Identifier;
+        type: Type;
+      };
+    }
+
+    // The initializer for that variable.  (The case of an entirely
+    // absent initializer is handled separately.)
+    init: let Initializer = one of {
+      expr: (Type, Expression);
+
+      braceEnclosed: sequence of let DesignatedInit = {
+        designation: sequence of let Designator = one of {
+          // Index expression has been evaluated at compile time.
+          index: non_negative int;       // [index]
+
+          field: Identifier;             // .field
+        }
+
+        init: Initializer;
+      }
+    }
+  }
+
+  let Outputs = {
+    // A description of the resulting object with all elements
+    // explicitly given an initial value.
+    initObject: let InitializedObject = one of {
+      // Used for elements that are implicitly initialized to zero.
+      zero;
+
+      // The value for a scalar or a top-level struct/union.  In C++,
+      // we would also use this for a nested class/struct/union that
+      // was initialized with a constructor call.
+      //
+      // Each such expression is evaluated exactly once when the
+      // initializer as a whole is evaluated.
+      expr: ExpressionWithType;
+
+      // Elements of an array value.  The sum of all the repetition
+      // counts equals the number of elements in the corresponding
+      // array type.
+      arrayElements: sequence of let ArrayElement = {
+        // The value with which to initialize the element(s).
+        value: InitializedObject;
+
+        // Number of consecutive elements to initialize.
+        repetitionCount: positive int;
+      }
+
+      // Specifies the initial value for all fields of a struct, in
+      // declaration order, or exactly one field for a union.
+      fields: sequence of let FieldValue = {
+        name: Identifier;
+        value: InitializedObject;
+      };
+    }
+  }
+
+  fun initialize(wholeType: Type, wholeInit: Initializer) : InitializedObject
+  {
+    if (wholeInit is expr) {
+      return initializeWithExpr(wholeType, wholeInit.expr);
+    }
+    else {
+      return initializeWithBraces(wholeType, wholeInit.braceEnclosed);
+    }
+  }
+
+  fun initializeWithExpr(destType: Type, srcExpr: Expression) : InitializedObject
+  {
+    if (destType is scalar) {
+      return InitializedObject(expr: convertExprToType(srcExpr, destType));
+    }
+    else if (destType is array of char &&
+             srcExpr is string literal) {
+      return initializeArrayWithString(destType, srcExor);
+    }
+    else {
+      error("Initializing array/struct/union with single expression.");
+    }
+  }
+
+  fun initializeWithBraces(
+    wholeType: Type,
+    initializers: sequence of DesignatedInit)
+    : InitializedObject
+  {
+    // Initialized object constructed so far.  This is incrementally
+    // updated as we process the initializer.
+    var wholeResult : InitializedObject = InitializedObject(zero);
+
+    // Access path to the next subobject to initialize.  It is initially
+    // empty, in which state stepping forward once will make it point to
+    // the first element in 'wholeResult'.
+    var destPath : sequence of Designator = [];
+
+    // Process the initializers in order.
+    for (var srcDInit in initializers) {
+      if (srcDInit.designation is not empty) {
+        // Change 'destPath' as specified by the designation.
+        destPath := interpretDesignation(wholeType, srcInit.designation);
+      }
+      else {
+        // Move to the next element (or first, if we just started).
+        destPath := stepForward(wholeType, destPath);
+        if (destPath is empty) {
+          error("Excess initializer.");
+        }
+      }
+
+      // Initializer, without designator.
+      let srcInit = srcDInit.init;
+
+      // If 'srcInit' does not start with left-brace, dig into the
+      // subobject until we reach something that is not an aggregate.
+      if (srcInit is expr) {
+        destPath := stepIntoAggregate(wholeType, destPath);
+      }
+
+      // The type of object to initialize.
+      let destType = navigateType(wholeType, destPath);
+
+      // Initialize 'destType' with 'srcInit'.
+      let destObject = initialize(destType, srcInit);
+
+      // Add that to 'wholeResult'.
+      wholeResult :=
+        setIOElement(wholeResult, wholeType, destPath, destObject);
+    }
+
+    // Finished the initializer.
+    return wholeResult;
+  }
+
+  // Given a 'path' that navigates within 'type', return a path that
+  // points to the next element, i.e., the element that would be
+  // initialized after the one named by 'path' within a list of
+  // initializers.
+  //
+  // As a special case, if 'path' is empty, return a path to the first
+  // element in 'type'.
+  //
+  // Return an empty sequence to indicate there are no more elements.
+  // This also applies to the case of 'path' being empty, and means that
+  // 'type' contains no elements.
+  //
+  fun stepForward(type: Type, path: sequence of Designator)
+    : sequence of Designator
+  {
+    if (path is empty) {
+      // Return a path to the first element.
+      if (type is scalar) {
+        error("Trying to step into a scalar.");
+      }
+      else if (type is array) {
+        if (type.array.size == 0) {
+          return [];
+        }
+        return Designator(index: 0);
+      }
+      else if (type is struct_or_union) {
+        if (type.struct_or_union.fields is empty) {
+          return [];
+        }
+        return Designator(field: type.struct_or_union.fields[0].name);
+      }
+      else {
+        assert(false && "invalid type");
+      }
+    }
+
+    else {
+      assert(path is [desig]+suffix);
+      assert(type is not scalar);
+
+      if (type is array) {
+        assert(desig is Designator(index: i));
+        let steppedSuffix = suffix is empty? [] :
+          stepForward(type.array.elementType, suffix);
+        if (steppedSuffix is empty) {
+          // Finished with element 'i', advance to element 'i+1'.
+          if (has type.array.size) {
+            assert(i < type.array.size);
+            if (i+1 == type.array.size) {
+              return [];
+            }
+          }
+          return Designator(index: i+1);
+        }
+        else {
+          return [desig]+steppedSuffix;
+        }
+      }
+
+      else if (type is struct_or_union) {
+        assert(desig is Designator(field: fieldName));
+        let n = getFieldIndex(type.struct_or_union, fieldName);
+        let fieldType = type.struct_or_union.fields[n].type;
+        let steppedSuffix = suffix is empty? [] :
+          stepForward(fieldType, suffix);
+        if (steppedSuffx is empty) {
+          // Finished with field 'n'.
+          if (type.struct_or_union.kind == struct) {
+            // Advance to next.
+            if (n == type.struct_or_union.fields.size()) {
+              return [];
+            }
+          }
+          else /*union*/ {
+            // Since this is a union, we only ever initialize one field,
+            // so we're done.
+            return [];
+          }
+
+          return Designator(field: type.struct_or_union.fields[n+1].name);
+        }
+        else {
+          return [desig]+steppedSuffix;
+        }
+      }
+
+      else {
+        assert(false && "invalid type");
+      }
+    }
+  }
+
+  // Given a 'destPath' to an element of 'wholeType', if it names a
+  // non-aggregate, return 'destPath' unchanged.  Otherwise, append
+  // first element designators until it names a non-aggregate, and
+  // return the resulting path.
+  fun stepIntoAggregate(wholeType: Type, destPath: sequence of Designator)
+    : sequence of Designator
+  {
+    let destType = navigateType(wholeType, destPath);
+
+    if (destType is scalar) {
+      return destPath;
+    }
+
+    else if (destType is array) {
+      if (type.array.size == 0) {
+        error("Initialization of zero-length array requires explicit braces.");
+      }
+      return stepIntoAggregate(wholeType,
+        destPath+[Designator(index: 0)]);
+    }
+
+    else if (destType is struct_or_union) {
+      if (destType.struct_or_union.fields is empty) {
+        error("Initialization of empty {type.struct_or_union.kind} " +
+              " requires explicit braces.");
+      }
+      return stepIntoAggregate(wholeType,
+        destPath+[Designator(field: destType.struct_or_union.fields[0].name)]);
+    }
+
+    else {
+      assert(false && "invalid type");
+    }
+  }
+
+  // Follow 'path' within 'type', yielding the resulting Type.
+  fun navigateType(type: Type, path: sequence of Designator) : Type
+  {
+    if (path is empty) {
+      return type;
+    }
+
+    assert(type is not scalar);
+
+    if (type is array) {
+      assert(path is [Designator(index: _)]+suffix);
+      return navigateType(type.array.elementType, suffix);
+    }
+
+    else if (type is struct_or_union) {
+      assert(path is [Designator(field: fieldName)]+suffix);
+      let n = getFieldIndex(type.struct_or_union, fieldName);
+      let fieldType = type.struct_or_union.fields[n].type;
+      return navigateType(fieldType, suffix);
+    }
+
+    else {
+      assert(false && "invalid type");
+    }
+  }
+
+  // Given a partially constructed 'containerObject', which is supposed
+  // to have type 'containerType', return a new object that results from
+  // changing the value at 'path' to 'newValue'.
+  fun setIOElement(
+    containerObject: InitializedObject,
+    containerType: Type,
+    path: sequence of Designator,
+    newValue: InitializedObject)
+    : InitializedObject
+  {
+    if (path is empty) {
+      return newValue;
+    }
+
+    else if (path is [Designator(index: i)]+suffix) {
+      assert(containerType is array);
+
+      if (container is zero) {
+        // Materialize a new array value of an appropriate size and all
+        // zero values.
+        let size = has containerType.size? containerType.size : i+1;
+        assert(size > 0);
+        container := InitializedObject(arrayElements:
+          [{ value: zero, repetitionCount: size }]);
+      }
+
+      // Replace the element at 'i' with what is obtained by placing
+      // 'newValue' into it at 'suffix'.
+      return setArrayElement(
+        container.arrayElements,
+        i,
+        setIOElement(
+          getArrayElement(container.arrayElements, i),
+          containerType.elementType,
+          suffix,
+          newValue));
+    }
+
+    else (path is [Designator(field: fieldName)]+suffix) {
+      assert(containerType is struct_or_union);
+
+      if (container is zero) {
+        // Materialize a new sequence of field values.
+        if (containerType.struct_or_union.kind == struct) {
+          container := makeZeroedStruct(containerType.struct_or_union);
+        }
+        else {
+          // For a union, leave the 'fields' empty, as we will be
+          // populating just a single element.
+          container := InitializedObject(fields: []);
+        }
+      }
+
+      else if (containerType.struct_or_union.kind == union) {
+        assert(container.fields.size() <= 1);
+        if (container.fields.size() == 1 &&
+            container.fields[0].name != fieldName) {
+          // The union has an existing value in one of its members, but
+          // we are setting a value for a different member.  Throw away
+          // the old member information.
+          container := InitializedObject(fields: []);
+
+          // TODO: What if a designator sets a subobject of a union member,
+          // then another subobject of a different union member?
+        }
+      }
+
+      // Replace the element at 'fieldName' with what is obtained by
+      // placing 'newValue' into it at 'suffix'.
+      return setStructField(
+        container.fields,
+        fieldName,
+        setIOElement(
+          getStructField(container.fields, fieldName),
+          getFieldType(containerType.struct_or_union, fieldName),
+          suffix,
+          newValue));
+    }
+  }
+
+  // Retrieve the value of element 'index' within 'elements'.
+  fun getArrayElement(elements: sequence of ArrayElement,
+                      index: non_negative int)
+     : InitializedObject
+  {
+    if (elements is empty) {
+      // Not found.  Any additional elements are assumed to be zero.
+      return InitializedObject(zero);
+    }
+
+    assert(elements is [elem]+suffix);
+
+    if (index < elem.repetitionCount) {
+      // Found it.
+      return elem.value;
+    }
+    else {
+      return getArrayElement(suffix, index - elem.repetitionCount);
+    }
+  }
+
+  // Return a new element sequence that is the same as 'elements' except
+  // that the value at 'index' has been changed to 'newValue'.  This
+  // will return a longer array if 'index' is larger than the current
+  // maximum index, with zeroes filling the gap.
+  fun setArrayElement(elements: sequence of ArrayElement,
+                      index: non_negative int,
+                      newValue: InitializedObject)
+    : sequence of ArrayElement
+  {
+    if (elements is empty) {
+      return makeArrayPadding(index) + [newValue];
+    }
+
+    assert(elements is [elem]+suffix);
+
+    if (index < elem.repetitionCount) {
+      // Insert 'newValue' into 'elem'.
+      return
+        makeArrayPadding(index) +
+        [newValue] +
+        makeArrayPadding(elem.repetitionCount - (index+1)) +
+        suffix;
+    }
+
+    else {
+      return [elem] +
+        setArrayElement(suffix, index - elem.repetitionCount, newValue);
+    }
+  }
+
+  // Return an empty sequence if 'count' is zero, or else a singleton
+  // sequence of zeroes with 'count' as the repetition count.
+  fun makeArrayPadding(count: non_negative int)
+    : sequence of ArrayElement
+  {
+    if (count == 0) {
+      return [];
+    }
+    else {
+      return [ArrayElement(value: zero, repetitionCount: count)];
+    }
+  }
+
+  fun makeZeroedStruct(soutype: StructOrUnionType) : InitializedObject
+  {
+    assert(soutype.kind == struct);
+
+    // Create an explicit zero for every field.
+    return [for (fd in soutype.fields) {
+      return FieldValue(name: fd.name,
+                        value: InitializedObject(zero));
+    }]
+  }
+
+  // Look up 'fieldName' in 'fields'.  If not found, yield zero.
+  fun getStructField(
+    fields: sequence of FieldValue,
+    fieldName: Identifier)
+    : InitializedObject
+  {
+    if (fields is empty) {
+      return InitializedObject(zero);
+    }
+    else (fields is [fv]+suffix) {
+      if (fv.name == fieldName) {
+        return fv.value;
+      }
+      else {
+        return getStructField(suffix, fieldName);
+      }
+    }
+  }
+
+  // Return a new field value sequence that is the same as 'fields'
+  // except the value at 'fieldName' has been changed to 'newValue'.
+  fun setStructField(
+    fields: sequence of FieldValue,
+    fieldName: Identifier,
+    newValue: InitializedObject)
+    : sequence of FieldValue
+  {
+    if (fields is empty) {
+      // This is how union values get created.
+      return [FieldValue(name: fieldName, value: newValue)];
+    }
+    else (fields is [fv]+suffix) {
+      if (fv.name == fieldName) {
+        // Replace 'fv'.
+        return [FieldValue(name: fieldName, value: newValue)]+suffix;
+      }
+      else {
+        // Replace in 'suffix'.
+        return [fv]+setStructField(suffix, fieldName, newValue);
+      }
+    }
+  }
+
+
+EOF
