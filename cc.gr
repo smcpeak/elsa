@@ -1417,12 +1417,13 @@ nonterm(Initializer*) SimpleInitializerClause {
 // possibilities for designated initializers
 nonterm(Initializer*) InitializerClause {
   -> init:SimpleInitializerClause
-    { return init; }
+       { return init; }
 }
 
 nonterm(IN_compound*) CompoundInitializer {
   // array/structure initializer
-  -> "{" list:InitializerList CommaOpt "}"  { return list; }
+  -> "{" list:InitializerList CommaOpt "}"
+       { list->loc = loc; return list; }
 
   // zero whatever it is
   -> "{" "}"  { return new IN_compound(loc, NULL); }
