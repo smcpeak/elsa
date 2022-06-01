@@ -317,6 +317,31 @@ static int test_uarr()
 }
 
 
+typedef union union_of_arrays {
+  int a[2];
+  int b[2];
+} union_of_arrays;
+
+union_of_arrays uoa1 = {
+  // First set an element of 'a'.
+  .a[0] = 3,
+
+  // Now set an element of 'b'.  Both Clang and GCC agree that this
+  // completely removes the effect of the preceding initialization.
+  .b[1] = 7,
+};
+
+static int test_uoa()
+{
+  return
+    uoa1.a[0] == 0 &&
+    uoa1.a[1] == 7 &&
+    uoa1.b[0] == 0 &&
+    uoa1.b[1] == 7 &&
+    1;
+}
+
+
 int main()
 {
   return
@@ -329,6 +354,7 @@ int main()
     test_s() &&
     test_t() &&
     test_uarr() &&
+    test_uoa() &&
     1? 0 : 1;
 }
 
