@@ -72,9 +72,7 @@ static int test_arr23ab()
 
 // Only the first dimension can be unspecified.
 //ERROR(unspec-multidim): int arr23c[][] = { { 0, 1, 2 }, { 3, 4, 5 } };
-//NOTWORKING(elsa): Rule not enforced.
 //ERROR(unspec-inner-dim): int arr23d[2][] = { { 0, 1, 2 }, { 3, 4, 5 } };
-//NOTWORKING(elsa): Rule not enforced.
 
 
 int init_variable_length_array(int sz)

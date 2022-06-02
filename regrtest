@@ -1105,7 +1105,7 @@ failparse k0069.cc "friend class as template parameter"
 testparse k0070.cc #"scoping via template instantiation with all parameters defaulted"
 failparse k0071.cc "compound initializer for struct which was earlier forward-declared as class"
 failparse k0072.cc "template <class T> void foo(S1<T> s1, const typename T::T2 t2) {}"
-failparse k0073.cc "compound initializer for instantiated template struct"
+testparse k0073.cc #"compound initializer for instantiated template struct"
 failparse k0074.cc "template unions"
 failparse k0075.cc "overloaded function involving function pointer in presence of template"
 testparse k0076.cc #"attribute unused on struct parameter"
@@ -1481,11 +1481,9 @@ if $use_gnu; then
   testCparse gnu/c0002.c
 
   testCparse gnu/dC0001.c # hex floating-point literals
-  testCparse gnu/dC0002.c # arrays of no length are assumed to have one element
   testCparse gnu/dC0003.c # noInnerClasses: use a struct then define it but inside another
   testCparse gnu/dC0004.c # can take address of const E_compoundLit
   testCparse gnu/dC0005.c # extern inline functions
-  testCparse gnu/dC0006.c # more places where 0-length arrays are allowed
   testCparse gnu/dC0008.c # int a[] = { [1] 0 }; struct A a = { .x 8 };
   testCparse gnu/dC0009.c # UCHAR8 SampleResolution:2 __attribute__ ((packed));
   testCparse gnu/dC0015.c # function scope structs can contain arrays of dynamic size

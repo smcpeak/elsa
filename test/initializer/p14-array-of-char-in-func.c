@@ -211,12 +211,9 @@ static int test_aoa_unspec_major_dim()
 
   // AoA with unspecified minor dimension.
   //ERROR(aoa-unspec-minor-dim): char aoa_unspec_minor_dim[2][] = { "ab", "yz" };
-  //NOTWORKING(elsa): Rule not enforced.
-
 
   // AoA with both dimensions unspecified.
   //ERROR(aoa-unspec-both-dim): char aoa_unspec_both_dim[][] = { "ab", "yz" };
-  //NOTWORKING(elsa): Rule not enforced.
 
   return
     aoa_unspec_major_dim[0][0] == 'a' &&

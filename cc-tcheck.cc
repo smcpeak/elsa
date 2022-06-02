@@ -4321,6 +4321,7 @@ void D_array::tcheck(Env &env, Declarator::Tcheck &dt)
     return;
   }
   if (dt.type->isFunctionType()) {
+    // C11 6.7.6.2p1: "... element type shall not be ... function type."
     env.error("cannot create an array of functions");
     return;
   }
@@ -4444,6 +4445,12 @@ void D_array::tcheck(Env &env, Declarator::Tcheck &dt)
       at = env.makeArrayType(dt.type);
     }
   }
+
+  // The element type must be complete per C11 6.7.6.2p1.  Meanwhile,
+  // C++14 8.3.4/3 says "only the first of the constant expressions that
+  // specify the bounds of the arrays may be omitted", which I'm hoping
+  // is equivalent to insisting on a complete element type.
+  env.ensureCompleteType("make array of", dt.type);
 
   // having added this D_array's contribution to the type, pass
   // that on to the next declarator
