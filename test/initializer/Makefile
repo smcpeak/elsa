@@ -21,13 +21,25 @@ GCC       = gcc
 # Currently I'm using Clang-14.0.0.
 CLANG     = clang
 
+# By default, don't actually run the GCC and Clang tests, since that is
+# primarily meant to validate the tests themselves.  This can be
+# overridden in personal.mk.
+RUN_GCC_INITIALIZER_TESTS = 0
+RUN_CLANG_INITIALIZER_TESTS = 0
+
+
+# Pull in customizations.
+-include ../../personal.mk
+
 
 # Use $(GCC) and multitest to check %.c.
 out/gcc-check/%.c: %.c
 	$(CREATE_OUTPUT_DIRECTORY)
+ifeq ($(RUN_GCC_INITIALIZER_TESTS),1)
 	$(MULTITEST) -sut gcc $(GCC) -c -o /dev/null -std=c11 -pedantic-errors $*.c
 	$(GCC) -o out/gcc-check/$*.exe $*.c
 	./out/gcc-check/$*.exe
+endif
 	touch $@
 
 # GCC without -pedantic-errors.
@@ -36,26 +48,32 @@ out/gcc-check/%.c: %.c
 # C11 standard, I also want to test some GNU extensions.
 out/gcc-relaxed-check/%.c: %.c
 	$(CREATE_OUTPUT_DIRECTORY)
+ifeq ($(RUN_GCC_INITIALIZER_TESTS),1)
 	$(MULTITEST) -sut gcc-relaxed $(GCC) -c -o /dev/null -std=c11 $*.c
 	$(GCC) -o out/gcc-relaxed-check/$*.exe $*.c
 	./out/gcc-relaxed-check/$*.exe
+endif
 	touch $@
 
 
 # Use $(CLANG) and multitest to check %.c.
 out/clang-check/%.c: %.c
 	$(CREATE_OUTPUT_DIRECTORY)
+ifeq ($(RUN_CLANG_INITIALIZER_TESTS),1)
 	$(MULTITEST) -sut clang $(CLANG) -c -o /dev/null -std=c11 -pedantic-errors $*.c
 	$(CLANG) -o out/clang-check/$*.exe $*.c
 	./out/clang-check/$*.exe
+endif
 	touch $@
 
 # Clang without -pedantic-errors.
 out/clang-relaxed-check/%.c: %.c
 	$(CREATE_OUTPUT_DIRECTORY)
+ifeq ($(RUN_CLANG_INITIALIZER_TESTS),1)
 	$(MULTITEST) -sut clang-relaxed $(CLANG) -c -o /dev/null -std=c11 $*.c
 	$(CLANG) -o out/clang-relaxed-check/$*.exe $*.c
 	./out/clang-relaxed-check/$*.exe
+endif
 	touch $@
 
 
@@ -89,6 +107,9 @@ out/non-elsa-check/%.c: out/gcc-check/%.c out/clang-check/%.c
 	$(CREATE_OUTPUT_DIRECTORY)
 	touch $@
 
+
+# The tests whose name begins with "pNN-" are based on C11 6.7.9,
+# paragraph NN.
 
 # p01 is the grammar syntax.
 check: out/all-check/p02-init-non-contained.c
