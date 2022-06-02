@@ -1285,7 +1285,7 @@ if $use_gnu; then
 
   # test c99 extensions
   for fn in in/c99/*.c; do
-    runTest ./ccparse.exe -tr c_lang "$fn"
+    runTest ./ccparse.exe "$fn"
   done
 
   testparse gnu/k0001.cc #"({...}) cannot be empty"
@@ -1343,18 +1343,23 @@ runTest perl ./idemcheck -d outdir $list
 
 
 # test the parser in C mode
+#
+# This is distinct from 'testparse' because, for a long time, ccparse
+# did not infer the language from the file extension.  For now, I've
+# chosen to retain this as a separate function, but it could be removed
+# at some point in favor of 'testparse'.
 testCparse() {
-  runTest perl ./multitest.pl ./ccparse.exe -tr c_lang in/$1
+  runTest perl ./multitest.pl ./ccparse.exe in/$1
 }
 testCparse_special() {
-  runTest perl ./multitest.pl ./ccparse.exe -tr c_lang,$1 in/$2
+  runTest perl ./multitest.pl ./ccparse.exe -tr $1 in/$2
 }
 failCparse() {
   if [ "$2" = "" ]; then
     echo "failparse $1: failparse takes two arguments"
     exit 4
   fi
-  failTest "$2" perl ./multitest.pl ./ccparse.exe -tr c_lang in/$1
+  failTest "$2" perl ./multitest.pl ./ccparse.exe in/$1
 }
 testCparse c/t0001.c
 testCparse c/t0002.c
@@ -1517,15 +1522,17 @@ if $use_gnu; then
 
   # tests (primarily for __attribute__) from CIL
   testcil() {
-    runTest ./ccparse.exe -tr c_lang in/gnu/cil/$1
+    runTest ./ccparse.exe -xc in/gnu/cil/$1
   }
   failcil() {
-    failTest "$2" ./ccparse.exe -tr c_lang in/gnu/cil/$1
+    failTest "$2" ./ccparse.exe -xc in/gnu/cil/$1
   }
 
   # I deleted all the in/gnu/cil tests.  I don't know if that was
   # an accident or not, but I doubt they matter at this point, so
   # I'll just skip running the tests too.
+  #
+  # TODO: Delete all the calls.
   if false; then
     testcil align1.i
     testcil align2.i

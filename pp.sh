@@ -4,7 +4,7 @@
 # This is something I do fairly often during development.
 
 if [ "x$1" = "x" ]; then
-  echo "usage: $0 [-xc] file.{c,cc}"
+  echo "usage: $0 [-x<lang>] file.{c,cc}"
   exit 2
 fi
 

@@ -131,17 +131,22 @@ out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect pprint/%.c.isc.expect $(CCPARSE)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/pprint/$*.c.actual \
 	  --expect pprint/$*.c.expect \
-	  $(CCPARSE) -xc --pretty-print --no-elaborate $<
+	  $(CCPARSE) --pretty-print --no-elaborate $<
 #	Test that output can be parsed by Elsa and GCC.
 	../chop_out < out/pprint/$*.c.actual > out/pprint/$*.c.trimmed
 	$(CCPARSE) -xc out/pprint/$*.c.trimmed
 	gcc -c -oout/pprint/$*.c.trimmed.o -xc out/pprint/$*.c.trimmed
+	@#
+	@# The '-xc' in the following command is required because,
+	@# although the input is a .c file, 'idem' uses the ".cc"
+	@# extension for its intermediate files.
+	@#
 	../idemcheck --elsadir .. -d $(dir $@)idem -xc --no-elaborate -q $<
 #	Pretty-print with ISC enabled.
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/pprint/$*.c.isc.actual \
 	  --expect pprint/$*.c.isc.expect \
-	  $(CCPARSE) -xc --pretty-print --no-elaborate --print-isc $<
+	  $(CCPARSE) --pretty-print --no-elaborate --print-isc $<
 	touch $@
 
 
@@ -151,7 +156,7 @@ out/pprint/%.c.nogcc.ok: pprint/%.c pprint/%.c.expect $(CCPARSE)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/pprint/$*.c.actual \
 	  --expect pprint/$*.c.expect \
-	  $(CCPARSE) -xc --pretty-print $<
+	  $(CCPARSE) --pretty-print $<
 	touch $@
 
 check: out/pprint/asm.c.nogcc.ok
@@ -195,7 +200,7 @@ out/strlit/%.c.ok: strlit/%.c strlit/%.c.expect $(CCPARSE)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/strlit/$*.c.actual \
 	  --expect strlit/$*.c.expect \
-	  $(CCPARSE) -xc --print-string-literals $<
+	  $(CCPARSE) --print-string-literals $<
 	touch $@
 
 
@@ -220,7 +225,7 @@ out/pqname/%.c.ok: pqname/%.c pqname/%.c.expect $(CCPARSE)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/pqname/$*.c.actual \
 	  --expect pqname/$*.c.expect \
-	  $(CCPARSE) -xc -tr test-astbuild-pqname $<
+	  $(CCPARSE) -tr test-astbuild-pqname $<
 	touch $@
 
 
@@ -248,7 +253,7 @@ TESTS += tcheck/static-assert.c
 # Run a C tcheck test
 out/tcheck/%.c.ok: tcheck/%.c $(CCPARSE)
 	@mkdir -p $(dir $@)
-	$(PERL) ../multitest.pl $(CCPARSE) -xc tcheck/$*.c
+	$(PERL) ../multitest.pl $(CCPARSE) tcheck/$*.c
 	touch $@
 
 TESTS += tcheck/builtin-offsetof.cc
@@ -269,7 +274,7 @@ out/errmsg/%.c: errmsg/%.c errmsg/%.c.expect $(CCPARSE)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/errmsg/$*.c.actual \
 	  --expect errmsg/$*.c.expect \
-	  $(CCPARSE) -xc errmsg/$*.c
+	  $(CCPARSE) errmsg/$*.c
 	touch $@
 
 check: out/errmsg/desig-too-large.c

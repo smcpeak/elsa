@@ -80,13 +80,13 @@ endif
 # Use $(CCPARSE) and multitest to check %.c.
 out/elsa-check/%.c: %.c $(CCPARSE)
 	$(CREATE_OUTPUT_DIRECTORY)
-	$(MULTITEST) -sut elsa $(CCPARSE) -xc $*.c
+	$(MULTITEST) -sut elsa $(CCPARSE) $*.c
 	touch $@
 
 # TODO: I need a command line flag to enable "relaxed" mode.
 out/elsa-relaxed-check/%.c: %.c $(CCPARSE)
 	$(CREATE_OUTPUT_DIRECTORY)
-	$(MULTITEST) -sut elsa-relaxed $(CCPARSE) -xc $*.c
+	$(MULTITEST) -sut elsa-relaxed $(CCPARSE) $*.c
 	touch $@
 
 
