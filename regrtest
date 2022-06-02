@@ -1296,7 +1296,7 @@ if $use_gnu; then
   testparse gnu/k0006.cc #"__offsetof__"
   testparse gnu/k0006a.cc #"__builtin_offsetof"
   failparse gnu/k0007.cc "__builtin_frame_address"
-  failparse gnu/k0008.c "declared extern inline, defined extern inline, defined non-extern-inline"
+  testparse gnu/k0008.c #"declared extern inline, defined extern inline, defined non-extern-inline"
   failparse gnu/k0009.cc "namespace attribute strong"
   failparse gnu/k0010.c "nested K&R function"
 
@@ -1570,10 +1570,10 @@ runTest ./ccparse.exe -tr msvcBugs in/msvc/m0001.cc
 if $MAKE in/big; then
 
 testnsparse() {
-  runTest ./ccparse.exe "$1"
+  runTest ./ccparse.exe -xc++ "$1"
 }
 failnsparse() {
-  failTest "$2" ./ccparse.exe "$1"
+  failTest "$2" ./ccparse.exe -xc++ "$1"
 }
 
 if [ "$DISABLE_BIG_TESTS" = "" ]; then

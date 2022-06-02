@@ -21,6 +21,7 @@
 #include "ptreenode.h"                 // PTreeNode
 
 // smbase
+#include "gcc-options.h"               // gccLanguageForFile
 #include "nonport.h"                   // getMilliseconds
 #include "sm-fstream.h"                // ofstream
 #include "sm-iostream.h"               // cout
@@ -190,6 +191,33 @@ ElsaParse::ElsaParse(StringTable &stringTable_, CCLang &lang_)
 
 ElsaParse::~ElsaParse()
 {}
+
+
+bool ElsaParse::setDashXLanguage(string const &lang)
+{
+  if (lang == "c" ||
+      lang == "c-header" ||
+      lang == "cpp-output") {
+    m_lang.GNU_C();
+    return true;
+  }
+  else if (lang == "c++" ||
+           lang == "c++-cpp-output" ||
+           lang == "c++-header") {
+    m_lang.GNU_Cplusplus();
+    return true;
+  }
+  else {
+    // Leave the language alone.
+    return false;
+  }
+}
+
+
+bool ElsaParse::setDefaultLanguage(char const *inputFname)
+{
+  return setDashXLanguage(gccLanguageForFile(inputFname, ""));
+}
 
 
 bool ElsaParse::parse(char const *inputFname)

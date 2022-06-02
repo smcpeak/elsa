@@ -8,6 +8,7 @@
 
 // smbase
 #include "objcount.h"                  // CheckObjectCount
+#include "strutil.h"                   // prefixEquals
 #include "trace.h"                     // tracingSys
 
 
@@ -58,20 +59,27 @@ static void runUnitTests()
 
 
 // this is a dumb way to organize argument processing...
-static char *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
-                           char const *additionalInfo)
+static char const *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
+                                 char const *additionalInfo)
 {
   // remember program name
   char const *progName = argv[0];
+
+  // True if the language has been specified with "-x".
+  bool specifiedLanguage = false;
 
   // process args
   while (argc >= 2) {
     if (traceProcessArg(argc, argv)) {
       continue;
     }
-    else if (0==strcmp(argv[1], "-xc")) {
-      // treat this as a synonym for "-tr c_lang"
-      traceAddSys("c_lang");
+    else if (prefixEquals(argv[1], "-x")) {
+      string lang(argv[1]+2);
+      if (!elsaParse.setDashXLanguage(lang)) {
+        xfatal(stringb("Unrecognized -x argument: \"" << lang << "\"."));
+      }
+
+      specifiedLanguage = true;
       argv++;
       argc--;
     }
@@ -143,9 +151,10 @@ static char *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
   if (argc != 2) {
     cout << "usage: " << progName << " [options] input-file\n"
             "  options:\n"
-            "    -tr <flags>:             turn on given tracing flags (comma-separated)\n"
-            "    -xc                      parse input as C rather than C++\n"
-            "    --target <target>:       options: build (default), linux64, win64, win32\n"
+            "    -tr <flags>              turn on given tracing flags (comma-separated)\n"
+            "    -x<lang>                 parse input as <lang>: \"c\" or \"c++\"\n"
+            "                             (default is based on file extension, like gcc)\n"
+            "    --target <target>        options: build (default), linux64, win64, win32\n"
             "    -w                       disable warnings\n"
             "    --verbose                print error/warn counts and times\n"
             "    --quiet                  opposite of --verbose (and the default)\n"
@@ -159,7 +168,13 @@ static char *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
     exit(argc==1? 0 : 2);    // error if any args supplied
   }
 
-  return argv[1];
+  char const *inputFname = argv[1];
+
+  if (!specifiedLanguage) {
+    elsaParse.setDefaultLanguage(inputFname);
+  }
+
+  return inputFname;
 }
 
 
@@ -186,7 +201,6 @@ static int doit(int argc, char **argv)
     (argc, argv, elsaParse,
      "\n"
      "  general behavior flags:\n"
-     "    c_lang             use C language rules (default is C++)\n"
      "    nohashline         ignore #line when reporting locations\n"
      "\n"
      "  options to stop after a certain stage:\n"
@@ -205,7 +219,7 @@ static int doit(int argc, char **argv)
      "    error              print as errors are accumulated\n"
      "    overload           print details of overload resolution\n"
      "\n"
-     "  (grep in source for \"trace\" to find more obscure flags)\n"
+     "  (grep in source for \"trace\" or \"TRACE\" to find more obscure flags)\n"
      "");
 
   if (verboseOutput) {

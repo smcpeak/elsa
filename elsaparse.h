@@ -83,6 +83,18 @@ public:      // methods
   ElsaParse(StringTable &stringTable, CCLang &lang);
   ~ElsaParse();
 
+  // Configure for the language 'lang', which is treated as a string
+  // that could be passed to "gcc -x".  Return false if it is not
+  // recognized.
+  bool setDashXLanguage(string const &lang);
+
+  // Configure for the default language based on the extension of
+  // 'inputFname'.  This uses the GCC command line extension rules.
+  //
+  // Return true if the extension is recognized.  If not, leave the
+  // language settings as they already are and return false.
+  bool setDefaultLanguage(char const *inputFname);
+
   // Parse 'inputFname' according to the language preferences in 'lang'.
   //
   // In the case of syntax errors in the input file, print messages to
