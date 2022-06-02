@@ -96,11 +96,8 @@ public:      // data
   // treated as supplying no parameter information (C99 6.7.5.3 para 14)
   bool emptyParamsMeansNoInfo;
 
-  // when true, require all array sizes to be positive; when false,
-  // 0-length arrays are allowed as class/struct fields
-  //
-  // dsw: UPDATE: allow them anywhere; needed for linux kernel
-  bool strictArraySizeRequirements;
+  // When true, allow an incomplete array type as a member of a class.
+  bool allowIncompleteArrayTypeMembers;
 
   // when true, assume arrays with no size are of size 1 and issue a
   // warning
@@ -184,10 +181,19 @@ public:      // data
   // when true, 'restrict' is a keyword
   bool restrictIsAKeyword;
 
+  // ---- pedantic diagnostic flags ----
+  // These flags control "pedantic" diagnostics, like those of GCC or
+  // Clang -pedantic.  The default for all is B3_TRUE, meaning they are
+  // allowed without warning or error.
+
   // When false, an empty struct or union is an error in C.  C11
-  // 6.7.2.1p8 says the behavior is undefined.  Default is true.  This
-  // has no effect in C++.
+  // 6.7.2.1p8 says the behavior is undefined.  This has no effect in
+  // C++.
   Bool3 m_pedanticAllowEmptyStructsInC;
+
+  // When false, prohibit arrays declared to have zero size.  This is
+  // invalid per C11 6.7.6.2p1 and C++14 8.3.4p1.
+  Bool3 m_pedanticAllowZeroSizeArrays;
 
   // ---- bug compatibility flags ----
   // gcc-2 bug compatibility: permit string literals to contain

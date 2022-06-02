@@ -3342,7 +3342,7 @@ bool checkCompleteTypeRules(Env &env, DeclFlags dflags, DeclaratorContext contex
     }
 
     if (context == DC_MR_DECL &&
-        !env.lang.strictArraySizeRequirements) {
+        env.lang.allowIncompleteArrayTypeMembers) {
       // Allow incomplete array types, so-called "open arrays".
       // Usually, such things only go at the *end* of a structure, but
       // we do not check that.
@@ -4422,15 +4422,15 @@ void D_array::tcheck(Env &env, Declarator::Tcheck &dt)
         sz = val.getIntegralValue();
 
         // check restrictions on array size (c.f. C++98 8.3.4 para 1)
-        if (env.lang.strictArraySizeRequirements) {
-          if (sz <= 0) {
-            env.error(loc, stringc << "array size must be positive (it is " << sz << ")");
-          }
+        if (sz == 0) {
+          env.diagnose3(env.lang.m_pedanticAllowZeroSizeArrays, loc,
+            stringb("Pedantic: Array size must not be zero (per " <<
+              (env.lang.isCplusplus? "C++14 8.3.4p1" : "C11 6.7.6.2p1") <<
+              ")."));
         }
-        else {
-          if (sz < 0) {
-            env.error(loc, stringc << "array size must be nonnegative (it is " << sz << ")");
-          }
+        else if (sz < 0) {
+          env.error(loc, stringb(
+            "Array size must be nonnegative (it is " << sz << ")."));
         }
       }
       else {

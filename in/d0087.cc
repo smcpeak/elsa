@@ -8,5 +8,7 @@ struct X {
 };
 
 
-// another ansi-only rule
-//ERROR(2): int arr[0];
+// 2022-06-02: There was a test here for zero-sized arrays, but that
+// is now tested by test/errmsg/zero-size-array.{c,cc}.  It is only
+// diagnosed with -pedantic-errors, which is not active during this
+// test.

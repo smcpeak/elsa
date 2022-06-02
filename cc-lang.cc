@@ -53,7 +53,7 @@ void CCLang::ANSI_C89()
   noInnerClasses = true;
   uninitializedGlobalDataIsCommon = true;
   emptyParamsMeansNoInfo = true;
-  strictArraySizeRequirements = false;
+  allowIncompleteArrayTypeMembers = true;
   assumeNoSizeArrayHasSizeOne = false;
   allowOverloading = false;
   compoundSelfName = false;
@@ -76,7 +76,7 @@ void CCLang::ANSI_C89()
 
   restrictIsAKeyword = false;
 
-  m_pedanticAllowEmptyStructsInC = B3_TRUE;
+  setPedantic(B3_TRUE);
 
   allowNewlinesInStringLits = false;
   allowImplicitIntForOperators = B3_FALSE;
@@ -187,7 +187,7 @@ void CCLang::ANSI_Cplusplus()
   uninitializedGlobalDataIsCommon = false;
   emptyParamsMeansNoInfo = false;
 
-  strictArraySizeRequirements = true;
+  allowIncompleteArrayTypeMembers = false;
   assumeNoSizeArrayHasSizeOne = false;
 
   allowOverloading = true;
@@ -212,7 +212,7 @@ void CCLang::ANSI_Cplusplus()
   lvalueFlowsThroughCast = false;
   restrictIsAKeyword = false;
 
-  m_pedanticAllowEmptyStructsInC = B3_TRUE;    // Just for definiteness.
+  setPedantic(B3_TRUE);
 
   allowNewlinesInStringLits = false;
   allowImplicitIntForOperators = B3_FALSE;
@@ -239,7 +239,7 @@ void CCLang::GNU_Cplusplus()
 
   // is this really right?  Oink tests it like it is ...
   allowDynamicallySizedArrays = true;
-  strictArraySizeRequirements = false;
+  allowIncompleteArrayTypeMembers = true;
 
   allowMemberWithClassName = true;
   allowExternCThrowMismatch = true;
@@ -270,6 +270,7 @@ void CCLang::MSVC_bug_compatibility()
 void CCLang::setPedantic(Bool3 value)
 {
   m_pedanticAllowEmptyStructsInC = value;
+  m_pedanticAllowZeroSizeArrays = value;
 }
 
 
@@ -309,7 +310,7 @@ string CCLang::toString() {
   PRINT(noInnerClasses);
   PRINT(uninitializedGlobalDataIsCommon);
   PRINT(emptyParamsMeansNoInfo);
-  PRINT(strictArraySizeRequirements);
+  PRINT(allowIncompleteArrayTypeMembers);
   PRINT(assumeNoSizeArrayHasSizeOne);
   PRINT(allowOverloading);
   PRINT(compoundSelfName);
@@ -328,6 +329,7 @@ string CCLang::toString() {
   PRINT(lvalueFlowsThroughCast);
   PRINT(restrictIsAKeyword);
   PRINT(m_pedanticAllowEmptyStructsInC);
+  PRINT(m_pedanticAllowZeroSizeArrays);
   PRINT(allowNewlinesInStringLits);
   PRINT(allowImplicitIntForOperators);
   PRINT(allowQualifiedMemberDeclarations);

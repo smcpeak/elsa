@@ -1,0 +1,5 @@
+---- stdout ----
+errmsg/negative-size-array.c:4:5: error: Array size must be nonnegative (it is -3).
+---- stderr ----
+---- exit status ----
+Exit 2

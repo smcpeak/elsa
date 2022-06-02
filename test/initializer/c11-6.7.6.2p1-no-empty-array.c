@@ -2,7 +2,6 @@
 // C11 6.7.6.2p1: Zero-length arrays are not allowed.
 
 //ERROR(not-allowed): int arr0[0];
-//NOTWORKING(elsa): Rule not enforced.
 
 // Completely empty TU is not allowed.  (C11 6.9p1 grammar.)  And anyway
 // I need a 'main'.
