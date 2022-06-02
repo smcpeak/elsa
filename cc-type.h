@@ -761,9 +761,7 @@ string cvToString(CVFlags cv);
 #endif // TYPE_CLASS_FILE
 
 // supports the use of 'Type*' in AST constructor argument lists
-//
-// TODO: This should accept a 'const' pointer.
-string toString(Type *t);
+string toString(Type const *t);
 
 
 // essentially just a wrapper around an atomic type, but

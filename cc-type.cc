@@ -1562,7 +1562,7 @@ bool BaseType::containsVariables(MType *map) const
 }
 
 
-string toString(Type *t)
+string toString(Type const *t)
 {
   return t->toString();
 }
