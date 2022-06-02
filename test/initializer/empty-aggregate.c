@@ -57,6 +57,24 @@ static int test_arr00()
 }
 
 
+char string0[0] = "";
+
+static int test_string0()
+{
+  _Static_assert(sizeof(string0) == 0, "");
+  return 1;
+}
+
+
+char array_of_string0[2][0] = { "", "" };
+
+static int test_array_of_string0()
+{
+  _Static_assert(sizeof(array_of_string0) == 0, "");
+  return 1;
+}
+
+
 typedef struct EmptyStruct {
 } EmptyStruct;
 
@@ -145,6 +163,8 @@ int main()
     test_arr20() &&
     test_arr02() &&
     test_arr00() &&
+    test_string0() &&
+    test_array_of_string0() &&
     test_empty_struct() &&
     test_empty_union() &&
     test_iesi() &&

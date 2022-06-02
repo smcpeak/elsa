@@ -799,16 +799,13 @@ Type *E_compoundLit::itcheck_x(Env &env, Expression *&replacement)
     stype = stype->tcheck(env, tc);
   }
 
-  init->tcheck(env, stype->getType());
+  Type *t1 = legacyTypeNC(init->tcheck(env, stype->getType()));
 
   // dsw: Scott says: "The gcc manual says nothing about whether a
   // compound literal is an lvalue.  But, compound literals are now
   // part of C99 (6.5.2.5), which says they are indeed lvalues (but
   // says nothing about being const)."
-  Type *t0 = stype->getType();
-  Type *t1 = env.computeArraySizeFromCompoundInit(env.loc(), t0, t0, init);
   return env.makeReferenceType(t1);
-  // TODO: check that the cast (literal) makes sense
 }
 
 
@@ -1052,42 +1049,13 @@ Type *E_binary::itcheck_complex_arith(Env &env)
 }
 
 
-// in/c/k00016.c: this function takes a reference to 'e' because it
-// invokes the type checker, which (due to disambiguation) may need to
-// change it to a different value, which in turn must be propagated to
-// the caller
-static void compile_time_compute_int_expr(Env &env, Expression *&e, int &x, char const *error_msg) {
-  e->tcheck(env, e);
-  if (!e->constEval(env, x)) env.error(error_msg);
-}
-
-static void check_designator_list(Env &env, FakeList<Designator> *dl)
+Type const *IN_designated::tcheck(Env &env, Type const *type)
 {
-  xassert(dl);
-  FAKELIST_FOREACH_NC(Designator, dl, d) {
-    if (SubscriptDesignator *sd = dynamic_cast<SubscriptDesignator*>(d)) {
-      compile_time_compute_int_expr(env, sd->idx_expr, sd->idx_computed,
-                                    "compile-time computation of range start designator array index fails");
-      if (sd->idx_expr2) {
-        compile_time_compute_int_expr(env, sd->idx_expr2, sd->idx_computed2,
-                                      "compile-time computation of range end designator array index fails");
-      }
-    }
-    // nothing to do for FieldDesignator-s
-  }
-}
-
-void IN_designated::tcheck(Env &env, Type *type)
-{
-  // The designator is currently ignored, and consequently the 'type'
-  // that has been passed in is incorrect.  Replace it with ST_ERROR so
-  // we can check the initializer expression but bypass checking it for
-  // compatibility with the initialized member.
-  //
-  // One test is c99/t0133.c.
-  init->tcheck(env, env.getSimpleType(ST_ERROR));
-
-  check_designator_list(env, designator_list);
+  // An IN_designated should only ever be an element of the list of
+  // initializers in IN_compound, and in that context, IN_designated is
+  // specifically checked for and handled directly.
+  xfailure("should never be called");
+  return type;
 }
 
 
@@ -1154,52 +1122,6 @@ static void advanceInitIterForType(Env &env,
   else {
     // Assume the value is initialized by one initializer.
     iter.adv();
-  }
-}
-
-
-void IN_compound::gnu_adjustArrayInitializerCount(Env &env,
-  ArrayType const *arrayType, int &count) const
-{
-  // The core logic uses a crude method.  Start over.
-  count = 0;
-
-  // Index of next array element to set.
-  int curIndex = 0;
-
-  // Walk the initializer list.  This is more complicated than might at
-  // first seem necessary because C and C++ allow the initializer to
-  // omit braces when initializing a nested array or compound type.
-  ASTListIter<Initializer> iter(inits);
-  while (!iter.isDone()) {
-    Initializer const *init = iter.data();
-
-    // If we see a designator, reset 'curIndex' to match it.  That is
-    // the primary purpose of this entire function.
-    if (IN_designated const *id = init->ifIN_designatedC()) {
-      Designator const *d = fl_firstC(id->designator_list);
-      if (SubscriptDesignator const *sd = d->ifSubscriptDesignatorC()) {
-        curIndex = sd->idx_computed;
-        if (sd->idx_expr2) {
-          curIndex = sd->idx_computed2;
-        }
-      }
-      else {
-        env.error("Found a field designator while trying to count "
-                  "initializers to determine an array size.");
-      }
-    }
-
-    // Conceptually, here is where we initialize element 'curIndex'.
-
-    // Consequently, the array must have at least 'curIndex+1' elements.
-    count = std::max(count, curIndex+1);
-
-    // Advance 'iter'.  How far depends on the element type, but it will
-    // be advanced at least once.
-    advanceInitIterForType(env, iter, arrayType->eltType);
-
-    curIndex++;
   }
 }
 

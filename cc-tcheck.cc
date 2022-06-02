@@ -28,12 +28,13 @@
 #include "owner.h"                     // Owner
 #include "sm-macros.h"                 // Restorer
 #include "stdconv.h"                   // test_getStandardConversion
-#include "strutil.h"                   // decodeEscapes
-#include "strutil.h"                   // prefixEquals, pluraln
+#include "strutil.h"                   // decodeEscapes, prefixEquals, pluraln
 #include "trace.h"                     // trace
 #include "typelistiter.h"              // TypeListIter_FakeList
+#include "vector-utils.h"              // toString(std::vector<T>)
 
 #include <algorithm>                   // std::sort
+#include <vector>                      // std::vector
 
 #include <ctype.h>                     // isdigit
 #include <limits.h>                    // INT_MAX, UINT_MAX, LONG_MAX
@@ -3259,66 +3260,6 @@ Declarator *Declarator::tcheck(Env &env, Tcheck &dt)
 }
 
 
-// array initializer case
-//   static int y[] = {1, 2, 3};
-// or in this case (a gnu extention):
-// http://gcc.gnu.org/onlinedocs/gcc-3.3/gcc/Compound-Literals.html#Compound%20Literals
-//   static int y[] = (int []) {1, 2, 3};
-// which is equivalent to:
-//   static int y[] = {1, 2, 3};
-Type *Env::computeArraySizeFromCompoundInit
-  (SourceLoc tgt_loc, Type *tgt_type, Type *src_type, Initializer *init)
-{
-  // If we start at a reference, we have to go down to the raw
-  // ArrayType and then back up to a reference.
-  bool tgt_type_isRef = tgt_type->isReferenceType();
-  tgt_type = tgt_type->asRval();
-  if (tgt_type->isArrayType() && init->isIN_compound()) {
-    ArrayType *at = tgt_type->asArrayType();
-    ArrayType const *srcAT = src_type->asArrayType();
-    IN_compound const *cpd = init->asIN_compoundC();
-
-    // Count the initializers to get the implied minimum array size.
-    int initLen = countInitializers(loc(), srcAT, cpd);
-
-    if (!at->hasSize()) {
-      // replace the computed type with another that has
-      // the size specified; the location isn't perfect, but
-      // getting the right one is a bit of work
-      tgt_type = tfac.setArraySize(tgt_loc, at, initLen);
-    }
-    else if (initLen > at->getSize()) {
-      env.error(stringb(
-        "Initializer has " << initLen <<
-        " elements, but array has only " << at->getSize() <<
-        " elements."));
-    }
-  }
-  return tgt_type_isRef ? makeReferenceType(tgt_type): tgt_type;
-}
-
-// provide a well-defined size for the array from the size of the
-// initializer, such as in this case:
-//   char sName[] = "SOAPPropertyBag";
-Type *computeArraySizeFromLiteral(Env &env, Type *tgt_type, Initializer *init)
-{
-  // If we start at a reference, we have to go down to the raw
-  // ArrayType and then back up to a reference.
-  bool tgt_type_isRef = tgt_type->isReferenceType();
-  tgt_type = tgt_type->asRval();
-  if (tgt_type->isArrayType() &&
-      !tgt_type->asArrayType()->hasSize() &&
-      init->isIN_expr() &&
-      init->asIN_expr()->e->type->asRval()->isArrayType() &&
-      init->asIN_expr()->e->type->asRval()->asArrayType()->hasSize()
-      ) {
-    tgt_type->asArrayType()->size =
-      init->asIN_expr()->e->type->asRval()->asArrayType()->size;
-    xassert(tgt_type->asArrayType()->hasSize());
-  }
-  return tgt_type_isRef ? env.makeReferenceType(tgt_type): tgt_type;
-}
-
 // true if the declarator corresponds to a local/global variable declaration
 bool isVariableDC(DeclaratorContext dc)
 {
@@ -3962,29 +3903,16 @@ void Declarator::tcheck_init(Env &env)
 {
   xassert(init);
 
-  init->tcheck(env, type);
-
-  // TODO: check the initializer for compatibility with
-  // the declared type
+  Type const *updatedType = init->tcheck(env, type);
 
   // remember the initializing value, for const values
   if (init->isIN_expr()) {
     var->setValue(init->asIN_exprC()->e);
   }
 
-  // use the initializer size to refine array types
-  // array initializer case
-  var->type = env.computeArraySizeFromCompoundInit(var->loc, var->type, type, init);
-  // array compound literal initializer case
-  var->type = computeArraySizeFromLiteral(env, var->type, init);
-
-  // update 'type' if necessary
-  //
-  // (k0018.cc) check if 'var->type' is an array, rather than just
-  // 'type', so we see the type after parameter type normalization
-  if (var->type->asRval()->isArrayType()) {
-    type->asRval()->asArrayType()->size = var->type->asRval()->asArrayType()->size;
-  }
+  // Update both the declarator type and the type of the Variable.
+  this->type = legacyTypeNC(updatedType);
+  var->type = legacyTypeNC(updatedType);
 }
 
 
@@ -9322,11 +9250,11 @@ Type *E_sizeofType::itcheck_x(Env &env, Expression *&replacement)
 // something with type 'target', and so we can use that as the basis
 // for resolving the address of an overloaded function name.
 void tcheckExpression_possibleAddrOfOverload
-  (Env &env, Expression *&expr, Type *target)
+  (Env &env, Expression *&expr, Type const *target)
 {
   LookupSet set;
   tcheckExpression_set(env, expr, LF_TEMPL_PRIMARY, set);
-  env.possiblySetOverloadedFunctionVar(expr, target, set);
+  env.possiblySetOverloadedFunctionVar(expr, legacyTypeNC(target), set);
 }
 
 
@@ -9796,38 +9724,116 @@ void FullExpression::tcheck(Env &env)
 // ExpressionListOpt
 
 // ----------------------- Initializer --------------------
-void IN_expr::tcheck(Env &env, Type *target)
+// If 'inExpr->e' is a string literal, and 'type' is an array of some
+// character type, return the latter as an ArrayType.  Otherwise return
+// NULL.
+static ArrayType const *ifStringLitInitsArrayOfChar(Env &env,
+  IN_expr const *inExpr, Type const *type)
 {
+  if (inExpr->e->skipGroupsC()->isE_stringLit()) {
+    if (ArrayType const *at = type->ifArrayTypeC()) {
+      if (at->eltType->isSomeKindOfCharType()) {
+        // The only way this would work is by using the special case
+        // for string literals (since an array-typed expression cannot
+        // initialize a single character).
+        if (!inExpr->e->isE_stringLit()) {
+          // But, C11 6.7.9/11 requires the initializer be a string
+          // literal, and C11 6.5.1/5 merely says that a parenthesized
+          // expression has the same type and value, but it is not a
+          // literal.  GCC agrees that this is invalid, although Clang
+          // does not (or does not enforce it).
+          //
+          // I suspect the rationale is partly to aid parsing: by
+          // insisting on a string literal, a parser can tell what to
+          // do with just one token of lookahead.
+          //
+          env.error(inExpr->loc, stringb(
+            "A string literal used to initialize a character array "
+            "may not be enclosed in grouping parentheses."));
+        }
+
+        return at;
+      }
+    }
+  }
+  return NULL;
+}
+
+
+Type const *IN_expr::tcheck(Env &env, Type const *target)
+{
+  // Ask this question before type-checking 'e', since doing so throws
+  // away the E_grouping I might need to know about.
+  ArrayType const *targetAT =
+    ifStringLitInitsArrayOfChar(env, this, target);
+
   // Use 'target' to resolve 'e' if it names an overloaded function.
   tcheckExpression_possibleAddrOfOverload(env, e, target);
 
   if (target->isSimple(ST_ERROR)) {
-    // This could be (probably is) due to the initializer containing
-    // designators, which are currently ignored, so the real member
-    // type is unknown.
-    return;
+    // If we don't know the target type, there's not more we can do.
+    return target;
   }
 
-  if (target->isArrayType() && e->type->asRval()->isArrayType()) {
-    // TODO: Initializing an array with a string literal.
-    return;
+  if (targetAT) {
+    // Initialize a character array with a string literal.
+
+    // TODO: Check that a narrow/wide string literal is only used with
+    // a narrow/wide character array.
+
+    // We will have already computed an array type for the string
+    // literal.  Get it and its size.
+    ArrayType const *litAT = e->type->asRval()->asArrayTypeC();
+    xassert(litAT->hasSize());
+
+    TRACE("initializer",
+      "At " << toString(loc) <<
+      ", string literal with total size (with NUL) " << litAT->getSize() <<
+      " being used to initialize array type '" << target->toString() <<
+      "'.");
+
+    if (targetAT->hasSize()) {
+      // The string literal can have a size that is one greater
+      // because its NUL terminator can be discarded.
+      int requiredSize = litAT->getSize()-1;
+      if (requiredSize > targetAT->getSize()) {
+        env.error(loc, stringb(
+          "String literal initializer contains " << requiredSize <<
+          " characters (excluding the final NUL), but the "
+          "initialized type '" << targetAT->toString() <<
+          "' only has size " << targetAT->getSize() <<
+          "."));
+      }
+      return target;
+    }
+    else {
+      // Provide the array size using the initializer.  This size
+      // includes the NUL.
+      return env.tfac.setArraySize(loc, legacyTypeNC(targetAT),
+                                   litAT->getSize());
+    }
   }
 
   if (target->isFunctionType()) {
     // We get here when processing the '=0' of a pure virtual function.
     // TODO: Check these.
-    return;
+    return target;
   }
 
   // Get conversion from 'e' to 'target'.
   ImplicitConversion ic = getImplicitConversion(env,
     e->getSpecial(env.lang),
     e->type,
-    target,
+    legacyTypeNC(target),
     false /*destIsReceiver*/);
   if (ic) {
     // Record the conversion explicitly.
-    e = env.makeImplicitConversion(target, e, ic);
+    e = env.makeImplicitConversion(legacyTypeNC(target), e, ic);
+
+    TRACE("initializer",
+      "IN_expr at " << toString(loc) <<
+      " converts to target type '" << target->toString() <<
+      "' with: " << ic.debugString());
   }
   else {
     env.error(e->type, stringb(
@@ -9835,132 +9841,579 @@ void IN_expr::tcheck(Env &env, Type *target)
       "' with type '" << e->type->toString() <<
       "' to type '" << target->toString() << "'"));
   }
+
+  return target;
 }
 
 
-// initialize 'type' with expressions drawn from 'initIter'
+// Sequence of steps to navigate through some object down to a
+// subobject.  When the object is an array, the integer is an array
+// index.  When the object is a compound (struct/class/union), it is
+// the index of a field in CompoundType::dataMembers.
 //
-// TODO: This does not handle designators properly, and needs
-// significant changes to do so.
-void initializeAggregate(Env &env, Type *type,
-                         ASTListIterNC<Initializer> &initIter)
+// TODO: Wrap this up in a proper class.
+typedef std::vector<int> SubobjectAccessPath;
+
+
+// Given a path 'path[pathIndex:]' that navigates within 'type', modify
+// it so that it points to the next element, i.e., the element that
+// would be initialized after the one named by 'path' within a list of
+// initializers.
+//
+// As a special case, if 'path[pathIndex:]' is empty, set it to a path
+// to the first element in 'type'.
+//
+// Remove 'path[pathIndex:]' (truncating 'path' to a length of
+// 'pathIndex') to indicate there are no more elements.  This also
+// applies to the case of 'path' being empty, and means that 'type'
+// contains no elements.
+//
+// In case of error, add an error to 'env' and return false.
+//
+static bool stepAccessPathForward(
+  Env &env,
+  SubobjectAccessPath &path,
+  int pathIndex,
+  Type const *type)
 {
-  if (initIter.isDone()) {
-    return;
+  // In this function, we operate only on the portion of 'path' starting
+  // at 'pathIndex'.  The part to the left of 'pathIndex' must all
+  // exist.
+  xassert((unsigned)pathIndex <= path.size());
+
+  if (path.size() == (unsigned)pathIndex) {
+    // Return a path to the first element.
+    if (ArrayType const *at = type->ifArrayTypeC()) {
+      if (at->hasSize() && at->getSize() == 0) {
+        // No elements, leave 'path[pathIndex:]' empty.
+      }
+      else {
+        path.push_back(0);
+      }
+    }
+
+    else if (CompoundType const *ct = type->ifCompoundTypeC()) {
+      if (ct->dataMembers.isEmpty()) {
+        // No elements, leave 'path[pathIndex:]' empty.
+      }
+      else {
+        path.push_back(0);
+      }
+    }
+
+    else {
+      // We only step forward with an empty path right after starting to
+      // process a brace-enclosed initializer list, so this is a
+      // reasonable place to report this error.
+      env.error(stringb(
+        "Cannot use initializer with braces to initialize type '" <<
+        type->toString() << "'."));
+      return false;
+    }
   }
 
-  if (initIter.data()->isIN_compound()) {
-    // match this entire bracketing with 'type'
-    initIter.data()->tcheck(env, type);
-    initIter.adv();
-    return;
+  else /* 'path[pathIndex:]' is not empty */ {
+    if (ArrayType const *at = type->ifArrayTypeC()) {
+      int arrayIndex = path[pathIndex];
+      xassert(0 <= arrayIndex);
+      xassert(!at->hasSize() || arrayIndex < at->getSize());
+
+      if (path.size() > (unsigned)(pathIndex+1)) {
+        // Step the remainder of the path.
+        if (!stepAccessPathForward(env, path, pathIndex+1, at->eltType)) {
+          return false;
+        }
+      }
+
+      if (path.size() == (unsigned)(pathIndex+1)) {
+        // We're finished with element 'arrayIndex'.
+        if (at->hasSize() && arrayIndex+1 == at->getSize()) {
+          // Reached the end of this array.  Remove the final index.
+          path.pop_back();
+        }
+        else {
+          // Advance to 'arrayIndex+1'.
+          path[pathIndex] = arrayIndex+1;
+        }
+      }
+    }
+
+    else if (CompoundType const *ct = type->ifCompoundTypeC()) {
+      int fieldIndex = path[pathIndex];
+      xassert(0 <= fieldIndex && fieldIndex < ct->dataMembers.count());
+
+      if (path.size() > (unsigned)(pathIndex+1)) {
+        // Step the remainder of the path.
+        Type *fieldType = ct->dataMembers.nthC(fieldIndex)->type;
+        if (!stepAccessPathForward(env, path, pathIndex+1, fieldType)) {
+          return false;
+        }
+      }
+
+      if (path.size() == (unsigned)(pathIndex+1)) {
+        // We're finished with the field at 'fieldIndex'.
+        if (ct->keyword == CompoundType::K_UNION) {
+          // Since this is a union, we only ever initialize one field,
+          // so we're done.
+          path.pop_back();
+        }
+        else if (fieldIndex+1 == ct->dataMembers.count()) {
+          // Reached the end of this structure.  Remove the final index.
+          path.pop_back();
+        }
+        else {
+          // Advance to the next field.
+          path[pathIndex] = fieldIndex+1;
+        }
+      }
+    }
+
+    else {
+      // It should not be possible to get here because we have a path
+      // index, and we only add a path index when there is an array or
+      // compound type to traverse.
+      xfailure("SubobjectAccessPath element corresponds to non-array, non-compound.");
+    }
   }
 
-  if (type->isArrayType()) {
-    ArrayType *at = type->asArrayType();
+  return true;
+}
 
-    if (at->eltType->isSomeKindOfCharType() &&
-        initIter.data()->isIN_expr() &&
-        initIter.data()->asIN_expr()->e->isE_stringLit()) {
-      // TODO: Initializing an array of characters with a string literal.
-      initIter.adv();
+
+// Given a path 'path[pathIndex:]' that navigates to 'type', if 'type'
+// is a non-aggregate, return 'destPath' unchanged.  Otherwise, append
+// first element designators to 'path' until it names a non-aggregate,
+// and return the resulting type.
+//
+// As a special case, regard an array of char to be non-aggregate if
+// 'initIsStringLiteral' is true.
+//
+// On error, add an error to 'env' and return NULL.
+//
+static Type const *stepAccessPathIntoAggregate(
+  Env &env,
+  SubobjectAccessPath &path,
+  Type const *type,
+  bool initIsStringLiteral)
+{
+  if (ArrayType const *at = type->ifArrayTypeC()) {
+    if (initIsStringLiteral && at->eltType->isSomeKindOfCharType()) {
+      // Claim we have reached a non-aggregate.  We want the path to
+      // stop here so IN_expr::tcheck will see the array and the string
+      // literal, not the char type and string literal.
+      return type;
+    }
+
+    if (at->hasSize() && at->getSize() == 0) {
+      // We know braces were not used because we only call this function
+      // when we see a non-brace-enclosed initializer expression.  GCC
+      // and Clang both enforce this rule, so I will to.
+      env.error("Initialization of zero-length array requires explicit braces.");
+      return NULL;
+    }
+    path.push_back(0);
+    return stepAccessPathIntoAggregate(env, path, at->eltType,
+                                       initIsStringLiteral);
+  }
+
+  else if (CompoundType const *ct = type->ifCompoundTypeC()) {
+    if (!ct->isAggregate()) {
+      // We're at a non-aggregate.
+      return type;
+    }
+
+    if (ct->dataMembers.isEmpty()) {
+      env.error(stringb(
+        "Initialization of empty " << toString(ct->keyword) <<
+        " requires explicit braces."));
+      return NULL;
+    }
+
+    path.push_back(0);
+    Type *firstFieldType = ct->dataMembers.firstC()->type;
+    return stepAccessPathIntoAggregate(env, path, firstFieldType,
+                                       initIsStringLiteral);
+  }
+
+  else {
+    // We're at a non-aggregate.
+    return type;
+  }
+}
+
+
+// Navigate from 'type' to a subobject type by following
+// 'path[pathIndex:]'.
+static Type const *navigateAccessPathToType(
+  Env &env,
+  SubobjectAccessPath const &path,
+  int pathIndex,
+  Type const *type)
+{
+  xassert(path.size() >= (unsigned)pathIndex);
+
+  if ((unsigned)pathIndex == path.size()) {
+    return type;
+  }
+
+  if (ArrayType const *at = type->ifArrayTypeC()) {
+    int arrayIndex = path[pathIndex];
+    xassert(0 <= arrayIndex);
+    xassert(!at->hasSize() || arrayIndex < at->getSize());
+    return navigateAccessPathToType(env, path, pathIndex+1, at->eltType);
+  }
+
+  else if (CompoundType const *ct = type->ifCompoundTypeC()) {
+    int fieldIndex = path[pathIndex];
+    xassert(0 <= fieldIndex && fieldIndex < ct->dataMembers.count());
+    Type const *fieldType = ct->dataMembers.nthC(fieldIndex)->type;
+    return navigateAccessPathToType(env, path, pathIndex+1, fieldType);
+  }
+
+  else {
+    xfailure("Attempt to navigate by path in non-array, non-compound.");
+  }
+}
+
+
+// Type-check 'expr', possibly resolving ambiguities.  Then evaluate it
+// as a compile-time integer, storing the result in 'value'.  On error,
+// add an error to 'env' and return false.
+static bool tcheckAndConstEval(Env &env, Expression *&expr, int &value)
+{
+  expr->tcheck(env, expr);
+  return expr->constEval(env, value);
+}
+
+
+#ifdef GNU_EXTENSION
+// Check that 'indexValue' is within bounds for 'arrayType'.  If
+// not, add an error to 'env' and return false.  'indexExpr' is the
+// source expression that was evaluated to get 'indexValue'.
+static bool checkDesignatorBounds(
+  Env &env,
+  SourceLoc loc,
+  Expression const *indexExpr,
+  int indexValue,
+  ArrayType const *arrayType)
+{
+  if (indexValue < 0) {
+    env.error(loc, stringb(
+      "Array index designator '" << indexExpr->asString() <<
+      "' evaluated to " << indexValue <<
+      ", a negative value."));
+    return false;
+  }
+
+  if (arrayType->hasSize() &&
+      arrayType->getSize() <= indexValue) {
+    env.error(loc, stringb(
+      "Array index designator '" << indexExpr->asString() <<
+      "' evaluated to " << indexValue <<
+      ", which is too large for type '" << arrayType->toString() <<
+      "'."));
+    return false;
+  }
+
+  return true;
+}
+
+
+// Interpret 'designation' as an access path in 'type'.  Append to
+// 'path' the corresponding path elements.
+//
+// This also does type-checking for the designation.
+//
+// On error, add an error to 'env' and return false.
+//
+static bool interpretDesignation(
+  Env &env,
+  SubobjectAccessPath &path,
+  FakeList<Designator> *designation,
+  Type const *type)
+{
+  if (fl_isEmpty(designation)) {
+    return true;
+  }
+
+  Designator *designator = fl_first(designation);
+  FakeList<Designator> *suffix = fl_butFirst(designation);
+
+  if (SubscriptDesignator *sd = designator->ifSubscriptDesignator()) {
+    if (!tcheckAndConstEval(env, sd->idx_expr, sd->idx_computed)) {
+      return false;
+    }
+
+    if (sd->idx_expr2) {
+      if (!tcheckAndConstEval(env, sd->idx_expr2, sd->idx_computed2)) {
+        return false;
+      }
+    }
+
+    if (ArrayType const *at = type->ifArrayTypeC()) {
+      if (!checkDesignatorBounds(env, designator->loc,
+                                 sd->idx_expr, sd->idx_computed, at)) {
+        return false;
+      }
+
+      if (sd->idx_expr2) {
+        if (!checkDesignatorBounds(env, designator->loc,
+                                   sd->idx_expr2, sd->idx_computed2, at)) {
+          return false;
+        }
+
+        // Range designator: use the upper bound.  This gives us the
+        // correct "next" location afterward, even with nested range
+        // designators.
+        path.push_back(sd->idx_computed2);
+      }
+      else {
+        // Single designator: use that value.
+        path.push_back(sd->idx_computed);
+      }
+
+      return interpretDesignation(env, path, suffix, at->eltType);
+    }
+
+    else {
+      env.error(designator->loc, stringb(
+        "Array index designator applied to non-array type '" <<
+        type->toString() << "'."));
+      return false;
+    }
+  }
+
+  else if (FieldDesignator *fd = designator->ifFieldDesignator()) {
+    if (CompoundType const *ct = type->ifCompoundTypeC()) {
+      Type const *fieldType = NULL;
+      int fieldIndex =
+        ct->getDataMemberPositionAndType(fieldType, fd->id);
+
+      if (fieldIndex < 0) {
+        env.error(designator->loc, stringb(
+          "Field designator '." << fd->id <<
+          "' applied to type '" << ct->toString() <<
+          "' does not name any non-static data member."));
+        return false;
+      }
+      else {
+        path.push_back(fieldIndex);
+        return interpretDesignation(env, path, suffix, fieldType);
+      }
     }
     else {
-      // initialize the array element type with successive initializers
-      int limit = (at->hasSize()? at->size : -1);
-      while (limit != 0 && !initIter.isDone()) {
-        initializeAggregate(env, at->eltType, initIter);
-        limit--;
-      }
-    }
-  }
-
-  else if (type->isCompoundType()) {
-    CompoundType *ct = type->asCompoundType();
-
-    if (ct->isAggregate()) {
-      // 8.5.1: initialize successive data fields with successive initializers
-      SObjListIter<Variable> memberIter(ct->dataMembers);
-      if (memberIter.isDone()) {    // no data fields?
-        env.error(stringc << "can't initialize memberless aggregate "
-                          << ct->keywordAndName());
-        initIter.adv();    // avoid infinite loop possibility
-      }
-      while (!memberIter.isDone() && !initIter.isDone()) {
-        initializeAggregate(env, memberIter.data()->type, initIter);
-        memberIter.adv();
-      }
-    }
-    else {
-      Initializer *init = initIter.data();
-      initIter.adv();
-
-      // 8.5p14: initialize using a constructor
-
-      if (init->isIN_ctor()) {
-        init->tcheck(env, type);
-        return;
-      }
-
-      xassert(init->isIN_expr());
-      Expression *&arg = init->asIN_expr()->e;
-      arg->tcheck(env, arg);
-
-      ImplicitConversion ic = getImplicitConversion(env,
-        arg->getSpecial(env.lang),
-        arg->getType(),
-        type,
-        false /*destIsReceiver*/);
-      if (!ic) {
-        env.error(arg->getType(), stringc
-          << "cannot convert initializer type '" << arg->getType()->toString()
-          << "' to type '" << type->toString() << "'");
-      }
+      env.error(designator->loc, stringb(
+        "Field designator '." << fd->id <<
+        "' applied to non-compound type '" << type->toString() << "'."));
+      return false;
     }
   }
 
   else {
-    // down to an element type
-    initIter.data()->tcheck(env, type);
-    initIter.adv();
+    xfailure("unknown Designator kind");
+    return false;
+  }
+}
+#endif // GNU_EXTENSION
+
+
+// Initializer 'braces' is a redundant pair of braces around the
+// initializer for non-aggregate 'wholeType'.  Enforce the related
+// rules, which are described in C11 6.7.9/11.
+static Type const *handleRedundantInitBraces(
+  Env &env, IN_compound *braces, Type const *wholeType)
+{
+  if (braces->inits.isEmpty()) {
+    env.error(braces->loc, stringb(
+      "An empty pair of braces cannot be used to initialize "
+      "non-aggregate type '" <<
+      wholeType->toString() << "'."));
+    return wholeType;
+  }
+
+  if (braces->inits.count() > 1) {
+    env.error(braces->loc, stringb(
+      "When initializing non-aggregate type '" << wholeType->toString() <<
+      "' using a brace-enclosed initializer, there must be exactly "
+      "one initializer inside the braces.  Here, there are " <<
+      braces->inits.count() << "."));
+    return wholeType;
+  }
+
+  Initializer *inner = braces->inits.first();
+  if (IN_expr *ie = inner->ifIN_expr()) {
+    return ie->tcheck(env, wholeType);
+  }
+#ifdef GNU_EXTENSION
+  else if (inner->isIN_designated()) {
+    env.error(inner->loc, stringb(
+      "When initializing non-aggregate type '" << wholeType->toString() <<
+      "' using a brace-enclosed initializer, there must not be a "
+      "designator present."));
+    return wholeType;
+  }
+#endif // GNU_EXTENSION
+  else if (inner->isIN_compound()) {
+    env.error(inner->loc, stringb(
+      "When initializing non-aggregate type '" << wholeType->toString() <<
+      "' using a brace-enclosed initializer, a second pair of "
+      "redundant braces is not allowed."));
+    return wholeType;
+  }
+  else {
+    // It should be impossible to get here with IN_ctor.
+    xfailure("bad initializer kind");
+    return wholeType;
   }
 }
 
 
-void IN_compound::tcheck(Env &env, Type *type)
+// Return true if 'type' is an aggregate (array or struct) or a union to
+// be treated as an aggregate.
+static bool isAggregateOrUnion(Type const *type)
 {
-  // NOTE: I ignore the FullExpressionAnnot *annot
-
-  // Prepare to iterate over the elements.
-  ASTListIterNC<Initializer> initIter(inits);
-
-  // Distribute the initializers to potentially multiple levels in
-  // 'type', since the brace structures don't have to match exactly.
-  initializeAggregate(env, type, initIter);
-
-  // we should have consumed them all
-  if (!initIter.isDone()) {
-    // This is a weak error because of designated initializers,
-    // e.g., in/gnu/t0130.cc and in/c99/t0133.cc.  Once we get
-    // the compound_init stuff folded into Elsa I should be able
-    // to turn this into a real error.
-    //
-    // 2005-04-15: for the moment it is more annoying than helpful...
-    //env.weakError(loc, stringc
-    //  << "too many initializers (" << inits.count()
-    //  << ") supplied for '" << type->toString() << "'");
-
-    // tcheck the extra exprs anyway
-    while (!initIter.isDone()) {
-      initIter.data()->tcheck(env, type /*wrong but whatever*/);
-      initIter.adv();
+  if (type->isArrayType()) {
+    return true;
+  }
+  if (CompoundType const *ct = type->ifCompoundTypeC()) {
+    if (ct->isAggregate()) {
+      return true;
     }
   }
+  return false;
 }
 
 
-void IN_ctor::tcheck(Env &env, Type *destType)
+Type const *IN_compound::tcheck(Env &env, Type const *wholeType)
 {
+  TRACE("initializer",
+    "Starting IN_compound at " << toString(loc) <<
+    " with " << inits.size() <<
+    " elements.  wholeType is '" << wholeType->toString() << "'.");
+
+  if (!isAggregateOrUnion(wholeType)) {
+    return handleRedundantInitBraces(env, this, wholeType);
+  }
+
+  if (inits.isNotEmpty()) {
+    if (IN_expr *ie = inits.first()->ifIN_expr()) {
+      if (ArrayType const *at =
+            ifStringLitInitsArrayOfChar(env, ie, wholeType)) {
+        // Initializing a char array with a string literal in a
+        // redundant brace pair.
+        if (inits.count() > 1) {
+          env.error(inits.nth(1)->loc, stringb(
+            "While initializing character array type '" << at->toString() <<
+            "', there is more than one initializer within the "
+            "redundant brace pair."));
+        }
+
+        return ie->tcheck(env, wholeType);
+      }
+    }
+  }
+
+  // Access path to the next subobject to initialize.  It is initially
+  // empty, in which state stepping forward once will make it point to
+  // the first element in 'wholeType'.
+  SubobjectAccessPath destPath;
+
+  // Maximum index used within 'wholeType'.
+  int maxIndex = -1;
+
+  // Process the initializers in order.
+  for (ASTListIterNC<Initializer> initIter(inits);
+       !initIter.isDone(); initIter.adv()) {
+    Initializer *srcInit = initIter.data();
+#ifdef GNU_EXTENSION
+    if (IN_designated *srcDInit = srcInit->ifIN_designated()) {
+      // Change 'destPath' to match the specified designation.
+      destPath.clear();
+      if (!interpretDesignation(env, destPath,
+                                srcDInit->designator_list, wholeType)) {
+        return wholeType;
+      }
+      TRACE("initializer",
+        "Designator at " << toString(srcDInit->loc) <<
+        " yields path: " << toString(destPath));
+
+      // Move on to the initializer without designation.
+      srcInit = srcDInit->init;
+      xassert(!srcInit->isIN_designated());
+    }
+    else
+#endif // GNU_EXTENSION
+    {
+      // Advance 'destPath' to the next subobject.
+      if (!stepAccessPathForward(env, destPath, 0 /*pathIndex*/, wholeType)) {
+        return wholeType;
+      }
+      if (destPath.empty()) {
+        env.error(srcInit->loc, stringb(
+          "Initializer is beyond the end of the object to initialize, "
+          "which has type '" << wholeType->toString() << "'."));
+        return wholeType;
+      }
+      TRACE("initializer",
+        "Initializer at " << toString(srcInit->loc) <<
+        " has sequential path: " << toString(destPath));
+    }
+
+    // Update 'maxIndex'.
+    xassert(!destPath.empty());
+    maxIndex = std::max(maxIndex, destPath[0]);
+
+    // The type of object to initialize.
+    Type const *destType =
+      navigateAccessPathToType(env, destPath, 0 /*pathIndex*/, wholeType);
+
+    // If 'srcInit' does not start with left-brace, dig into the
+    // subobject until we reach something that is not an aggregate.
+    if (IN_expr *ie = srcInit->ifIN_expr()) {
+      // No skipGroups!  See 'ifStringLitInitsArrayOfChar'.
+      bool initIsStringLiteral = ie->e->isE_stringLit();
+
+      destType = stepAccessPathIntoAggregate(env, destPath, destType,
+                                             initIsStringLiteral);
+      if (!destType) {
+        return wholeType;
+      }
+    }
+
+    // Initialize 'destType' with 'srcInit'.
+    TRACE("initializer",
+      "Initializer at " << toString(srcInit->loc) <<
+      " has access path " << toString(destPath) <<
+      " and object type '" << destType->toString() << "'.");
+    srcInit->tcheck(env, destType);
+  }
+
+  // Possibly set the size of an array with unspecified size.
+  if (ArrayType const *at = wholeType->ifArrayTypeC()) {
+    if (!at->hasSize()) {
+      ArrayType const *newType =
+        env.tfac.setArraySize(loc, legacyTypeNC(at), maxIndex+1);
+      TRACE("initializer",
+        "wholeType was array with unspecified size '" << wholeType->toString() <<
+        "'; maxIndex=" << maxIndex <<
+        ", so yielding new array type '" << newType->toString() <<
+        "'.");
+
+      wholeType = newType;
+    }
+  }
+
+  TRACE("initializer",
+    "Finished IN_compound at " << toString(loc) << ".");
+
+  return wholeType;
+}
+
+
+Type const *IN_ctor::tcheck(Env &env, Type const *destTypeC)
+{
+  Type *destType = legacyTypeNC(destTypeC);
+
   // check argument expressions
   ArgumentInfoArray argInfo(fl_count(args) + 1);
   args = tcheckArgExprList(args, env, argInfo);
@@ -9989,7 +10442,7 @@ void IN_ctor::tcheck(Env &env, Type *destType)
         env.error(srcType, stringc
           << "cannot convert initializer type '" << srcType->toString()
           << "' to target type '" << destType->toString() << "'");
-        return;
+        return destTypeC;
       }
 
       // rewrite the AST to reflect the use of any user-defined
@@ -10032,13 +10485,15 @@ void IN_ctor::tcheck(Env &env, Type *destType)
       // don't do the final comparison; it will be confused by
       // the discrepancy between 'args' and 'argInfo', owing to
       // not having rewritten the AST above
-      return;
+      return destTypeC;
     }
   }
 
   ctorVar = env.storeVar(
     outerResolveOverload_ctor(env, loc, destType, argInfo));
   compareCtorArgsToParams(env, ctorVar, args, argInfo);
+
+  return destTypeC;
 }
 
 

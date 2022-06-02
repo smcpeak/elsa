@@ -573,13 +573,23 @@ void CompoundType::afterAddVariable(Variable *v)
 
 int CompoundType::getDataMemberPosition(StringRef name) const
 {
+  Type const *dummy;
+  return getDataMemberPositionAndType(dummy, name);
+}
+
+int CompoundType::getDataMemberPositionAndType(Type const * /*OUT*/ &type,
+                                               StringRef name) const
+{
   int index=0;
   SFOREACH_OBJLIST(Variable, dataMembers, iter) {
     if (iter.data()->name == name) {
+      type = iter.data()->type;
       return index;
     }
     index++;
   }
+
+  type = NULL;
   return -1;     // not found
 }
 

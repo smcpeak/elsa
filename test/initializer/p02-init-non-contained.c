@@ -11,7 +11,6 @@ int arr2b[2] = { [0] = 0, [1] = 1 };
 //ERROR(too-many-array-inits): int arr2c[2] = { 0, 1, 2 };
 
 //ERROR(negative-desig-expr): int arr2d[2] = { [0] = 0, [-1] = 1 };
-//NOTWORKING(elsa): Rule not enforced.
 
 //ERROR(too-large-desig-expr): int arr2e[2] = { [2] = 2 };
 
@@ -30,9 +29,7 @@ int arr23a[2][3] = { { 0, 1, 2 }, { 3, 4, 5 } };
 
 // Extra init in inner array.
 //ERROR(array-extra-inner1): int arr23b[2][3] = { { 0, 1, 2, 22 }, { 3, 4, 5 } };
-//NOTWORKING(elsa): Rule not enforced.
 //ERROR(array-extra-inner2): int arr23c[2][3] = { { 0, 1, 2 }, { 3, 4, 5, 55 } };
-//NOTWORKING(elsa): Rule not enforced.
 
 // Extra outer init.
 //ERROR(array-extra-outer): int arr23d[2][3] = { { 0, 1, 2 }, { 3, 4, 5 }, { 6, 7, 8 } };
@@ -74,7 +71,6 @@ int oda23a[2][3] = { [0] = { 0, 1, 2 }, [1] = { 3, 4, 5 } };
 
 // Out of bounds outer designator.
 //ERROR(array-oob-outer-desig): int oda23b[2][3] = { [0] = { 0, 1, 2 }, [1] = { 3, 4, 5 }, [2] = { 6, 7, 8 } };
-//NOTWORKING(elsa): Rule not enforced.
 
 static int test_oda23a()
 {
@@ -93,9 +89,7 @@ static int test_oda23a()
 int ida23a[2][3] = { { [0] = 0, [1] = 1, [2] = 2 }, { [0] = 3, [1] = 4, [2] = 5 } };
 
 //ERROR(array-oob-inner-desig1): int ida23b[2][3] = { { [0] = 0, [1] = 1, [2] = 2, [3] = 22 }, { [0] = 3, [1] = 4, [2] = 5 } };
-//NOTWORKING(elsa): Rule not enforced.
-//ERROR(array-oob-inner-desig1): int ida23c[2][3] = { { [0] = 0, [1] = 1, [2] = 2 }, { [0] = 3, [1] = 4, [2] = 5, [3] = 55 } };
-//NOTWORKING(elsa): Rule not enforced.
+//ERROR(array-oob-inner-desig2): int ida23c[2][3] = { { [0] = 0, [1] = 1, [2] = 2 }, { [0] = 3, [1] = 4, [2] = 5, [3] = 55 } };
 
 static int test_ida23a()
 {
@@ -118,7 +112,6 @@ int cda23a[2][3] = {
 
 // Index goes out of bounds.
 //ERROR(cda-oob-inner): int cda23b[2][3] = { [0][0] = 0, [0][1] = 1, [0][3] = 2, [1][0] = 3, [1][1] = 4, [1][2] = 5 };
-//NOTWORKING(elsa): Rule not enforced.
 //ERROR(cda-oob-outer): int cda23c[2][3] = { [0][0] = 0, [0][1] = 1, [0][2] = 2, [2][0] = 3, [1][1] = 4, [1][2] = 5 };
 
 static int test_cda23a()
@@ -141,13 +134,11 @@ typedef struct S {
 
 S s1 = { 1, 2 };
 
-// Elsa gives a weird error for this one.
 //ERROR(too-many-struct-inits): S s1a = { 1, 2, 3 };
 
 S s2 = { .x = 1, .y = 2 };
 
 //ERROR(bad-field): S s2a = { .x = 1, .y = 2, .z = 3 };
-//NOTWORKING(elsa): Rule not enforced.
 
 //ERROR(struct-extra-init-after-desig): S s2b = { .x = 1, .y = 2, 3 };
 
@@ -168,9 +159,7 @@ S plain_aos1[2] = { { 1, 2 }, { 3, 4 } };
 //ERROR(aos-outer-too-many): S plain_aos1b[2] = { { 1, 2 }, { 3, 4 }, { 5, 6 } };
 
 //ERROR(aos-inner-too-many1): S plain_aos1c[2] = { { 1, 2, 22 }, { 3, 4 } };
-//NOTWORKING(elsa): Rule not enforced.
 //ERROR(aos-inner-too-many2): S plain_aos1d[2] = { { 1, 2 }, { 3, 4, 44 } };
-//NOTWORKING(elsa): Rule not enforced.
 
 static int test_plain_aos1()
 {
@@ -189,7 +178,6 @@ S do_aos1[2] = { [0] = { 1, 2 }, [1] = { 3, 4 } };
 //ERROR(do-aos-oob-outer): S do_aos1b[2] = { [0] = { 1, 2 }, [1] = { 3, 4 }, [2] = { 5, 6 } };
 
 //ERROR(do-aos-extra-inner): S do_aos1c[2] = { [0] = { 1, 2, 3 }, [1] = { 3, 4 } };
-//NOTWORKING(elsa): Rule not enforced.
 
 static int test_do_aos1()
 {

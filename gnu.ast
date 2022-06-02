@@ -234,19 +234,12 @@ class GNUAsmOperand(
 
 // ----------- C99 designated initializers -----------
 class Initializer {
-  // a designator (list of fields/subscripts) in front of an
-  // undesignated initializer
+  // A designation (list of fields/subscripts) in front of an
+  // undesignated initializer.
+  //
+  // This only ever appears as an element of IN_compound::list.
   -> IN_designated(FakeList<Designator> *designator_list,
                    Initializer init);
-
-  -> IN_compound {
-       // Incorporate the effect of designators into 'count'.
-       public void gnu_adjustArrayInitializerCount(Env &env,
-         ArrayType const *arrayType, int &count) const;
-       custom ext_adjustArrayInitializerCount {
-         gnu_adjustArrayInitializerCount(env, arrayType, count);
-       }
-     }
 }
 
 class Designator (SourceLoc loc) {

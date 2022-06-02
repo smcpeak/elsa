@@ -673,10 +673,6 @@ public:      // funcs
   // we've popped its scope off the stack
   virtual void addedNewCompound(CompoundType *ct);
 
-  // return # of array elements initialized
-  virtual int countInitializers(SourceLoc loc,
-    ArrayType const *arrayType, IN_compound const *cpd);
-
   // called when a variable is successfully added; note that there
   // is a similar mechanism in Scope itself, which can be used when
   // less context is necessary
@@ -721,10 +717,6 @@ public:      // funcs
   // used for functions the translator itself interprets
   Variable *declareSpecialFunction(char const *name);
   Variable *declareSpecialFunction2(char const *name);
-
-  // see implementation; this is here b/c gnu.cc wants to call it
-  Type *computeArraySizeFromCompoundInit(SourceLoc tgt_loc, Type *tgt_type,
-                                         Type *src_type, Initializer *init);
 
   // if 'type' is not a complete type, attempt to make it into one
   // (by template instantiation); if it cannot be, then emit an

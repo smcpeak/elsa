@@ -9,15 +9,17 @@ static int test_scalars()
   // "... optionally enclosed in braces."
   int b = { 2 };
 
+  // A designator is not allowed.
+  //ERROR(desig-in-redundant-braces1): int with_desig1 = { [0] = 2 };
+  //ERROR(desig-in-redundant-braces2): int with_desig2 = { .x = 2 };
+
   // Clang will give an error with -pedantic-errors.
   //ERROR(double-braces): int c = { { 3 } };
   //NOTWORKING(gcc): GCC only warns.
-  //NOTWORKING(elsa): Rule not enforced.
 
   // Same here.
   //ERROR(triple-braces): int d = { { { 4 } } };
   //NOTWORKING(gcc): GCC only warns.
-  //NOTWORKING(elsa): Rule not enforced.
 
   // Conversions work like for assignment.
   unsigned e = (signed char)(-1);

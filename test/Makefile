@@ -25,6 +25,11 @@ RUN_COMPARE_EXPECT = $(PYTHON3) $(SMBASE_FROM_HERE)/run-compare-expect.py
 # Name of parser binary.
 CCPARSE = ../ccparse.exe
 
+# Ensure the directory meant to hold the output file of a recipe exists.
+#
+# TODO: Include sm-lib.mk and use its $(CREATE_OUTPUT_DIRECTORY).
+CREATE_OUTPUT_DIRECTORY = @mkdir -p $(dir $@)
+
 # Pull in automatic and manual configuration adjustments.
 include ../config.mk
 -include ../personal.mk
@@ -265,6 +270,22 @@ out/tcheck/%.cc.ok: tcheck/%.cc $(CCPARSE)
 	@mkdir -p $(dir $@)
 	$(PERL) ../multitest.pl $(CCPARSE) tcheck/$*.cc
 	touch $@
+
+
+# ------------------------------ tcheck --------------------------------
+# Check for specific error messages.
+out/errmsg/%.c: errmsg/%.c errmsg/%.c.expect $(CCPARSE)
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/errmsg/$*.c.actual \
+	  --expect errmsg/$*.c.expect \
+	  $(CCPARSE) -xc errmsg/$*.c
+	touch $@
+
+check: out/errmsg/desig-too-large.c
+check: out/errmsg/field-desig-for-array.c
+check: out/errmsg/invalid-field-desig.c
+check: out/errmsg/too-many-inits.c
 
 
 # ---------------------------- unit tests ------------------------------

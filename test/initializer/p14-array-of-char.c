@@ -41,7 +41,11 @@ static int test_str_hello()
 
 // Initializer is too long.
 //ERROR(init-too-long): char str_hello_too_long[4] = "hello";
-//NOTWORKING(elsa): Rule not enforced.
+
+
+// Grouping parens are not allowed.
+//ERROR(grouping-parens-strlit-init): char str_hello_parens[6] = ("hello");
+//NOTWORKING(clang): Rule not enforced.
 
 
 // Initializer shorter than declared size.
@@ -142,10 +146,9 @@ static int test_str_braces()
 // warning, but then complains about "hi" being a pointer initializing a
 // char.
 //
-// Clang does something similar.
+// Clang does something similar.  And, in fact, Elsa does too, now.
 //
 //ERROR(str-too-many-braces): char str_too_many_braces[3] = { { "hi" } };
-//NOTWORKING(elsa): Rule not enforced.
 
 
 // Truncating NUL works in braces too.
@@ -164,7 +167,6 @@ static int test_str_braces_trunc_nul()
 
 // Initializer too long in braces.
 //ERROR(init-too-long-braces): char str_braces_too_long[3] = { "hixy" };
-//NOTWORKING(elsa): Rule not enforced.
 
 
 typedef struct S {
@@ -220,7 +222,6 @@ static int test_s_braces()
 
 // Struct member with too many braces.
 //ERROR(member-too-many-braces): S s_too_many_braces = { 1, { { "hi" } } };
-//NOTWORKING(elsa): Rule not enforced.
 
 
 // Use a field designator before the initializer.
@@ -270,7 +271,6 @@ static int test_s_designator_braces()
 
 // Field designator with too many braces.
 //ERROR(field-designator-too-many-braces): S s_designator_too_many_braces = { .x = 1, .arr = { { "hi" } } };
-//NOTWORKING(elsa): Rule not enforced.
 
 
 typedef union U {
@@ -445,7 +445,6 @@ static int test_aoa_braces()
 
 // AoA with too many braces on the first initializer.
 //ERROR(aoa-too-many-braces): char aoa_too_many_braces[2][3] = { { { "ab" } }, { "yz" } };
-//NOTWORKING(elsa): Rule not enforced.
 
 
 int main()

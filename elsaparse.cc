@@ -379,6 +379,9 @@ void ElsaParse::parse(char const *inputFname)
     }
 
     if (numErrors != 0) {
+      // TODO: I don't like the way this prints to the console.  I
+      // would prefer it removed, but I still need to communicate the
+      // fact of an error to the caller.
       xfatal("type check error");
     }
 

@@ -383,6 +383,10 @@ public:      // funcs
   // not exist (this is a query on 'dataMembers')
   int getDataMemberPosition(StringRef name) const;
 
+  // Same, but also getting the type.
+  int getDataMemberPositionAndType(Type const * /*OUT*/ &type,
+                                   StringRef name) const;
+
   // return the offset in bytes of 'dataMember' in this struct;
   // fail an assertion if it is not present (why does this function
   // take a Variable* and the previous one a StringRef?  I'm not
@@ -757,6 +761,8 @@ string cvToString(CVFlags cv);
 #endif // TYPE_CLASS_FILE
 
 // supports the use of 'Type*' in AST constructor argument lists
+//
+// TODO: This should accept a 'const' pointer.
 string toString(Type *t);
 
 
@@ -1114,6 +1120,35 @@ public:      // methods
   void traverse(TypeVisitor &vis)                override;
   Type *getAtType() const                        override;
 };
+
+
+// In most places, Elsa currently uses 'Type *', even though my intent
+// is that Type objects are usually immutable after creation.  I am
+// slowly transitioning to using 'Type const *', but that leaves a lot
+// of boundaries where I need a non-const pointer, even though the
+// pointed-to object will not be modified.
+//
+// These functions are meant for that situation: converting to a
+// non-const pointer, but with the promise that, even so, no
+// modification will be made.
+//
+// Eventually I hope to fully transition, and then remove these
+// functions.
+//
+// This is not a template because I won't want it usable for anything
+// other than Type and its derived classes.
+//
+#define MAKE_LEGACY_TYPE_NC(TYPE)             \
+  inline TYPE *legacyTypeNC(TYPE const *type) \
+    { return const_cast<TYPE*>(type); }
+MAKE_LEGACY_TYPE_NC(Type)
+MAKE_LEGACY_TYPE_NC(CVAtomicType)
+MAKE_LEGACY_TYPE_NC(PointerType)
+MAKE_LEGACY_TYPE_NC(ReferenceType)
+MAKE_LEGACY_TYPE_NC(FunctionType)
+MAKE_LEGACY_TYPE_NC(ArrayType)
+MAKE_LEGACY_TYPE_NC(PointerToMemberType)
+#undef MAKE_LEGACY_TYPE_NC
 
 
 // moved into template.h:

@@ -60,14 +60,16 @@ out/clang-relaxed-check/%.c: %.c
 
 
 # Use $(CCPARSE) and multitest to check %.c.
-out/elsa-check/%.c: %.c
+out/elsa-check/%.c: %.c $(CCPARSE)
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(MULTITEST) -sut elsa $(CCPARSE) -xc $*.c
 	touch $@
 
-# There is no elsa-relaxed-check yet because there are not command line
-# flags to control that behavior.  And Elsa currently enforces very few
-# of the relevant rules anyway.
+# TODO: I need a command line flag to enable "relaxed" mode.
+out/elsa-relaxed-check/%.c: %.c $(CCPARSE)
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(MULTITEST) -sut elsa-relaxed $(CCPARSE) -xc $*.c
+	touch $@
 
 
 # Test all of them.
@@ -76,7 +78,7 @@ out/all-check/%.c: out/gcc-check/%.c out/clang-check/%.c out/elsa-check/%.c
 	touch $@
 
 # All in relaxed mode.
-out/all-relaxed-check/%.c: out/gcc-relaxed-check/%.c out/clang-relaxed-check/%.c
+out/all-relaxed-check/%.c: out/gcc-relaxed-check/%.c out/clang-relaxed-check/%.c out/elsa-relaxed-check/%.c
 	$(CREATE_OUTPUT_DIRECTORY)
 	touch $@
 
@@ -104,7 +106,7 @@ check: out/all-check/p13-struct-single-expression.c
 check: out/all-check/p14-array-of-char-in-func.c
 check: out/all-check/p14-array-of-char.c
 # p15 ("wchar_t") is a TODO.
-# p16 is covered by p13-struct-single-expression.c.
+# p16: Covered by p13-struct-single-expression.c.
 check: out/non-elsa-check/p17-designators.c
 # p18: Covered by p17-designators.c.
 check: out/all-check/p19-override-eval.c
@@ -133,7 +135,11 @@ check: out/all-check/c11-6.7.2.1p1-no-empty-struct.c
 check: out/all-check/c11-6.7.6.2p1-no-empty-array.c
 
 # Other tests, not specifically tied to sections in C11 standard.
+check: out/all-check/deep-nesting.c
+
+# Tests that need relaxed checking mode.
 check: out/all-relaxed-check/empty-aggregate.c
+check: out/all-relaxed-check/range-designators.c
 
 
 clean:

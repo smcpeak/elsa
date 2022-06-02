@@ -13,7 +13,6 @@ static int test_str_hello()
 
   // Initializer is too long.
   //ERROR(init-too-long): char str_hello_too_long[4] = "hello";
-  //NOTWORKING(elsa): Rule not enforced.
 
   return
     str_hello[0] == 'h' &&
@@ -90,6 +89,16 @@ static int test_str_braces()
 {
   // Optionally enclosed in braces.
   char str_braces[3] = { "hi" };
+
+  // GCC-9 and GCC-12 both claim this is non-conforming, and I agree.
+  // C11 6.7.9/11 calls for a "string literal", and 6.5.1/5 says that a
+  // parenthesized expression has the same type and value, but that
+  // doesn't make it a literal.  Clang does not diagnose this.
+  //ERROR(parens-on-strlit-init): char str_braces2[3] = { ("hi") };
+  //NOTWORKING(clang): Fails to diagnose.
+
+  // Redundant braces but extra initializers.
+  //ERROR(extra-init-char-array-redundant-braces): char str_braces_bad[3] = { "hi", "ex" };
 
   return
     str_braces[0] == 'h' &&
