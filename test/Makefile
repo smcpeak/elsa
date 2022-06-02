@@ -303,6 +303,7 @@ out/test-astbuild.ok: $(CCPARSE) test-astbuild.expect
 	  --actual out/test-astbuild.actual \
 	  --expect test-astbuild.expect \
 	  $(CCPARSE) --test-print-astbuild
+	touch $@
 
 check: out/test-astbuild.ok
 
