@@ -1,8 +1,8 @@
 // elsaparse.h
 // Main entry point for Elsa as a library.
 
-#ifndef ELSAPARSE_H
-#define ELSAPARSE_H
+#ifndef ELSA_ELSAPARSE_H
+#define ELSA_ELSAPARSE_H
 
 #include "elsaparse-fwd.h"             // forwards for this module
 
@@ -17,9 +17,17 @@
 
 // Class to contain the parameters to and results of parsing.
 //
-// TODO: This interface is not very well designed.  I made it by
-// directly extracting the parts I needed for the interpreter, but it
-// could use some cleanup.
+// TODO: This interface is not very well designed, consisting of a
+// diverse set of public data members, a one main method ('parse', which
+// is fine), and a handful of ad-hoc queries of the result.  The data
+// members should be organized into meaningful units, and the ad-hoc
+// queries moved to some class that can better serve as the result of
+// parsing rather than the machinery to perform it.
+//
+// Regarding the data members, it's troubling that, in order to use this
+// class, several supporting objects are required (like StringTable and
+// CCLang), so each client has to instantiate them all.
+//
 class ElsaParse {
   NO_OBJECT_COPIES(ElsaParse);
 
@@ -77,9 +85,20 @@ public:      // methods
 
   // Parse 'inputFname' according to the language preferences in 'lang'.
   //
-  // In the case of errors, for now, this just prints them and exits
-  // without returning.
-  void parse(char const *inputFname);
+  // In the case of syntax errors in the input file, print messages to
+  // stdout and return false.  But note that, depending on how the data
+  // members are configured, we might stop before doing a full
+  // type-check.
+  //
+  // There are also some "intended" exceptions that can be thrown, the
+  // main (possibly only) one being for failure to open the input file.
+  //
+  // Beyond that, this can throw exceptions or exit(4) due to internal
+  // assertion failures, and there are a few special cases that lead
+  // to exit(0), but clients generally shouldn't have to be concerned
+  // with any of that.
+  //
+  bool parse(char const *inputFname);
 
   // Print the phase times.
   void printTimes();
@@ -100,4 +119,4 @@ public:      // methods
 };
 
 
-#endif // ELSAPARSE_H
+#endif // ELSA_ELSAPARSE_H

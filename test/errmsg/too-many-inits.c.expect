@@ -1,6 +1,5 @@
 ---- stdout ----
 errmsg/too-many-inits.c:4:23: error: Initializer is beyond the end of the object to initialize, which has type 'int [2]'.
-error: type check error
 ---- stderr ----
 ---- exit status ----
-Exit 10
+Exit 2

@@ -1,6 +1,5 @@
 ---- stdout ----
 errmsg/invalid-field-desig.c:7:9: error: Field designator '.z' applied to type 'S' does not name any non-static data member.
-error: type check error
 ---- stderr ----
 ---- exit status ----
-Exit 10
+Exit 2

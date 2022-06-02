@@ -316,7 +316,10 @@ static int doit(int argc, char **argv)
 
   // Run the parser.
   elsaParse.m_printErrorCount = verboseOutput;
-  elsaParse.parse(inputFname);
+  if (!elsaParse.parse(inputFname)) {
+    // The input had syntax errors, which have been printed.
+    return 2;
+  }
   if (verboseOutput) {
     elsaParse.printTimes();
   }

@@ -192,7 +192,7 @@ ElsaParse::~ElsaParse()
 {}
 
 
-void ElsaParse::parse(char const *inputFname)
+bool ElsaParse::parse(char const *inputFname)
 {
   // dsw: I needed this to persist past typechecking, so I moved it
   // out here.  Feel free to refactor.
@@ -246,7 +246,7 @@ void ElsaParse::parse(char const *inputFname)
       // tree and bail
       PTreeNode *ptn = (PTreeNode*)treeTop;
       ptn->printTree(cout, PTreeNode::PF_EXPAND);
-      return;
+      return true;
     }
 
     // treeTop is a TranslationUnit pointer
@@ -268,7 +268,7 @@ void ElsaParse::parse(char const *inputFname)
   //}
 
   if (tracingSys("stopAfterParse")) {
-    return;
+    return true;
   }
 
 
@@ -379,10 +379,9 @@ void ElsaParse::parse(char const *inputFname)
     }
 
     if (numErrors != 0) {
-      // TODO: I don't like the way this prints to the console.  I
-      // would prefer it removed, but I still need to communicate the
-      // fact of an error to the caller.
-      xfatal("type check error");
+      // This is the primary place this method signals an error to its
+      // caller.
+      return false;
     }
 
     // lookup diagnostic
@@ -442,7 +441,7 @@ void ElsaParse::parse(char const *inputFname)
     }
 
     if (tracingSys("stopAfterTCheck")) {
-      return;
+      return true;
     }
   }
 
@@ -479,7 +478,7 @@ void ElsaParse::parse(char const *inputFname)
       m_translationUnit->debugPrint(cout, 0);
     }
     if (tracingSys("stopAfterElab")) {
-      return;
+      return true;
     }
   }
 
@@ -567,6 +566,8 @@ void ElsaParse::parse(char const *inputFname)
     ofstream devnull("/dev/null");
     m_translationUnit->debugPrint(devnull, 0);
   }
+
+  return true;
 }
 
 
