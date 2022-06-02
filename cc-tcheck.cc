@@ -29,9 +29,9 @@
 #include "sm-macros.h"                 // Restorer
 #include "stdconv.h"                   // test_getStandardConversion
 #include "strutil.h"                   // decodeEscapes, prefixEquals, pluraln
+#include "subobject-access-path.h"     // SubobjectAccessPath
 #include "trace.h"                     // trace
 #include "typelistiter.h"              // TypeListIter_FakeList
-#include "vector-utils.h"              // toString(std::vector<T>)
 
 #include <algorithm>                   // std::sort
 #include <vector>                      // std::vector
@@ -9846,236 +9846,6 @@ Type const *IN_expr::tcheck(Env &env, Type const *target)
 }
 
 
-// Sequence of steps to navigate through some object down to a
-// subobject.  When the object is an array, the integer is an array
-// index.  When the object is a compound (struct/class/union), it is
-// the index of a field in CompoundType::dataMembers.
-//
-// TODO: Wrap this up in a proper class.
-typedef std::vector<int> SubobjectAccessPath;
-
-
-// Given a path 'path[pathIndex:]' that navigates within 'type', modify
-// it so that it points to the next element, i.e., the element that
-// would be initialized after the one named by 'path' within a list of
-// initializers.
-//
-// As a special case, if 'path[pathIndex:]' is empty, set it to a path
-// to the first element in 'type'.
-//
-// Remove 'path[pathIndex:]' (truncating 'path' to a length of
-// 'pathIndex') to indicate there are no more elements.  This also
-// applies to the case of 'path' being empty, and means that 'type'
-// contains no elements.
-//
-// In case of error, add an error to 'env' and return false.
-//
-static bool stepAccessPathForward(
-  Env &env,
-  SubobjectAccessPath &path,
-  int pathIndex,
-  Type const *type)
-{
-  // In this function, we operate only on the portion of 'path' starting
-  // at 'pathIndex'.  The part to the left of 'pathIndex' must all
-  // exist.
-  xassert((unsigned)pathIndex <= path.size());
-
-  if (path.size() == (unsigned)pathIndex) {
-    // Return a path to the first element.
-    if (ArrayType const *at = type->ifArrayTypeC()) {
-      if (at->hasSize() && at->getSize() == 0) {
-        // No elements, leave 'path[pathIndex:]' empty.
-      }
-      else {
-        path.push_back(0);
-      }
-    }
-
-    else if (CompoundType const *ct = type->ifCompoundTypeC()) {
-      if (ct->dataMembers.isEmpty()) {
-        // No elements, leave 'path[pathIndex:]' empty.
-      }
-      else {
-        path.push_back(0);
-      }
-    }
-
-    else {
-      // We only step forward with an empty path right after starting to
-      // process a brace-enclosed initializer list, so this is a
-      // reasonable place to report this error.
-      env.error(stringb(
-        "Cannot use initializer with braces to initialize type '" <<
-        type->toString() << "'."));
-      return false;
-    }
-  }
-
-  else /* 'path[pathIndex:]' is not empty */ {
-    if (ArrayType const *at = type->ifArrayTypeC()) {
-      int arrayIndex = path[pathIndex];
-      xassert(0 <= arrayIndex);
-      xassert(!at->hasSize() || arrayIndex < at->getSize());
-
-      if (path.size() > (unsigned)(pathIndex+1)) {
-        // Step the remainder of the path.
-        if (!stepAccessPathForward(env, path, pathIndex+1, at->eltType)) {
-          return false;
-        }
-      }
-
-      if (path.size() == (unsigned)(pathIndex+1)) {
-        // We're finished with element 'arrayIndex'.
-        if (at->hasSize() && arrayIndex+1 == at->getSize()) {
-          // Reached the end of this array.  Remove the final index.
-          path.pop_back();
-        }
-        else {
-          // Advance to 'arrayIndex+1'.
-          path[pathIndex] = arrayIndex+1;
-        }
-      }
-    }
-
-    else if (CompoundType const *ct = type->ifCompoundTypeC()) {
-      int fieldIndex = path[pathIndex];
-      xassert(0 <= fieldIndex && fieldIndex < ct->dataMembers.count());
-
-      if (path.size() > (unsigned)(pathIndex+1)) {
-        // Step the remainder of the path.
-        Type *fieldType = ct->dataMembers.nthC(fieldIndex)->type;
-        if (!stepAccessPathForward(env, path, pathIndex+1, fieldType)) {
-          return false;
-        }
-      }
-
-      if (path.size() == (unsigned)(pathIndex+1)) {
-        // We're finished with the field at 'fieldIndex'.
-        if (ct->keyword == CompoundType::K_UNION) {
-          // Since this is a union, we only ever initialize one field,
-          // so we're done.
-          path.pop_back();
-        }
-        else if (fieldIndex+1 == ct->dataMembers.count()) {
-          // Reached the end of this structure.  Remove the final index.
-          path.pop_back();
-        }
-        else {
-          // Advance to the next field.
-          path[pathIndex] = fieldIndex+1;
-        }
-      }
-    }
-
-    else {
-      // It should not be possible to get here because we have a path
-      // index, and we only add a path index when there is an array or
-      // compound type to traverse.
-      xfailure("SubobjectAccessPath element corresponds to non-array, non-compound.");
-    }
-  }
-
-  return true;
-}
-
-
-// Given a path 'path[pathIndex:]' that navigates to 'type', if 'type'
-// is a non-aggregate, return 'destPath' unchanged.  Otherwise, append
-// first element designators to 'path' until it names a non-aggregate,
-// and return the resulting type.
-//
-// As a special case, regard an array of char to be non-aggregate if
-// 'initIsStringLiteral' is true.
-//
-// On error, add an error to 'env' and return NULL.
-//
-static Type const *stepAccessPathIntoAggregate(
-  Env &env,
-  SubobjectAccessPath &path,
-  Type const *type,
-  bool initIsStringLiteral)
-{
-  if (ArrayType const *at = type->ifArrayTypeC()) {
-    if (initIsStringLiteral && at->eltType->isSomeKindOfCharType()) {
-      // Claim we have reached a non-aggregate.  We want the path to
-      // stop here so IN_expr::tcheck will see the array and the string
-      // literal, not the char type and string literal.
-      return type;
-    }
-
-    if (at->hasSize() && at->getSize() == 0) {
-      // We know braces were not used because we only call this function
-      // when we see a non-brace-enclosed initializer expression.  GCC
-      // and Clang both enforce this rule, so I will to.
-      env.error("Initialization of zero-length array requires explicit braces.");
-      return NULL;
-    }
-    path.push_back(0);
-    return stepAccessPathIntoAggregate(env, path, at->eltType,
-                                       initIsStringLiteral);
-  }
-
-  else if (CompoundType const *ct = type->ifCompoundTypeC()) {
-    if (!ct->isAggregate()) {
-      // We're at a non-aggregate.
-      return type;
-    }
-
-    if (ct->dataMembers.isEmpty()) {
-      env.error(stringb(
-        "Initialization of empty " << toString(ct->keyword) <<
-        " requires explicit braces."));
-      return NULL;
-    }
-
-    path.push_back(0);
-    Type *firstFieldType = ct->dataMembers.firstC()->type;
-    return stepAccessPathIntoAggregate(env, path, firstFieldType,
-                                       initIsStringLiteral);
-  }
-
-  else {
-    // We're at a non-aggregate.
-    return type;
-  }
-}
-
-
-// Navigate from 'type' to a subobject type by following
-// 'path[pathIndex:]'.
-static Type const *navigateAccessPathToType(
-  Env &env,
-  SubobjectAccessPath const &path,
-  int pathIndex,
-  Type const *type)
-{
-  xassert(path.size() >= (unsigned)pathIndex);
-
-  if ((unsigned)pathIndex == path.size()) {
-    return type;
-  }
-
-  if (ArrayType const *at = type->ifArrayTypeC()) {
-    int arrayIndex = path[pathIndex];
-    xassert(0 <= arrayIndex);
-    xassert(!at->hasSize() || arrayIndex < at->getSize());
-    return navigateAccessPathToType(env, path, pathIndex+1, at->eltType);
-  }
-
-  else if (CompoundType const *ct = type->ifCompoundTypeC()) {
-    int fieldIndex = path[pathIndex];
-    xassert(0 <= fieldIndex && fieldIndex < ct->dataMembers.count());
-    Type const *fieldType = ct->dataMembers.nthC(fieldIndex)->type;
-    return navigateAccessPathToType(env, path, pathIndex+1, fieldType);
-  }
-
-  else {
-    xfailure("Attempt to navigate by path in non-array, non-compound.");
-  }
-}
-
-
 // Type-check 'expr', possibly resolving ambiguities.  Then evaluate it
 // as a compile-time integer, storing the result in 'value'.  On error,
 // add an error to 'env' and return false.
@@ -10164,12 +9934,12 @@ static bool interpretDesignation(
 
         // Range designator: use the upper bound.  This gives us the
         // correct "next" location afterward, even with nested range
-        // designators.
-        path.push_back(sd->idx_computed2);
+        // designators; see test/initializers/range-designators.c.
+        path.pushArrayIndex(sd->idx_computed2);
       }
       else {
         // Single designator: use that value.
-        path.push_back(sd->idx_computed);
+        path.pushArrayIndex(sd->idx_computed);
       }
 
       return interpretDesignation(env, path, suffix, at->eltType);
@@ -10197,7 +9967,7 @@ static bool interpretDesignation(
         return false;
       }
       else {
-        path.push_back(fieldIndex);
+        path.pushFieldIndex(fieldIndex);
         return interpretDesignation(env, path, suffix, fieldType);
       }
     }
@@ -10318,7 +10088,7 @@ Type const *IN_compound::tcheck(Env &env, Type const *wholeType)
   // the first element in 'wholeType'.
   SubobjectAccessPath destPath;
 
-  // Maximum index used within 'wholeType'.
+  // Maximum index used to access 'wholeType' (at its top level).
   int maxIndex = -1;
 
   // Process the initializers in order.
@@ -10335,7 +10105,7 @@ Type const *IN_compound::tcheck(Env &env, Type const *wholeType)
       }
       TRACE("initializer",
         "Designator at " << toString(srcDInit->loc) <<
-        " yields path: " << toString(destPath));
+        " yields path: " << destPath.toString());
 
       // Move on to the initializer without designation.
       srcInit = srcDInit->init;
@@ -10345,7 +10115,7 @@ Type const *IN_compound::tcheck(Env &env, Type const *wholeType)
 #endif // GNU_EXTENSION
     {
       // Advance 'destPath' to the next subobject.
-      if (!stepAccessPathForward(env, destPath, 0 /*pathIndex*/, wholeType)) {
+      if (!destPath.stepForward(env, 0 /*pathIndex*/, wholeType)) {
         return wholeType;
       }
       if (destPath.empty()) {
@@ -10356,16 +10126,15 @@ Type const *IN_compound::tcheck(Env &env, Type const *wholeType)
       }
       TRACE("initializer",
         "Initializer at " << toString(srcInit->loc) <<
-        " has sequential path: " << toString(destPath));
+        " has sequential path: " << destPath.toString());
     }
 
     // Update 'maxIndex'.
-    xassert(!destPath.empty());
-    maxIndex = std::max(maxIndex, destPath[0]);
+    maxIndex = std::max(maxIndex, destPath.frontIndex());
 
     // The type of object to initialize.
     Type const *destType =
-      navigateAccessPathToType(env, destPath, 0 /*pathIndex*/, wholeType);
+      destPath.navigateToType(env, 0 /*pathIndex*/, wholeType);
 
     // If 'srcInit' does not start with left-brace, dig into the
     // subobject until we reach something that is not an aggregate.
@@ -10373,8 +10142,8 @@ Type const *IN_compound::tcheck(Env &env, Type const *wholeType)
       // No skipGroups!  See 'ifStringLitInitsArrayOfChar'.
       bool initIsStringLiteral = ie->e->isE_stringLit();
 
-      destType = stepAccessPathIntoAggregate(env, destPath, destType,
-                                             initIsStringLiteral);
+      destType = destPath.stepIntoAggregate(env, destType,
+                                            initIsStringLiteral);
       if (!destType) {
         return wholeType;
       }
@@ -10383,7 +10152,7 @@ Type const *IN_compound::tcheck(Env &env, Type const *wholeType)
     // Initialize 'destType' with 'srcInit'.
     TRACE("initializer",
       "Initializer at " << toString(srcInit->loc) <<
-      " has access path " << toString(destPath) <<
+      " has access path " << destPath.toString() <<
       " and object type '" << destType->toString() << "'.");
     srcInit->tcheck(env, destType);
   }

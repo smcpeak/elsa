@@ -41,6 +41,7 @@ semgrep.o: lexer.yy.h
 smin.o: iptparse.yy.h
 sprint.o: cc.ast.gen.h
 stdconv.o: cc.ast.gen.h
+subobject-access-path.o: cc.ast.gen.h
 template.o: cc.ast.gen.h
 test-astbuild.o: cc.ast.gen.h
 tlexer.o: cc-tokens.h

@@ -329,6 +329,7 @@ ELSA_OBJS += serialno.o
 ELSA_OBJS += sprint.o
 ELSA_OBJS += stdconv.o
 ELSA_OBJS += strip-comments.o
+ELSA_OBJS += subobject-access-path.o
 ELSA_OBJS += template.o
 ELSA_OBJS += test-strip-comments.o
 ELSA_OBJS += type-printer.o
