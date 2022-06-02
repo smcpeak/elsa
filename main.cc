@@ -185,11 +185,58 @@ static char const *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
 
   char const *inputFname = argv[1];
 
+  // ------ choose overall language ------
+  CCLang &lang = elsaParse.m_lang;
+
   if (!specifiedLanguage) {
     elsaParse.setDefaultLanguage(inputFname);
   }
 
-  elsaParse.m_lang.setPedantic(allowPedanticViolations);
+  if (tracingSys("ansi")) {
+    lang.ANSI_Cplusplus();
+  }
+
+  if (tracingSys("ansi_c")) {
+    lang.ANSI_C89();
+  }
+
+  if (tracingSys("ansi_c99")) {
+    lang.ANSI_C99();
+  }
+
+  if (tracingSys("c_lang")) {
+    lang.GNU_C();
+  }
+
+  if (tracingSys("gnu_c89")) {
+    lang.ANSI_C89();
+    lang.GNU_C_extensions();
+  }
+
+  if (tracingSys("gnu_kandr_c_lang")) {
+    lang.GNU_KandR_C();
+    #ifndef KANDR_EXTENSION
+      xfatal("gnu_kandr_c_lang option requires the K&R module (./configure -kandr=yes)");
+    #endif
+  }
+
+  if (tracingSys("gnu2_kandr_c_lang")) {
+    lang.GNU2_KandR_C();
+    #ifndef KANDR_EXTENSION
+      xfatal("gnu2_kandr_c_lang option requires the K&R module (./configure -kandr=yes)");
+    #endif
+  }
+
+  // ------ choose language options ----
+  lang.setPedantic(allowPedanticViolations);
+
+  if (tracingSys("msvcBugs")) {
+    lang.MSVC_bug_compatibility();
+  }
+
+  if (!tracingSys("nowarnings")) {
+    lang.enableAllWarnings();
+  }
 
   return inputFname;
 }
@@ -261,45 +308,6 @@ static int doit(int argc, char **argv)
     sourceLocManager->useOriginalOffset = false;
   }
 
-  // TODO: Move all language-related setting into 'myProcessArgs' so
-  // they can interact properly with the language settings that are set
-  // there.
-
-  if (tracingSys("ansi")) {
-    lang.ANSI_Cplusplus();
-  }
-
-  if (tracingSys("ansi_c")) {
-    lang.ANSI_C89();
-  }
-
-  if (tracingSys("ansi_c99")) {
-    lang.ANSI_C99();
-  }
-
-  if (tracingSys("c_lang")) {
-    lang.GNU_C();
-  }
-
-  if (tracingSys("gnu_c89")) {
-    lang.ANSI_C89();
-    lang.GNU_C_extensions();
-  }
-
-  if (tracingSys("gnu_kandr_c_lang")) {
-    lang.GNU_KandR_C();
-    #ifndef KANDR_EXTENSION
-      xfatal("gnu_kandr_c_lang option requires the K&R module (./configure -kandr=yes)");
-    #endif
-  }
-
-  if (tracingSys("gnu2_kandr_c_lang")) {
-    lang.GNU2_KandR_C();
-    #ifndef KANDR_EXTENSION
-      xfatal("gnu2_kandr_c_lang option requires the K&R module (./configure -kandr=yes)");
-    #endif
-  }
-
   if (targetPlatform == TF_LINUX64) {
     lang.m_typeSizes.set_linux_x86_64();
   }
@@ -316,14 +324,6 @@ static int doit(int argc, char **argv)
 
   if (tracingSys("test_xfatal")) {
     xfatal("this is a test error message");
-  }
-
-  if (tracingSys("msvcBugs")) {
-    lang.MSVC_bug_compatibility();
-  }
-
-  if (!tracingSys("nowarnings")) {
-    lang.enableAllWarnings();
   }
 
   if (tracingSys("templateDebug")) {
