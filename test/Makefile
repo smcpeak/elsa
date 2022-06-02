@@ -25,25 +25,15 @@ RUN_COMPARE_EXPECT = $(PYTHON3) $(SMBASE_FROM_HERE)/run-compare-expect.py
 # Name of parser binary.
 CCPARSE = ../ccparse.exe
 
-# Ensure the directory meant to hold the output file of a recipe exists.
-#
-# TODO: Include sm-lib.mk and use its $(CREATE_OUTPUT_DIRECTORY).
-CREATE_OUTPUT_DIRECTORY = @mkdir -p $(dir $@)
-
 # Pull in automatic and manual configuration adjustments.
 include ../config.mk
 -include ../personal.mk
 
 
 # ------------------------------ rules ---------------------------------
-# Eliminate all implicit rules.
-.SUFFIXES:
+# Defines CREATE_OUTPUT_DIRECTORY, among other things.
+include $(SMBASE_FROM_HERE)/sm-lib.mk
 
-# Delete a target when its recipe fails.
-.DELETE_ON_ERROR:
-
-# Do not remove "intermediate" targets.
-.SECONDARY:
 
 # List of tests.  This gets added to below.
 TESTS :=
