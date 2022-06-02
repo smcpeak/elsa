@@ -10069,6 +10069,12 @@ static bool isAggregateOrUnion(Type const *type)
 
 Type const *IN_compound::tcheck(Env &env, Type const *wholeType)
 {
+  if (wholeType->isError()) {
+    // Bail out early if we don't know what type of thing is being
+    // initialized due to previous errors.
+    return wholeType;
+  }
+
   TRACE("initializer",
     "Starting IN_compound at " << toString(loc) <<
     " with " << inits.size() <<

@@ -1,0 +1,5 @@
+---- stdout ----
+errmsg/incomplete-struct-variable.c:4:10: error: attempt to create an object of incomplete class 'S'
+---- stderr ----
+---- exit status ----
+Exit 2
