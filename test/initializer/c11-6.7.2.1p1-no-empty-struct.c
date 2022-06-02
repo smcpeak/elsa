@@ -2,7 +2,6 @@
 // C11 6.7.2.1p1: Empty structs are not allowed.
 
 //ERROR(not-allowed): struct Empty {};
-//NOTWORKING(elsa): Rule not enforced.
 
 int main()
 {

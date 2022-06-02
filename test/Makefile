@@ -267,20 +267,50 @@ out/tcheck/%.cc.ok: tcheck/%.cc $(CCPARSE)
 	touch $@
 
 
-# ------------------------------ tcheck --------------------------------
+# ------------------------------ errmsg --------------------------------
 # Check for specific error messages.
-out/errmsg/%.c: errmsg/%.c errmsg/%.c.expect $(CCPARSE)
+out/errmsg/%: errmsg/% errmsg/%.expect $(CCPARSE)
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
-	  --actual out/errmsg/$*.c.actual \
-	  --expect errmsg/$*.c.expect \
-	  $(CCPARSE) errmsg/$*.c
+	  --actual out/errmsg/$*.actual \
+	  --expect errmsg/$*.expect \
+	  $(CCPARSE) errmsg/$*
 	touch $@
 
-check: out/errmsg/desig-too-large.c
-check: out/errmsg/field-desig-for-array.c
-check: out/errmsg/invalid-field-desig.c
-check: out/errmsg/too-many-inits.c
+check-errmsg: out/errmsg/desig-too-large.c
+check-errmsg: out/errmsg/empty-struct.c
+check-errmsg: out/errmsg/field-desig-for-array.c
+check-errmsg: out/errmsg/invalid-field-desig.c
+check-errmsg: out/errmsg/too-many-inits.c
+
+
+# Check while running -pedantic.
+out/errmsg-pedantic/%: errmsg/% errmsg/%.pedantic.expect $(CCPARSE)
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/errmsg-pedantic/$*.actual \
+	  --expect errmsg/$*.pedantic.expect \
+	  $(CCPARSE) -pedantic errmsg/$*
+	touch $@
+
+check-errmsg: out/errmsg-pedantic/empty-struct.c
+
+
+# Check while running -pedantic-errors.
+out/errmsg-pedantic-errors/%: errmsg/% errmsg/%.pedantic-errors.expect $(CCPARSE)
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/errmsg-pedantic-errors/$*.actual \
+	  --expect errmsg/$*.pedantic-errors.expect \
+	  $(CCPARSE) -pedantic-errors errmsg/$*
+	touch $@
+
+check-errmsg: out/errmsg-pedantic-errors/empty-struct.c
+check-errmsg: out/errmsg-pedantic-errors/empty-struct.cc
+
+
+.PHONY: check-errmsg
+check: check-errmsg
 
 
 # ---------------------------- unit tests ------------------------------

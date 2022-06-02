@@ -68,6 +68,9 @@ static char const *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
   // True if the language has been specified with "-x".
   bool specifiedLanguage = false;
 
+  // State of -pedantic or -pedantic-errors.
+  Bool3 allowPedanticViolations = B3_TRUE;
+
   // process args
   while (argc >= 2) {
     if (traceProcessArg(argc, argv)) {
@@ -86,6 +89,16 @@ static char const *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
     else if (0==strcmp(argv[1], "-w")) {
       // synonym for -tr nowarnings
       traceAddSys("nowarnings");
+      argv++;
+      argc--;
+    }
+    else if (streq(argv[1], "-pedantic")) {
+      allowPedanticViolations = B3_WARN;
+      argv++;
+      argc--;
+    }
+    else if (streq(argv[1], "-pedantic-errors")) {
+      allowPedanticViolations = B3_FALSE;
       argv++;
       argc--;
     }
@@ -156,6 +169,8 @@ static char const *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
             "                             (default is based on file extension, like gcc)\n"
             "    --target <target>        options: build (default), linux64, win64, win32\n"
             "    -w                       disable warnings\n"
+            "    -pedantic                Warn for certain technical violations.\n"
+            "    -pedantic-errors         Error on certain technical violations.\n"
             "    --verbose                print error/warn counts and times\n"
             "    --quiet                  opposite of --verbose (and the default)\n"
             "    --pretty-print           pretty-print the parsed AST as C/C++ syntax\n"
@@ -173,6 +188,8 @@ static char const *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
   if (!specifiedLanguage) {
     elsaParse.setDefaultLanguage(inputFname);
   }
+
+  elsaParse.m_lang.setPedantic(allowPedanticViolations);
 
   return inputFname;
 }
@@ -243,6 +260,10 @@ static int doit(int argc, char **argv)
   if (tracingSys("no-orig-offset")) {
     sourceLocManager->useOriginalOffset = false;
   }
+
+  // TODO: Move all language-related setting into 'myProcessArgs' so
+  // they can interact properly with the language settings that are set
+  // there.
 
   if (tracingSys("ansi")) {
     lang.ANSI_Cplusplus();

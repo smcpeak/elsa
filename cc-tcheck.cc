@@ -2201,6 +2201,12 @@ Type *TS_classSpec::itcheck(Env &env, Tcheck &tc)
   // check the body of the definition
   tcheckIntoCompound(env, dflags, ct);
 
+  if (!env.lang.isCplusplus && ct->dataMembers.isEmpty()) {
+    env.diagnose3(env.lang.m_pedanticAllowEmptyStructsInC, loc,
+      "Pedantic: In C, a struct or union with no data members has "
+      "undefined behavior per C11 6.7.2.1p8.");
+  }
+
   env.retractScopeSeq(qualifierScopes);
 
   return ct->typedefVar->type;

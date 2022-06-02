@@ -184,6 +184,11 @@ public:      // data
   // when true, 'restrict' is a keyword
   bool restrictIsAKeyword;
 
+  // When false, an empty struct or union is an error in C.  C11
+  // 6.7.2.1p8 says the behavior is undefined.  Default is true.  This
+  // has no effect in C++.
+  Bool3 m_pedanticAllowEmptyStructsInC;
+
   // ---- bug compatibility flags ----
   // gcc-2 bug compatibility: permit string literals to contain
   // (unescaped) newline characters in them
@@ -257,10 +262,10 @@ public:      // funcs
     ANSI_C89();
   }
 
-  // set any B3_TRUE to B3_WARN
+  // Set any B3_TRUE to B3_WARN, except for m_pedanticXXX.
   void enableAllWarnings() { setAllWarnings(true); }
 
-  // set any B3_WARN to B3_TRUE
+  // Set any B3_WARN to B3_TRUE, except for m_pedanticXXX.
   void disableAllWarnings() { setAllWarnings(false); }
 
   // the following are additive incremental
@@ -273,6 +278,10 @@ public:      // funcs
 
   // enable MSVC bug compatibility
   void MSVC_bug_compatibility();
+
+  // Set all m_pedanticXXX options to 'value'.  This is meant to emulate
+  // GCC and Clang "-pedantic" (warnings) and "-pedantic-errors".
+  void setPedantic(Bool3 value);
 
   // The predefined settings below are something of a best-effort at
   // reasonable starting configurations.  Every function below sets

@@ -1,0 +1,6 @@
+---- stdout ----
+errmsg/empty-struct.c:4:1: error: Pedantic: In C, a struct or union with no data members has undefined behavior per C11 6.7.2.1p8.
+errmsg/empty-struct.c:6:1: error: Pedantic: In C, a struct or union with no data members has undefined behavior per C11 6.7.2.1p8.
+---- stderr ----
+---- exit status ----
+Exit 2

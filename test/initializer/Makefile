@@ -77,13 +77,13 @@ endif
 	touch $@
 
 
-# Use $(CCPARSE) and multitest to check %.c.
+# Use $(CCPARSE) -pedantic-errors and multitest to check %.c.
 out/elsa-check/%.c: %.c $(CCPARSE)
 	$(CREATE_OUTPUT_DIRECTORY)
-	$(MULTITEST) -sut elsa $(CCPARSE) $*.c
+	$(MULTITEST) -sut elsa $(CCPARSE) -pedantic-errors $*.c
 	touch $@
 
-# TODO: I need a command line flag to enable "relaxed" mode.
+# $(CCPARSE) without pedantic errors.
 out/elsa-relaxed-check/%.c: %.c $(CCPARSE)
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(MULTITEST) -sut elsa-relaxed $(CCPARSE) $*.c

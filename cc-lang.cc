@@ -76,6 +76,8 @@ void CCLang::ANSI_C89()
 
   restrictIsAKeyword = false;
 
+  m_pedanticAllowEmptyStructsInC = B3_TRUE;
+
   allowNewlinesInStringLits = false;
   allowImplicitIntForOperators = B3_FALSE;
   allowQualifiedMemberDeclarations = B3_FALSE;
@@ -210,6 +212,8 @@ void CCLang::ANSI_Cplusplus()
   lvalueFlowsThroughCast = false;
   restrictIsAKeyword = false;
 
+  m_pedanticAllowEmptyStructsInC = B3_TRUE;    // Just for definiteness.
+
   allowNewlinesInStringLits = false;
   allowImplicitIntForOperators = B3_FALSE;
   allowQualifiedMemberDeclarations = B3_FALSE;
@@ -259,6 +263,13 @@ void CCLang::MSVC_bug_compatibility()
 {
   allowImplicitIntForOperators = B3_TRUE;
   allowAnonymousStructs = B3_TRUE;
+}
+
+
+// ---------------------------- setPedantic ----------------------------
+void CCLang::setPedantic(Bool3 value)
+{
+  m_pedanticAllowEmptyStructsInC = value;
 }
 
 
@@ -316,6 +327,7 @@ string CCLang::toString() {
   PRINT(stringLitCharsAreConst);
   PRINT(lvalueFlowsThroughCast);
   PRINT(restrictIsAKeyword);
+  PRINT(m_pedanticAllowEmptyStructsInC);
   PRINT(allowNewlinesInStringLits);
   PRINT(allowImplicitIntForOperators);
   PRINT(allowQualifiedMemberDeclarations);
