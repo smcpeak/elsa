@@ -3488,6 +3488,35 @@ static void checkSWFARules(
 }
 
 
+// Given that 'var' was declared in 'enclosingScope' and has an
+// initializer, check the rules that constrain where initialized
+// variables can appear.
+static void checkRulesForInitializedVariables(
+  Env &env,
+  Scope const *enclosingScope,
+  DeclFlags dflags,
+  Variable const *var)
+{
+  if (enclosingScope->isFunctionScope() && (dflags & DF_EXTERN)) {
+    // Note: There is no rule against initializing an 'extern'
+    // variable at file scope.  It is un-idiomatic, and GCC will
+    // warn about it, but it is legal.
+    env.error(var->loc, stringb(
+      "Variable '" << var->name <<
+      "' is declared at block (function) scope with both 'extern' "
+      "and an initializer, which is invalid (C11 6.7.9p5)."));
+  }
+
+  // A VLA cannot be initialized.
+  if (var->type->isVariableLengthArrayType()) {
+    env.error(var->loc, stringb(
+      "Variable '" << var->name <<
+      "' is a variable-length array with an initializer, which is "
+      "invalid (C11 6.7.9p3)."));
+  }
+}
+
+
 void Declarator::mid_tcheck(Env &env, Tcheck &dt)
 {
   // true if we're immediately in a class body
@@ -3952,23 +3981,7 @@ void Declarator::mid_tcheck(Env &env, Tcheck &dt)
       }
     }
 
-    if (enclosingScope->isFunctionScope() && (dt.dflags & DF_EXTERN)) {
-      // Note: There is no rule against initializing an 'extern'
-      // variable at file scope.  It is un-idiomatic, and GCC will
-      // warn about it, but it is legal.
-      env.error(getLoc(), stringb(
-        "Variable '" << var->name <<
-        "' is declared at block (function) scope with both 'extern' "
-        "and an initializer, which is invalid (C11 6.7.9p5)."));
-    }
-
-    // A VLA cannot be initialized.
-    if (var->type->isVariableLengthArrayType()) {
-      env.error(getLoc(), stringb(
-        "Variable '" << var->name <<
-        "' is a variable-length array with an initializer, which is "
-        "invalid (C11 6.7.9p3)."));
-    }
+    checkRulesForInitializedVariables(env, enclosingScope, dt.dflags, var);
   }
 
   // pull the scope back out of the stack; if this is a
