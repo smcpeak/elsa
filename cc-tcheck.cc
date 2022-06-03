@@ -3667,10 +3667,18 @@ void Declarator::mid_tcheck(Env &env, Tcheck &dt)
     type = dt.type = var->type = env.errorType();
   }
 
-  if (inClassBody && !enclosingScope->curCompound->isUnion()) {
-    checkSWFARules(env, type,
-      enclosingScope->curCompound->keyword == CompoundType::K_STRUCT?
-        SWFAC_struct : SWFAC_class);
+  if (inClassBody) {
+    if (enclosingScope->curCompound->isUnion()) {
+      if (dt.type->isArrayTypeWithUnspecifiedSize()) {
+        // C11 6.7.2.1p3.
+        env.error("A union may not contain an array with unspecified size.");
+      }
+    }
+    else {
+      checkSWFARules(env, type,
+        enclosingScope->curCompound->keyword == CompoundType::K_STRUCT?
+          SWFAC_struct : SWFAC_class);
+    }
   }
 
   // handle function template declarations ....

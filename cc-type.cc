@@ -490,8 +490,7 @@ int CompoundType::reprSize(TypeSizes const &typeSizes) const
       bits = 0;
     }
 
-    if (v->type->isArrayType() &&
-        !v->type->asArrayTypeC()->hasSize()) {
+    if (v->type->isArrayTypeWithUnspecifiedSize()) {
       // "open array"; there are checks elsewhere that control whether
       // Elsa allows this, this at point in the code I can just assume
       // that they are allowed; they are treated as having size 0, so
@@ -999,10 +998,7 @@ bool CompoundType::hasFlexibleArrayMember() const
 {
   if (!isUnion() && dataMembers.isNotEmpty()) {
     Variable const *last = dataMembers.lastC();
-
-    if (ArrayType const *at = last->type->ifArrayTypeC()) {
-      return !at->hasSize();
-    }
+    return last->type->isArrayTypeWithUnspecifiedSize();
   }
 
   return false;
@@ -1396,6 +1392,14 @@ bool BaseType::isMethod() const
 {
   return isFunctionType() &&
          asFunctionTypeC()->isMethod();
+}
+
+bool BaseType::isArrayTypeWithUnspecifiedSize() const
+{
+  if (ArrayType const *at = this->ifArrayTypeC()) {
+    return !at->hasSize();
+  }
+  return false;
 }
 
 bool BaseType::isReferenceToConst() const {

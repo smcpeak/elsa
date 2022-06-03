@@ -19,7 +19,7 @@ struct SWSWFA {
 struct SWFA awswfa[3];                           // ERROR
 
 // Try to put the flexible array directly into the union.
-union UWFA { int flex[]; };                      // ERROR; not enforced yet
+union UWFA { int flex[]; };                      // ERROR
 
 union UWSWFA1 {
   int x;

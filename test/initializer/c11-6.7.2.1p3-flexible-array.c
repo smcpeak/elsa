@@ -68,7 +68,6 @@ struct SWSWFA {
 // ------------------------------ Rule 3 -------------------------------
 // Try to put the flexible array directly into the union.
 //ERROR(uwfa): union UWFA { int flex[]; };
-//NOTWORKING(elsa): Rule not enforced.
 
 union UWSWFA1 {
   int x;
