@@ -10320,6 +10320,10 @@ Type const *IN_compound::tcheck(Env &env, Type const *wholeType)
   }
 
   // Possibly set the size of an array with unspecified size.
+  //
+  // TODO: This does not work properly for the case of a flexible array
+  // member as the last element of a struct (a GNU extension), if the
+  // initializer is only partially bracketed.
   if (ArrayType const *at = wholeType->ifArrayTypeC()) {
     if (at->getSize() == ArrayType::NO_SIZE) {
       ArrayType const *newType =

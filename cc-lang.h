@@ -195,6 +195,13 @@ public:      // data
   // invalid per C11 6.7.6.2p1 and C++14 8.3.4p1.
   Bool3 m_pedanticAllowZeroSizeArrays;
 
+  // When false, prohibit initializing a struct (or class) that contains
+  // a flexible array member.
+  //
+  // TODO: This has no effect.  I started to implement it, but ran into
+  // trouble and backed it out.
+  Bool3 m_pedanticAllowInitializedStructWithFlexibleArrayMember;
+
   // ---- bug compatibility flags ----
   // gcc-2 bug compatibility: permit string literals to contain
   // (unescaped) newline characters in them

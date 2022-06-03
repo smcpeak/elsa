@@ -271,6 +271,7 @@ void CCLang::setPedantic(Bool3 value)
 {
   m_pedanticAllowEmptyStructsInC = value;
   m_pedanticAllowZeroSizeArrays = value;
+  m_pedanticAllowInitializedStructWithFlexibleArrayMember = value;
 }
 
 
@@ -330,6 +331,7 @@ string CCLang::toString() {
   PRINT(restrictIsAKeyword);
   PRINT(m_pedanticAllowEmptyStructsInC);
   PRINT(m_pedanticAllowZeroSizeArrays);
+  PRINT(m_pedanticAllowInitializedStructWithFlexibleArrayMember);
   PRINT(allowNewlinesInStringLits);
   PRINT(allowImplicitIntForOperators);
   PRINT(allowQualifiedMemberDeclarations);

@@ -281,6 +281,7 @@ check-errmsg: out/errmsg/desig-too-large.c
 check-errmsg: out/errmsg/empty-struct.c
 check-errmsg: out/errmsg/field-desig-for-array.c
 check-errmsg: out/errmsg/incomplete-struct-variable.c
+#check-errmsg: out/errmsg/init-has-flex-array.c
 check-errmsg: out/errmsg/invalid-field-desig.c
 check-errmsg: out/errmsg/negative-size-array.c
 check-errmsg: out/errmsg/struct-with-flex-array.c
@@ -312,6 +313,7 @@ out/errmsg-pedantic-errors/%: errmsg/% errmsg/%.pedantic-errors.expect $(CCPARSE
 
 check-errmsg: out/errmsg-pedantic-errors/empty-struct.c
 check-errmsg: out/errmsg-pedantic-errors/empty-struct.cc
+#check-errmsg: out/errmsg-pedantic-errors/init-has-flex-array.c
 check-errmsg: out/errmsg-pedantic-errors/zero-size-array.c
 check-errmsg: out/errmsg-pedantic-errors/zero-size-array.cc
 

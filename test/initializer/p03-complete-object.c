@@ -99,6 +99,14 @@ typedef struct HasFlexArray {
 //ERROR(init-flex-array): HasFlexArray hfa1 = { 1, { 2,3 } };
 //NOTWORKING(elsa): Rule not enforced.
 
+// Variant missing the inner brace pair.
+//ERROR(init-flex-array-nobraces): HasFlexArray hfa2 = { 1, 2, 3 };
+//NOTWORKING(elsa): Rule not enforced.
+
+// It *is* allowed to initialize the HFA structure so long as we do not
+// initialize the flexible array itself.
+HasFlexArray hfa3 = { 1 };
+
 typedef struct ContainsHFA {
   int z;
 
