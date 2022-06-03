@@ -1,4 +1,11 @@
+// t0133.c
 // test compound initializers according to C99 p.125
+
+// 2022-06-02: After making several changes, GCC-9.3 accepts this
+// without warnings, provided these flags are passed:
+//
+//   -Wno-missing-braces -Wno-unused-variable -Wno-unused-but-set-variable
+
 void a() {
   // non-designated
   int *ip = 0;         // NULL
@@ -67,13 +74,15 @@ void a() {
   //
   // This is not valid per C11 6.7.9/3: "The type of the entity to be
   // initialized shall be an array of unknown size or a complete object
-  // type that is not a variable length array type."  But I'm keeping it
-  // for the moment since Elsa has historically tolerated it, and I
-  // think I can continue to do so.
+  // type that is not a variable length array type."
+  //
+  // I think this (declaring and initializing a structure with a
+  // flexible array) is a GCC extension, but I don't immediately see
+  // where it is documented.
   //
   struct foo10d {int xd; int yd[];};
-  struct foo10d f10d = {3, 4, 5, 6};
-  struct foo10e {int xe; int ye[]; int ze; int z2e;};
+  static struct foo10d f10d = {3, 4, 5, 6};                // GCC requires 'static' here.
+  struct foo10e {int xe; int ye[2]; int ze; int z2e;};     // 'ye' cannot have unspecified size.
   struct foo10e f10e = {3, {4, 5}, 6, 7};
 }
 
@@ -85,23 +94,23 @@ void b() {
     int foox;                   // (5)
     double fooy;
     int fooz[2];                // (1)
-    double foow[];              // (2)
+    double foow[2];             // (2)
     int fooq;
   };
   struct gronk {
-    struct foo f1[];
+    struct foo f1[3];
     int gronk1;
     struct {
       int x;
       double y;                 // (3)
-      int z[];                  // (4)
+      int z[4];                 // (4)
       int w;
     } f2;
     double gronk2;
-    struct foo f3[];
+    struct foo f3[3];
   };
   struct bar {
-    struct gronk g[];
+    struct gronk g[3];
     struct foo f;
     struct gronk g2;
   };

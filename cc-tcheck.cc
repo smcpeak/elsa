@@ -3390,6 +3390,62 @@ bool isPrimitiveObjectType(Type const *t)
          t->isPointerToMemberType();
 }
 
+
+// Return true if 'type' is a struct (or class) whose last member is a
+// flexible array (SWFA).  Also return true if 'type' is a union, at
+// least one of whose members 'isCompoundWithFlexibleArray'.  See
+// test/initializer/c11-6.7.2.1p3-flexible-array.c.
+static bool isCompoundWithFlexibleArray(Type const *type)
+{
+  if (CompoundType const *ct = type->ifCompoundTypeC()) {
+    if (ct->isUnion()) {
+      SFOREACH_OBJLIST(Variable, ct->dataMembers, iter) {
+        if (isCompoundWithFlexibleArray(iter.data()->type)) {
+          return true;
+        }
+      }
+    }
+    else if (ct->hasFlexibleArrayMember()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+// Context for 'checkSWFARules'.
+enum SWFAContext {
+  SWFAC_struct,
+  SWFAC_class,
+  SWFAC_array,
+
+  NUM_SWFACONTEXTS
+};
+
+DEFINE_ENUMERATION_TO_STRING(SWFAContext, NUM_SWFACONTEXTS, (
+  "struct member",
+  "class member",
+  "array with element",
+));
+
+
+// Given that we are trying to declare a component (specifically, as
+// described by 'context') of type 'type', enforce the rules related to
+// structures with flexible arrays (SWFAs) from C11 6.7.2.1p3.
+static void checkSWFARules(
+  Env &env, Type const *type, SWFAContext context)
+{
+  if (isCompoundWithFlexibleArray(type)) {
+    env.error(stringb(
+      "Cannot declare " << toString(context) <<
+      " of type '" << type->toString() <<
+      "' because it contains " <<
+      (type->isUnionType()? "a union that contains " : "") <<
+      "a flexible array member."));
+  }
+}
+
+
 void Declarator::mid_tcheck(Env &env, Tcheck &dt)
 {
   // true if we're immediately in a class body
@@ -3609,6 +3665,12 @@ void Declarator::mid_tcheck(Env &env, Tcheck &dt)
   if (!checkCompleteTypeRules(env, dt.dflags, context, var->type, init)) {
     // need to tell the calling context there is a problem
     type = dt.type = var->type = env.errorType();
+  }
+
+  if (inClassBody && !enclosingScope->curCompound->isUnion()) {
+    checkSWFARules(env, type,
+      enclosingScope->curCompound->keyword == CompoundType::K_STRUCT?
+        SWFAC_struct : SWFAC_class);
   }
 
   // handle function template declarations ....
@@ -4451,6 +4513,8 @@ void D_array::tcheck(Env &env, Declarator::Tcheck &dt)
   // specify the bounds of the arrays may be omitted", which I'm hoping
   // is equivalent to insisting on a complete element type.
   env.ensureCompleteType("make array of", dt.type);
+
+  checkSWFARules(env, dt.type, SWFAC_array);
 
   // having added this D_array's contribution to the type, pass
   // that on to the next declarator

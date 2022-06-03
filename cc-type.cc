@@ -992,6 +992,23 @@ bool CompoundType::isAggregate() const
 }
 
 
+// C11 6.7.2.1p18 also says that there must be at least two named
+// members, and only the last can be an array with missing size.  Those
+// additional constraints are not enforced here.
+bool CompoundType::hasFlexibleArrayMember() const
+{
+  if (!isUnion() && dataMembers.isNotEmpty()) {
+    Variable const *last = dataMembers.lastC();
+
+    if (ArrayType const *at = last->type->ifArrayTypeC()) {
+      return !at->hasSize();
+    }
+  }
+
+  return false;
+}
+
+
 // ---------------- EnumType ------------------
 EnumType::~EnumType()
 {}

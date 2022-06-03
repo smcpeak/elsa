@@ -332,6 +332,7 @@ public:      // funcs
   virtual ~CompoundType();
 
   bool isComplete() const { return !forward; }
+  bool isUnion() const { return keyword == K_UNION; }
 
   // true if this is a class that is incomplete because it requires
   // template arguments to be supplied (i.e. not true for classes
@@ -438,8 +439,13 @@ public:      // funcs
   // the class scope
   virtual void finishedClassDefinition(StringRef specialName);
 
-  // true if this is an "aggregate" (8.5.1p1)
+  // true if this is an "aggregate" (C++98 8.5.1p1)
   bool isAggregate() const;
+
+  // Return true if this is not a union, there is at least one data
+  // member, and the last data member has a type that is an array of
+  // unspecified size.  See C11 6.7.2.1p18.
+  bool hasFlexibleArrayMember() const;
 };
 
 string toString(CompoundType::Keyword k);

@@ -1,0 +1,8 @@
+---- stdout ----
+errmsg/struct-with-flex-array.c:15:15: error: Cannot declare struct member of type 'SWFA' because it contains a flexible array member.
+errmsg/struct-with-flex-array.c:19:13: error: Cannot declare array with element of type 'SWFA' because it contains a flexible array member.
+errmsg/struct-with-flex-array.c:30:41: error: Cannot declare struct member of type 'UWSWFA1' because it contains a union that contains a flexible array member.
+errmsg/struct-with-flex-array.c:33:15: error: Cannot declare array with element of type 'UWSWFA1' because it contains a union that contains a flexible array member.
+---- stderr ----
+---- exit status ----
+Exit 2

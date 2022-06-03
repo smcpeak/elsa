@@ -103,13 +103,9 @@ typedef struct HasFlexArray {
 typedef struct ContainsHFA {
   int z;
 
-  // Even without an initializer, GCC does not like this.
+  // Disallowed by C11 6.7.2.1p3.
   //ERROR(init-nested-flex-array): HasFlexArray hfa;
 } ContainsHFA;
-
-// GCC rejects this.
-//ERROR(init-nested-flex-array): ContainsHFA chfa1 = { 1, { 2, { 3,4 } } };
-//NOTWORKING(elsa): Rule not enforced.
 
 
 int main()
