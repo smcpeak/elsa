@@ -2137,6 +2137,46 @@ Type *TS_elaborated::itcheck(Env &env, Tcheck &tc)
 }
 
 
+// Check two of the rules from C11 6.7.2.1p3: within a struct or class,
+// a flexible array must be the last member, and there must be at least
+// one other member.
+static void checkFlexibleArrayMemberRules(
+  Env &env, CompoundType const *ct)
+{
+  if (ct->isUnion()) {
+    // Unions are not allowed to contain flexible arrays, but that is
+    // checked elsewhere.
+    return;
+  }
+
+  if (ct->dataMembers.isNotEmpty()) {
+    Variable const *lastField = ct->dataMembers.lastC();
+    SFOREACH_OBJLIST(Variable, ct->dataMembers, memberIter) {
+      Variable const *field = memberIter.data();
+
+      if (field != lastField &&
+          field->type->isArrayTypeWithUnspecifiedSize()) {
+        env.error(field->loc, stringb(
+          "Field '" << field->name << "' is an array with "
+          "unspecified size, so it must be the last data member "
+          "in its containing " << toString(ct->keyword) <<
+          ", but it is not.  (The last is '" <<
+          lastField->name << "'.)"));
+      }
+    }
+
+    if (lastField->type->isArrayTypeWithUnspecifiedSize() &&
+        ct->dataMembers.count() == 1) {
+      env.error(lastField->loc, stringb(
+        "Field '" << lastField->name << "' is an array with "
+        "unspecified size, so there must be at least one other "
+        "data member in its containing " << toString(ct->keyword) <<
+        ", but there is not."));
+    }
+  }
+}
+
+
 // typecheck declarator name 'name', pushing the sequence of scopes
 // that necessary to tcheck what follows, and also returning that
 // sequence in 'qualifierScopes' so the caller can undo it
@@ -2343,6 +2383,8 @@ void TS_classSpec::tcheckIntoCompound(
       member->tcheck(env);
     }
   }
+
+  checkFlexibleArrayMemberRules(env, ct);
 
   // 2005-02-17: check default arguments first so they are available
   // to all function bodies (hmmm... what if a default argument

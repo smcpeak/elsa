@@ -666,6 +666,8 @@ public:     // funcs
   bool isError() const { return isSimple(ST_ERROR); }
   bool isDependent() const;    // TODO: this should be ST_DEPENDENT only
   bool isMethod() const;                       // function and method
+
+  // True if an array has no size.  False for variable-length arrays.
   bool isArrayTypeWithUnspecifiedSize() const;
 
   // ST_DEPENDENT or TypeVariable or PseudoInstantiation or DependentQType

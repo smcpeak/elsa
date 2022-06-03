@@ -28,7 +28,6 @@
 // ------------------------------ Rule 1 -------------------------------
 // A single flexible array member is invalid.
 //ERROR(one-fa-member): struct OneFAMember { int flex[]; };
-//NOTWORKING(elsa): Rule not enforced.
 
 struct SWFA {
   int x;

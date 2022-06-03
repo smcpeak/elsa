@@ -1397,7 +1397,7 @@ bool BaseType::isMethod() const
 bool BaseType::isArrayTypeWithUnspecifiedSize() const
 {
   if (ArrayType const *at = this->ifArrayTypeC()) {
-    return !at->hasSize();
+    return at->getSize() == ArrayType::NO_SIZE;
   }
   return false;
 }

@@ -2,7 +2,7 @@
 // Several conditions relating to C11 6.7.2.1p3.
 
 // A single flexible array member is invalid.
-struct OneFAMember { int flex[]; };              // ERROR; not enforced yet
+struct OneFAMember { int flex[]; };              // ERROR
 
 struct SWFA {
   int x;
@@ -31,5 +31,11 @@ struct SWUWSWFA1 { int x; union UWSWFA1 u1; };   // ERROR
 
 // Try to embed in an array.
 union UWSWFA1 awuwswfa[3];                       // ERROR
+
+// Put the FA in other than last place.
+struct FANotLast {
+  int flex[];                                    // ERROR
+  int x;
+};
 
 // EOF
