@@ -3951,8 +3951,16 @@ void Declarator::mid_tcheck(Env &env, Tcheck &dt)
         }
       }
     }
-    // TODO: check compatibility with dflags; e.g. we can't allow
-    // an initializer for a global variable declared with 'extern'
+
+    if (enclosingScope->isFunctionScope() && (dt.dflags & DF_EXTERN)) {
+      // Note: There is no rule against initializing an 'extern'
+      // variable at file scope.  It is un-idiomatic, and GCC will
+      // warn about it, but it is legal.
+      env.error(getLoc(), stringb(
+        "Variable '" << var->name <<
+        "' is declared at block (function) scope with both 'extern' "
+        "and an initializer, which is invalid (C11 6.7.9p5)."));
+    }
   }
 
   // pull the scope back out of the stack; if this is a

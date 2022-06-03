@@ -21,7 +21,6 @@ static int test_zero()
 {
   extern int zero
   //ERROR(extern-has-init): = 0
-  //NOTWORKING(elsa): Rule not enforced.
     ;
   return zero == 0;
 }
@@ -33,7 +32,6 @@ static int test_s_three()
 {
   extern int s_three
   //ERROR(static-extern-has-init): = 3
-  //NOTWORKING(elsa): Rule not enforced.
     ;
   return s_three == 3;
 }
