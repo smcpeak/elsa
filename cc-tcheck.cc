@@ -3961,6 +3961,14 @@ void Declarator::mid_tcheck(Env &env, Tcheck &dt)
         "' is declared at block (function) scope with both 'extern' "
         "and an initializer, which is invalid (C11 6.7.9p5)."));
     }
+
+    // A VLA cannot be initialized.
+    if (var->type->isVariableLengthArrayType()) {
+      env.error(getLoc(), stringb(
+        "Variable '" << var->name <<
+        "' is a variable-length array with an initializer, which is "
+        "invalid (C11 6.7.9p3)."));
+    }
   }
 
   // pull the scope back out of the stack; if this is a
@@ -10300,7 +10308,7 @@ Type const *IN_compound::tcheck(Env &env, Type const *wholeType)
 
   // Possibly set the size of an array with unspecified size.
   if (ArrayType const *at = wholeType->ifArrayTypeC()) {
-    if (!at->hasSize()) {
+    if (at->getSize() == ArrayType::NO_SIZE) {
       ArrayType const *newType =
         env.tfac.setArraySize(loc, legacyTypeNC(at), maxIndex+1);
       TRACE("initializer",

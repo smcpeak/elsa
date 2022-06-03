@@ -78,7 +78,6 @@ static int test_arr23ab()
 int init_variable_length_array(int sz)
 {
   //ERROR(init-vla): int arr3[sz] = { 1,2,3 };
-  //NOTWORKING(elsa): Rule not enforced.
   return sz;
 }
 

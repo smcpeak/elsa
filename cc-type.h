@@ -670,6 +670,8 @@ public:     // funcs
   // True if an array has no size.  False for variable-length arrays.
   bool isArrayTypeWithUnspecifiedSize() const;
 
+  bool isVariableLengthArrayType() const;
+
   // ST_DEPENDENT or TypeVariable or PseudoInstantiation or DependentQType
   bool isGeneralizedDependent() const;
   bool containsGeneralizedDependent() const;   // anywhere in Type tree

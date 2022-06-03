@@ -1,0 +1,5 @@
+---- stdout ----
+errmsg/vla-with-init.c:6:7: error: Variable 'arr3' is a variable-length array with an initializer, which is invalid (C11 6.7.9p3).
+---- stderr ----
+---- exit status ----
+Exit 2

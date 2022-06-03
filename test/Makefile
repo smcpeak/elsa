@@ -285,6 +285,7 @@ check-errmsg: out/errmsg/invalid-field-desig.c
 check-errmsg: out/errmsg/negative-size-array.c
 check-errmsg: out/errmsg/struct-with-flex-array.c
 check-errmsg: out/errmsg/too-many-inits.c
+check-errmsg: out/errmsg/vla-with-init.c
 check-errmsg: out/errmsg/zero-size-array.c
 
 

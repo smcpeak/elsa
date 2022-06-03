@@ -1402,6 +1402,14 @@ bool BaseType::isArrayTypeWithUnspecifiedSize() const
   return false;
 }
 
+bool BaseType::isVariableLengthArrayType() const
+{
+  if (ArrayType const *at = this->ifArrayTypeC()) {
+    return at->getSize() == ArrayType::DYN_SIZE;
+  }
+  return false;
+}
+
 bool BaseType::isReferenceToConst() const {
   return isReferenceType() && asReferenceTypeC()->atType->isConst();
 }
