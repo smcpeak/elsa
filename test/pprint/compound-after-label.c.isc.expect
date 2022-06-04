@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 static int f()
 {
 label:
@@ -43,7 +43,7 @@ static int f3(int x)
   }
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

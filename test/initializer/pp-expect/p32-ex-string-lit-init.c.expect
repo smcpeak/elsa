@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 char s1[] = "abc", t1[3] = "abc";
 
 char s2[] = { 'a', 'b', 'c', '\0' }, t2[] = { 'a', 'b', 'c' };
@@ -23,7 +23,7 @@ int main()
            1;
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

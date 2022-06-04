@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 int AV_ORD_PTR_CHECK_DEREF(int, int);
 
 int av_ord_ptr_add(int, int);
@@ -70,7 +70,7 @@ void g()
   };
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

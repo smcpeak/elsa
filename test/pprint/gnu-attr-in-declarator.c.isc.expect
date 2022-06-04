@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 int x __attribute__((unused)), y __attribute__((mode(byte)));
 
 int * __attribute__((may_alias)) * __attribute__((may_alias)) ma2;
@@ -57,7 +57,7 @@ struct S1 {
   int c : 1 __attribute__((packed)) __attribute__((deprecated));
 };
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

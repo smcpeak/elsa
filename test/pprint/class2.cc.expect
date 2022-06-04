@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 class Base1 {
 public:
   Base1()
@@ -78,7 +78,7 @@ public:
   {}
 };
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

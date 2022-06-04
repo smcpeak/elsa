@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 struct S1 {
 } const s1;
 
@@ -13,7 +13,7 @@ union U1 {
 union U2 {
 } const volatile u2;
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

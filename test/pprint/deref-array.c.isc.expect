@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 void foo()
 {
   char buf[4];
@@ -8,7 +8,7 @@ void foo()
     ISC(SC_LVAL_TO_RVAL, char, *ISC(SC_ARRAY_TO_PTR, char *, buf));
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

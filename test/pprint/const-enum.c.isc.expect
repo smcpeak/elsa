@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 enum E1 {
   enumerator1
 } const e1;
@@ -21,7 +21,7 @@ enum __anon_enum_2 {
   enumerator4
 } const volatile e4;
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

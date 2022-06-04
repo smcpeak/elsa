@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 int x;
 
 int y;
@@ -53,7 +53,7 @@ void client()
           *(*ptr_to_func_returning_ptr_to_array_of_int)(5)) + 1));
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

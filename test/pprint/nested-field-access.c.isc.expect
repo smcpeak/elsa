@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 struct A {
   int x;
 };
@@ -16,7 +16,7 @@ int f()
   return ISC(SC_LVAL_TO_RVAL, int, b.a.x);
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

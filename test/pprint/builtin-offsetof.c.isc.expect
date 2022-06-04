@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 struct S {
   int x;
   int y;
@@ -16,7 +16,7 @@ int g()
   return ISC(SC_INT_CONV, int, __builtin_offsetof(struct S, y));
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

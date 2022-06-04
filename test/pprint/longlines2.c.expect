@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 typedef unsigned long long size_t;
 
 typedef unsigned long long uint64_t;
@@ -33,7 +33,7 @@ void f()
       (av_oo_ptr_cmp_eq(pp, __ptr_to_q)? "&q" : "?"));
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

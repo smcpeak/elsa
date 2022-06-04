@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 void f(int *p)
 {
   if (ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, int, p)) {
@@ -23,7 +23,7 @@ void f(int *p)
   } while (ISC(SC_LVAL_TO_RVAL|SC_BOOL_CONV, int, p));
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

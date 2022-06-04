@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 typedef __attribute__((__may_alias__)) short short_a;
 
 int main()
@@ -25,7 +25,7 @@ int * volatile  __attribute__((may_alias)) __attribute__((unused)) a4;
 
 int * __attribute__((may_alias)) __attribute__((unused)) a5;
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

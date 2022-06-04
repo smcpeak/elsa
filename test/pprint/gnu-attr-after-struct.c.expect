@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 struct __attribute__((deprecated)) S1 {
 };
 
@@ -11,7 +11,7 @@ struct __attribute__((deprecated)) S2 {
 
 struct __attribute__((deprecated)) S2 const s2b;
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

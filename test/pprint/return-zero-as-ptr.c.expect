@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 void *retzero()
 {
   return 0;
@@ -16,7 +16,7 @@ void *f3(int n, char *s)
   return n? 0 : (void *)s;
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

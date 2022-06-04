@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 typedef __attribute__((mode(byte))) int my_byte;
 
 int main()
@@ -8,7 +8,7 @@ int main()
   return sizeof(my_byte) == 1? 0 : 1;
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

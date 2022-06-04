@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 struct S {
   operator __attribute__(()) __attribute__(()) char();
   operator __attribute__(()) __attribute__(()) int();
@@ -20,7 +20,7 @@ struct S {
   {}
 };
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

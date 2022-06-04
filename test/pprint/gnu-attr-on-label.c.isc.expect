@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 int f(int x)
 {
   if (ISC(SC_LVAL_TO_RVAL, int, x) == 1) {
@@ -16,7 +16,7 @@ label2: __attribute__((unused)) __attribute__((hot))
   return ISC(SC_LVAL_TO_RVAL, int, x);
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

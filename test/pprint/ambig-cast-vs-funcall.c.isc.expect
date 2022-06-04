@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 typedef struct S {
   int c;
 } S;
@@ -26,7 +26,7 @@ int f2(S (*a)(int), int b, int choice)
   }
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

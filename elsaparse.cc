@@ -553,15 +553,14 @@ bool ElsaParse::parse(char const *inputFname)
       env.m_printSemanticInitializers = false;
     }
 
-    // TODO: These START and STOP lines should also be comments.
-    cout << "---- START ----" << endl;
-    cout << "// -*-c++-*-" << endl;
+    cout << "// ---- START ----" << endl;
+    cout << "// -*- c++ -*-" << endl;
     m_translationUnit->print(env);
     if (tracingSys("dumpTreePrintTree")) {
       env.debugPrintCout();
     }
     cout << env.getResult();
-    cout << "---- STOP ----" << endl;
+    cout << "// ---- STOP ----" << endl;
   }
 
   // test AST cloning

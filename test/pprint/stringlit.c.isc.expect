@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 void g(char const *p);
 
 void f()
@@ -12,7 +12,7 @@ void f()
   g(ISC(SC_ARRAY_TO_PTR|SC_QUAL_CONV, char const *, "arg"));
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

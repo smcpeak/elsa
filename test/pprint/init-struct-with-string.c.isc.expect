@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 struct S {
   char const *str;
 };
@@ -51,7 +51,7 @@ int test4()
   return ISC(SC_LVAL_TO_RVAL, int, ch) == 'e'? 0 : 1;
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

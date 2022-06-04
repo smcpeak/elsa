@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 int f(int a, _Bool b, void *p, void *q)
 {
   int r;
@@ -17,7 +17,7 @@ int f(int a, _Bool b, void *p, void *q)
   return r;
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

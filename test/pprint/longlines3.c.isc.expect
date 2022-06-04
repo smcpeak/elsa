@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 typedef unsigned long long size_t;
 
 typedef unsigned long long uint64_t;
@@ -52,7 +52,7 @@ void g()
       av_oo_ptr_from_intptr(ISC(SC_INT_CONV, long long, 0)).m_offset;
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 union __anon_union_1 {
   char some_member;
   int any_member;
@@ -13,7 +13,7 @@ int main()
   return u.any_member == 42 && 1? 0 : 1;
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

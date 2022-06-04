@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 int arr3a[3] = { 1, 2 };
 
 int arr3b[3] = { 0, 2 };
@@ -95,7 +95,7 @@ int main()
            1;
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

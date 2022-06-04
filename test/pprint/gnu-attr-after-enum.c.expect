@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 enum __attribute__((deprecated)) E1 {
   enumerator1
 };
@@ -39,7 +39,7 @@ void f()
   e6b = enumerator6;
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

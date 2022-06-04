@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 __asm__("asm at top level");
 
 __asm__("second asm at top level");
@@ -11,7 +11,7 @@ void f()
   __asm__("second asm inside a function");
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

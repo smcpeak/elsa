@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 int x[] = { 1, 3, 5 };
 
 int main()
@@ -9,7 +9,7 @@ int main()
   return *(x+0) == 1 && *(x+1) == 3 && *(x+2) == 5 && 1? 0 : 1;
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 void *retzero()
 {
   return ISC(SC_PTR_CONV, void *, 0);
@@ -20,7 +20,7 @@ void *f3(int n, char *s)
            (void *)s;
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 typedef unsigned long long size_t;
 
 typedef unsigned long long uint64_t;
@@ -45,7 +45,7 @@ void f()
          ISC(SC_ARRAY_TO_PTR, char *, "?")));
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

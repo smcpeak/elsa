@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 int foo() throw();
 
 int foo() throw()
@@ -38,7 +38,7 @@ void bar() throw(Exc);
 
 void bar2() throw(Exc, Exc2);
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

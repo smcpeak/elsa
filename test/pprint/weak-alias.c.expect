@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 int __f()
 {
   return 6;
@@ -8,7 +8,7 @@ int __f()
 
 int f() __attribute__((weak, alias("__f")));
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

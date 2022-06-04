@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 short q1[4][3][2] = { { { 1 } }, { { 2, 3 } }, { { 4, 5 }, { 6 } } };
 
 short q2[4][3][2] = {
@@ -28,7 +28,7 @@ int main()
   return check_q(q1) && check_q(q2) && check_q(q3) && 1? 0 : 1;
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

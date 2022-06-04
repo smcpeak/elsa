@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 enum E0 {
 };
 
@@ -44,7 +44,7 @@ enum E3vabc {
   E3vabc_c = 3
 };
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

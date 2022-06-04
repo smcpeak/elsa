@@ -2,8 +2,8 @@
 pprint/gnu-attr-in-type-specifier.c:93:3: warning: Ignoring mode attribute applied to an enum.
 pprint/gnu-attr-in-type-specifier.c:102:42: warning: Ignoring mode attribute applied to an enum.
 pprint/gnu-attr-in-type-specifier.c:111:9: warning: Ignoring mode attribute applied to an enum.
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 int f(__attribute__((mode(byte))) int b1,
   __attribute__((mode(byte))) int b2);
 
@@ -117,7 +117,7 @@ int a12(__attribute__((unused)) typeof(x) const p1,
     typeof(x) const volatile p4,
   int z);
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

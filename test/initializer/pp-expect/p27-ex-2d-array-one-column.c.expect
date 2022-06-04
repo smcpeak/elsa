@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 int z[4][3] = { { 1 }, { 2 }, { 3 }, { 4 } };
 
 int main()
@@ -15,7 +15,7 @@ int main()
            1;
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

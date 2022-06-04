@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 struct SWFA {
   int x;
   int flex[];
@@ -70,7 +70,7 @@ int main()
   return test_swfa() && test_uwswfa() && 1? 0 : 1;
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

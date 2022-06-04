@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 int printf(char const *format, ...);
 
 typedef unsigned uint32_t;
@@ -247,7 +247,7 @@ void no_operands()
                     :);
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 typedef struct Foo_struct {
   int x;
   int y;
@@ -21,7 +21,7 @@ Foo f(Foo *x, void *p)
   return ISC(SC_LVAL_TO_RVAL, Foo_struct, (Foo)(*x));
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 int arr2[] = { 1, 2 };
 
 int arr1000[] = {
@@ -102,7 +102,7 @@ int main()
   return test_arr2() && test_s3_s4() && 1? 0 : 1;
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

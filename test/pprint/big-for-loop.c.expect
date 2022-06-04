@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 int dummy12;
 
 int AV_ORD_PTR_CHECK_DEREF(void *p, int dummy);
@@ -18,7 +18,7 @@ void f(int i, int n, void *p1, void *p2)
   }
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

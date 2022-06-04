@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 int something(char const *fmt, ...);
 
 void f(int a)
@@ -34,7 +34,7 @@ int arr2[][3] = {
   { 1, 2, 3 }
 };
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

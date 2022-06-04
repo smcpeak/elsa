@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 int var_target = 7;
 
 extern __attribute__((alias("var_target"))) int var_alias;
@@ -19,7 +19,7 @@ int main()
   return x == 7 && alias2 == 9 && alias3 == 29 && 1? 0 : 1;
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

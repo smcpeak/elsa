@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 int f(int x)
 {
   if (ISC(SC_LVAL_TO_RVAL, int, x) == 1) {
@@ -9,7 +9,7 @@ int f(int x)
   return 0;
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

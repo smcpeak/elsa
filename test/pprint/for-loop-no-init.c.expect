@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 int av_ord_ptr_cmp_lt(int, int);
 
 int av_ord_ptr_add(int, int);
@@ -23,7 +23,7 @@ void f(int p, int q, int r, int buf)
   }
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0

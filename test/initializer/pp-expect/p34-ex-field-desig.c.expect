@@ -1,6 +1,6 @@
 ---- stdout ----
----- START ----
-// -*-c++-*-
+// ---- START ----
+// -*- c++ -*-
 typedef struct div_t {
   int rem;
   int quot;
@@ -13,7 +13,7 @@ int main()
   return answer.rem == -1 && answer.quot == 2 && 1? 0 : 1;
 }
 
----- STOP ----
+// ---- STOP ----
 ---- stderr ----
 ---- exit status ----
 Exit 0
