@@ -14,7 +14,7 @@
 //
 // These references are all marked with the string "C++98".
 
-// TODO: Split these by library.
+// elsa
 #include "ast_build.h"                 // makeExprList1, etc.
 #include "cc-ast-aux.h"                // class LoweredASTVisitor
 #include "cc-ast.h"                    // C++ AST
@@ -26,12 +26,14 @@
 #include "implint.h"                   // resolveImplIntAmbig
 #include "mtype.h"                     // MType
 #include "overload.h"                  // resolveOverload
+#include "stdconv.h"                   // test_getStandardConversion
+#include "trace.h"                     // trace
+
+// smbase
 #include "owner.h"                     // Owner
 #include "sm-macros.h"                 // Restorer, NULLABLE
-#include "stdconv.h"                   // test_getStandardConversion
 #include "strutil.h"                   // decodeEscapes, prefixEquals, pluraln
 #include "subobject-access-path.h"     // SubobjectAccessPath
-#include "trace.h"                     // trace
 #include "typelistiter.h"              // TypeListIter_FakeList
 
 // libc++
