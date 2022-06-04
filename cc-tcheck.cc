@@ -3958,36 +3958,6 @@ void Declarator::mid_tcheck(Env &env, Tcheck &dt)
   else if (init) {
     tcheck_init(env);
 
-    // TODO: Remove the following.  'tcheck_init' does what it was
-    // trying to do.
-    //
-    // quarl 2006-07-26
-    //    Check the initializer for compatibility with the declared type.
-    //    This also does some elaborations like function address-of.
-    if (IN_expr *initexpr = init->ifIN_expr()) {
-      if (!type->containsGeneralizedDependent()) {
-        if (!env.elaborateImplicitConversionArgToParam(type, initexpr->e)) {
-          // quarl 2006-07-26
-          //    This should be an error, but since too many test cases currently
-          //    fail this, it's just a warning for now.  getImplicitConversion
-          //    is incomplete.
-          //
-          // SGM 2006-08-05: I am turning this off.  There is nothing
-          // wrong (in the cases I've seen anyway) with the source code
-          // being analyzed, rather there is a bug in Elsa.  We should
-          // either deal with the Elsa bugs, or just be silent about the
-          // problems by default (which is what I am doing now).  There
-          // could be a command line flag to turn this back on, if
-          // desired.
-          #if 0
-          env.warning(/*type,*/ stringc
-                      << "cannot convert initializer type '" << initexpr->e->getType()->toString()
-                      << "' to type '" << type->toString() << "'");
-          #endif // 0
-        }
-      }
-    }
-
     checkRulesForInitializedVariables(env, enclosingScope, dt.dflags, var);
   }
 
