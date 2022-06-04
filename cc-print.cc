@@ -471,16 +471,7 @@ static void printInitializerOpt(PrintEnv &env,
   bool const outermost = true;
   if (init) {
     if (IN_ctor const *ctor = init->ifIN_ctorC()) {
-      // sm: don't print "()" as an IN_ctor initializer (C++98 8.5 para 8)
-      if (fl_isEmpty(ctor->args)) {
-        // Don't print anything.
-      }
-      else {
-        // Constructor arguments.
-        env << "(";
-        ctor->print(env, outermost);
-        env << ")";
-      }
+      ctor->print(env, outermost);
     }
     else {
       env << " =";
@@ -2221,9 +2212,15 @@ void IN_compound::print(PrintEnv &env, bool outermost) const
 
 void IN_ctor::print(PrintEnv &env, bool) const
 {
-  // TODO: The code in 'printInitializerOpt' does some wonky stuff that
-  // probably should be done here instead.
-  printArgExprList(env, args);
+  if (fl_isEmpty(args)) {
+    // Don't print "()" in an empty IN_ctor initializer (C++98 8.5p8).
+  }
+  else {
+    // Constructor arguments.
+    env << "(";
+    printArgExprList(env, args);
+    env << ")";
+  }
 }
 
 
