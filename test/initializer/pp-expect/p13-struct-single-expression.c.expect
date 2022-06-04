@@ -1,4 +1,3 @@
----- stdout ----
 // ---- START ----
 // -*- c++ -*-
 typedef struct S {
@@ -46,6 +45,3 @@ int main()
 }
 
 // ---- STOP ----
----- stderr ----
----- exit status ----
-Exit 0

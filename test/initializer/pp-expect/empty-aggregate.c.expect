@@ -1,4 +1,3 @@
----- stdout ----
 // ---- START ----
 // -*- c++ -*-
 int arr0[0] = {  };
@@ -121,6 +120,3 @@ int main()
 }
 
 // ---- STOP ----
----- stderr ----
----- exit status ----
-Exit 0

@@ -1,4 +1,3 @@
----- stdout ----
 // ---- START ----
 // -*- c++ -*-
 struct __anon_struct_1 {
@@ -16,6 +15,3 @@ int main()
 }
 
 // ---- STOP ----
----- stderr ----
----- exit status ----
-Exit 0

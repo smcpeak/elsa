@@ -1,4 +1,3 @@
----- stdout ----
 // ---- START ----
 // -*- c++ -*-
 char s1[] = "abc", t1[3] = "abc";
@@ -24,6 +23,3 @@ int main()
 }
 
 // ---- STOP ----
----- stderr ----
----- exit status ----
-Exit 0

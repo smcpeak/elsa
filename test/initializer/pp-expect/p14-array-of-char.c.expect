@@ -1,4 +1,3 @@
----- stdout ----
 // ---- START ----
 // -*- c++ -*-
 char str_hello[6] = "hello";
@@ -283,6 +282,3 @@ int main()
 }
 
 // ---- STOP ----
----- stderr ----
----- exit status ----
-Exit 0

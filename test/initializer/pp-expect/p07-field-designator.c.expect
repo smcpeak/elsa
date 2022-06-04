@@ -1,4 +1,3 @@
----- stdout ----
 // ---- START ----
 // -*- c++ -*-
 typedef struct S {
@@ -62,7 +61,3 @@ int main()
 }
 
 // ---- STOP ----
----- stderr ----
-p07-field-designator.c:72:24: warning: Initializer for union field 'i' overrides previous initializer for different field 'c' at p07-field-designator.c:72:15.
----- exit status ----
-Exit 0

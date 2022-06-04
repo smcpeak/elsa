@@ -105,19 +105,14 @@ out/elsa-pprint/%.c: %.c pp-expect/%.c.expect $(CCPARSE)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/elsa-pprint/$*.c.pp.actual \
 	  --expect pp-expect/$*.c.expect \
+	  --no-separators --no-stderr \
 	  $(CCPARSE) --pretty-print $*.c
 	@#
 	@# Second parse and pprint, comparing to previous pprint.
 	@#
-	$(PERL) ../../chop_out \
-	  < out/elsa-pprint/$*.c.pp.actual \
-	  > out/elsa-pprint/$*.c.pp.chopped
-	$(CCPARSE) --pretty-print -xc out/elsa-pprint/$*.c.pp.chopped \
+	$(CCPARSE) --pretty-print -xc out/elsa-pprint/$*.c.pp.actual \
 	  > out/elsa-pprint/$*.c.pp2.actual
-	$(PERL) ../../chop_out \
-	  < out/elsa-pprint/$*.c.pp2.actual \
-	  > out/elsa-pprint/$*.c.pp2.chopped
-	diff -u out/elsa-pprint/$*.c.pp.chopped out/elsa-pprint/$*.c.pp2.chopped
+	diff -u out/elsa-pprint/$*.c.pp.actual out/elsa-pprint/$*.c.pp2.actual
 	touch $@
 
 
