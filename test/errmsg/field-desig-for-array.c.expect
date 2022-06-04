@@ -1,5 +1,5 @@
 ---- stdout ----
-errmsg/field-desig-for-array.c:4:17: error: Field designator '.x' applied to non-compound type 'int [2]'.
 ---- stderr ----
+errmsg/field-desig-for-array.c:4:17: error: Field designator '.x' applied to non-compound type 'int [2]'.
 ---- exit status ----
 Exit 2

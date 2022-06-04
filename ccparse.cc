@@ -164,14 +164,14 @@ LocString * /*owner*/ ParseEnv::ls(SourceLoc loc, char const *name)
 
 void ParseEnv::error(SourceLoc loc, char const *msg)
 {
-  cout << toString(loc) << ": error: " << msg << endl;
+  cerr << toString(loc) << ": error: " << msg << endl;
   errors++;
 }
 
 
 void ParseEnv::warning(SourceLoc loc, char const *msg)
 {
-  cout << toString(loc) << ": warning: " << msg << endl;
+  cerr << toString(loc) << ": warning: " << msg << endl;
   warnings++;
 }
 

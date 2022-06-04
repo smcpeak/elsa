@@ -393,7 +393,7 @@ int main(int argc, char **argv)
   }
   catch (XUnimp &x) {
     HANDLER();
-    cout << x << endl;
+    cerr << x << endl;
 
     // don't consider this the same as dying on an assertion failure;
     // I want to have tests in regrtest that are "expected" to fail
@@ -404,12 +404,12 @@ int main(int argc, char **argv)
     HANDLER();
 
     // similar to XUnimp
-    cout << x << endl;
+    cerr << x << endl;
     return 10;
   }
   catch (xBase &x) {
     HANDLER();
-    cout << x << endl;
+    cerr << x << endl;
     return 4;
   }
 }

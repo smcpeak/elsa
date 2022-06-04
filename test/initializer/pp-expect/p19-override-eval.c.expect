@@ -1,8 +1,4 @@
 ---- stdout ----
-p19-override-eval.c:29:11: warning: Initializer for array index 0 overrides previous initializer at p19-override-eval.c:28:11.
-p19-override-eval.c:52:10: warning: Initializer for field 'x' overrides previous initializer at p19-override-eval.c:51:10.
-p19-override-eval.c:74:10: warning: Initializer for union field 'y' overrides previous initializer for different field 'x' at p19-override-eval.c:73:10.
-p19-override-eval.c:94:10: warning: Initializer for union field 'y' overrides previous initializer for different field 'x' at p19-override-eval.c:93:10.
 // ---- START ----
 // -*- c++ -*-
 extern int printf(char const *format, ...);
@@ -60,5 +56,9 @@ int main()
 
 // ---- STOP ----
 ---- stderr ----
+p19-override-eval.c:29:11: warning: Initializer for array index 0 overrides previous initializer at p19-override-eval.c:28:11.
+p19-override-eval.c:52:10: warning: Initializer for field 'x' overrides previous initializer at p19-override-eval.c:51:10.
+p19-override-eval.c:74:10: warning: Initializer for union field 'y' overrides previous initializer for different field 'x' at p19-override-eval.c:73:10.
+p19-override-eval.c:94:10: warning: Initializer for union field 'y' overrides previous initializer for different field 'x' at p19-override-eval.c:93:10.
 ---- exit status ----
 Exit 0

@@ -98,7 +98,7 @@ public:      // methods
   // Parse 'inputFname' according to the language preferences in 'lang'.
   //
   // In the case of syntax errors in the input file, print messages to
-  // stdout and return false.  But note that, depending on how the data
+  // stderr and return false.  But note that, depending on how the data
   // members are configured, we might stop before doing a full
   // type-check.
   //

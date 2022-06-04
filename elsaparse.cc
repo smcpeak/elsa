@@ -24,7 +24,7 @@
 #include "gcc-options.h"               // gccLanguageForFile
 #include "nonport.h"                   // getMilliseconds
 #include "sm-fstream.h"                // ofstream
-#include "sm-iostream.h"               // cout
+#include "sm-iostream.h"               // cerr
 #include "smregexp.h"                  // regexpMatch
 #include "srcloc.h"                    // SourceLocManager
 #include "strtokp.h"                   // StrtokParse
@@ -64,7 +64,7 @@ bool DeclTypeChecker::visitDeclarator(Declarator *obj)
       !(obj->var->flags & (DF_GLOBAL | DF_MEMBER)) &&
       !obj->type->isArrayType()) {
     instances++;
-    cout << toString(obj->var->loc) << ": " << obj->var->name
+    cerr << toString(obj->var->loc) << ": " << obj->var->name
          << " has type != var->type, but is not global or member or array\n";
   }
   return true;
@@ -148,9 +148,9 @@ void handle_xBase(Env &env, xBase &x)
 {
   // typically an assertion failure from the tchecker; catch it here
   // so we can print the errors, and something about the location
-  env.errors.print(cout);
-  cout << x << endl;
-  cout << "Failure probably related to code near " << env.locStr() << endl;
+  env.errors.print(cerr);
+  cerr << x << endl;
+  cerr << "Failure probably related to code near " << env.locStr() << endl;
 
   // print all the locations on the scope stack; this is sometimes
   // useful when the env.locStr refers to some template code that
@@ -159,8 +159,8 @@ void handle_xBase(Env &env, xBase &x)
   // (unfortunately, env.instantiationLocStack isn't an option b/c
   // it will have been cleared by the automatic invocation of
   // destructors unwinding the stack...)
-  cout << "current location stack:\n";
-  cout << env.locationStackString();
+  cerr << "current location stack:\n";
+  cerr << env.locationStackString();
 
   // I changed from using exit(4) here to using abort() because
   // that way the multitest.pl script can distinguish them; the
@@ -302,7 +302,7 @@ bool ElsaParse::parse(char const *inputFname)
 
   // ---------------- typecheck -----------------
   if (tracingSys("no-typecheck")) {
-    cout << "no-typecheck" << endl;
+    cerr << "no-typecheck" << endl;
   } else {
     SectionTimer timer(m_tcheckTime);
     Env env(m_stringTable, m_lang, m_typeFactory, madeUpVariables, builtinVars, m_translationUnit);
@@ -313,7 +313,7 @@ bool ElsaParse::parse(char const *inputFname)
       HANDLER();
 
       // relay to handler in main()
-      cout << "in code near " << env.locStr() << ":\n";
+      cerr << "in code near " << env.locStr() << ":\n";
       throw;
     }
     catch (x_assert &x) {
@@ -321,7 +321,7 @@ bool ElsaParse::parse(char const *inputFname)
 
       if (env.errors.hasFromNonDisambErrors()) {
         if (tracingSys("expect_confused_bail")) {
-          cout << "got the expected confused/bail\n";
+          cerr << "got the expected confused/bail\n";
           exit(0);
         }
 
@@ -342,12 +342,12 @@ bool ElsaParse::parse(char const *inputFname)
         // Delta might see it.  If I am intending to minimize an assertion
         // failure, it's no good if Delta introduces an error.
         env.error("confused by earlier errors, bailing out");
-        env.errors.print(cout);
+        env.errors.print(cerr);
         exit(4);
       }
 
       if (tracingSys("expect_xfailure")) {
-        cout << "got the expected xfailure\n";
+        cerr << "got the expected xfailure\n";
         exit(0);
       }
 
@@ -398,10 +398,10 @@ bool ElsaParse::parse(char const *inputFname)
     }
 
     // print errors and warnings
-    env.errors.print(cout);
+    env.errors.print(cerr);
 
     if (m_printErrorCount) {
-      cout << "typechecking results:\n"
+      cerr << "typechecking results:\n"
            << "  errors:   " << numErrors << "\n"
            << "  warnings: " << numWarnings << "\n";
     }
@@ -424,7 +424,7 @@ bool ElsaParse::parse(char const *inputFname)
         // ok
       }
       else {
-        cout << "collectLookupResults do not match:\n"
+        cerr << "collectLookupResults do not match:\n"
              << "  source: " << env.collectLookupResults << "\n"
              << "  tcheck: " << nc.sb << "\n"
              ;
@@ -465,7 +465,7 @@ bool ElsaParse::parse(char const *inputFname)
     if (tracingSys("declTypeCheck") || getenv("declTypeCheck")) {
       DeclTypeChecker vis;
       m_translationUnit->traverse(vis.loweredVisitor);
-      cout << "instances of type != var->type: " << vis.instances << endl;
+      cerr << "instances of type != var->type: " << vis.instances << endl;
     }
 
     if (tracingSys("stopAfterTCheck")) {
@@ -475,7 +475,7 @@ bool ElsaParse::parse(char const *inputFname)
 
   // ----------------- elaboration ------------------
   if (tracingSys("no-elaborate")) {
-    cout << "no-elaborate" << endl;
+    cerr << "no-elaborate" << endl;
   }
   else if (m_elabActivities == EA_NONE) {
     // No elaboration requested.
@@ -607,7 +607,7 @@ bool ElsaParse::parse(char const *inputFname)
 
 void ElsaParse::printTimes()
 {
-  cout << "parse=" << m_parseTime << "ms"
+  cerr << "parse=" << m_parseTime << "ms"
        << " tcheck=" << m_tcheckTime << "ms"
        << " integ=" << m_integrityTime << "ms"
        << " elab=" << m_elaborationTime << "ms"

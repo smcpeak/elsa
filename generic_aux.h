@@ -99,7 +99,7 @@ void genericAddAmbiguity(NODE *main, NODE *alt)
   if (main->next) {
     // I don't expect 'main' to already be on a list, so I'll
     // make some noise; but I think it will work anyway
-    cout << "note: ambiguous " << main->kindName()
+    cerr << "note: ambiguous " << main->kindName()
          << "node leader is already on a list..\n";
   }
 

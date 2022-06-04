@@ -1,5 +1,5 @@
 ---- stdout ----
-errmsg/desig-too-large.c:6:17: error: Array index designator 'fifty' evaluated to 50, which is too large for type 'int [2]'.
 ---- stderr ----
+errmsg/desig-too-large.c:6:17: error: Array index designator 'fifty' evaluated to 50, which is too large for type 'int [2]'.
 ---- exit status ----
 Exit 2

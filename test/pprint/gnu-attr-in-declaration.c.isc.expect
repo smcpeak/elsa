@@ -1,6 +1,4 @@
 ---- stdout ----
-pprint/gnu-attr-in-declaration.c:40:38: warning: Ignoring mode attribute applied to an enum.
-pprint/gnu-attr-in-declaration.c:46:8: warning: Ignoring mode attribute applied to an enum.
 // ---- START ----
 // -*- c++ -*-
 typedef int Integer;
@@ -105,5 +103,7 @@ extern __attribute__((unused))
 
 // ---- STOP ----
 ---- stderr ----
+pprint/gnu-attr-in-declaration.c:40:38: warning: Ignoring mode attribute applied to an enum.
+pprint/gnu-attr-in-declaration.c:46:8: warning: Ignoring mode attribute applied to an enum.
 ---- exit status ----
 Exit 0

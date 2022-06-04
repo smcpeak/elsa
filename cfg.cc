@@ -6,7 +6,7 @@
 #include "cc-ast-aux.h"    // class LoweredASTVisitor
 #include "sobjset.h"       // SObjSet
 
-#include "sm-iostream.h"   // cout
+#include "sm-iostream.h"   // cerr
 
 
 // -------------------------- NextPtr ----------------------
@@ -38,7 +38,7 @@ CFGEnv::~CFGEnv()
 
 void CFGEnv::err(SourceLoc loc, char const *str)
 {
-  cout << toString(loc) << ": " << str << endl;
+  cerr << toString(loc) << ": " << str << endl;
 }
 
 

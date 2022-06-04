@@ -1,10 +1,10 @@
 ---- stdout ----
+---- stderr ----
 errmsg/union-init-override.c:11:31: warning: Initializer for union field 'x' overrides previous initializer at errmsg/union-init-override.c:11:23.
 errmsg/union-init-override.c:14:31: warning: Initializer for union field 'y' overrides previous initializer for different field 'x' at errmsg/union-init-override.c:14:23.
 errmsg/union-init-override.c:34:34: warning: Initializer for subobject inside union field 's1' overrides entire previous initializer for different field 'e' at errmsg/union-init-override.c:34:23.
 errmsg/union-init-override.c:37:34: warning: Initializer for union field 'e' overrides previous initializer for different field 's1' at errmsg/union-init-override.c:37:26.
 errmsg/union-init-override.c:40:37: warning: Initializer for field 'a' overrides previous initializer at errmsg/union-init-override.c:40:26.
 errmsg/union-init-override.c:46:37: warning: Initializer for subobject inside union field 's2' overrides entire previous initializer for different field 's1' at errmsg/union-init-override.c:46:26.
----- stderr ----
 ---- exit status ----
 Exit 0

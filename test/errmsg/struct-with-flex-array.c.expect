@@ -1,4 +1,5 @@
 ---- stdout ----
+---- stderr ----
 errmsg/struct-with-flex-array.c:5:26: error: Field 'flex' is an array with unspecified size, so there must be at least one other data member in its containing struct, but there is not.
 errmsg/struct-with-flex-array.c:15:15: error: Cannot declare struct member of type 'SWFA' because it contains a flexible array member.
 errmsg/struct-with-flex-array.c:19:13: error: Cannot declare array with element of type 'SWFA' because it contains a flexible array member.
@@ -6,6 +7,5 @@ errmsg/struct-with-flex-array.c:22:18: error: A union may not contain an array w
 errmsg/struct-with-flex-array.c:30:41: error: Cannot declare struct member of type 'UWSWFA1' because it contains a union that contains a flexible array member.
 errmsg/struct-with-flex-array.c:33:15: error: Cannot declare array with element of type 'UWSWFA1' because it contains a union that contains a flexible array member.
 errmsg/struct-with-flex-array.c:37:7: error: Field 'flex' is an array with unspecified size, so it must be the last data member in its containing struct, but it is not.  (The last is 'x'.)
----- stderr ----
 ---- exit status ----
 Exit 2

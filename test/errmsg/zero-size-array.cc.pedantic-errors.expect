@@ -1,5 +1,5 @@
 ---- stdout ----
-errmsg/zero-size-array.cc:4:5: error: Pedantic: Array size must not be zero (per C++14 8.3.4p1).
 ---- stderr ----
+errmsg/zero-size-array.cc:4:5: error: Pedantic: Array size must not be zero (per C++14 8.3.4p1).
 ---- exit status ----
 Exit 2

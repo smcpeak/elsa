@@ -5847,7 +5847,7 @@ Type *Env::unimp(rostring msg)
 
   // always print this immediately, because in some cases I will
   // segfault (typically deref'ing NULL) right after printing this
-  cout << toString(loc()) << ": unimplemented: " << msg << instLoc << endl;
+  cerr << toString(loc()) << ": unimplemented: " << msg << instLoc << endl;
 
   breaker();
   errors.addError(new ErrorMsg(
