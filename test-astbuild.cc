@@ -273,6 +273,17 @@ void TestASTSynth::populateBody(S_compound *body)
 {
   // TODO: Test more of the Expression builders.
 
+  // "int x = 3;"
+  {
+    Type *t_int = m_typeFactory.getSimpleType(ST_INT);
+    Variable *vx = makeVar("x", t_int);
+    Declaration *decl = makeDeclaration(vx, DC_S_DECL);
+    Initializer *init = new IN_expr(loc, makeE_intLit(3));
+    xassert(printASTNodeToString(m_lang, init) == "3");
+    fl_first(decl->decllist)->init = init;
+    body->stmts.append(new S_decl(loc, decl));
+  }
+
   body->stmts.append(new S_return(loc, new FullExpression(
     testMakeE_compoundLit())));
 }

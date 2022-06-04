@@ -106,6 +106,21 @@ string printTypeToString(CCLang const &lang, Type const *type);
 void printSTemplateArgument(PrintEnv &env, STemplateArgument const *sta);
 
 
+// Usual case printer.
+template <class T>
+void printASTNodeToEnv(PrintEnv &env, T const *astNode)
+{
+  astNode->print(env);
+}
+
+// Overloads for specific nodes that require additional arguments, but
+// we can supply reasonable values for printing "in general".
+inline void printASTNodeToEnv(PrintEnv &env, Initializer const *init)
+{
+  init->print(env, true /*outermost*/);
+}
+
+
 // Print 'astNode' as a string.
 template <class T>
 string printASTNodeToString(CCLang const &lang, T const *astNode)
@@ -113,7 +128,7 @@ string printASTNodeToString(CCLang const &lang, T const *astNode)
   CTypePrinter typePrinter(lang);
   PrintEnv env(typePrinter, lang);
 
-  astNode->print(env);
+  printASTNodeToEnv(env, astNode);
 
   return env.getResult();
 }

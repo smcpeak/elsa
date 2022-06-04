@@ -1,6 +1,7 @@
 ---- stdout ----
 int main(void)
 {
+  int x = 3;
   return (struct S){ 3, 4 };
 }
 
