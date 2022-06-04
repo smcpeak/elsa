@@ -448,48 +448,6 @@ void Function::print(PrintEnv &env, DeclFlags declFlagsMask) const
 // MemberInit
 
 // --------------------------- Declaration -----------------------------
-// Return true if the printed form of 'init' begins with a left-brace.
-static bool beginsWithLeftBrace(Initializer const *init)
-{
-  switch (init->kind()) {
-    default:
-      return false;
-
-    case Initializer::IN_COMPOUND:
-    case Initializer::SIN_STRINGLIT:
-    case Initializer::SIN_ARRAY:
-    case Initializer::SIN_STRUCT:
-    case Initializer::SIN_UNION:
-      return true;
-  }
-}
-
-
-static void printInitializerOpt(PrintEnv &env,
-  Initializer const * NULLABLE init)
-{
-  bool const outermost = true;
-  if (init) {
-    if (IN_ctor const *ctor = init->ifIN_ctorC()) {
-      ctor->print(env, outermost);
-    }
-    else {
-      env << " =";
-      if (beginsWithLeftBrace(init)) {
-        // No break before the open brace.
-        env << " ";
-      }
-      else {
-        // Optional break after '='.
-        env << env.sp;
-      }
-
-      init->print(env, outermost);
-    }
-  }
-}
-
-
 void Declaration::print(PrintEnv &env) const
 {
   // Check if the type specifier wants to print vertically.  I cannot
@@ -797,13 +755,46 @@ void Enumerator::print(PrintEnv &env) const
 }
 
 // -------------------- Declarator --------------------
+// Return true if the printed form of 'init' begins with a left-brace.
+static bool beginsWithLeftBrace(Initializer const *init)
+{
+  switch (init->kind()) {
+    default:
+      return false;
+
+    case Initializer::IN_COMPOUND:
+    case Initializer::SIN_STRINGLIT:
+    case Initializer::SIN_ARRAY:
+    case Initializer::SIN_STRUCT:
+    case Initializer::SIN_UNION:
+      return true;
+  }
+}
+
+
 void Declarator::print(PrintEnv &env) const
 {
   ext_pre_print(env);
   decl->print(env);
   ext_post_print(env);
 
-  printInitializerOpt(env, env.selectInitializer(init, m_semanticInit));
+  if (Initializer const *selInit =
+        env.selectInitializer(init, m_semanticInit)) {
+    if (!selInit->isIN_ctor()) {
+      env << " =";
+      if (beginsWithLeftBrace(selInit)) {
+        // No break before the open brace.
+        env << " ";
+      }
+      else {
+        // Optional break after '='.
+        env << env.sp;
+      }
+    }
+
+    bool const outermost = true;
+    selInit->print(env, outermost);
+  }
 }
 
 
