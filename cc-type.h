@@ -379,6 +379,9 @@ public:      // funcs
   SObjList<Variable> &getDataVariablesInOrder()
     { return dataMembers; }
 
+  // Get a field, given its position.
+  Variable const *getDataMemberByPositionC(int index) const;
+
   // return the ordinal position of the named nonstatic data field
   // in this class, starting with 0; or, return -1 if the field does
   // not exist (this is a query on 'dataMembers')

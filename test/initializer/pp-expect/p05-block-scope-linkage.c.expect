@@ -1,0 +1,41 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+int x = 3;
+
+static int test_x()
+{
+  extern int x;
+  return x == 3;
+}
+
+int zero;
+
+static int test_zero()
+{
+  extern int zero;
+  return zero == 0;
+}
+
+static int s_three = 3;
+
+static int test_s_three()
+{
+  extern int s_three;
+  return s_three == 3;
+}
+
+int main()
+{
+  if (1 && test_x() && test_zero() && test_s_three() && 1) {
+    return 0;
+  }
+  else {
+    return 1;
+  }
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

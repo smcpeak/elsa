@@ -1,0 +1,19 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+typedef struct div_t {
+  int rem;
+  int quot;
+} div_t;
+
+div_t answer = { -1, 2 };
+
+int main()
+{
+  return answer.rem == -1 && answer.quot == 2 && 1? 0 : 1;
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

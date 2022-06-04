@@ -570,6 +570,12 @@ void CompoundType::afterAddVariable(Variable *v)
 }
 
 
+Variable const *CompoundType::getDataMemberByPositionC(int index) const
+{
+  return dataMembers.nthC(index);
+}
+
+
 int CompoundType::getDataMemberPosition(StringRef name) const
 {
   Type const *dummy;

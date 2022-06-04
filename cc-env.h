@@ -547,6 +547,10 @@ public:      // funcs
   // to see how many errors (if any) resulted
   int numErrors() const { return errors.numErrors(); }
 
+  // True if syntax errors have been detected.  When this is true, some
+  // AST invariants are weaker.
+  bool hasErrors() const { return numErrors() != 0; }
+
   // This is the error mode used for errors that I want to be
   // EF_STRONG (reported even in templates) while implementing new
   // features, but EF_NONE (not reported in templates) when trying to

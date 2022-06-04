@@ -1,0 +1,76 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+struct SWFA {
+  int x;
+  int flex[];
+};
+
+static int test_swfa()
+{
+  int a[5] = { 1, 2, 3, 4, 5 };
+  struct SWFA *p = (struct SWFA *)a;
+  return (*p).x == 1 && *((*p).flex + 0) == 2 && *((*p).flex + 1) == 3 &&
+           *((*p).flex + 2) == 4 && *((*p).flex + 3) == 5 && 1;
+}
+
+struct SWSWFA {
+  int y;
+};
+
+union UWSWFA1 {
+  int x;
+  struct SWFA s;
+};
+
+union UWSWFA2 {
+  int x;
+  union UWSWFA1 u1;
+  struct SWFA s;
+};
+
+union UWSWFA3 {
+  int x;
+  union UWSWFA1 u1;
+  union UWSWFA2 u2;
+  struct SWFA s;
+};
+
+static int test_uwswfa()
+{
+  int a[5] = { 1, 2, 3, 4, 5 };
+  union UWSWFA1 *u1 = (union UWSWFA1 *)a;
+  union UWSWFA2 *u2 = (union UWSWFA2 *)a;
+  union UWSWFA3 *u3 = (union UWSWFA3 *)a;
+  return (*u1).x == 1 && (*u1).s.x == 1 && *((*u1).s.flex + 0) == 2 &&
+           *((*u1).s.flex + 1) == 3 && *((*u1).s.flex + 2) == 4 &&
+           *((*u1).s.flex + 3) == 5 && (*u2).x == 1 && (*u2).u1.x == 1 &&
+           (*u2).u1.s.x == 1 && *((*u2).u1.s.flex + 0) == 2 &&
+           *((*u2).u1.s.flex + 1) == 3 && *((*u2).u1.s.flex + 2) == 4 &&
+           *((*u2).u1.s.flex + 3) == 5 && (*u2).s.x == 1 &&
+           *((*u2).s.flex + 0) == 2 && *((*u2).s.flex + 1) == 3 &&
+           *((*u2).s.flex + 2) == 4 && *((*u2).s.flex + 3) == 5 &&
+           (*u3).x == 1 && (*u3).u1.x == 1 && (*u3).u1.s.x == 1 &&
+           *((*u3).u1.s.flex + 0) == 2 && *((*u3).u1.s.flex + 1) == 3 &&
+           *((*u3).u1.s.flex + 2) == 4 && *((*u3).u1.s.flex + 3) == 5 &&
+           (*u3).u2.x == 1 && (*u3).u2.u1.x == 1 && (*u3).u2.u1.s.x == 1 &&
+           *((*u3).u2.u1.s.flex + 0) == 2 &&
+           *((*u3).u2.u1.s.flex + 1) == 3 &&
+           *((*u3).u2.u1.s.flex + 2) == 4 &&
+           *((*u3).u2.u1.s.flex + 3) == 5 && (*u3).u2.s.x == 1 &&
+           *((*u3).u2.s.flex + 0) == 2 && *((*u3).u2.s.flex + 1) == 3 &&
+           *((*u3).u2.s.flex + 2) == 4 && *((*u3).u2.s.flex + 3) == 5 &&
+           (*u3).s.x == 1 && *((*u3).s.flex + 0) == 2 &&
+           *((*u3).s.flex + 1) == 3 && *((*u3).s.flex + 2) == 4 &&
+           *((*u3).s.flex + 3) == 5 && 1;
+}
+
+int main()
+{
+  return test_swfa() && test_uwswfa() && 1? 0 : 1;
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

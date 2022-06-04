@@ -2,6 +2,10 @@
 // GNU range designator extension.
 // https://gcc.gnu.org/onlinedocs/gcc/Designated-Inits.html
 
+// NOTE: Elsa currently produces the wrong output for these because it
+// drops the lower bound of every range, treating it instead as if only
+// the upper bound was present.
+
 
 // From the manual.
 int widths[] = { [0 ... 9] = 1, [10 ... 99] = 2, [100] = 3 };

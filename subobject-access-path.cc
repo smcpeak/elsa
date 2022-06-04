@@ -12,6 +12,20 @@
 #include "vector-utils.h"              // toString(std::vector<T>)
 
 
+int SubobjectAccessPath::arrayIndexAt(int index) const
+{
+  xassert(0 <= index && index < size());
+  return m_indices.at(index);
+}
+
+
+int SubobjectAccessPath::fieldIndexAt(int index) const
+{
+  xassert(0 <= index && index < size());
+  return m_indices.at(index);
+}
+
+
 bool SubobjectAccessPath::stepForward(
   Env &env,
   int pathIndex,

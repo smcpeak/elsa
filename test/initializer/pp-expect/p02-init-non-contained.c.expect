@@ -1,0 +1,110 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+int arr2a[2] = { 0, 1 };
+
+int arr2b[2] = { 0, 1 };
+
+static int test_arr2ab()
+{
+  return *(arr2a+0) == 0 && *(arr2a+1) == 1 && *(arr2b+0) == 0 &&
+           *(arr2b+1) == 1 && 1;
+}
+
+int arr23a[2][3] = { { 0, 1, 2 }, { 3, 4, 5 } };
+
+static int test_arr23a()
+{
+  return *(*(arr23a+0) + 0) == 0 && *(*(arr23a+0) + 1) == 1 &&
+           *(*(arr23a+0) + 2) == 2 && *(*(arr23a+1) + 0) == 3 &&
+           *(*(arr23a+1) + 1) == 4 && *(*(arr23a+1) + 2) == 5 && 1;
+}
+
+int mba23a[2][3] = { { 0, 1, 2 }, { 3, 4, 5 } };
+
+static int test_mba23a()
+{
+  return *(*(mba23a+0) + 0) == 0 && *(*(mba23a+0) + 1) == 1 &&
+           *(*(mba23a+0) + 2) == 2 && *(*(mba23a+1) + 0) == 3 &&
+           *(*(mba23a+1) + 1) == 4 && *(*(mba23a+1) + 2) == 5 && 1;
+}
+
+int oda23a[2][3] = { { 0, 1, 2 }, { 3, 4, 5 } };
+
+static int test_oda23a()
+{
+  return *(*(oda23a+0) + 0) == 0 && *(*(oda23a+0) + 1) == 1 &&
+           *(*(oda23a+0) + 2) == 2 && *(*(oda23a+1) + 0) == 3 &&
+           *(*(oda23a+1) + 1) == 4 && *(*(oda23a+1) + 2) == 5 && 1;
+}
+
+int ida23a[2][3] = { { 0, 1, 2 }, { 3, 4, 5 } };
+
+static int test_ida23a()
+{
+  return *(*(ida23a+0) + 0) == 0 && *(*(ida23a+0) + 1) == 1 &&
+           *(*(ida23a+0) + 2) == 2 && *(*(ida23a+1) + 0) == 3 &&
+           *(*(ida23a+1) + 1) == 4 && *(*(ida23a+1) + 2) == 5 && 1;
+}
+
+int cda23a[2][3] = { { 0, 1, 2 }, { 3, 4, 5 } };
+
+static int test_cda23a()
+{
+  return *(*(cda23a+0) + 0) == 0 && *(*(cda23a+0) + 1) == 1 &&
+           *(*(cda23a+0) + 2) == 2 && *(*(cda23a+1) + 0) == 3 &&
+           *(*(cda23a+1) + 1) == 4 && *(*(cda23a+1) + 2) == 5 && 1;
+}
+
+typedef struct S {
+  int x;
+  int y;
+} S;
+
+S s1 = { 1, 2 };
+
+S s2 = { 1, 2 };
+
+static int test_s1_s2()
+{
+  return s1.x == 1 && s1.y == 2 && s2.x == 1 && s2.y == 2 && 1;
+}
+
+S plain_aos1[2] = { { 1, 2 }, { 3, 4 } };
+
+static int test_plain_aos1()
+{
+  return (*(plain_aos1+0)).x == 1 && (*(plain_aos1+0)).y == 2 &&
+           (*(plain_aos1+1)).x == 3 && (*(plain_aos1+1)).y == 4 && 1;
+}
+
+S do_aos1[2] = { { 1, 2 }, { 3, 4 } };
+
+static int test_do_aos1()
+{
+  return (*(do_aos1+0)).x == 1 && (*(do_aos1+0)).y == 2 &&
+           (*(do_aos1+1)).x == 3 && (*(do_aos1+1)).y == 4 && 1;
+}
+
+S comb_aos[2] = { { 1, 2 }, { 3, 4 } };
+
+static int test_comb_aos()
+{
+  return (*(comb_aos+0)).x == 1 && (*(comb_aos+0)).y == 2 &&
+           (*(comb_aos+1)).x == 3 && (*(comb_aos+1)).y == 4 && 1;
+}
+
+int main()
+{
+  return test_arr2ab() && test_arr23a() && test_mba23a() &&
+           test_oda23a() && test_ida23a() && test_cda23a() &&
+           test_s1_s2() && test_plain_aos1() && test_do_aos1() &&
+           test_comb_aos() && 1?
+           0 :
+           1;
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

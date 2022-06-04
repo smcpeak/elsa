@@ -13,7 +13,7 @@
 verbatim {
   // elsa
   #include "variable.h"      // Variable
-  #include "cc-type.h"       // Type, FunctonType, CompoundType
+  #include "cc-type.h"       // Type, FunctionType, CompoundType, etc.
   #include "template.h"      // STemplateArgument
   #include "const-eval.h"    // ConstEval
 
@@ -21,8 +21,35 @@ verbatim {
   #include "datablok.h"      // DataBlock
   #include "sm-macros.h"     // Restorer
 
+  // libc++
+  #include <vector>          // std::vector
+
   class Env;                 // cc-env.h
   class ArgumentInfo;        // overload.h
+
+  // Whereas Initializer is a tree made up of IN_expr, IN_ctor,
+  // IN_compound, and IN_designated, SemanticInitializer is a tree made
+  // up of IN_expr, IN_ctor, and various SIN_XXX nodes.  It is the
+  // "digested" form of initializer, with a structure that directly
+  // corresponds to the subobject tree of the initialized object.
+  //
+  // For the type checker, syntactic Initializer is an input, while
+  // SemanticInitializer is an output.
+  typedef Initializer SemanticInitializer;
+
+  // If any SIN_array elements have an array type with unspecified size,
+  // replace that with a specific size based on the initializer.
+  void finalizeSemanticInitializer(Env const &env,
+    SemanticInitializer * NULLABLE semInit);
+
+  // Given that 'semInit' (if not NULL) was computed from an initializer
+  // for a variable declared to have 'type', use that initializer to
+  // refine the type.  In particular, this can yield an ArrayType with
+  // specified size if the original was unspecified.
+  //
+  // Requires that 'semInit' has been finalized.
+  Type const *refineTypeFromInitializer(
+    SemanticInitializer const * NULLABLE semInit, Type const *type);
 }
 
 custom ASTVisitor {
@@ -375,6 +402,13 @@ class Declarator {
   // syntactic context; sometimes useful to visitors
   public DeclaratorContext context = DC_UNKNOWN;
   custom clone {ret->context = context;}
+
+  // Digested form of the initializer, or NULL if none.
+  //
+  // Cloning leaves 'm_semanticInit' NULL because cloning it properly is
+  // complicated and I don't need that capability.
+  public SemanticInitializer *m_semanticInit = NULL;
+  custom debugPrint { PRINT_SUBTREE(m_semanticInit); }
 
   public void printExtras(ostream &os, int indent) const;
   custom debugPrint { printExtras(os, indent); }
@@ -831,13 +865,30 @@ class Initializer {
   // Check that the initializer is well-typed, given the type of the
   // thing it initializes.
   //
-  // Return 'type', or an updated copy of 'type'.  This is for the case
-  // of an array with initially unspecified size whose size gets set by
-  // the initializer.
+  // Return a SemanticInitializer that represents the initialized
+  // object in a more convenient form than the original syntax.  Can
+  // return NULL to indicate zero-initialization.
   //
-  pure_virtual Type const *tcheck(Env &env, Type const *type);
+  // The default implementation fails an assertion because only some of
+  // the Initializer derived classes are meant to be checked this way.
+  //
+  public virtual SemanticInitializer * NULLABLE
+    tcheck(Env &env, Type const *type);
+
+  -> IN_expr {
+       public SemanticInitializer * NULLABLE
+         tcheck(Env &env, Type const *type) override;
+     }
+
+  -> IN_compound {
+       public SemanticInitializer * NULLABLE
+         tcheck(Env &env, Type const *type) override;
+     }
 
   -> IN_ctor {
+       public SemanticInitializer * NULLABLE
+         tcheck(Env &env, Type const *type) override;
+
        // constructor function being called
        public Variable *ctorVar = NULL;
 
@@ -849,6 +900,68 @@ class Initializer {
          ret->ctorVar = ctorVar;
          ret->was_IN_expr = was_IN_expr;
        }
+     }
+
+  // The following classes are nodes for SemanticInitializer.
+  //
+  // Since this tree is constructed on top of the original syntax tree,
+  // pointers to SemanticInitializer where the pointee is not SIN_XXX
+  // are non-owners, while pointers to SIN_XXX are owners.  (All this is
+  // currently moot because AST nodes are never deallocated.)
+  //
+  // Cloning for SemanticInitializers is not implemented because it is
+  // complicated and currently unnecessary.
+
+  // An array of characters initialized with a string literal.  The
+  // 'm_arrayType' will have an explicit size, indicating the precise
+  // number of characters in the initialized array object.
+  -> SIN_stringLit(ArrayType const *m_arrayType) {
+       // The initializing string literal.  This is never NULL after
+       // creation, but is a non-owner, hence is not an astgen
+       // constructor parameter.
+       //
+       // The string data (including its NUL) can be shorter than the
+       // array object (in which case the remainder is meant to be
+       // padded with zeroes), or equal in size, or one larger (in which
+       // case the NUL is meant to be discarded).  It is left to the
+       // client to separate these cases.
+       public E_stringLit *m_stringLit = NULL;
+       custom debugPrint { PRINT_SUBTREE(m_stringLit); }
+     }
+
+  // An initialized array.  The array type size is never NO_SIZE after
+  // finalization, but it can be DYN_SIZE.
+  -> SIN_array(ArrayType const *m_arrayType) {
+       // Sequence of element initializers.  Some pointers may be NULL
+       // to indicate lack of explicit initialization, and the vector
+       // may be shorter than the size of 'm_arrayType', indicating
+       // trailing elements not explicitly initialized.
+       public std::vector<SemanticInitializer * NULLABLE> m_elements;
+       custom debugPrint { PRINT_POINTER_VECTOR(m_elements); }
+     }
+
+  // An initialized struct or class that does not have a constructor.
+  // (If it has a constructor, IN_ctor is used instead.)
+  -> SIN_struct(CompoundType const *m_compoundType) {
+       // Sequence of member initializers, corresponding to the elements
+       // of 'm_compoundType->dataMembers'.  The size of 'm_members' is
+       // less than or equal to 'm_compoundType->dataMembers.count()';
+       // missing and NULL elements are not explicitly initialized.
+       public std::vector<SemanticInitializer * NULLABLE> m_members;
+       custom debugPrint { PRINT_POINTER_VECTOR(m_members); }
+     }
+
+  // An initialized union.  Exactly one element of the union can have an
+  // initializer.  'm_initMember' is among 'm_unionType->dataMembers'.
+  -> SIN_union(CompoundType const *m_unionType) {
+       // The field to initialize.  Never NULL after creation.
+       public Variable const *m_initMember = NULL;
+       custom debugPrint { PRINT_GENERIC(m_initMember); }
+
+       // The value for 'm_initMember'.  Never NULL unless the type
+       // checker also reported an error.
+       public SemanticInitializer *m_initValue = NULL;
+       custom debugPrint { PRINT_SUBTREE(m_initValue); }
      }
 }
 

@@ -799,13 +799,17 @@ Type *E_compoundLit::itcheck_x(Env &env, Expression *&replacement)
     stype = stype->tcheck(env, tc);
   }
 
-  Type *t1 = legacyTypeNC(init->tcheck(env, stype->getType()));
+  Type *type = stype->getType();
+  m_semanticInit = init->tcheck(env, type);
+  finalizeSemanticInitializer(env, m_semanticInit);
+
+  type = legacyTypeNC(refineTypeFromInitializer(m_semanticInit, type));
 
   // dsw: Scott says: "The gcc manual says nothing about whether a
   // compound literal is an lvalue.  But, compound literals are now
   // part of C99 (6.5.2.5), which says they are indeed lvalues (but
   // says nothing about being const)."
-  return env.makeReferenceType(t1);
+  return env.makeReferenceType(type);
 }
 
 
@@ -1049,16 +1053,6 @@ Type *E_binary::itcheck_complex_arith(Env &env)
 }
 
 
-Type const *IN_designated::tcheck(Env &env, Type const *type)
-{
-  // An IN_designated should only ever be an element of the list of
-  // initializers in IN_compound, and in that context, IN_designated is
-  // specifically checked for and handled directly.
-  xfailure("should never be called");
-  return type;
-}
-
-
 // Advance 'iter' by as many elements as would be consumed in order to
 // initialize 'type'.  This must always advance it at least once,
 // otherwise there is a risk of the caller going into an infinite loop,
@@ -1296,7 +1290,9 @@ void E_compoundLit::iprint(PrintEnv &env) const
     stype->print(env);
     env << ")";
   }
-  init->print(env);
+
+  bool const outermost = true;
+  env.selectInitializer(init, m_semanticInit)->print(env, outermost);
 }
 
 OperatorPrecedence E_compoundLit::getPrecedence() const
@@ -1407,10 +1403,10 @@ static void print_DesignatorList(PrintEnv &env, FakeList<Designator> *dl) {
   env << "=";
 }
 
-void IN_designated::print(PrintEnv &env, bool) const
+void IN_designated::print(PrintEnv &env, bool outermost) const
 {
   print_DesignatorList(env, designator_list);
-  init->print(env);
+  init->print(env, outermost);
 }
 
 // -------------------- Designator ---------------

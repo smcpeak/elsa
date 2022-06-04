@@ -1,0 +1,101 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+int arr3a[3] = { 1, 2 };
+
+int arr3b[3] = { 0, 2 };
+
+int arr3c[3] = { 1, 2 };
+
+static int test_arr3()
+{
+  return *(arr3a+0) == 1 && *(arr3a+1) == 2 && *(arr3a+2) == 0 &&
+           *(arr3b+0) == 0 && *(arr3b+1) == 2 && *(arr3b+2) == 0 &&
+           *(arr3c+0) == 1 && *(arr3c+1) == 2 && *(arr3c+2) == 0 && 1;
+}
+
+int arr23a[2][3] = { { 1, 2 } };
+
+int arr23b[2][3] = { { 1, 2, 3 }, { 4 } };
+
+int arr23c[2][3] = { { 0, 2 } };
+
+static int test_arr23()
+{
+  return *(*(arr23a+0) + 0) == 1 && *(*(arr23a+0) + 1) == 2 &&
+           *(*(arr23a+0) + 2) == 0 && *(*(arr23a+1) + 0) == 0 &&
+           *(*(arr23a+1) + 1) == 0 && *(*(arr23a+1) + 2) == 0 &&
+           *(*(arr23b+0) + 0) == 1 && *(*(arr23b+0) + 1) == 2 &&
+           *(*(arr23b+0) + 2) == 3 && *(*(arr23b+1) + 0) == 4 &&
+           *(*(arr23b+1) + 1) == 0 && *(*(arr23b+1) + 2) == 0 &&
+           *(*(arr23c+0) + 0) == 0 && *(*(arr23c+0) + 1) == 2 &&
+           *(*(arr23c+0) + 2) == 0 && *(*(arr23c+1) + 0) == 0 &&
+           *(*(arr23c+1) + 1) == 0 && *(*(arr23c+1) + 2) == 0 && 1;
+}
+
+typedef struct S {
+  int x;
+  int y;
+  int *p;
+} S;
+
+S s1 = { 3 };
+
+S s2 = { 3 };
+
+static int test_s1_s2()
+{
+  return s1.x == 3 && s1.y == 0 && s1.p == 0 && s2.x == 3 && s2.y == 0 &&
+           s2.p == 0 && 1;
+}
+
+S aos1[2] = { { 3 } };
+
+S aos2[2] = { { 3, 4, 0 }, { 5 } };
+
+static int test_aos()
+{
+  return (*(aos1+0)).x == 3 && (*(aos1+0)).y == 0 && (*(aos1+0)).p == 0 &&
+           (*(aos1+1)).x == 0 && (*(aos1+1)).y == 0 &&
+           (*(aos1+1)).p == 0 && (*(aos2+0)).x == 3 &&
+           (*(aos2+0)).y == 4 && (*(aos2+0)).p == 0 &&
+           (*(aos2+1)).x == 5 && (*(aos2+1)).y == 0 &&
+           (*(aos2+1)).p == 0 && 1;
+}
+
+char str[5] = "hi";
+
+static int test_str()
+{
+  return *(str+0) == 'h' && *(str+1) == 'i' && *(str+2) == '\0' &&
+           *(str+3) == '\0' && *(str+4) == '\0' && 1;
+}
+
+typedef struct Strings {
+  char x[4];
+  char y[6];
+} Strings;
+
+Strings strings = { "hi", "zoo" };
+
+static int test_strings()
+{
+  return *(strings.x + 0) == 'h' && *(strings.x + 1) == 'i' &&
+           *(strings.x + 2) == '\0' && *(strings.x + 3) == '\0' &&
+           *(strings.y + 0) == 'z' && *(strings.y + 1) == 'o' &&
+           *(strings.y + 2) == 'o' && *(strings.y + 3) == '\0' &&
+           *(strings.y + 4) == '\0' && *(strings.y + 5) == '\0' && 1;
+}
+
+int main()
+{
+  return test_arr3() && test_arr23() && test_s1_s2() && test_aos() &&
+           test_str() && test_strings() && 1?
+           0 :
+           1;
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

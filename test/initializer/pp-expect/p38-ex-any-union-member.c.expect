@@ -1,0 +1,19 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+union __anon_union_1 {
+  char some_member;
+  int any_member;
+} u = {
+  .any_member = 42
+};
+
+int main()
+{
+  return u.any_member == 42 && 1? 0 : 1;
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

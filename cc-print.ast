@@ -194,7 +194,7 @@ verbatim {
 
 
 class Initializer {
-  pure_virtual void print(PrintEnv &env, bool outermost=true) const;
+  pure_virtual void print(PrintEnv &env, bool outermost) const;
 }
 
 

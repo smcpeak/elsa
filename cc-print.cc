@@ -10,6 +10,7 @@
 #include "strip-comments.h"            // stripComments
 
 // smbase
+#include "sm-macros.h"                 // NULLABLE
 #include "trace.h"                     // trace
 
 // libc++
@@ -102,6 +103,19 @@ void PrintEnv::iprintStatement(
 void PrintEnv::iprintExpression(Expression const *expr)
 {
   expr->iprint(*this);
+}
+
+
+Initializer const * NULLABLE PrintEnv::selectInitializer(
+  Initializer const * NULLABLE syntacticInit,
+  SemanticInitializer const * NULLABLE semanticInit)
+{
+  if (m_printSemanticInitializers && semanticInit) {
+    return semanticInit;
+  }
+  else {
+    return syntacticInit;
+  }
 }
 
 
@@ -433,12 +447,30 @@ void Function::print(PrintEnv &env, DeclFlags declFlagsMask) const
 
 // MemberInit
 
-// -------------------- Declaration -------------------
-static void printInitializerOpt(PrintEnv &env, Initializer /*nullable*/ *init)
+// --------------------------- Declaration -----------------------------
+// Return true if the printed form of 'init' begins with a left-brace.
+static bool beginsWithLeftBrace(Initializer const *init)
 {
+  switch (init->kind()) {
+    default:
+      return false;
+
+    case Initializer::IN_COMPOUND:
+    case Initializer::SIN_STRINGLIT:
+    case Initializer::SIN_ARRAY:
+    case Initializer::SIN_STRUCT:
+    case Initializer::SIN_UNION:
+      return true;
+  }
+}
+
+
+static void printInitializerOpt(PrintEnv &env,
+  Initializer const * NULLABLE init)
+{
+  bool const outermost = true;
   if (init) {
-    IN_ctor *ctor = dynamic_cast<IN_ctor*>(init);
-    if (ctor) {
+    if (IN_ctor const *ctor = init->ifIN_ctorC()) {
       // sm: don't print "()" as an IN_ctor initializer (C++98 8.5 para 8)
       if (fl_isEmpty(ctor->args)) {
         // Don't print anything.
@@ -446,13 +478,13 @@ static void printInitializerOpt(PrintEnv &env, Initializer /*nullable*/ *init)
       else {
         // Constructor arguments.
         env << "(";
-        ctor->print(env);
+        ctor->print(env, outermost);
         env << ")";
       }
     }
     else {
       env << " =";
-      if (init->isIN_compound()) {
+      if (beginsWithLeftBrace(init)) {
         // No break before the open brace.
         env << " ";
       }
@@ -461,7 +493,7 @@ static void printInitializerOpt(PrintEnv &env, Initializer /*nullable*/ *init)
         env << env.sp;
       }
 
-      init->print(env);
+      init->print(env, outermost);
     }
   }
 }
@@ -780,7 +812,7 @@ void Declarator::print(PrintEnv &env) const
   decl->print(env);
   ext_post_print(env);
 
-  printInitializerOpt(env, init);
+  printInitializerOpt(env, env.selectInitializer(init, m_semanticInit));
 }
 
 
@@ -2123,9 +2155,8 @@ void IN_expr::print(PrintEnv &env, bool) const
   e->print(env, OPREC_ASSIGN);
 }
 
-// int x[] = {1, 2, 3};
-//           ^^^^^^^^^ only
-void IN_compound::print(PrintEnv &env, bool outermost) const
+
+static void beginInitializerBraces(PrintEnv &env, bool outermost)
 {
   if (outermost) {
     // There will already be a sequence started where the type
@@ -2144,20 +2175,11 @@ void IN_compound::print(PrintEnv &env, bool outermost) const
     env.begin();
     env << '{' << env.sp;
   }
+}
 
-  {
-    bool first_time = true;
-    FOREACH_ASTLIST(Initializer, inits, iter) {
-      if (first_time) {
-        first_time = false;
-      }
-      else {
-        env << "," << env.sp;
-      }
-      iter.data()->print(env, false /*outermost*/);
-    }
-  }
 
+static void endInitializerBraces(PrintEnv &env, bool outermost)
+{
   if (outermost) {
     // Close the inner sequence first.
     env.end();
@@ -2173,10 +2195,133 @@ void IN_compound::print(PrintEnv &env, bool outermost) const
   }
 }
 
+
+// int x[] = {1, 2, 3};
+//           ^^^^^^^^^ only
+void IN_compound::print(PrintEnv &env, bool outermost) const
+{
+  beginInitializerBraces(env, outermost);
+
+  {
+    bool first_time = true;
+    FOREACH_ASTLIST(Initializer, inits, iter) {
+      if (first_time) {
+        first_time = false;
+      }
+      else {
+        env << "," << env.sp;
+      }
+      iter.data()->print(env, false /*outermost*/);
+    }
+  }
+
+  endInitializerBraces(env, outermost);
+}
+
+
 void IN_ctor::print(PrintEnv &env, bool) const
 {
+  // TODO: The code in 'printInitializerOpt' does some wonky stuff that
+  // probably should be done here instead.
   printArgExprList(env, args);
 }
+
+
+void SIN_stringLit::print(PrintEnv &env, bool) const
+{
+  m_stringLit->print(env, OPREC_ASSIGN);
+}
+
+
+// Print syntax to zero-initialize a value of 'type'.
+static void printZeroInitForType(PrintEnv &env, Type const *type)
+{
+  if (type->isArrayType()) {
+    // Although an empty brace pair is not allowed by the C11
+    // standard, there isn't any other way to explicitly indicate zero
+    // initialization, especially with GNU extensions that allow
+    // structs and arrays to be empty.
+    env << "{}";
+  }
+  else if (CompoundType const *ct = type->ifCompoundTypeC()) {
+    if (ct->isAggregate()) {
+      env << "{}";
+    }
+    else {
+      // This is questionable.  I might need qualifiers at least.
+      env << ct->name << "()";
+    }
+  }
+  else {
+    // For anything else, let's hope this suffices.
+    env << "0";
+  }
+}
+
+
+void SIN_array::print(PrintEnv &env, bool outermost) const
+{
+  beginInitializerBraces(env, outermost);
+
+  bool first = true;
+  for (SemanticInitializer const * NULLABLE si : m_elements) {
+    if (first) {
+      first = false;
+    }
+    else {
+      env << "," << env.sp;
+    }
+
+    if (si) {
+      si->print(env, false /*outermost*/);
+    }
+    else {
+      printZeroInitForType(env, m_arrayType->eltType);
+    }
+  }
+
+  endInitializerBraces(env, outermost);
+}
+
+
+void SIN_struct::print(PrintEnv &env, bool outermost) const
+{
+  beginInitializerBraces(env, outermost);
+
+  for (size_t index = 0; index < m_members.size(); ++index) {
+    SemanticInitializer const * NULLABLE si = m_members[index];
+    Variable const *field = m_compoundType->getDataMemberByPositionC(index);
+
+    if (index > 0) {
+      env << "," << env.sp;
+    }
+
+    if (si) {
+      si->print(env, false /*outermost*/);
+    }
+    else {
+      printZeroInitForType(env, field->type);
+    }
+  }
+
+  endInitializerBraces(env, outermost);
+}
+
+
+void SIN_union::print(PrintEnv &env, bool outermost) const
+{
+  beginInitializerBraces(env, outermost);
+
+  if (m_initMember != m_unionType->dataMembers.firstC()) {
+    // Print a designator to initialize a non-first member.
+    env << "." << m_initMember->name << " = ";
+  }
+
+  m_initValue->print(env, false /*outermost*/);
+
+  endInitializerBraces(env, outermost);
+}
+
 
 // InitLabel
 

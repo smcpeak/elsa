@@ -188,6 +188,7 @@ out/strlit/%.cc.ok: strlit/%.cc strlit/%.cc.expect $(CCPARSE)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/strlit/$*.cc.actual \
 	  --expect strlit/$*.cc.expect \
+	  --hex-replacer \
 	  $(CCPARSE) --print-string-literals $<
 	touch $@
 
@@ -200,6 +201,7 @@ out/strlit/%.c.ok: strlit/%.c strlit/%.c.expect $(CCPARSE)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/strlit/$*.c.actual \
 	  --expect strlit/$*.c.expect \
+	  --hex-replacer \
 	  $(CCPARSE) --print-string-literals $<
 	touch $@
 
@@ -286,6 +288,7 @@ check-errmsg: out/errmsg/invalid-field-desig.c
 check-errmsg: out/errmsg/negative-size-array.c
 check-errmsg: out/errmsg/struct-with-flex-array.c
 check-errmsg: out/errmsg/too-many-inits.c
+check-errmsg: out/errmsg/union-init-override.c
 check-errmsg: out/errmsg/vla-with-init.c
 check-errmsg: out/errmsg/zero-size-array.c
 

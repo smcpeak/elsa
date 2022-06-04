@@ -1,0 +1,22 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+enum {
+  member_one,
+  member_two
+};
+
+char const *nm[] = { "member one", "member two" };
+
+int main()
+{
+  return *(*(nm+0) + 0) == 'm' && *(*(nm+0) + 7) == 'o' &&
+           *(*(nm+1) + 0) == 'm' && *(*(nm+1) + 7) == 't' && 1?
+           0 :
+           1;
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

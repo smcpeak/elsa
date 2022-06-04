@@ -1,0 +1,126 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+int arr0[0] = {  };
+
+static int test_arr0()
+{
+  _Static_assert(sizeof(arr0) == 0, "");
+  return 1;
+}
+
+int arr20[2][0] = {  };
+
+static int test_arr20()
+{
+  _Static_assert(sizeof(arr20) == 0, "");
+  return 1;
+}
+
+int arr02[0][2] = {  };
+
+static int test_arr02()
+{
+  _Static_assert(sizeof(arr02) == 0, "");
+  return 1;
+}
+
+int arr00[0][0] = {  };
+
+static int test_arr00()
+{
+  _Static_assert(sizeof(arr00) == 0, "");
+  return 1;
+}
+
+char string0[0] = "";
+
+static int test_string0()
+{
+  _Static_assert(sizeof(string0) == 0, "");
+  return 1;
+}
+
+char array_of_string0[2][0] = { "", "" };
+
+static int test_array_of_string0()
+{
+  _Static_assert(sizeof(array_of_string0) == 0, "");
+  return 1;
+}
+
+typedef struct EmptyStruct {
+} EmptyStruct;
+
+EmptyStruct empty_struct = {  };
+
+static int test_empty_struct()
+{
+  _Static_assert(sizeof(empty_struct) == 0, "");
+  return 1;
+}
+
+typedef struct IESI {
+  int x;
+  EmptyStruct empty;
+  int y;
+} IESI;
+
+IESI iesi1 = { 1, {}, 2 };
+
+static int test_iesi()
+{
+  return iesi1.x == 1 && iesi1.y == 2 && 1;
+}
+
+typedef union EmptyUnion {
+} EmptyUnion;
+
+EmptyUnion empty_union = {  };
+
+static int test_empty_union()
+{
+  _Static_assert(sizeof(empty_union) == 0, "");
+  return 1;
+}
+
+typedef struct IEUI {
+  int x;
+  EmptyUnion empty;
+  int y;
+} IEUI;
+
+IEUI ieui1 = { 1, {}, 2 };
+
+static int test_ieui()
+{
+  return ieui1.x == 1 && ieui1.y == 2 && 1;
+}
+
+typedef struct I_arr0_I {
+  int x;
+  int arr0[0];
+  int y;
+} I_arr0_I;
+
+I_arr0_I iai1 = { 1, {}, 2 };
+
+static int test_iai()
+{
+  return iai1.x == 1 && iai1.y == 2 && 1;
+}
+
+int main()
+{
+  return test_arr0() && test_arr20() && test_arr02() && test_arr00() &&
+           test_string0() && test_array_of_string0() &&
+           test_empty_struct() && test_empty_union() && test_iesi() &&
+           test_ieui() && test_iai() && 1?
+           0 :
+           1;
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

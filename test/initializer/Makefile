@@ -11,9 +11,10 @@ SMBASE := ../../../smbase
 include $(SMBASE)/sm-lib.mk
 
 # Tools.
-PERL      = perl
-MULTITEST = $(PERL) ../../multitest.pl
-CCPARSE   = ../../ccparse.exe
+PERL               = perl
+MULTITEST          = $(PERL) ../../multitest.pl
+RUN_COMPARE_EXPECT = $(PYTHON3) $(SMBASE)/run-compare-expect.py
+CCPARSE            = ../../ccparse.exe
 
 # Currently I'm using GCC-9.3.0.
 GCC       = gcc
@@ -30,6 +31,11 @@ RUN_CLANG_INITIALIZER_TESTS = 0
 
 # Pull in customizations.
 -include ../../personal.mk
+
+
+# If we are missing an expect file, just make an empty one.
+%.expect:
+	touch $@
 
 
 # Use $(GCC) and multitest to check %.c.
@@ -89,14 +95,45 @@ out/elsa-relaxed-check/%.c: %.c $(CCPARSE)
 	$(MULTITEST) -sut elsa-relaxed $(CCPARSE) $*.c
 	touch $@
 
+# Parse the input (without -pedantic-errors), pretty print it, then
+# parse that and expect equality.
+out/elsa-pprint/%.c: %.c pp-expect/%.c.expect $(CCPARSE)
+	$(CREATE_OUTPUT_DIRECTORY)
+	@#
+	@# First parse and pprint, comparing to saved expected output.
+	@#
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/elsa-pprint/$*.c.pp.actual \
+	  --expect pp-expect/$*.c.expect \
+	  $(CCPARSE) --pretty-print $*.c
+	@#
+	@# Second parse and pprint, comparing to previous pprint.
+	@#
+	$(PERL) ../../chop_out \
+	  < out/elsa-pprint/$*.c.pp.actual \
+	  > out/elsa-pprint/$*.c.pp.chopped
+	$(CCPARSE) --pretty-print -xc out/elsa-pprint/$*.c.pp.chopped \
+	  > out/elsa-pprint/$*.c.pp2.actual
+	$(PERL) ../../chop_out \
+	  < out/elsa-pprint/$*.c.pp2.actual \
+	  > out/elsa-pprint/$*.c.pp2.chopped
+	diff -u out/elsa-pprint/$*.c.pp.chopped out/elsa-pprint/$*.c.pp2.chopped
+	touch $@
+
 
 # Test all of them.
-out/all-check/%.c: out/gcc-check/%.c out/clang-check/%.c out/elsa-check/%.c
+out/all-check/%.c: out/gcc-check/%.c \
+                   out/clang-check/%.c \
+                   out/elsa-check/%.c \
+                   out/elsa-pprint/%.c
 	$(CREATE_OUTPUT_DIRECTORY)
 	touch $@
 
 # All in relaxed mode.
-out/all-relaxed-check/%.c: out/gcc-relaxed-check/%.c out/clang-relaxed-check/%.c out/elsa-relaxed-check/%.c
+out/all-relaxed-check/%.c: out/gcc-relaxed-check/%.c \
+                           out/clang-relaxed-check/%.c \
+                           out/elsa-relaxed-check/%.c \
+                           out/elsa-pprint/%.c
 	$(CREATE_OUTPUT_DIRECTORY)
 	touch $@
 

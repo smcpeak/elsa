@@ -63,6 +63,12 @@ public:      // methods
   int frontIndex() const
     { xassert(!empty()); return m_indices.front(); }
 
+  // Return the array index at the given position.
+  int arrayIndexAt(int index) const;
+
+  // Return the field index at the given position.
+  int fieldIndexAt(int index) const;
+
   // Treat '[pathIndex:]' as a path navigating within 'type'.  That is,
   // the sequence of elements starting with the one with index
   // 'pathIndex', then the one after it, and so on to the end, is the

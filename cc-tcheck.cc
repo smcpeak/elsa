@@ -14,6 +14,7 @@
 //
 // These references are all marked with the string "C++98".
 
+// TODO: Split these by library.
 #include "ast_build.h"                 // makeExprList1, etc.
 #include "cc-ast-aux.h"                // class LoweredASTVisitor
 #include "cc-ast.h"                    // C++ AST
@@ -26,16 +27,18 @@
 #include "mtype.h"                     // MType
 #include "overload.h"                  // resolveOverload
 #include "owner.h"                     // Owner
-#include "sm-macros.h"                 // Restorer
+#include "sm-macros.h"                 // Restorer, NULLABLE
 #include "stdconv.h"                   // test_getStandardConversion
 #include "strutil.h"                   // decodeEscapes, prefixEquals, pluraln
 #include "subobject-access-path.h"     // SubobjectAccessPath
 #include "trace.h"                     // trace
 #include "typelistiter.h"              // TypeListIter_FakeList
 
+// libc++
 #include <algorithm>                   // std::sort
 #include <vector>                      // std::vector
 
+// libc
 #include <ctype.h>                     // isdigit
 #include <limits.h>                    // INT_MAX, UINT_MAX, LONG_MAX
 #include <stdlib.h>                    // strtoul, strtod
@@ -3954,6 +3957,10 @@ void Declarator::mid_tcheck(Env &env, Tcheck &dt)
   }
   else if (init) {
     tcheck_init(env);
+
+    // TODO: Remove the following.  'tcheck_init' does what it was
+    // trying to do.
+    //
     // quarl 2006-07-26
     //    Check the initializer for compatibility with the declared type.
     //    This also does some elaborations like function address-of.
@@ -4050,7 +4057,11 @@ void Declarator::tcheck_init(Env &env)
 {
   xassert(init);
 
-  Type const *updatedType = init->tcheck(env, type);
+  m_semanticInit = init->tcheck(env, type);
+  finalizeSemanticInitializer(env, m_semanticInit);
+
+  Type const *updatedType =
+    refineTypeFromInitializer(m_semanticInit, type);
 
   // remember the initializing value, for const values
   if (init->isIN_expr()) {
@@ -9879,101 +9890,359 @@ void FullExpression::tcheck(Env &env)
 
 // ExpressionListOpt
 
-// ----------------------- Initializer --------------------
-// If 'inExpr->e' is a string literal, and 'type' is an array of some
-// character type, return the latter as an ArrayType.  Otherwise return
-// NULL.
-static ArrayType const *ifStringLitInitsArrayOfChar(Env &env,
-  IN_expr const *inExpr, Type const *type)
+
+// ------------------------ SemanticInitializer ------------------------
+void finalizeSemanticInitializer(Env const &env,
+  SemanticInitializer * NULLABLE semInit)
 {
-  if (inExpr->e->skipGroupsC()->isE_stringLit()) {
-    if (ArrayType const *at = type->ifArrayTypeC()) {
-      if (at->eltType->isSomeKindOfCharType()) {
-        // The only way this would work is by using the special case
-        // for string literals (since an array-typed expression cannot
-        // initialize a single character).
-        if (!inExpr->e->isE_stringLit()) {
-          // But, C11 6.7.9/11 requires the initializer be a string
-          // literal, and C11 6.5.1/5 merely says that a parenthesized
-          // expression has the same type and value, but it is not a
-          // literal.  GCC agrees that this is invalid, although Clang
-          // does not (or does not enforce it).
+  if (!semInit) {
+    return;
+  }
+
+  ASTSWITCH(Initializer, semInit) {
+    ASTCASE1(IN_compound) {
+      // The most important property of SemanticInitializers is the
+      // absence of IN_comounds.
+      xfailure("Found IN_compound in SemanticInitializer.");
+    }
+
+    ASTNEXT(SIN_stringLit, lit) {
+      xassert(lit->m_arrayType);
+      xassert(lit->m_arrayType->hasSize());
+      xassert(lit->m_stringLit);
+    }
+
+    ASTNEXT(SIN_array, arr) {
+      xassert(arr->m_arrayType);
+      for (SemanticInitializer * NULLABLE i : arr->m_elements) {
+        finalizeSemanticInitializer(env, i);
+      }
+
+      if (arr->m_arrayType->getSize() == ArrayType::NO_SIZE) {
+        ArrayType const *newType =
+          env.tfac.setArraySize(arr->loc,
+            legacyTypeNC(arr->m_arrayType), arr->m_elements.size());
+        TRACE("initializer",
+          "Due to initializer at " << toString(arr->loc) <<
+          ", declared array with unspecified size '" <<
+          arr->m_arrayType->toString() <<
+          "' replaced with new array type '" << newType->toString() <<
+          "'.");
+
+        arr->m_arrayType = newType;
+      }
+    }
+
+    ASTNEXT(SIN_struct, s) {
+      xassert(s->m_compoundType);
+      xassert(s->m_members.size() <=
+              (size_t)(s->m_compoundType->dataMembers.count()));
+      for (SemanticInitializer * NULLABLE i : s->m_members) {
+        finalizeSemanticInitializer(env, i);
+      }
+    }
+
+    ASTNEXT(SIN_union, u) {
+      xassert(u->m_unionType);
+      xassert(u->m_initMember);
+      xassert(env.hasErrors() || u->m_initValue);
+    }
+
+    ASTDEFAULT {}
+
+    ASTENDCASE
+  }
+}
+
+
+// If 'semInit' is SIN_stringLit or SIN_array, return its 'm_arrayType'.
+static ArrayType const * NULLABLE getSIArrayType(
+  SemanticInitializer const * NULLABLE semInit)
+{
+  if (!semInit) {
+    return NULL;
+  }
+  else if (SIN_array const *sinArray = semInit->ifSIN_arrayC()) {
+    return sinArray->m_arrayType;
+  }
+  else if (SIN_stringLit const *sinStringLit = semInit->ifSIN_stringLitC()) {
+    return sinStringLit->m_arrayType;
+  }
+  else {
+    return NULL;
+  }
+}
+
+
+Type const *refineTypeFromInitializer(
+  SemanticInitializer const * NULLABLE semInit, Type const *type)
+{
+  if (ArrayType const *initArrayType = getSIArrayType(semInit)) {
+    if (type->asArrayTypeC()->getSize() == ArrayType::NO_SIZE) {
+      xassert(initArrayType->getSize() != ArrayType::NO_SIZE);
+      return initArrayType;
+    }
+  }
+
+  return type;
+}
+
+
+// Ensure 'vec' has valid 'index'.
+static void ensureSIVecIndex(
+  std::vector<SemanticInitializer * NULLABLE> &vec, int index)
+{
+  if (vec.size() < (size_t)(index+1)) {
+    vec.resize(index+1, NULL);
+  }
+}
+
+
+// Place 'srcSemInit' into 'resultSemInit' at 'destPath'.
+static void augmentSemanticInitializer(
+  Env &env,
+  Type const *type,
+  SemanticInitializer * NULLABLE &resultSemInit,
+  SubobjectAccessPath const &destPath,
+  int pathIndex,
+  SemanticInitializer *srcSemInit)
+{
+  xassert(0 <= pathIndex && pathIndex < destPath.size());
+  xassert(srcSemInit);
+
+  if (ArrayType const *arrayType = type->ifArrayTypeC()) {
+    SIN_array *sinArray = resultSemInit?
+      resultSemInit->asSIN_array() :
+      new SIN_array(srcSemInit->loc, arrayType);
+    resultSemInit = sinArray;
+
+    int arrayIndex = destPath.arrayIndexAt(pathIndex);
+    ensureSIVecIndex(sinArray->m_elements, arrayIndex);
+
+    // The affected element in the array.
+    SemanticInitializer *&elemInit = sinArray->m_elements[arrayIndex];
+
+    if (pathIndex+1 == destPath.size()) {
+      // Replace 'initSlot' entirely.
+      if (elemInit) {
+        env.warning(srcSemInit->loc, stringb(
+          "Initializer for array index " << arrayIndex <<
+          " overrides previous initializer at " <<
+          toString(elemInit->loc) << "."));
+      }
+      elemInit = srcSemInit;
+    }
+    else {
+      // Replace inside 'elemInit'.
+      augmentSemanticInitializer(env, arrayType->eltType, elemInit,
+        destPath, pathIndex+1, srcSemInit);
+    }
+
+    return;
+  }
+
+  CompoundType const *ct = type->asCompoundTypeC();
+  int fieldIndex = destPath.fieldIndexAt(pathIndex);
+  Variable const *fieldVar = ct->getDataMemberByPositionC(fieldIndex);
+
+  if (!ct->isUnion()) {
+    SIN_struct *sinStruct = resultSemInit?
+      resultSemInit->asSIN_struct() :
+      new SIN_struct(srcSemInit->loc, ct);
+    resultSemInit = sinStruct;
+
+    ensureSIVecIndex(sinStruct->m_members, fieldIndex);
+
+    // Affected field initializer.
+    SemanticInitializer *&fieldInit = sinStruct->m_members.at(fieldIndex);
+
+    if (pathIndex+1 == destPath.size()) {
+      if (fieldInit) {
+        env.warning(srcSemInit->loc, stringb(
+          "Initializer for field '" << fieldVar->name <<
+          "' overrides previous initializer at " <<
+          toString(fieldInit->loc) << "."));
+      }
+      fieldInit = srcSemInit;
+    }
+    else {
+      augmentSemanticInitializer(env, fieldVar->type, fieldInit,
+        destPath, pathIndex+1, srcSemInit);
+    }
+  }
+
+  else {
+    SIN_union *sinUnion = resultSemInit?
+      resultSemInit->asSIN_union() :
+      new SIN_union(srcSemInit->loc, ct);
+    resultSemInit = sinUnion;
+
+    // Affected initializer.
+    SemanticInitializer *&fieldInit = sinUnion->m_initValue;
+
+    if (pathIndex+1 == destPath.size()) {
+      if (fieldInit) {
+        xassert(sinUnion->m_initMember);
+        if (sinUnion->m_initMember == fieldVar) {
+          env.warning(srcSemInit->loc, stringb(
+            "Initializer for union field '" << fieldVar->name <<
+            "' overrides previous initializer at " <<
+            toString(sinUnion->m_initValue->loc) << "."));
+        }
+        else {
+          env.warning(srcSemInit->loc, stringb(
+            "Initializer for union field '" << fieldVar->name <<
+            "' overrides previous initializer for different field '" <<
+            sinUnion->m_initMember->name << "' at " <<
+            toString(fieldInit->loc) << "."));
+        }
+      }
+
+      fieldInit = srcSemInit;
+    }
+
+    else {
+      if (!fieldInit) {
+        // Creating the union member.
+      }
+      else if (sinUnion->m_initMember == fieldVar) {
+        // Updating within the union member.
+      }
+      else {
+        // Replacing the union member with something empty, then
+        // replacing within that.
+        env.warning(srcSemInit->loc, stringb(
+          "Initializer for subobject inside union field '" <<
+          fieldVar->name <<
+          "' overrides entire previous initializer for different field '" <<
+          sinUnion->m_initMember->name << "' at " <<
+          toString(fieldInit->loc) << "."));
+        fieldInit = NULL;
+      }
+
+      augmentSemanticInitializer(env, fieldVar->type, fieldInit,
+        destPath, pathIndex+1, srcSemInit);
+    }
+
+    sinUnion->m_initMember = fieldVar;
+  }
+}
+
+
+// ---------------------------- Initializer ----------------------------
+SemanticInitializer * NULLABLE
+  Initializer::tcheck(Env &env, Type const *type)
+{
+  xfailure("should not be called");
+  return this;
+}
+
+
+// If 'inExpr->e' is a string literal, and 'type' is an array of some
+// character type, type-check 'inExpr->e', then create and return a
+// SIN_stringLit.
+//
+// Otherwise, return NULL *without* type-checking 'inExpr->e'.
+//
+static SIN_stringLit * NULLABLE
+  ifStringLitInitsArrayOfChar(Env &env, IN_expr *inExpr, Type const *type)
+{
+  // Skip groups initially so we can diagnose parens in a moment.
+  if (E_stringLit *stringLit = inExpr->e->skipGroups()->ifE_stringLit()) {
+    if (ArrayType const *targetAT = type->ifArrayTypeC()) {
+      if (targetAT->eltType->isSomeKindOfCharType()) {
+        SourceLoc loc = inExpr->loc;
+
+        if (inExpr->e->isE_grouping()) {
+          // C11 6.7.9/11 requires the initializer be a string literal,
+          // and a parenthesized expression is not a literal.  GCC
+          // agrees that this is invalid, although Clang does not (or
+          // does not enforce it).
           //
           // I suspect the rationale is partly to aid parsing: by
           // insisting on a string literal, a parser can tell what to
           // do with just one token of lookahead.
           //
-          env.error(inExpr->loc, stringb(
+          env.error(loc, stringb(
             "A string literal used to initialize a character array "
             "may not be enclosed in grouping parentheses."));
+
+          // Despite the violation, go ahead and initialize anyway.
+          // This might be needed for Clang compatibility at some point.
         }
 
-        return at;
+        // We are committed to this intepretation, but have not yet
+        // type-checked the expression.  Do so now.  (We already know it
+        // is a string literal, so not much can go wrong.)
+        inExpr->e->tcheck(env, inExpr->e);
+
+        // TODO: Check that a narrow/wide string literal is only used
+        // with a narrow/wide character array.
+
+        // We will have already computed an array type for the string
+        // literal based on its contents only.  Get it and its size.
+        ArrayType const *litAT = stringLit->type->asRval()->asArrayTypeC();
+        xassert(litAT->hasSize());
+
+        TRACE("initializer",
+          "At " << toString(loc) <<
+          ", string literal with total size (with NUL) " << litAT->getSize() <<
+          " being used to initialize array type '" << targetAT->toString() <<
+          "'.");
+
+        if (targetAT->hasSize()) {
+          // The string literal can have a size that is one greater
+          // because its NUL terminator can be discarded.
+          int requiredSize = litAT->getSize()-1;
+          if (requiredSize > targetAT->getSize()) {
+            env.error(loc, stringb(
+              "String literal initializer contains " << requiredSize <<
+              " characters (excluding the final NUL), but the "
+              "initialized type '" << targetAT->toString() <<
+              "' only has size " << targetAT->getSize() <<
+              "."));
+          }
+        }
+        else {
+          // Provide the array size using the initializer.  This size
+          // includes the NUL.
+          targetAT = env.tfac.setArraySize(loc,
+            legacyTypeNC(targetAT), litAT->getSize());
+        }
+
+        // Wrap things up as a SIN_stringLit.
+        SIN_stringLit *ret = new SIN_stringLit(loc, targetAT);
+        ret->m_stringLit = stringLit;
+        return ret;
       }
     }
   }
+
   return NULL;
 }
 
 
-Type const *IN_expr::tcheck(Env &env, Type const *target)
+SemanticInitializer * NULLABLE
+  IN_expr::tcheck(Env &env, Type const *target)
 {
-  // Ask this question before type-checking 'e', since doing so throws
-  // away the E_grouping I might need to know about.
-  ArrayType const *targetAT =
-    ifStringLitInitsArrayOfChar(env, this, target);
+  // Possibly initialize a character array with a string literal.
+  if (SIN_stringLit *ssl =
+        ifStringLitInitsArrayOfChar(env, this, target)) {
+    return ssl;
+  }
 
   // Use 'target' to resolve 'e' if it names an overloaded function.
   tcheckExpression_possibleAddrOfOverload(env, e, target);
 
   if (target->isSimple(ST_ERROR)) {
     // If we don't know the target type, there's not more we can do.
-    return target;
-  }
-
-  if (targetAT) {
-    // Initialize a character array with a string literal.
-
-    // TODO: Check that a narrow/wide string literal is only used with
-    // a narrow/wide character array.
-
-    // We will have already computed an array type for the string
-    // literal.  Get it and its size.
-    ArrayType const *litAT = e->type->asRval()->asArrayTypeC();
-    xassert(litAT->hasSize());
-
-    TRACE("initializer",
-      "At " << toString(loc) <<
-      ", string literal with total size (with NUL) " << litAT->getSize() <<
-      " being used to initialize array type '" << target->toString() <<
-      "'.");
-
-    if (targetAT->hasSize()) {
-      // The string literal can have a size that is one greater
-      // because its NUL terminator can be discarded.
-      int requiredSize = litAT->getSize()-1;
-      if (requiredSize > targetAT->getSize()) {
-        env.error(loc, stringb(
-          "String literal initializer contains " << requiredSize <<
-          " characters (excluding the final NUL), but the "
-          "initialized type '" << targetAT->toString() <<
-          "' only has size " << targetAT->getSize() <<
-          "."));
-      }
-      return target;
-    }
-    else {
-      // Provide the array size using the initializer.  This size
-      // includes the NUL.
-      return env.tfac.setArraySize(loc, legacyTypeNC(targetAT),
-                                   litAT->getSize());
-    }
+    return this;
   }
 
   if (target->isFunctionType()) {
     // We get here when processing the '=0' of a pure virtual function.
     // TODO: Check these.
-    return target;
+    return this;
   }
 
   // Get conversion from 'e' to 'target'.
@@ -9998,7 +10267,7 @@ Type const *IN_expr::tcheck(Env &env, Type const *target)
       "' to type '" << target->toString() << "'"));
   }
 
-  return target;
+  return this;
 }
 
 
@@ -10091,6 +10360,9 @@ static bool interpretDesignation(
         // Range designator: use the upper bound.  This gives us the
         // correct "next" location afterward, even with nested range
         // designators; see test/initializers/range-designators.c.
+        //
+        // TODO: Handle range designators properly so they fully make it
+        // into the SemanticInitializer.
         path.pushArrayIndex(sd->idx_computed2);
       }
       else {
@@ -10146,7 +10418,7 @@ static bool interpretDesignation(
 // Initializer 'braces' is a redundant pair of braces around the
 // initializer for non-aggregate 'wholeType'.  Enforce the related
 // rules, which are described in C11 6.7.9/11.
-static Type const *handleRedundantInitBraces(
+static SemanticInitializer * NULLABLE handleRedundantInitBraces(
   Env &env, IN_compound *braces, Type const *wholeType)
 {
   if (braces->inits.isEmpty()) {
@@ -10154,7 +10426,7 @@ static Type const *handleRedundantInitBraces(
       "An empty pair of braces cannot be used to initialize "
       "non-aggregate type '" <<
       wholeType->toString() << "'."));
-    return wholeType;
+    return NULL;
   }
 
   if (braces->inits.count() > 1) {
@@ -10163,7 +10435,7 @@ static Type const *handleRedundantInitBraces(
       "' using a brace-enclosed initializer, there must be exactly "
       "one initializer inside the braces.  Here, there are " <<
       braces->inits.count() << "."));
-    return wholeType;
+    return NULL;
   }
 
   Initializer *inner = braces->inits.first();
@@ -10176,7 +10448,7 @@ static Type const *handleRedundantInitBraces(
       "When initializing non-aggregate type '" << wholeType->toString() <<
       "' using a brace-enclosed initializer, there must not be a "
       "designator present."));
-    return wholeType;
+    return NULL;
   }
 #endif // GNU_EXTENSION
   else if (inner->isIN_compound()) {
@@ -10184,12 +10456,12 @@ static Type const *handleRedundantInitBraces(
       "When initializing non-aggregate type '" << wholeType->toString() <<
       "' using a brace-enclosed initializer, a second pair of "
       "redundant braces is not allowed."));
-    return wholeType;
+    return NULL;
   }
   else {
     // It should be impossible to get here with IN_ctor.
     xfailure("bad initializer kind");
-    return wholeType;
+    return NULL;
   }
 }
 
@@ -10210,12 +10482,13 @@ static bool isAggregateOrUnion(Type const *type)
 }
 
 
-Type const *IN_compound::tcheck(Env &env, Type const *wholeType)
+SemanticInitializer * NULLABLE
+  IN_compound::tcheck(Env &env, Type const *wholeType)
 {
   if (wholeType->isError()) {
     // Bail out early if we don't know what type of thing is being
     // initialized due to previous errors.
-    return wholeType;
+    return NULL;
   }
 
   TRACE("initializer",
@@ -10227,31 +10500,33 @@ Type const *IN_compound::tcheck(Env &env, Type const *wholeType)
     return handleRedundantInitBraces(env, this, wholeType);
   }
 
+  // Check for initializing a char array with a string literal in a
+  // redundant brace pair.
   if (inits.isNotEmpty()) {
     if (IN_expr *ie = inits.first()->ifIN_expr()) {
-      if (ArrayType const *at =
+      if (SIN_stringLit *ssl =
             ifStringLitInitsArrayOfChar(env, ie, wholeType)) {
-        // Initializing a char array with a string literal in a
-        // redundant brace pair.
         if (inits.count() > 1) {
           env.error(inits.nth(1)->loc, stringb(
-            "While initializing character array type '" << at->toString() <<
+            "While initializing character array type '" <<
+            wholeType->toString() <<
             "', there is more than one initializer within the "
-            "redundant brace pair."));
+            "redundant brace pair (there are " <<
+            inits.count() << " initializers)."));
         }
 
-        return ie->tcheck(env, wholeType);
+        return ssl;
       }
     }
   }
+
+  // Empty semantic initializer we can populate.
+  SemanticInitializer *resultSemInit = NULL;
 
   // Access path to the next subobject to initialize.  It is initially
   // empty, in which state stepping forward once will make it point to
   // the first element in 'wholeType'.
   SubobjectAccessPath destPath;
-
-  // Maximum index used to access 'wholeType' (at its top level).
-  int maxIndex = -1;
 
   // Process the initializers in order.
   for (ASTListIterNC<Initializer> initIter(inits);
@@ -10263,7 +10538,7 @@ Type const *IN_compound::tcheck(Env &env, Type const *wholeType)
       destPath.clear();
       if (!interpretDesignation(env, destPath,
                                 srcDInit->designator_list, wholeType)) {
-        return wholeType;
+        break;
       }
       TRACE("initializer",
         "Designator at " << toString(srcDInit->loc) <<
@@ -10278,21 +10553,18 @@ Type const *IN_compound::tcheck(Env &env, Type const *wholeType)
     {
       // Advance 'destPath' to the next subobject.
       if (!destPath.stepForward(env, 0 /*pathIndex*/, wholeType)) {
-        return wholeType;
+        break;
       }
       if (destPath.empty()) {
         env.error(srcInit->loc, stringb(
           "Initializer is beyond the end of the object to initialize, "
           "which has type '" << wholeType->toString() << "'."));
-        return wholeType;
+        break;
       }
       TRACE("initializer",
         "Initializer at " << toString(srcInit->loc) <<
         " has sequential path: " << destPath.toString());
     }
-
-    // Update 'maxIndex'.
-    maxIndex = std::max(maxIndex, destPath.frontIndex());
 
     // The type of object to initialize.
     Type const *destType =
@@ -10307,45 +10579,33 @@ Type const *IN_compound::tcheck(Env &env, Type const *wholeType)
       destType = destPath.stepIntoAggregate(env, destType,
                                             initIsStringLiteral);
       if (!destType) {
-        return wholeType;
+        break;
       }
     }
 
-    // Initialize 'destType' with 'srcInit'.
+    // Check 'srcInit' and derive from it a semantic initializer.
     TRACE("initializer",
       "Initializer at " << toString(srcInit->loc) <<
       " has access path " << destPath.toString() <<
       " and object type '" << destType->toString() << "'.");
-    srcInit->tcheck(env, destType);
-  }
+    SemanticInitializer *srcSemInit = srcInit->tcheck(env, destType);
 
-  // Possibly set the size of an array with unspecified size.
-  //
-  // TODO: This does not work properly for the case of a flexible array
-  // member as the last element of a struct (a GNU extension), if the
-  // initializer is only partially bracketed.
-  if (ArrayType const *at = wholeType->ifArrayTypeC()) {
-    if (at->getSize() == ArrayType::NO_SIZE) {
-      ArrayType const *newType =
-        env.tfac.setArraySize(loc, legacyTypeNC(at), maxIndex+1);
-      TRACE("initializer",
-        "wholeType was array with unspecified size '" << wholeType->toString() <<
-        "'; maxIndex=" << maxIndex <<
-        ", so yielding new array type '" << newType->toString() <<
-        "'.");
-
-      wholeType = newType;
+    // Add 'srcSemInit' to the result so far.
+    if (srcSemInit) {
+      augmentSemanticInitializer(env, wholeType, resultSemInit,
+        destPath, 0 /*pathIndex*/, srcSemInit);
     }
   }
 
   TRACE("initializer",
     "Finished IN_compound at " << toString(loc) << ".");
 
-  return wholeType;
+  return resultSemInit;
 }
 
 
-Type const *IN_ctor::tcheck(Env &env, Type const *destTypeC)
+SemanticInitializer * NULLABLE
+  IN_ctor::tcheck(Env &env, Type const *destTypeC)
 {
   Type *destType = legacyTypeNC(destTypeC);
 
@@ -10353,7 +10613,7 @@ Type const *IN_ctor::tcheck(Env &env, Type const *destTypeC)
   ArgumentInfoArray argInfo(fl_count(args) + 1);
   args = tcheckArgExprList(args, env, argInfo);
 
-  // 8.5p14: if this was originally a copy-initialization (IN_expr),
+  // C++98 8.5p14: if this was originally a copy-initialization (IN_expr),
   // and the source type is not the same class as or derived class
   // of the destination type, then we first implicitly convert the
   // source to the dest
@@ -10377,7 +10637,7 @@ Type const *IN_ctor::tcheck(Env &env, Type const *destTypeC)
         env.error(srcType, stringc
           << "cannot convert initializer type '" << srcType->toString()
           << "' to target type '" << destType->toString() << "'");
-        return destTypeC;
+        return this;
       }
 
       // rewrite the AST to reflect the use of any user-defined
@@ -10420,7 +10680,7 @@ Type const *IN_ctor::tcheck(Env &env, Type const *destTypeC)
       // don't do the final comparison; it will be confused by
       // the discrepancy between 'args' and 'argInfo', owing to
       // not having rewritten the AST above
-      return destTypeC;
+      return this;
     }
   }
 
@@ -10428,7 +10688,7 @@ Type const *IN_ctor::tcheck(Env &env, Type const *destTypeC)
     outerResolveOverload_ctor(env, loc, destType, argInfo));
   compareCtorArgsToParams(env, ctorVar, args, argInfo);
 
-  return destTypeC;
+  return this;
 }
 
 

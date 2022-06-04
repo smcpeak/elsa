@@ -17,6 +17,7 @@
 #include "type-printer.h"              // TypePrinter, CTypePrinter
 
 // smbase
+#include "sm-macros.h"                 // NULLABLE
 #include "tree-print.h"                // TreePrint
 
 
@@ -50,12 +51,17 @@ public:      // data
   // hypothetical "ISC" macro.  The default is false.
   bool m_printISC;
 
+  // If true, print the "digested" semantic initializers (when
+  // available) rather than the original syntax.  Default is true.
+  bool m_printSemanticInitializers;
+
 public:      // methods
   PrintEnv(TypePrinter &typePrinter, CCLang const &lang)
     : m_typePrinter(typePrinter),
       m_lang(lang),
       m_printComments(true),
-      m_printISC(false)
+      m_printISC(false),
+      m_printSemanticInitializers(true)
   {}
 
   // Print the tree to a string.
@@ -86,6 +92,12 @@ public:      // methods
 
   // Nominally, call 'expr->iprint(*this)'.
   virtual void iprintExpression(Expression const *expr);
+
+  // If 'm_printSemanticInitializers' and 'semanticInit!=NULL', return
+  // that.  Otherwise return 'syntacticInit'.
+  Initializer const * NULLABLE selectInitializer(
+    Initializer const * NULLABLE syntacticInit,
+    SemanticInitializer const * NULLABLE semanticInit);
 };
 
 // Print 'type' to a string using the rules of 'lang'.

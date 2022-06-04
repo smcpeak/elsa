@@ -547,6 +547,13 @@ bool ElsaParse::parse(char const *inputFname)
     PrintEnv env(typePrinter, m_lang);
     env.m_printComments = m_prettyPrintComments;
     env.m_printISC = m_prettyPrintISC;
+
+    // TODO: Plumb a proper command line switch through to here.
+    if (tracingSys("printSyntacticInitializers")) {
+      env.m_printSemanticInitializers = false;
+    }
+
+    // TODO: These START and STOP lines should also be comments.
     cout << "---- START ----" << endl;
     cout << "// -*-c++-*-" << endl;
     m_translationUnit->print(env);

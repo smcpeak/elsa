@@ -1,0 +1,25 @@
+---- stdout ----
+---- START ----
+// -*-c++-*-
+typedef struct Complex {
+  double re;
+  double im;
+} Complex;
+
+Complex make_complex(double r, double i)
+{
+  Complex ret = { r, i };
+  return ret;
+}
+
+int main()
+{
+  int i = 3.5;
+  Complex c = make_complex(5, 3);
+  return i == 3 && c.re == 5 && c.im == 3 && 1? 0 : 1;
+}
+
+---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

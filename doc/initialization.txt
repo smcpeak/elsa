@@ -55,7 +55,7 @@ Algorithm:
   let Outputs = {
     // A description of the resulting object with all elements
     // explicitly given an initial value.
-    initObject: let InitializedObject = one of {
+    initObject: let SemanticInitializer = one of {
       // Used for elements that are implicitly initialized to zero.
       zero;
 
@@ -72,9 +72,11 @@ Algorithm:
       // array type.
       arrayElements: sequence of let ArrayElement = {
         // The value with which to initialize the element(s).
-        value: InitializedObject;
+        value: SemanticInitializer;
 
         // Number of consecutive elements to initialize.
+        //
+        // NOTE: The implementation does not use a repetition count yet.
         repetitionCount: positive int;
       }
 
@@ -82,12 +84,12 @@ Algorithm:
       // declaration order, or exactly one field for a union.
       fields: sequence of let FieldValue = {
         name: Identifier;
-        value: InitializedObject;
+        value: SemanticInitializer;
       };
     }
   }
 
-  fun initialize(wholeType: Type, wholeInit: Initializer) : InitializedObject
+  fun initialize(wholeType: Type, wholeInit: Initializer) : SemanticInitializer
   {
     if (wholeInit is expr) {
       return initializeWithExpr(wholeType, wholeInit.expr);
@@ -97,10 +99,10 @@ Algorithm:
     }
   }
 
-  fun initializeWithExpr(destType: Type, srcExpr: Expression) : InitializedObject
+  fun initializeWithExpr(destType: Type, srcExpr: Expression) : SemanticInitializer
   {
     if (destType is scalar) {
-      return InitializedObject(expr: convertExprToType(srcExpr, destType));
+      return SemanticInitializer(expr: convertExprToType(srcExpr, destType));
     }
     else if (destType is array of char &&
              srcExpr is string literal) {
@@ -114,11 +116,11 @@ Algorithm:
   fun initializeWithBraces(
     wholeType: Type,
     initializers: sequence of DesignatedInit)
-    : InitializedObject
+    : SemanticInitializer
   {
     // Initialized object constructed so far.  This is incrementally
     // updated as we process the initializer.
-    var wholeResult : InitializedObject = InitializedObject(zero);
+    var wholeResult : SemanticInitializer = SemanticInitializer(zero);
 
     // Access path to the next subobject to initialize.  It is initially
     // empty, in which state stepping forward once will make it point to
@@ -321,11 +323,11 @@ Algorithm:
   // to have type 'containerType', return a new object that results from
   // changing the value at 'path' to 'newValue'.
   fun setIOElement(
-    containerObject: InitializedObject,
+    containerObject: SemanticInitializer,
     containerType: Type,
     path: sequence of Designator,
-    newValue: InitializedObject)
-    : InitializedObject
+    newValue: SemanticInitializer)
+    : SemanticInitializer
   {
     if (path is empty) {
       return newValue;
@@ -339,7 +341,7 @@ Algorithm:
         // zero values.
         let size = has containerType.size? containerType.size : i+1;
         assert(size > 0);
-        container := InitializedObject(arrayElements:
+        container := SemanticInitializer(arrayElements:
           [{ value: zero, repetitionCount: size }]);
       }
 
@@ -366,7 +368,7 @@ Algorithm:
         else {
           // For a union, leave the 'fields' empty, as we will be
           // populating just a single element.
-          container := InitializedObject(fields: []);
+          container := SemanticInitializer(fields: []);
         }
       }
 
@@ -377,7 +379,7 @@ Algorithm:
           // The union has an existing value in one of its members, but
           // we are setting a value for a different member.  Throw away
           // the old member information.
-          container := InitializedObject(fields: []);
+          container := SemanticInitializer(fields: []);
 
           // TODO: What if a designator sets a subobject of a union member,
           // then another subobject of a different union member?
@@ -400,11 +402,11 @@ Algorithm:
   // Retrieve the value of element 'index' within 'elements'.
   fun getArrayElement(elements: sequence of ArrayElement,
                       index: non_negative int)
-     : InitializedObject
+     : SemanticInitializer
   {
     if (elements is empty) {
       // Not found.  Any additional elements are assumed to be zero.
-      return InitializedObject(zero);
+      return SemanticInitializer(zero);
     }
 
     assert(elements is [elem]+suffix);
@@ -424,7 +426,7 @@ Algorithm:
   // maximum index, with zeroes filling the gap.
   fun setArrayElement(elements: sequence of ArrayElement,
                       index: non_negative int,
-                      newValue: InitializedObject)
+                      newValue: SemanticInitializer)
     : sequence of ArrayElement
   {
     if (elements is empty) {
@@ -461,14 +463,14 @@ Algorithm:
     }
   }
 
-  fun makeZeroedStruct(soutype: StructOrUnionType) : InitializedObject
+  fun makeZeroedStruct(soutype: StructOrUnionType) : SemanticInitializer
   {
     assert(soutype.kind == struct);
 
     // Create an explicit zero for every field.
     return [for (fd in soutype.fields) {
       return FieldValue(name: fd.name,
-                        value: InitializedObject(zero));
+                        value: SemanticInitializer(zero));
     }]
   }
 
@@ -476,10 +478,10 @@ Algorithm:
   fun getStructField(
     fields: sequence of FieldValue,
     fieldName: Identifier)
-    : InitializedObject
+    : SemanticInitializer
   {
     if (fields is empty) {
-      return InitializedObject(zero);
+      return SemanticInitializer(zero);
     }
     else (fields is [fv]+suffix) {
       if (fv.name == fieldName) {
@@ -496,7 +498,7 @@ Algorithm:
   fun setStructField(
     fields: sequence of FieldValue,
     fieldName: Identifier,
-    newValue: InitializedObject)
+    newValue: SemanticInitializer)
     : sequence of FieldValue
   {
     if (fields is empty) {

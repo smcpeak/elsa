@@ -62,6 +62,9 @@ class Expression {
   -> E_compoundLit(ASTTypeId stype, IN_compound init) {
        // help for dealing with expressions being tchecked more than once
        public bool tcheckedType = false;
+
+       // Semantic initializer describing the new object.
+       public SemanticInitializer *m_semanticInit = NULL;
      }
 }
 
