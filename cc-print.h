@@ -115,9 +115,24 @@ void printASTNodeToEnv(PrintEnv &env, T const *astNode)
 
 // Overloads for specific nodes that require additional arguments, but
 // we can supply reasonable values for printing "in general".
+//
+// NOTE: For these to work, the argument type has to be the superclass
+// as shown here, not a subclass, since in the latter case, the "usual
+// template" will be selected by overload resolution, and then fail to
+// compile.
 inline void printASTNodeToEnv(PrintEnv &env, Initializer const *init)
 {
   init->print(env, true /*outermost*/);
+}
+
+inline void printASTNodeToEnv(PrintEnv &env, Statement const *stmt)
+{
+  stmt->print(env, SC_COMPOUND /*adequate guess*/);
+}
+
+inline void printASTNodeToEnv(PrintEnv &env, Expression const *expr)
+{
+  expr->print(env, OPREC_LOWEST);
 }
 
 
@@ -136,6 +151,8 @@ string printASTNodeToString(CCLang const &lang, T const *astNode)
 
 // The template above does not work for Statements because they require
 // an additional parameter.
+//
+// TODO: 2022-06-05: Now it does.  Can I remove these?
 string printStatementToString(
   CCLang const &lang, Statement const *stmt, StatementContext context,
   bool printComments = true);

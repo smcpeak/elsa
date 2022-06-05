@@ -278,10 +278,17 @@ void TestASTSynth::populateBody(S_compound *body)
     Type *t_int = m_typeFactory.getSimpleType(ST_INT);
     Variable *vx = makeVar("x", t_int);
     Declaration *decl = makeDeclaration(vx, DC_S_DECL);
-    Initializer *init = new IN_expr(loc, makeE_intLit(3));
+
+    Expression *three = makeE_intLit(3);
+    xassert(printASTNodeToString(m_lang, three) == "3");
+
+    Initializer *init = new IN_expr(loc, three);
     xassert(printASTNodeToString(m_lang, init) == "3");
     fl_first(decl->decllist)->init = init;
-    body->stmts.append(new S_decl(loc, decl));
+
+    Statement *sdecl = new S_decl(loc, decl);
+    xassert(printASTNodeToString(m_lang, sdecl) == "int x = 3;");
+    body->stmts.append(sdecl);
   }
 
   body->stmts.append(new S_return(loc, new FullExpression(
