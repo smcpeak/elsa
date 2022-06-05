@@ -97,6 +97,10 @@ out/elsa-relaxed-check/%.c: %.c $(CCPARSE)
 
 # Parse the input (without -pedantic-errors), pretty print it, then
 # parse that and expect equality.
+#
+# TODO: This also requires --no-elaborate because the elaborator does
+# borky things, causing structures passed by value to print as
+# unparseable nonsense.  I think I should disable that by default.
 out/elsa-pprint/%.c: %.c pp-expect/%.c.expect $(CCPARSE)
 	$(CREATE_OUTPUT_DIRECTORY)
 	@#
@@ -106,11 +110,11 @@ out/elsa-pprint/%.c: %.c pp-expect/%.c.expect $(CCPARSE)
 	  --actual out/elsa-pprint/$*.c.pp.actual \
 	  --expect pp-expect/$*.c.expect \
 	  --no-separators --no-stderr \
-	  $(CCPARSE) --pretty-print $*.c
+	  $(CCPARSE) --pretty-print --no-elaborate $*.c
 	@#
 	@# Second parse and pprint, comparing to previous pprint.
 	@#
-	$(CCPARSE) --pretty-print -xc out/elsa-pprint/$*.c.pp.actual \
+	$(CCPARSE) --pretty-print --no-elaborate -xc out/elsa-pprint/$*.c.pp.actual \
 	  > out/elsa-pprint/$*.c.pp2.actual
 	diff -u out/elsa-pprint/$*.c.pp.actual out/elsa-pprint/$*.c.pp2.actual
 	touch $@
@@ -163,7 +167,8 @@ check: out/all-check/p14-array-of-char.c
 check: out/non-elsa-check/p17-designators.c
 # p18: Covered by p17-designators.c.
 check: out/all-check/p19-override-eval.c
-# p20: Covered by p17-designators.c.
+check: out/all-check/p20-struct-member-struct-value.c
+check: out/all-check/p20-union-member-union-value.c
 check: out/all-check/p21-short-init.c
 check: out/all-check/p22-array-unspec-size.c
 check: out/all-check/p23-eval-sequence.c

@@ -4,6 +4,8 @@
 #ifndef ELSA_SUBOBJECT_ACCESS_PATH_H
 #define ELSA_SUBOBJECT_ACCESS_PATH_H
 
+#include "subobject-access-path-fwd.h" // fwds for this module
+
 // elsa
 #include "cc-env.h"                    // Env
 #include "cc-type-fwd.h"               // Type
@@ -95,21 +97,15 @@ public:      // methods
     int pathIndex,
     Type const *type);
 
-  // Given a path '[pathIndex:]' that navigates to 'type' within some
-  // unspecified whole type, if 'type' is a non-aggregate, return 'type'
-  // and yield 'this' unchanged.  Otherwise, append first element
-  // designators to 'this' until it names a non-aggregate, and return
-  // the resulting type.
-  //
-  // As a special case, regard an array of any character type to be
-  // non-aggregate if 'initIsStringLiteral' is true.
+  // Given a path '[pathIndex:]' that navigates to aggregate 'type'
+  // within some unspecified whole type, append a first element
+  // designator to 'this' and return the resulting type.
   //
   // On error, add an error to 'env' and return NULL.
   //
   Type const *stepIntoAggregate(
     Env &env,
-    Type const *type,
-    bool initIsStringLiteral);
+    Type const *type);
 
   // Navigate from 'type' to a subobject type by following
   // '[pathIndex:]'.

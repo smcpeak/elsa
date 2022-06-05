@@ -12,10 +12,11 @@
 // of the classes from the base
 verbatim {
   // elsa
-  #include "variable.h"      // Variable
   #include "cc-type.h"       // Type, FunctionType, CompoundType, etc.
-  #include "template.h"      // STemplateArgument
   #include "const-eval.h"    // ConstEval
+  #include "subobject-access-path-fwd.h" // SubobjectAccessPath
+  #include "template.h"      // STemplateArgument
+  #include "variable.h"      // Variable
 
   // smbase
   #include "datablok.h"      // DataBlock
@@ -878,6 +879,13 @@ class Initializer {
   -> IN_expr {
        public SemanticInitializer * NULLABLE
          tcheck(Env &env, Type const *type) override;
+
+       // Similar to 'tcheck', except (if 'allowedToDig') we might need
+       // to dig into 'type' if it is an aggregate, in which case
+       // elements will be added to 'destPath'.
+       public SemanticInitializer * NULLABLE
+         tcheck_IN_expr(Env &env, Type const *type,
+         SubobjectAccessPath &destPath, bool allowedToDig);
      }
 
   -> IN_compound {

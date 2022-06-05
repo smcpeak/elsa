@@ -137,17 +137,9 @@ bool SubobjectAccessPath::stepForward(
 
 Type const *SubobjectAccessPath::stepIntoAggregate(
   Env &env,
-  Type const *type,
-  bool initIsStringLiteral)
+  Type const *type)
 {
   if (ArrayType const *at = type->ifArrayTypeC()) {
-    if (initIsStringLiteral && at->eltType->isSomeKindOfCharType()) {
-      // Claim we have reached a non-aggregate.  We want the path to
-      // stop here so IN_expr::tcheck will see the array and the string
-      // literal, not the char type and string literal.
-      return type;
-    }
-
     if (at->hasSize() && at->getSize() == 0) {
       // We know braces were not used because we only call this function
       // when we see a non-brace-enclosed initializer expression.  GCC
@@ -159,14 +151,12 @@ Type const *SubobjectAccessPath::stepIntoAggregate(
     }
 
     pushArrayIndex(0);
-    return stepIntoAggregate(env, at->eltType, initIsStringLiteral);
+    return at->eltType;
   }
 
-  else if (CompoundType const *ct = type->ifCompoundTypeC()) {
-    if (!ct->isAggregate()) {
-      // We're at a non-aggregate.
-      return type;
-    }
+  else {
+    CompoundType const *ct = type->asCompoundTypeC();
+    xassert(ct->isAggregate());
 
     if (ct->dataMembers.isEmpty()) {
       env.error(stringb(
@@ -176,13 +166,7 @@ Type const *SubobjectAccessPath::stepIntoAggregate(
     }
 
     pushFieldIndex(0);
-    Type *firstFieldType = ct->dataMembers.firstC()->type;
-    return stepIntoAggregate(env, firstFieldType, initIsStringLiteral);
-  }
-
-  else {
-    // We're at a non-aggregate.
-    return type;
+    return ct->dataMembers.firstC()->type;
   }
 }
 

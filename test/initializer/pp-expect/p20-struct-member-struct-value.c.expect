@@ -1,0 +1,71 @@
+// ---- START ----
+// -*- c++ -*-
+struct Inner {
+  int x;
+  int y;
+};
+
+struct Outer {
+  struct Inner a;
+  struct Inner b;
+};
+
+struct Outer fo(struct Inner inner)
+{
+  struct Outer o = { inner, inner };
+  return o;
+}
+
+int test_fo()
+{
+  struct Inner inner = { 1, 2 };
+  struct Outer o = fo(inner);
+  return o.a.x == 1 && o.a.y == 2 && o.b.x == 1 && o.b.y == 2 && 1;
+}
+
+struct Outer fo2(int integer)
+{
+  struct Outer o = { { integer, integer+1 }, { integer+2, integer+3 } };
+  return o;
+}
+
+int test_fo2()
+{
+  struct Outer o = fo2(3);
+  return o.a.x == 3 && o.a.y == 4 && o.b.x == 5 && o.b.y == 6 && 1;
+}
+
+struct Outer fo3a(struct Inner inner, int integer)
+{
+  struct Outer o = { inner, { integer+1, integer+2 } };
+  return o;
+}
+
+int test_fo3a()
+{
+  struct Inner inner = { 1, 2 };
+  struct Outer o = fo3a(inner, 3);
+  return o.a.x == 1 && o.a.y == 2 && o.b.x == 4 && o.b.y == 5 && 1;
+}
+
+struct Outer fo3b(struct Inner inner, int integer)
+{
+  struct Outer o = { { integer+1, integer+2 }, inner };
+  return o;
+}
+
+int test_fo3b()
+{
+  struct Inner inner = { 1, 2 };
+  struct Outer o = fo3b(inner, 3);
+  return o.a.x == 4 && o.a.y == 5 && o.b.x == 1 && o.b.y == 2 && 1;
+}
+
+int main()
+{
+  return test_fo() && test_fo2() && test_fo3a() && test_fo3b() && 1?
+           0 :
+           1;
+}
+
+// ---- STOP ----

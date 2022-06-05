@@ -144,17 +144,33 @@ Algorithm:
       // Initializer, without designator.
       let srcInit = srcDInit.init;
 
-      // If 'srcInit' does not start with left-brace, dig into the
-      // subobject until we reach something that is not an aggregate.
-      if (srcInit is expr) {
-        destPath := stepIntoAggregate(wholeType, destPath);
-      }
-
       // The type of object to initialize.
-      let destType = navigateType(wholeType, destPath);
+      var destType = navigateType(wholeType, destPath);
 
-      // Initialize 'destType' with 'srcInit'.
-      let destObject = initialize(destType, srcInit);
+      // If 'srcInit' does not start with left-brace, try to convert it
+      // to 'destType'.
+      let destObject =
+        if (srcInit is expr) {
+        tryAgain:
+          if (canConvertExprToType(srcInit.expr, destType)) {
+            // Can convert, so use this.
+            SemanticInitializer(expr:
+              convertExprToType(srcInit.expr, destType));
+          }
+          else if (isAggregate(destType)) {
+            // Dig one level down.
+            destPath := stepIntoAggregate(type, destPath);
+            destType := navigateType(wholeType, destPath);
+            goto tryAgain;
+          }
+          else {
+            error("Cannot convert {srcInit.expr} to {destType}.");
+          }
+        }
+        else {
+          // Initialize 'destType' with 'srcInit'.
+          initializeWithBraces(destType, srcInit);
+        }
 
       // Add that to 'wholeResult'.
       wholeResult :=
@@ -258,34 +274,24 @@ Algorithm:
     }
   }
 
-  // Given a 'destPath' to an element of 'wholeType', if it names a
-  // non-aggregate, return 'destPath' unchanged.  Otherwise, append
-  // first element designators until it names a non-aggregate, and
-  // return the resulting path.
-  fun stepIntoAggregate(wholeType: Type, destPath: sequence of Designator)
+  // Given an aggregate 'type', append one element to 'destPath' that
+  // steps down to the first member or element of 'type'.
+  fun stepIntoAggregate(type: Type, destPath: sequence of Designator)
     : sequence of Designator
   {
-    let destType = navigateType(wholeType, destPath);
-
-    if (destType is scalar) {
-      return destPath;
-    }
-
-    else if (destType is array) {
+    if (type is array) {
       if (type.array.size == 0) {
         error("Initialization of zero-length array requires explicit braces.");
       }
-      return stepIntoAggregate(wholeType,
-        destPath+[Designator(index: 0)]);
+      return destPath+[Designator(index: 0)];
     }
 
-    else if (destType is struct_or_union) {
-      if (destType.struct_or_union.fields is empty) {
+    else if (type is struct_or_union) {
+      if (type.struct_or_union.fields is empty) {
         error("Initialization of empty {type.struct_or_union.kind} " +
               " requires explicit braces.");
       }
-      return stepIntoAggregate(wholeType,
-        destPath+[Designator(field: destType.struct_or_union.fields[0].name)]);
+      return destPath+[Designator(field: destType.struct_or_union.fields[0].name)];
     }
 
     else {

@@ -9385,18 +9385,6 @@ Type *E_sizeofType::itcheck_x(Env &env, Expression *&replacement)
 }
 
 
-// Type check 'expr', given that it is being used to set the value of
-// something with type 'target', and so we can use that as the basis
-// for resolving the address of an overloaded function name.
-void tcheckExpression_possibleAddrOfOverload
-  (Env &env, Expression *&expr, Type const *target)
-{
-  LookupSet set;
-  tcheckExpression_set(env, expr, LF_TEMPL_PRIMARY, set);
-  env.possiblySetOverloadedFunctionVar(expr, legacyTypeNC(target), set);
-}
-
-
 Type *E_assign::itcheck_x(Env &env, Expression *&replacement)
 {
   ArgumentInfoArray argInfo(2);
@@ -10116,8 +10104,14 @@ SemanticInitializer * NULLABLE
 //
 // Otherwise, return NULL *without* type-checking 'inExpr->e'.
 //
+// If 'wasE_grouping', then 'inExpr->e' was originally an E_grouping,
+// but that was removed by the type checker.
+//
+// TODO: Maybe I should stop removing E_groupings?  This is awkward.
+//
 static SIN_stringLit * NULLABLE
-  ifStringLitInitsArrayOfChar(Env &env, IN_expr *inExpr, Type const *type)
+  ifStringLitInitsArrayOfChar(Env &env, IN_expr *inExpr, Type const *type,
+  bool wasE_grouping)
 {
   // Skip groups initially so we can diagnose parens in a moment.
   if (E_stringLit *stringLit = inExpr->e->skipGroups()->ifE_stringLit()) {
@@ -10125,7 +10119,7 @@ static SIN_stringLit * NULLABLE
       if (targetAT->eltType->isSomeKindOfCharType()) {
         SourceLoc loc = inExpr->loc;
 
-        if (inExpr->e->isE_grouping()) {
+        if (wasE_grouping || inExpr->e->isE_grouping()) {
           // C11 6.7.9/11 requires the initializer be a string literal,
           // and a parenthesized expression is not a literal.  GCC
           // agrees that this is invalid, although Clang does not (or
@@ -10143,9 +10137,7 @@ static SIN_stringLit * NULLABLE
           // This might be needed for Clang compatibility at some point.
         }
 
-        // We are committed to this intepretation, but have not yet
-        // type-checked the expression.  Do so now.  (We already know it
-        // is a string literal, so not much can go wrong.)
+        // We might not have type-checked the expression.
         inExpr->e->tcheck(env, inExpr->e);
 
         // TODO: Check that a narrow/wide string literal is only used
@@ -10194,17 +10186,65 @@ static SIN_stringLit * NULLABLE
 }
 
 
+// Return true if 'type' is an aggregate (array or struct) or a union to
+// be treated as an aggregate.
+static bool isAggregateOrUnion(Type const *type)
+{
+  if (type->isArrayType()) {
+    return true;
+  }
+  if (CompoundType const *ct = type->ifCompoundTypeC()) {
+    if (ct->isAggregate()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
 SemanticInitializer * NULLABLE
   IN_expr::tcheck(Env &env, Type const *target)
 {
-  // Possibly initialize a character array with a string literal.
-  if (SIN_stringLit *ssl =
-        ifStringLitInitsArrayOfChar(env, this, target)) {
-    return ssl;
+  SubobjectAccessPath dummy;
+  return tcheck_IN_expr(env, target, dummy, false /*allowedToDig*/);
+}
+
+
+SemanticInitializer * NULLABLE
+  IN_expr::tcheck_IN_expr(Env &env, Type const *target,
+  SubobjectAccessPath &destPath, bool allowedToDig)
+{
+  // Remember whether 'e' was an E_grouping.
+  bool wasE_grouping = e->isE_grouping();
+
+tryAgain:
+  // Type-check 'e' and use 'target' to resolve 'e' if it names an
+  // overloaded function.  This removes any E_grouping from 'e'.
+  //
+  // This has to be included in the 'tryAgain' step to handle a case
+  // like in/k0024.cc where overload resolution is required within a
+  // partially-bracketed initializer.
+  ErrorList overloadResolutionErrors;
+  {
+    // Save the errors from before the overload resolution attempt.
+    ErrorList prevErrors;
+    prevErrors.takeMessages(env.errors);
+
+    // Check 'e', and try to resolve overloading.
+    LookupSet set;
+    tcheckExpression_set(env, e, LF_TEMPL_PRIMARY, set);
+    env.possiblySetOverloadedFunctionVar(e, legacyTypeNC(target), set);
+
+    // Save the errors (if any) and restore the originals.
+    overloadResolutionErrors.takeMessages(env.errors);
+    env.errors.takeMessages(prevErrors);
   }
 
-  // Use 'target' to resolve 'e' if it names an overloaded function.
-  tcheckExpression_possibleAddrOfOverload(env, e, target);
+  // Possibly initialize a character array with a string literal.
+  if (SIN_stringLit *ssl =
+        ifStringLitInitsArrayOfChar(env, this, target, wasE_grouping)) {
+    return ssl;
+  }
 
   if (target->isSimple(ST_ERROR)) {
     // If we don't know the target type, there's not more we can do.
@@ -10231,12 +10271,39 @@ SemanticInitializer * NULLABLE
       "IN_expr at " << toString(loc) <<
       " converts to target type '" << target->toString() <<
       "' with: " << ic.debugString());
+
+    // We will not dig further; restore any overload errors.
+    env.errors.takeMessages(overloadResolutionErrors);
+  }
+  else if (allowedToDig && isAggregateOrUnion(target)) {
+    // C++ 14 8.5p13: "If the assignment-expression can initialize a
+    // member, the member is initialized.  Otherwise, if the member is
+    // itself a subaggregate, brace elision is assumed and the
+    // assignment-expression is considered for the initialization of the
+    // first member of the subaggregate."
+    //
+    // We just tried to initialize the member itself, and failed.  Now
+    // we dig into the aggregate to try initializing its first member
+    // instead.  But we have to keep track of how far we dig and reflect
+    // that in 'destPath' since the digging affects which subobject will
+    // be initialized after this expression.
+    TRACE("initializer",
+      "IN_expr at " << toString(loc) <<
+      " does not convert to aggregate target type '" << target->toString() <<
+      "', so we are digging down one level.");
+
+    target = destPath.stepIntoAggregate(env, target);
+    if (!target) {
+      return this;           // Error already reported.
+    }
+    goto tryAgain;
   }
   else {
-    env.error(e->type, stringb(
-      "cannot convert initializer '" << e->asString() <<
+    env.errors.takeMessages(overloadResolutionErrors);
+    env.error(e->type, loc, stringb(
+      "Cannot convert initializer '" << e->asString() <<
       "' with type '" << e->type->toString() <<
-      "' to type '" << target->toString() << "'"));
+      "' to type '" << target->toString() << "'."));
   }
 
   return this;
@@ -10438,22 +10505,6 @@ static SemanticInitializer * NULLABLE handleRedundantInitBraces(
 }
 
 
-// Return true if 'type' is an aggregate (array or struct) or a union to
-// be treated as an aggregate.
-static bool isAggregateOrUnion(Type const *type)
-{
-  if (type->isArrayType()) {
-    return true;
-  }
-  if (CompoundType const *ct = type->ifCompoundTypeC()) {
-    if (ct->isAggregate()) {
-      return true;
-    }
-  }
-  return false;
-}
-
-
 SemanticInitializer * NULLABLE
   IN_compound::tcheck(Env &env, Type const *wholeType)
 {
@@ -10477,7 +10528,8 @@ SemanticInitializer * NULLABLE
   if (inits.isNotEmpty()) {
     if (IN_expr *ie = inits.first()->ifIN_expr()) {
       if (SIN_stringLit *ssl =
-            ifStringLitInitsArrayOfChar(env, ie, wholeType)) {
+            ifStringLitInitsArrayOfChar(env, ie, wholeType,
+                                        false /*wasE_grouping*/)) {
         if (inits.count() > 1) {
           env.error(inits.nth(1)->loc, stringb(
             "While initializing character array type '" <<
@@ -10542,25 +10594,21 @@ SemanticInitializer * NULLABLE
     Type const *destType =
       destPath.navigateToType(env, 0 /*pathIndex*/, wholeType);
 
-    // If 'srcInit' does not start with left-brace, dig into the
-    // subobject until we reach something that is not an aggregate.
-    if (IN_expr *ie = srcInit->ifIN_expr()) {
-      // No skipGroups!  See 'ifStringLitInitsArrayOfChar'.
-      bool initIsStringLiteral = ie->e->isE_stringLit();
-
-      destType = destPath.stepIntoAggregate(env, destType,
-                                            initIsStringLiteral);
-      if (!destType) {
-        break;
-      }
-    }
-
-    // Check 'srcInit' and derive from it a semantic initializer.
     TRACE("initializer",
       "Initializer at " << toString(srcInit->loc) <<
       " has access path " << destPath.toString() <<
       " and object type '" << destType->toString() << "'.");
-    SemanticInitializer *srcSemInit = srcInit->tcheck(env, destType);
+
+    // Check 'srcInit' and derive from it a semantic initializer.
+    SemanticInitializer *srcSemInit;
+    if (IN_expr *ie = srcInit->ifIN_expr()) {
+      // This may append zeroes to 'destPath'.
+      srcSemInit = ie->tcheck_IN_expr(env, destType, destPath,
+                                      true /*allowedToDig*/);
+    }
+    else {
+      srcSemInit = srcInit->tcheck(env, destType);
+    }
 
     // Add 'srcSemInit' to the result so far.
     if (srcSemInit) {
