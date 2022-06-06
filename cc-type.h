@@ -1291,8 +1291,11 @@ public:
 
   // similar for a function type; the parameters will be added by
   // the caller after this function returns
+  //
+  // 2022-06-06: Removed the 'tunit' parameter because it makes little
+  // sense and the value that had been passed was uninitialized anyway.
   virtual FunctionType *syntaxFunctionType(SourceLoc loc,
-    Type *retType, D_func * /*nullable*/ syntax, TranslationUnit *tunit);
+    Type *retType, D_func * /*nullable*/ syntax);
 
   // and another for pointer-to-member
   virtual PointerToMemberType *syntaxPointerToMemberType(SourceLoc loc,

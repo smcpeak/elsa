@@ -2752,7 +2752,7 @@ Type *TypeFactory::syntaxReferenceType(SourceLoc loc,
 
 
 FunctionType *TypeFactory::syntaxFunctionType(SourceLoc loc,
-  Type *retType, D_func *syntax, TranslationUnit *tunit)
+  Type *retType, D_func *syntax)
 {
   return makeFunctionType(retType);
 }

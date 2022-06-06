@@ -4344,7 +4344,7 @@ void D_func::tcheck(Env &env, Declarator::Tcheck &dt)
   // build the function type; I do this after type checking the parameters
   // because it's convenient if 'syntaxFunctionType' can use the results
   // of checking them
-  FunctionType *ft = env.tfac.syntaxFunctionType(loc, dt.type, this, env.tunit);
+  FunctionType *ft = env.tfac.syntaxFunctionType(loc, dt.type, this);
   ft->flags = specialFunc;
   ext_tcheck_adjustFunctionType(env, dt, ft);
 

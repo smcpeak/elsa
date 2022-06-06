@@ -223,9 +223,6 @@ public:      // data
   ArrayStack<Variable*> builtinUnaryOperator[NUM_OVERLOADABLE_OPS];
   ObjArrayStack<CandidateSet> builtinBinaryOperator[NUM_OVERLOADABLE_OPS];
 
-  // TODO: eliminate this!
-  TranslationUnit *tunit;
-
   // when this is true, all template function instantiations are
   // delayed until the end of the translation unit
   bool delayFunctionInstantiation;
