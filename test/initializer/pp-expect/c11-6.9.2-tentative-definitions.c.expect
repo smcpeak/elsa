@@ -1,0 +1,46 @@
+// ---- START ----
+// -*- c++ -*-
+struct Incomplete;
+
+struct LaterComplete;
+
+struct LaterComplete later1;
+
+struct LaterComplete {
+  int x;
+  int y;
+};
+
+struct S {
+  int x;
+  int y;
+};
+
+struct S tentThenFirm;
+
+struct S tentThenFirm = { 1, 2 };
+
+struct S tentThenFirmThenTent;
+
+struct S tentThenFirmThenTent = { 3, 4 };
+
+struct S tentThenFirmThenTent;
+
+int tentTent;
+
+int tentTent;
+
+void __elsa_checkTentativeDefinitions(int dummy, ...)
+{}
+
+int main()
+{
+  __elsa_checkTentativeDefinitions(0, "later1 " "tentTent ");
+  return later1.x == 0 && later1.y == 0 && tentThenFirm.x == 1 &&
+           tentThenFirm.y == 2 && tentThenFirmThenTent.x == 3 &&
+           tentThenFirmThenTent.y == 4 && tentTent == 0 && 1?
+           0 :
+           1;
+}
+
+// ---- STOP ----

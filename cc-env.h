@@ -187,6 +187,7 @@ public:      // data
   StringRef special_cause_xfailure;
   StringRef special_checkMakeASTTypeId;
   StringRef special_checkIsGNUAlias;
+  StringRef special_checkTentativeDefinitions;
   StringRef special__Static_assert;
   // ---- END: special names ----
 
@@ -239,10 +240,20 @@ public:      // data
   // an an 'asm' directive (see TF_asm::itcheck)
   string collectLookupResults;
 
+  // When non-empty, this string has been supplied by the test, and at
+  // the end of processing, we will check that it matches the set of
+  // tentatively-defined variables.
+  string expectedTentativeDefinitions;
+
 private:     // funcs
-  // old
-  //CompoundType *instantiateClass(
-  //  CompoundType *tclass, FakeList<TemplateArgument> *args);
+  // In C, compute the set of Variables that use a tentative definition.
+  // This runs after the main pass of type-checking a TU.
+  void computeTentativeDefinitions(TranslationUnit *tunit);
+
+  // If a special testing hook has been used to specify the expected set
+  // of Variables that use tentative definitions, check that that agrees
+  // with what we actually computed.
+  void possiblyCheckTentativeDefinitions();
 
   // these are intended to help build the initialization-time stuff,
   // not build functions that result from the user's input syntax

@@ -136,14 +136,18 @@ class TopForm (SourceLoc loc) {
   // extern "C" { /*...*/ }
   -> TF_linkage(StringRef linkageType, TranslationUnit forms);
 
-  // linkage spec with one form and no braces; it turns out this has
-  // different semantics [C++98 7.5 para 7]
+  // Linkage spec with one form and no braces.  It turns out this has
+  // different semantics than a TF_linkage with one element [C++98
+  // 7.5p7].
   -> TF_one_linkage(StringRef linkageType, TopForm form);
 
   // assembly definition at toplevel
   -> TF_asm(AsmDefinition ad);
 
   // namespace definition [C++98 7.3.1]
+  //
+  // TODO: Why did I make TU a child of TF_linkage, but then use an
+  // explicit list of TopForm here?  They should both work the same way.
   -> TF_namespaceDefn(StringRef /*nullable*/ name, ASTList<TopForm> forms);
 
   // one of three namespace-related declarations that can occur
@@ -408,6 +412,12 @@ class Declarator (
   public void setDeclaratorId(PQName *n);
 
   public SourceLoc getLoc() const;
+
+  // Apply the rules of C11 6.9.2 this declarator, given the flags on
+  // the containing declaration.  This is only applicable to C, not C++,
+  // and to declarators at file scope.
+  public DefinitionTentativeness
+    getDefinitionTentativeness(DeclFlags declflags) const;
 }
 
 

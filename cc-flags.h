@@ -58,7 +58,7 @@ enum CVFlags {
   NUM_CVFLAGS = 3           // # bits set to 1 in CV_ALL
 };
 
-extern char const * const cvFlagNames[NUM_CVFLAGS];      // 0="const", 1="volatile", 2="owner"
+extern char const * const cvFlagNames[NUM_CVFLAGS];      // 0="const", 1="volatile", 2="restrict"
 string toString(CVFlags cv);
 
 ENUM_BITWISE_OPS(CVFlags, CV_ALL)
@@ -111,6 +111,12 @@ enum DeclFlags {
   // 'IntegrityVisitor::checkDefinitionTypedefVar', hence that function
   // provides a reasonably precise specification.
   //
+  // TODO: Independent of the need to audit and document these flags,
+  // they should be split off from DeclFlags.  They are not really
+  // related to declarations, rather to the entities that declarations
+  // declare (which I call "Variables").  Also the space of available
+  // bits is now quite crowded.
+  //
   DF_ENUMERATOR  = 0x00000400,    // true for values in an 'enum' (enumerators in the terminology of the C++ standard)
   DF_GLOBAL      = 0x00000800,    // set for globals, unset for locals and members of classes and namespaces
   DF_INITIALIZED = 0x00001000,    // true if has been declared with an initializer (or, for functions, with code)
@@ -132,8 +138,23 @@ enum DeclFlags {
   DF_GNU_EXTERN_INLINE            // dsw: was extern inline (record since might be changed to static inline)
                  = 0x02000000,
 
+  // When this flag is set in Variable::flags, it means there was (in
+  // this translation unit) at least one tentative definition (C11
+  // 6.9.2p2), and no (non-tentative) external definition (C11 6.9.2p1).
+  // Consequently, this Variable must be regarded as being defined in
+  // this TU, initialized to zero (C11 6.7.9p10), with the type as of
+  // the end of the TU.  (Note: The type might be incomplete at the
+  // place a tentative definition occurs, but must be complete by the
+  // end of the TU.)  This is only applicable to C, not C++.
+  //
+  // Naively, one might expect this flag to imply DF_DEFINITION, but I
+  // make no such promise because I have not comprehensively audited the
+  // latter flag.  It remains under cloud of "these flags are a mess",
+  // above.
+  DF_USES_TENTATIVE_DEFINITION
+                 = 0x00008000,
+
   // These flags are unused.
-  DF_UNUSED1     = 0x00008000,
   DF_UNUSED2     = 0x00020000,
   DF_UNUSED3     = 0x00040000,
 
@@ -575,6 +596,28 @@ enum SpecialExpr {
 };
 
 char const *toString(SpecialExpr se);
+
+
+// -------------------- DefinitionTentativeness ------------------------
+// Applicable only in C (not C++), this describes the degree to which a
+// declarator is a definition.
+//
+// This name is fairly long and inelegant, but the concept it models is
+// comparably ugly, and I want to ensure it is easy to find relevant
+// code by grepping.
+enum DefinitionTentativeness {
+  // Definitely not a definition: 'extern' with no initializer.
+  DT_FIRM_ANTI_DEFINITION = 0,
+
+  // Implies that this TU defines the symbol, either because there is
+  // also a firm definition (which provides the initial value), or
+  // because the tentative definition(s) cause a zero-initialized
+  // definition to be effectively synthesized.
+  DT_TENTATIVE_DEFINITION = 1,
+
+  // Definitely a definition, as it provides an explicit initial value.
+  DT_FIRM_DEFINITION      = 2,
+};
 
 
 #endif // CC_FLAGS_H

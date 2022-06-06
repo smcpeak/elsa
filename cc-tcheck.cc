@@ -205,6 +205,11 @@ void applyExternC(TopForm *form, DeclFlags flags)
   }
 }
 
+
+// Note: This function is not a place to add code that will only run one
+// time per TU because it is called recursively, as TU is used as a
+// child of TF_linkage.  Instead, Env::tcheckTranslationUnit is the
+// place to do that.
 void TranslationUnit::tcheck(Env &env)
 {
   // dsw: this is copied from TF_linkage::itcheck(); per Scott's
@@ -7482,6 +7487,18 @@ static Type *internalTestingHooks
         else {
           // Success!
         }
+        return env.getSimpleType(ST_VOID);
+      }
+    }
+    env.error("invalid special function call");
+    return env.getSimpleType(ST_VOID);
+  }
+
+  if (funcName == env.special_checkTentativeDefinitions) {
+    if (fl_count(args) == 2) {
+      Expression *e2 = fl_nth(args, 1)->expr;
+      if (E_stringLit *strlit = e2->ifE_stringLit()) {
+        env.expectedTentativeDefinitions = strlit->m_stringData.toString();
         return env.getSimpleType(ST_VOID);
       }
     }

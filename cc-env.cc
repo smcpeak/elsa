@@ -1,16 +1,26 @@
 // cc-env.cc            see license.txt for copyright and terms of use
 // code for cc-env.h
 
-#include "cc-env.h"        // this module
+#include "cc-env.h"                    // this module
 
-#include "trace.h"         // tracingSys
-#include "strtable.h"      // StringTable
-#include "cc-lang.h"       // CCLang
-#include "strutil.h"       // suffixEquals, prefixEquals
-#include "overload.h"      // OVERLOADTRACE
-#include "mtype.h"         // MType
-#include "implconv.h"      // ImplicitConversion
-#include "ast_build.h"     // makeASTTypeId
+// elsa
+#include "ast_build.h"                 // makeASTTypeId
+#include "cc-lang.h"                   // CCLang
+#include "implconv.h"                  // ImplicitConversion
+#include "mtype.h"                     // MType
+#include "overload.h"                  // OVERLOADTRACE
+#include "strutil.h"                   // suffixEquals, prefixEquals
+
+// smbase
+#include "string-utils.h"              // join
+#include "strtable.h"                  // StringTable
+#include "trace.h"                     // tracingSys
+
+// libc++
+#include <algorithm>                   // std::max, std::sort
+#include <map>                         // std::map
+#include <string>                      // std::string
+#include <vector>                      // std::vector
 
 
 // forwards in this file
@@ -535,6 +545,7 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
   special_cause_xfailure = declareSpecialFunction("__cause_xfailure")->name;
   special_checkMakeASTTypeId = declareSpecialFunction("__elsa_checkMakeASTTypeId")->name;
   special_checkIsGNUAlias = declareSpecialFunction2("__elsa_checkIsGNUAlias")->name;
+  special_checkTentativeDefinitions = declareSpecialFunction2("__elsa_checkTentativeDefinitions")->name;
 
   // This is standard as of C11, and suitable as a standard replacement
   // for many uses of '__elsa_constEval'.
@@ -1002,6 +1013,90 @@ void Env::tcheckTranslationUnit(TranslationUnit *tunit)
 
     instantiationLocStack.empty();
     xassert(env.scope()->isGlobalScope());
+  }
+
+  computeTentativeDefinitions(tunit);
+
+  possiblyCheckTentativeDefinitions();
+}
+
+
+void Env::computeTentativeDefinitions(TranslationUnit *tunit)
+{
+  if (lang.isCplusplus) {
+    return;
+  }
+
+  // Map from each file-scope object-type Variable for which we have
+  // seen either a tentative or firm definition to its tentativeness.
+  std::map<Variable*, DefinitionTentativeness> varDefnStatus;
+
+  // Populate 'varDefnStatus' by scanning everything declared at file
+  // scope.
+  FOREACH_ASTLIST(TopForm, tunit->topForms, tfIter) {
+    TopForm const *tf = tfIter.data();
+
+    if (TF_decl const *tfd = tf->ifTF_declC()) {
+      DeclFlags dflags = tfd->decl->dflags;
+      FAKELIST_FOREACH(Declarator, tfd->decl->decllist, declarator) {
+        if (declarator->type->isFunctionType()) {
+          // Only object types are relevant here.
+          continue;
+        }
+
+        if (DefinitionTentativeness defnTent =
+              declarator->getDefinitionTentativeness(dflags)) {
+          DefinitionTentativeness &existing =
+            varDefnStatus[declarator->var];
+
+          // A firm definition overrides a tentative definition.
+          existing = std::max(existing, defnTent);
+        }
+      }
+    }
+  }
+
+  // Apply DF_USES_TENTATIVE_DEFINITION to anything that remains with
+  // status DF_TENTATIVE_DEFINITION.
+  for (auto it : varDefnStatus) {
+    Variable *var = it.first;
+    DefinitionTentativeness defnTent = it.second;
+
+    if (defnTent == DT_TENTATIVE_DEFINITION) {
+      var->setFlag(DF_USES_TENTATIVE_DEFINITION);
+    }
+  }
+}
+
+
+void Env::possiblyCheckTentativeDefinitions()
+{
+  if (expectedTentativeDefinitions.empty()) {
+    // This input file did not use the special testing hook.
+    return;
+  }
+
+  // Gather the set of Variables that use tentative definitions.
+  std::vector<std::string> tentDefnSet;
+  for (auto it = env.globalScope()->getVariableIter();
+       !it.isDone(); it.adv()) {
+    Variable *var = it.value();
+
+    if (var->hasFlag(DF_USES_TENTATIVE_DEFINITION)) {
+      tentDefnSet.push_back(std::string(var->name) + " ");
+    }
+  }
+
+  // Concatenate them into a string in sorted order.
+  std::sort(tentDefnSet.begin(), tentDefnSet.end());
+  std::string actual = join(tentDefnSet, "");
+
+  // Compare to what the test specified.
+  if (actual != std::string(expectedTentativeDefinitions)) {
+    error(stringb(
+      "__elsa_checkTentativeDefinitions failed:\n" <<
+      "  actual: " << actual << '\n' <<
+      "  expect: " << expectedTentativeDefinitions));
   }
 }
 

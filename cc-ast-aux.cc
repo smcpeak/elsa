@@ -926,6 +926,21 @@ SourceLoc Declarator::getLoc() const
 }
 
 
+DefinitionTentativeness Declarator::getDefinitionTentativeness(
+  DeclFlags declflags) const
+{
+  if (init) {
+    return DT_FIRM_DEFINITION;         // C11 6.9.2p1
+  }
+
+  if (declflags & DF_EXTERN) {
+    return DT_FIRM_ANTI_DEFINITION;
+  }
+
+  return DT_TENTATIVE_DEFINITION;      // C11 6.9.2p2
+}
+
+
 void Declarator::printExtras(ostream &os, int indent) const
 {
   if (var) {
