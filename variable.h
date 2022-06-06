@@ -184,9 +184,6 @@ public:
   // systems can monitor flag modifications
   virtual void setFlagsTo(DeclFlags f);
 
-  // some convenient interpretations of 'flags'
-  bool hasAddrTaken() const { return hasFlag(DF_ADDRTAKEN); }
-
   // Unfortunately, the exact meaning of this is unclear due to
   // confusion about templates and their instantiations.
   bool isGlobal() const { return hasFlag(DF_GLOBAL); }

@@ -176,10 +176,10 @@ char const * const declFlagNames[NUM_DECLFLAGS] = {
   "(initialized)",
   "(builtin)",
   "(bound tparam)", // 14
-  "(addrtaken)",
+  "(unused 1)",
   "(parameter)",
-  "(universal)",
-  "(existential)",
+  "(unused 2)",
+  "(unused 3)",
   "(member)",       // 19
   "(definition)",
   "(inline_defn)",

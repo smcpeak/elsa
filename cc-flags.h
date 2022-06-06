@@ -132,14 +132,10 @@ enum DeclFlags {
   DF_GNU_EXTERN_INLINE            // dsw: was extern inline (record since might be changed to static inline)
                  = 0x02000000,
 
-  // These flags are used by the old (direct C -> VC) verifier client
-  // analysis; I will remove them once I finish transitioning to the
-  // VML-based verifier.  In a pinch, one of these values could be
-  // re-used for something that only occurs in C++ code, since the old
-  // verifier only works with C code.
-  DF_ADDRTAKEN   = 0x00008000,    // true if it's address has been (or can be) taken
-  DF_UNIVERSAL   = 0x00020000,    // universally-quantified variable
-  DF_EXISTENTIAL = 0x00040000,    // existentially-quantified
+  // These flags are unused.
+  DF_UNUSED1     = 0x00008000,
+  DF_UNUSED2     = 0x00020000,
+  DF_UNUSED3     = 0x00040000,
 
   ALL_DECLFLAGS  = 0xFFFFFFFF,
   NUM_DECLFLAGS  = 32             // # bits set to 1 in ALL_DECLFLAGS
