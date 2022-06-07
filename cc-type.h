@@ -675,6 +675,11 @@ public:     // funcs
 
   bool isVariableLengthArrayType() const;
 
+  // Return true for a "floating type" as defined by C11 6.2.5p11.  That
+  // is, the type is a possibly cv-qualified float, [long] double, or
+  // _Complex.
+  bool isFloatingType() const;
+
   // ST_DEPENDENT or TypeVariable or PseudoInstantiation or DependentQType
   bool isGeneralizedDependent() const;
   bool containsGeneralizedDependent() const;   // anywhere in Type tree

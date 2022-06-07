@@ -8973,9 +8973,25 @@ Type *E_cast::itcheck_x(Env &env, Expression *&replacement)
   // check the source expression
   expr->tcheck(env, expr);
 
-  // TODO: check that the cast makes sense
+  Type *resultType = ctype->getType();
 
-  Type *ret = ctype->getType();
+  // C11 6.5.4p4: Cannot cast between pointer and float types.  (And I
+  // assume the same is true in C++, although it would be a consequence
+  // of the absence of a rule allowing it, since I do not see an
+  // explicit prohibition.)
+  Type *srcRvalType = expr->type->asRval();
+  if (srcRvalType->isPointerType() && resultType->isFloatingType()) {
+    env.error(stringb(
+      "Cannot convert pointer type '" << srcRvalType->toString() <<
+      "' to floating type '" << resultType->toString() <<
+      "' (C11 6.5.4p4)."));
+  }
+  if (srcRvalType->isFloatingType() && resultType->isPointerType()) {
+    env.error(stringb(
+      "Cannot convert floating type '" << srcRvalType->toString() <<
+      "' to pointer type '" << resultType->toString() <<
+      "' (C11 6.5.4p4)."));
+  }
 
   // This is a gnu extension: in C mode, if the expr is an lvalue,
   // make the returned type an lvalue.  This is in direct
@@ -8983,12 +8999,12 @@ Type *E_cast::itcheck_x(Env &env, Expression *&replacement)
   // cast does not yield an lvalue".
   // http://gcc.gnu.org/onlinedocs/gcc-3.1/gcc/Lvalues.html
   if (env.lang.lvalueFlowsThroughCast) {
-    if (expr->getType()->isReference() && !ret->isReference()) {
-      ret = env.makeReferenceType(ret);
+    if (expr->getType()->isReference() && !resultType->isReference()) {
+      resultType = env.makeReferenceType(resultType);
     }
   }
 
-  return ret;
+  return resultType;
 }
 
 

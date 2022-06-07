@@ -1416,6 +1416,18 @@ bool BaseType::isVariableLengthArrayType() const
   return false;
 }
 
+
+bool BaseType::isFloatingType() const
+{
+  if (CVAtomicType const *cvAtomic = this->ifCVAtomicTypeC()) {
+    if (SimpleType const *simple = cvAtomic->atomic->ifSimpleTypeC()) {
+      return isFloatType(simple->type);
+    }
+  }
+  return false;
+}
+
+
 bool BaseType::isReferenceToConst() const {
   return isReferenceType() && asReferenceTypeC()->atType->isConst();
 }
