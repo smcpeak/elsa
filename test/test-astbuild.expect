@@ -3,6 +3,8 @@ int main(void)
 {
   int x = 3;
   x, &x;
+  int arr[3];
+  arr[1] = 6;
   return (struct S){ 3, 4 };
 }
 

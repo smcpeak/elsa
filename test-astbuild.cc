@@ -311,6 +311,27 @@ void TestASTSynth::populateBody(S_compound *body)
     body->stmts.append(sexpr);
   }
 
+  // "int arr[3];"
+  Type *t_int3 = m_typeFactory.makeArrayType(t_int, 3);
+  Variable *varr = makeVar("arr", t_int3);
+  {
+    Declaration *decl = makeDeclaration(varr, DC_S_DECL);
+    Statement *sdecl = new S_decl(loc, decl);
+    body->stmts.append(sdecl);
+  }
+
+  // "arr[1] = 6;"
+  {
+    E_binary *brackets =
+      makeE_binary(makeE_variable(varr), BIN_BRACKETS, makeE_intLit(1));
+    xassert(brackets->type->isReferenceType() &&
+            brackets->type->asRval()->equals(t_int));
+    E_assign *assign =
+      makeE_assign(brackets, BIN_ASSIGN, makeE_intLit(6));
+    Statement *sexpr = new S_expr(loc, new FullExpression(assign));
+    body->stmts.append(sexpr);
+  }
+
   body->stmts.append(new S_return(loc, new FullExpression(
     testMakeE_compoundLit())));
 }

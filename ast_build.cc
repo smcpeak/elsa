@@ -674,6 +674,15 @@ Type *ElsaASTBuild::typeForE_binary(
         // footnote 114).
         return rhsType;
       }
+
+    case BIN_BRACKETS:
+      if (ArrayType const *at = lhsType->ifArrayTypeC()) {
+        return m_typeFactory.makeReferenceType(at->eltType);
+      }
+      else {
+        PointerType const *pt = lhsType->asPointerTypeC();
+        return m_typeFactory.makeReferenceType(pt->atType);
+      }
   }
 }
 
