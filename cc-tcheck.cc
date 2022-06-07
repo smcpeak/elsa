@@ -8666,7 +8666,8 @@ Type *E_binary::itcheck_x(Env &env, Expression *&replacement)
 
     case BIN_MINUS:               // -
       // case: p - p
-      if (lhsType->isPointerType() && rhsType->isPointerType() ) {
+      if (lhsType->isPointerType() && rhsType->isPointerType()) {
+        // TODO: This is wrong.  I need to add ptrdiff_t to TypeSizes.
         return env.getSimpleType(ST_INT);
       }
 

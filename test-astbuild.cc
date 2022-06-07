@@ -273,10 +273,12 @@ void TestASTSynth::populateBody(S_compound *body)
 {
   // TODO: Test more of the Expression builders.
 
+  // 'x' with type 'int'.
+  Type *t_int = m_typeFactory.getSimpleType(ST_INT);
+  Variable *vx = makeVar("x", t_int);
+
   // "int x = 3;"
   {
-    Type *t_int = m_typeFactory.getSimpleType(ST_INT);
-    Variable *vx = makeVar("x", t_int);
     Declaration *decl = makeDeclaration(vx, DC_S_DECL);
 
     Expression *three = makeE_intLit(3);
@@ -289,6 +291,24 @@ void TestASTSynth::populateBody(S_compound *body)
     Statement *sdecl = new S_decl(loc, decl);
     xassert(printASTNodeToString(m_lang, sdecl) == "int x = 3;");
     body->stmts.append(sdecl);
+  }
+
+  // Make "x, &x;" and test that the resulting subexpression types are
+  // right, particularly for BIN_COMMA.
+  {
+    E_variable *evar = makeE_variable(vx);
+    xassert(evar->type->equals(t_int));
+
+    E_addrOf *eao = makeE_addrOf(makeE_variable(vx));
+    xassert(eao->type->isPointerType());
+    xassert(eao->type->asPointerType()->atType->equals(t_int));
+
+    E_binary *comma = makeE_binary(evar, BIN_COMMA, eao);
+    xassert(comma->type->equals(eao->type));
+
+    Statement *sexpr = new S_expr(loc, new FullExpression(comma));
+    xassert(printASTNodeToString(m_lang, sexpr) == "x, &x;");
+    body->stmts.append(sexpr);
   }
 
   body->stmts.append(new S_return(loc, new FullExpression(

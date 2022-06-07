@@ -4,6 +4,7 @@
 #include "cc-flags.h"                  // this module
 
 // elsa
+#include "cc-lang.h"                   // CCLang
 #include "type-sizes.h"                // TypeSize
 
 // smbase
@@ -308,6 +309,17 @@ bool isComplexOrImaginary(SimpleTypeId id)
 int simpleTypeReprSize(TypeSizes const &typeSizes, SimpleTypeId id)
 {
   return typeSizes.getSize(simpleTypeSTS(id));
+}
+
+
+SimpleTypeId getBooleanOperatorResultSimpleTypeId(CCLang const &lang)
+{
+  if (lang.isCplusplus) {
+    return ST_BOOL;
+  }
+  else {
+    return ST_INT;
+  }
 }
 
 

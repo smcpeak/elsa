@@ -19,6 +19,7 @@
 #define CC_FLAGS_H
 
 // elsa
+#include "cc-lang-fwd.h"               // CCLang
 #include "scalar-type-set.h"           // ScalarTypeSet
 #include "type-sizes-fwd.h"            // TypeSizes
 
@@ -300,6 +301,9 @@ bool isComplexOrImaginary(SimpleTypeId id);
 int simpleTypeReprSize(TypeSizes const &typeSizes, SimpleTypeId id);
 
 inline char const *toString(SimpleTypeId id)        { return simpleTypeName(id); }
+
+// Return ST_BOOL in C++ but ST_INT in C.
+SimpleTypeId getBooleanOperatorResultSimpleTypeId(CCLang const &lang);
 
 
 // ---------------------------- UnaryOp ---------------------------

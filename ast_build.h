@@ -180,6 +180,11 @@ public:      // methods
 
   E_effect *makeE_effect(EffectOp op, Expression *expr);
 
+  // Compute the type that an E_binary should have with the given
+  // children.
+  Type *typeForE_binary(
+    Expression *e1, BinaryOp op, Expression *e2);
+
   E_binary *makeE_binary(
     Expression *e1, BinaryOp op, Expression *e2);
 

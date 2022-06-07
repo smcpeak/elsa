@@ -5,6 +5,7 @@
 
 // elsa
 #include "ast_build.h"                 // makeASTTypeId
+#include "cc-flags.h"                  // getBooleanOperatorResultSimpleTypeId, etc.
 #include "cc-lang.h"                   // CCLang
 #include "implconv.h"                  // ImplicitConversion
 #include "mtype.h"                     // MType
@@ -2787,12 +2788,7 @@ Type *Env::type_info_const_ref()
 
 CVAtomicType *Env::getBooleanOperatorResultType()
 {
-  if (lang.isCplusplus) {
-    return getSimpleType(ST_BOOL);
-  }
-  else {
-    return getSimpleType(ST_INT);
-  }
+  return getSimpleType(getBooleanOperatorResultSimpleTypeId(lang));
 }
 
 

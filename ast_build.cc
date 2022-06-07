@@ -594,15 +594,95 @@ E_effect *ElsaASTBuild::makeE_effect(
 }
 
 
+Type *ElsaASTBuild::typeForE_binary(
+  Expression *e1, BinaryOp op, Expression *e2)
+{
+  // The code here is similar to computation in E_binary::itcheck_x.  It
+  // is not ideal to repeat this, but it's not obvious how to factor the
+  // commonality without making a mess.
+
+  // For most operators, we do lvalue to rvalue conversion.
+  Type *lhsType = e1->type->asRval();
+  Type *rhsType = e2->type->asRval();
+
+  switch (op) {
+    default:
+      xunimp("typeForE_binary: unimplemented operator");
+
+    case BIN_EQUAL:
+    case BIN_NOTEQUAL:
+    case BIN_LESS:
+    case BIN_GREATER:
+    case BIN_LESSEQ:
+    case BIN_GREATEREQ:
+    case BIN_AND:
+    case BIN_OR:
+      return m_typeFactory.getSimpleType(
+               getBooleanOperatorResultSimpleTypeId(m_lang));
+
+    case BIN_PLUS:
+      // case: p + n
+      if (lhsType->isPointerType()) {
+        return lhsType;
+      }
+
+      // case: n + p
+      if (lhsType->isIntegerType() && rhsType->isPointerType()) {
+        return rhsType;
+      }
+
+      return usualArithmeticConversions(m_typeFactory, lhsType, rhsType);
+
+    case BIN_MINUS:
+      // case: p - p
+      if (lhsType->isPointerType() && rhsType->isPointerType()) {
+        // TODO: This is wrong.  I need to add ptrdiff_t to TypeSizes.
+        return m_typeFactory.getSimpleType(ST_INT);
+      }
+
+      // case: p - n
+      if (lhsType->isPointerType()) {
+        return lhsType;
+      }
+
+      return usualArithmeticConversions(m_typeFactory, lhsType, rhsType);
+
+    case BIN_MULT:
+    case BIN_DIV:
+    case BIN_MOD:
+      return usualArithmeticConversions(m_typeFactory, lhsType, rhsType);
+
+    case BIN_LSHIFT:
+    case BIN_RSHIFT:
+    case BIN_BITAND:
+    case BIN_BITXOR:
+    case BIN_BITOR:
+    case BIN_MINIMUM:
+    case BIN_MAXIMUM:
+      // I'll assume this is good enough.
+      return lhsType;
+
+    case BIN_COMMA:
+      if (m_lang.isCplusplus) {
+        // In C++, "the result is of the same value category as its
+        // right operand" (C++14 5.19p1), where "value category" is
+        // defined in C++14 3.10p1 and includes things like "lvalue".
+        return e2->type;
+      }
+      else {
+        // In C, a comma expression is not an lvalue (C11 6.5.17p2,
+        // footnote 114).
+        return rhsType;
+      }
+  }
+}
+
+
 E_binary *ElsaASTBuild::makeE_binary(
   Expression *e1, BinaryOp op, Expression *e2)
 {
   E_binary *bin = new E_binary(e1, op, e2);
-
-  // TODO: There are a lot of rules about how to properly compute the
-  // type here.
-
-  bin->type = e1->type->asRval();
+  bin->type = typeForE_binary(e1, op, e2);
   return bin;
 }
 
