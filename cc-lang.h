@@ -174,9 +174,8 @@ public:      // data
   // string literals arrays of (nonconst) chars.
   bool stringLitCharsAreConst;
 
-  // if the argument to a cast is an lvalue, make the cast expression
-  // have lvalue type
-  bool lvalueFlowsThroughCast;
+  // 2022-06-07: Removed 'lvalueFlowsThroughCast' since it corresponds
+  // to a GCC extension that was removed long ago.
 
   // when true, 'restrict' is a keyword
   bool restrictIsAKeyword;

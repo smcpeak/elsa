@@ -8993,17 +8993,6 @@ Type *E_cast::itcheck_x(Env &env, Expression *&replacement)
       "' (C11 6.5.4p4)."));
   }
 
-  // This is a gnu extension: in C mode, if the expr is an lvalue,
-  // make the returned type an lvalue.  This is in direct
-  // contradiction to the C99 spec: Section 6.5.4, footnote 85: "A
-  // cast does not yield an lvalue".
-  // http://gcc.gnu.org/onlinedocs/gcc-3.1/gcc/Lvalues.html
-  if (env.lang.lvalueFlowsThroughCast) {
-    if (expr->getType()->isReference() && !resultType->isReference()) {
-      resultType = env.makeReferenceType(resultType);
-    }
-  }
-
   return resultType;
 }
 

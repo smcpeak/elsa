@@ -17,8 +17,8 @@ Foo foo8, * const foo9;
 Foo f(Foo *x, void *p)
 {
   Foo local_foo;
-  x = ISC(SC_LVAL_TO_RVAL, /*Foo*/Foo_struct *, (Foo *)p);
-  return ISC(SC_LVAL_TO_RVAL, Foo_struct, (Foo)(*x));
+  x = (Foo *)p;
+  return (Foo)(*x);
 }
 
 // ---- STOP ----

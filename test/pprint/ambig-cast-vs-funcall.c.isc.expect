@@ -9,10 +9,10 @@ int f1(S b, int choice)
 {
   typedef int a;
   if (ISC(SC_LVAL_TO_RVAL, int, choice)) {
-    return ISC(SC_LVAL_TO_RVAL, int, (a)b.c);
+    return (a)b.c;
   }
   else {
-    return ISC(SC_LVAL_TO_RVAL, int, (a)b.c);
+    return (a)b.c;
   }
 }
 

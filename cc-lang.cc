@@ -71,9 +71,6 @@ void CCLang::ANSI_C89()
   inlineImpliesStaticLinkage = false;
   stringLitCharsAreConst = false; // Didn't check C89; C99 says they are non-const
 
-  // C99 spec: Section 6.5.4, footnote 85: "A cast does not yield an lvalue".
-  lvalueFlowsThroughCast = false;
-
   restrictIsAKeyword = false;
 
   setPedantic(B3_TRUE);
@@ -130,9 +127,6 @@ void CCLang::GNU_C_extensions()
   assumeNoSizeArrayHasSizeOne = true;
   handleExternInlineSpecially = true;
   declareGNUBuiltins = true;
-
-  // http://gcc.gnu.org/onlinedocs/gcc-3.1/gcc/Lvalues.html
-  lvalueFlowsThroughCast = true;
 
   allowNewlinesInStringLits = true;
 
@@ -209,7 +203,6 @@ void CCLang::ANSI_Cplusplus()
   handleExternInlineSpecially = false;
   inlineImpliesStaticLinkage = true;
   stringLitCharsAreConst = true; // Cppstd says they are const.
-  lvalueFlowsThroughCast = false;
   restrictIsAKeyword = false;
 
   setPedantic(B3_TRUE);
@@ -327,7 +320,6 @@ string CCLang::toString() {
   PRINT(handleExternInlineSpecially);
   PRINT(inlineImpliesStaticLinkage);
   PRINT(stringLitCharsAreConst);
-  PRINT(lvalueFlowsThroughCast);
   PRINT(restrictIsAKeyword);
   PRINT(m_pedanticAllowEmptyStructsInC);
   PRINT(m_pedanticAllowZeroSizeArrays);
