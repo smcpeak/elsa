@@ -772,8 +772,9 @@ class Expression {
      }
 
   -> E_cast {
-       // idempotency for type definitions in casts
+       // Idempotency for type definitions in casts.
        public bool tcheckedType = false;
+       custom debugPrint { PRINT_BOOL(tcheckedType); }
      }
 
   -> E_sizeofType {
