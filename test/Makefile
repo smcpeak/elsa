@@ -83,6 +83,7 @@ TESTS += pprint/attr-may-alias.c
 TESTS += pprint/big-for-loop.c
 TESTS += pprint/bitfield.c
 TESTS += pprint/builtin-offsetof.c
+TESTS += pprint/cast-array-to-int.c
 TESTS += pprint/compound-after-label.c
 TESTS += pprint/const-enum.c
 TESTS += pprint/const-struct.c

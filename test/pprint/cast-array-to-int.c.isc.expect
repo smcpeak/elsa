@@ -1,0 +1,18 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+typedef unsigned long uintptr_t;
+
+extern int arr[];
+
+uintptr_t f1()
+{
+  uintptr_t p;
+  p = (uintptr_t)arr;
+  return ISC(SC_LVAL_TO_RVAL, unsigned long, p);
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0
