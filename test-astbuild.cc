@@ -293,6 +293,12 @@ void TestASTSynth::populateBody(S_compound *body)
     body->stmts.append(sdecl);
   }
 
+  // "x = 4;"
+  {
+    E_assign *assign = makeVarAssign(vx, makeE_intLit(4));
+    body->stmts.append(makeS_expr(loc, assign));
+  }
+
   // Make "x, &x;" and test that the resulting subexpression types are
   // right, particularly for BIN_COMMA.
   {
@@ -306,7 +312,7 @@ void TestASTSynth::populateBody(S_compound *body)
     E_binary *comma = makeE_binary(evar, BIN_COMMA, eao);
     xassert(comma->type->equals(eao->type));
 
-    Statement *sexpr = new S_expr(loc, new FullExpression(comma));
+    Statement *sexpr = makeS_expr(loc, comma);
     xassert(printASTNodeToString(m_lang, sexpr) == "x, &x;");
     body->stmts.append(sexpr);
   }
@@ -328,7 +334,7 @@ void TestASTSynth::populateBody(S_compound *body)
             brackets->type->asRval()->equals(t_int));
     E_assign *assign =
       makeE_assign(brackets, BIN_ASSIGN, makeE_intLit(6));
-    Statement *sexpr = new S_expr(loc, new FullExpression(assign));
+    Statement *sexpr = makeS_expr(loc, assign);
     body->stmts.append(sexpr);
   }
 

@@ -747,6 +747,12 @@ E_assign *ElsaASTBuild::makeE_assign(
 }
 
 
+E_assign *ElsaASTBuild::makeVarAssign(Variable *target, Expression *src)
+{
+  return makeE_assign(makeE_variable(target), BIN_ASSIGN, src);
+}
+
+
 E_sizeofType *ElsaASTBuild::makeE_sizeofType(Type *type)
 {
   ASTTypeId *typeId =
@@ -795,6 +801,12 @@ E___builtin_va_arg *ElsaASTBuild::makeE___builtin_va_arg(SourceLoc loc,
   return vaa;
 }
 #endif // GNU_EXTENSION
+
+
+S_expr *ElsaASTBuild::makeS_expr(SourceLoc loc, Expression *expr)
+{
+  return new S_expr(loc, new FullExpression(expr));
+}
 
 
 // EOF

@@ -199,6 +199,9 @@ public:      // methods
   E_assign *makeE_assign(
     Expression *target, BinaryOp op, Expression *src);
 
+  // Make an ordinary assignment of a variable.
+  E_assign *makeVarAssign(Variable *target, Expression *src);
+
   E_sizeofType *makeE_sizeofType(Type *type);
 
   E_offsetof *makeE_offsetof(Type *structType, Variable *field);
@@ -210,6 +213,8 @@ public:      // methods
   E___builtin_va_arg *makeE___builtin_va_arg(SourceLoc loc,
     Expression *expr, ASTTypeId *atype);
 #endif // GNU_EXTENSION
+
+  S_expr *makeS_expr(SourceLoc loc, Expression *expr);
 };
 
 

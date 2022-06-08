@@ -2,6 +2,7 @@
 int main(void)
 {
   int x = 3;
+  x = 4;
   x, &x;
   int arr[3];
   arr[1] = 6;
