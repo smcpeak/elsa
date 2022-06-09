@@ -1158,6 +1158,12 @@ public:      // methods
 #define MAKE_LEGACY_TYPE_NC(TYPE)             \
   inline TYPE *legacyTypeNC(TYPE const *type) \
     { return const_cast<TYPE*>(type); }
+MAKE_LEGACY_TYPE_NC(AtomicType)
+MAKE_LEGACY_TYPE_NC(SimpleType)
+MAKE_LEGACY_TYPE_NC(NamedAtomicType)
+MAKE_LEGACY_TYPE_NC(CompoundType)
+MAKE_LEGACY_TYPE_NC(EnumType)
+
 MAKE_LEGACY_TYPE_NC(Type)
 MAKE_LEGACY_TYPE_NC(CVAtomicType)
 MAKE_LEGACY_TYPE_NC(PointerType)
