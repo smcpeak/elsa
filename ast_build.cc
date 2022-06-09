@@ -186,13 +186,13 @@ Type const *ElsaASTBuild::buildUpDeclarator(
 }
 
 
-Type *ElsaASTBuild::makeLvalueType(Type *type)
+Type const *ElsaASTBuild::makeLvalueType(Type const *type)
 {
   if (type->isReferenceType()) {
     return type;
   }
   else {
-    return m_typeFactory.makeReferenceType(type);
+    return m_typeFactory.makeReferenceType(legacyTypeNC(type));
   }
 }
 
@@ -261,7 +261,7 @@ std::pair<TypeSpecifier*, Declarator*>
 }
 
 std::pair<TypeSpecifier*, Declarator*>
-  ElsaASTBuild::makeTSandDeclaratorForType(Variable *var, Type *type,
+  ElsaASTBuild::makeTSandDeclaratorForType(Variable *var, Type const *type,
                                            DeclaratorContext context)
 {
   // Inner declarator for 'var' that, together with the type specifier,
@@ -279,20 +279,20 @@ std::pair<TypeSpecifier*, Declarator*>
   // Variable, not just one with the same name and type.
   Declarator *declarator = new Declarator(idecl, NULL /*init*/);
   declarator->var = var;
-  declarator->type = type;
+  declarator->type = legacyTypeNC(type);
   declarator->context = context;
 
   return std::make_pair(tspec, declarator);
 }
 
 
-ASTTypeId *ElsaASTBuild::makeASTTypeId(Type *type, PQName *name,
+ASTTypeId *ElsaASTBuild::makeASTTypeId(Type const *type, PQName *name,
   DeclaratorContext context)
 {
   // Construct a Variable out of 'type' and 'name'.
   StringRef nameSR = name? name->getName() : NULL;
-  Variable *var = m_typeFactory.makeVariable(loc(), nameSR, type,
-    context==DC_D_FUNC? DF_PARAMETER : DF_NONE);
+  Variable *var = m_typeFactory.makeVariable(loc(), nameSR,
+    legacyTypeNC(type), context==DC_D_FUNC? DF_PARAMETER : DF_NONE);
 
   // Build a type specifier and declarator to represent 'type'.
   std::pair<TypeSpecifier*, Declarator*> ts_and_decl =
@@ -545,7 +545,7 @@ E_fieldAcc *ElsaASTBuild::makeE_fieldAcc(Expression *obj, Variable *field)
 {
   E_fieldAcc *fa = new E_fieldAcc(obj, makePQName(field));
   fa->field = field;
-  fa->type = makeLvalueType(field->type);
+  fa->type = legacyTypeNC(makeLvalueType(field->type));
   return fa;
 }
 
@@ -594,7 +594,7 @@ E_effect *ElsaASTBuild::makeE_effect(
 }
 
 
-Type *ElsaASTBuild::typeForE_binary(
+Type const *ElsaASTBuild::typeForE_binary(
   Expression *e1, BinaryOp op, Expression *e2)
 {
   // The code here is similar to computation in E_binary::itcheck_x.  It
@@ -602,8 +602,8 @@ Type *ElsaASTBuild::typeForE_binary(
   // commonality without making a mess.
 
   // For most operators, we do lvalue to rvalue conversion.
-  Type *lhsType = e1->type->asRval();
-  Type *rhsType = e2->type->asRval();
+  Type const *lhsType = e1->type->asRval();
+  Type const *rhsType = e2->type->asRval();
 
   switch (op) {
     default:
@@ -631,7 +631,8 @@ Type *ElsaASTBuild::typeForE_binary(
         return rhsType;
       }
 
-      return usualArithmeticConversions(m_typeFactory, lhsType, rhsType);
+      return usualArithmeticConversions(m_typeFactory,
+        legacyTypeNC(lhsType), legacyTypeNC(rhsType));
 
     case BIN_MINUS:
       // case: p - p
@@ -645,12 +646,14 @@ Type *ElsaASTBuild::typeForE_binary(
         return lhsType;
       }
 
-      return usualArithmeticConversions(m_typeFactory, lhsType, rhsType);
+      return usualArithmeticConversions(m_typeFactory,
+        legacyTypeNC(lhsType), legacyTypeNC(rhsType));
 
     case BIN_MULT:
     case BIN_DIV:
     case BIN_MOD:
-      return usualArithmeticConversions(m_typeFactory, lhsType, rhsType);
+      return usualArithmeticConversions(m_typeFactory,
+        legacyTypeNC(lhsType), legacyTypeNC(rhsType));
 
     case BIN_LSHIFT:
     case BIN_RSHIFT:
@@ -691,7 +694,7 @@ E_binary *ElsaASTBuild::makeE_binary(
   Expression *e1, BinaryOp op, Expression *e2)
 {
   E_binary *bin = new E_binary(e1, op, e2);
-  bin->type = typeForE_binary(e1, op, e2);
+  bin->type = legacyTypeNC(typeForE_binary(e1, op, e2));
   return bin;
 }
 
@@ -733,22 +736,22 @@ E_addrOf *ElsaASTBuild::makeE_addrOf(Expression *expr)
 
 E_deref *ElsaASTBuild::makeE_deref(Expression *ptr)
 {
-  Type *atType = ptr->type->asRval()->asPointerType()->atType;
+  Type const *atType = ptr->type->asRval()->asPointerType()->atType;
   E_deref *deref = new E_deref(ptr);
 
   // Dereferencing produces an lvalue.
-  deref->type = makeLvalueType(atType);
+  deref->type = legacyTypeNC(makeLvalueType(atType));
 
   return deref;
 }
 
 
-E_cast *ElsaASTBuild::makeE_cast(Type *type, Expression *src)
+E_cast *ElsaASTBuild::makeE_cast(Type const *type, Expression *src)
 {
   E_cast *cast = new E_cast(
     makeASTTypeId(type, NULL /*name*/, DC_E_CAST),
     src);
-  cast->type = type;
+  cast->type = legacyTypeNC(type);
   return cast;
 }
 
@@ -780,7 +783,7 @@ E_assign *ElsaASTBuild::makeVarAssign(Variable *target, Expression *src)
 }
 
 
-E_sizeofType *ElsaASTBuild::makeE_sizeofType(Type *type)
+E_sizeofType *ElsaASTBuild::makeE_sizeofType(Type const *type)
 {
   ASTTypeId *typeId =
     makeASTTypeId(type, NULL /*name*/, DC_E_SIZEOFTYPE);
@@ -791,7 +794,7 @@ E_sizeofType *ElsaASTBuild::makeE_sizeofType(Type *type)
 }
 
 
-E_offsetof *ElsaASTBuild::makeE_offsetof(Type *structType, Variable *field)
+E_offsetof *ElsaASTBuild::makeE_offsetof(Type const *structType, Variable *field)
 {
   ASTTypeId *typeId =
     makeASTTypeId(structType, NULL /*name*/, DC_E_OFFSETOF);
@@ -812,7 +815,7 @@ E_compoundLit *ElsaASTBuild::makeE_compoundLit(ASTTypeId *typeId,
   return ec;
 }
 
-E_compoundLit *ElsaASTBuild::makeE_compoundLit(Type *type,
+E_compoundLit *ElsaASTBuild::makeE_compoundLit(Type const *type,
   IN_compound *init)
 {
   ASTTypeId *tid = makeASTTypeId(type, NULL /*name*/, DC_E_COMPOUNDLIT);

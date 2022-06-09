@@ -93,7 +93,7 @@ public:      // methods
   // Return the lvalue version of 'type'.  Normally that means wrapping
   // it in a ReferenceType, but if it is already a ReferenceType then
   // we return 'type' itself.
-  Type *makeLvalueType(Type *type);
+  Type const *makeLvalueType(Type const *type);
 
   // Given a Variable representing a typedef'd type, construct a type
   // specifier that uses it.
@@ -121,7 +121,7 @@ public:      // methods
   // definition.
   //
   std::pair<TypeSpecifier*, Declarator*>
-    makeTSandDeclaratorForType(Variable *var, Type *type,
+    makeTSandDeclaratorForType(Variable *var, Type const *type,
                                DeclaratorContext context);
 
   // Return a syntactic ASTTypeId denoting semantic 'type'.
@@ -132,7 +132,7 @@ public:      // methods
   //
   // 'type' is not 'const' because the returned syntax contains a
   // non-const pointer to it.
-  ASTTypeId *makeASTTypeId(Type *type, PQName *name,
+  ASTTypeId *makeASTTypeId(Type const *type, PQName *name,
     DeclaratorContext context);
 
   // Make an ASTTypeId denoting a SimpleTypeId.
@@ -182,7 +182,7 @@ public:      // methods
 
   // Compute the type that an E_binary should have with the given
   // children.
-  Type *typeForE_binary(
+  Type const *typeForE_binary(
     Expression *e1, BinaryOp op, Expression *e2);
 
   E_binary *makeE_binary(
@@ -199,7 +199,7 @@ public:      // methods
 
   E_deref *makeE_deref(Expression *ptr);
 
-  E_cast *makeE_cast(Type *type, Expression *src);
+  E_cast *makeE_cast(Type const *type, Expression *src);
 
   E_cond *makeE_cond(Expression *cond, Expression *th, Expression *el);
 
@@ -209,13 +209,13 @@ public:      // methods
   // Make an ordinary assignment of a variable.
   E_assign *makeVarAssign(Variable *target, Expression *src);
 
-  E_sizeofType *makeE_sizeofType(Type *type);
+  E_sizeofType *makeE_sizeofType(Type const *type);
 
-  E_offsetof *makeE_offsetof(Type *structType, Variable *field);
+  E_offsetof *makeE_offsetof(Type const *structType, Variable *field);
 
 #ifdef GNU_EXTENSION
   E_compoundLit *makeE_compoundLit(ASTTypeId *typeId, IN_compound *init);
-  E_compoundLit *makeE_compoundLit(Type *type, IN_compound *init);
+  E_compoundLit *makeE_compoundLit(Type const *type, IN_compound *init);
 
   E___builtin_va_arg *makeE___builtin_va_arg(SourceLoc loc,
     Expression *expr, ASTTypeId *atype);
