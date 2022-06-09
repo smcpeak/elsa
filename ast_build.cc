@@ -696,6 +696,33 @@ E_binary *ElsaASTBuild::makeE_binary(
 }
 
 
+E_binary *ElsaASTBuild::makeCommaExpr(
+  Expression *e1,
+  Expression *e2)
+{
+  return makeE_binary(e1, BIN_COMMA, e2);
+}
+
+
+E_binary *ElsaASTBuild::makeCommaExpr3(
+  Expression *e1,
+  Expression *e2,
+  Expression *e3)
+{
+  return makeCommaExpr(makeCommaExpr(e1, e2), e3);
+}
+
+
+E_binary *ElsaASTBuild::makeCommaExpr4(
+  Expression *e1,
+  Expression *e2,
+  Expression *e3,
+  Expression *e4)
+{
+  return makeCommaExpr(makeCommaExpr3(e1, e2, e3), e4);
+}
+
+
 E_addrOf *ElsaASTBuild::makeE_addrOf(Expression *expr)
 {
   E_addrOf *ao = new E_addrOf(expr);

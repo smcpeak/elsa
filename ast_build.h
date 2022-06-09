@@ -188,6 +188,13 @@ public:      // methods
   E_binary *makeE_binary(
     Expression *e1, BinaryOp op, Expression *e2);
 
+  // Same as 'makeE_binary(e1, BIN_COMMA, e2)'.
+  E_binary *makeCommaExpr(Expression *e1, Expression *e2);
+
+  // Convenience forms with more expressions.
+  E_binary *makeCommaExpr3(Expression *e1, Expression *e2, Expression *e3);
+  E_binary *makeCommaExpr4(Expression *e1, Expression *e2, Expression *e3, Expression *e4);
+
   E_addrOf *makeE_addrOf(Expression *expr);
 
   E_deref *makeE_deref(Expression *ptr);

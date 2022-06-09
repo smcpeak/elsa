@@ -299,6 +299,16 @@ void TestASTSynth::populateBody(S_compound *body)
     body->stmts.append(makeS_expr(loc, assign));
   }
 
+  // "x = 5, x = 6, x = 7, x = 8;"
+  {
+    E_binary *comma = makeCommaExpr4(
+      makeVarAssign(vx, makeE_intLit(5)),
+      makeVarAssign(vx, makeE_intLit(6)),
+      makeVarAssign(vx, makeE_intLit(7)),
+      makeVarAssign(vx, makeE_intLit(8)));
+    body->stmts.append(makeS_expr(loc, comma));
+  }
+
   // Make "x, &x;" and test that the resulting subexpression types are
   // right, particularly for BIN_COMMA.
   {
