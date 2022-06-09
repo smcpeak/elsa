@@ -740,6 +740,18 @@ class Expression {
 
 // maximal expressions: the parent is not an expression
 // (C++98 1.9 para 12)
+//
+// Note: If the GNU extension is active, then FullExpressions can be
+// (indirectly) nested due to the presence of statement expressions.
+//
+// TODO: This is not used everywhere it should be, notably in IN_expr,
+// but there are other omissions as well.  I'm hesitant to insert
+// FullExpression in all those places due to the performance cost (and
+// also the hassle of having an extra layer of indirection), but if I
+// don't, then there's little point in having this at all since it
+// cannot be used to comprehensively handle full expressions.  So I
+// should either go ahead and add this everywhere appropriate, or remove
+// it entirely.  I'm leaning toward the latter.
 class FullExpression (Expression expr) {
   // We do not make lists of FullExpressions.
 
