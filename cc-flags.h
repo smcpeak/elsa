@@ -107,19 +107,20 @@ enum DeclFlags {
   // Each one either needs a careful definition and thorough checking in
   // integrity.cc that the definition is met, or to be removed.
   //
-  // For DF_GLOBAL, I have made a start.  The 'typedefVar' Variables
-  // associated with classes and enums are checked by
-  // 'IntegrityVisitor::checkDefinitionTypedefVar', hence that function
-  // provides a reasonably precise specification.
-  //
   // TODO: Independent of the need to audit and document these flags,
   // they should be split off from DeclFlags.  They are not really
   // related to declarations, rather to the entities that declarations
   // declare (which I call "Variables").  Also the space of available
   // bits is now quite crowded.
-  //
+
   DF_ENUMERATOR  = 0x00000400,    // true for values in an 'enum' (enumerators in the terminology of the C++ standard)
-  DF_GLOBAL      = 0x00000800,    // set for globals, unset for locals and members of classes and namespaces
+
+  // Set for entities declared in the global namespace, as opposed to
+  // locals, class members, or namespace members.  This includes
+  // anonymous entities (like a struct with no tag, and only a global
+  // typedef) and, in C, types declared inside the body of a struct.
+  DF_GLOBAL      = 0x00000800,
+
   DF_INITIALIZED = 0x00001000,    // true if has been declared with an initializer (or, for functions, with code)
   DF_BUILTIN     = 0x00002000,    // true for e.g. __builtin_constant_p -- don't emit later
   DF_PARAMETER   = 0x00010000,    // true if this is a function parameter or a handler "parameter"

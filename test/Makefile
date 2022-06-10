@@ -236,6 +236,7 @@ out/pqname/%.c.ok: pqname/%.c pqname/%.c.expect $(CCPARSE)
 # Type-check tests simply run ccparse and expect it to do its own
 # internal validation with internal testing hooks.
 
+TESTS += tcheck/anon-union-in-struct.c
 TESTS += tcheck/builtin-offsetof.c
 TESTS += tcheck/c99-array-declarator-qualifier.c
 TESTS += tcheck/cast-btw-float-and-ptr.c

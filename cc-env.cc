@@ -2590,9 +2590,14 @@ Type *Env::makeNewCompound(CompoundType *&ct, Scope * /*nullable*/ scope,
     }
   }
 
-  if (name && scope) {
+  if (scope) {
+    // We register even anonymous types to get, e.g., DF_GLOBAL set on
+    // 'tv' when appropriate.
     scope->registerVariable(tv);
-    if (lang.tagsAreTypes) {
+
+    // If the type has a name, and we're in C++, automatically make it
+    // available for lookup in the variable/typedef namespace.
+    if (name && lang.tagsAreTypes) {
       if (!scope->addVariable(tv)) {
         // this isn't really an error, because in C it would have
         // been allowed, so C++ does too [ref?]
@@ -2604,13 +2609,6 @@ Type *Env::makeNewCompound(CompoundType *&ct, Scope * /*nullable*/ scope,
       else {
         addedNewVariable(scope, tv);
       }
-    }
-    else {
-      // dsw: I found that it interfered to put the implicit typedef
-      // into the space in C, and as far as I understand, it doesn't
-      // exist in C anyway.  See in/c/dC0012.c
-      //
-      // sm: yes, that is right
     }
   }
 
