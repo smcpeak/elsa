@@ -61,7 +61,8 @@ public:
 bool DeclTypeChecker::visitDeclarator(Declarator *obj)
 {
   if (obj->type != obj->var->type &&
-      !(obj->var->flags & (DF_GLOBAL | DF_MEMBER)) &&
+      !obj->var->isGlobal() &&
+      !obj->var->isMember() &&
       !obj->type->isArrayType()) {
     instances++;
     cerr << toString(obj->var->loc) << ": " << obj->var->name

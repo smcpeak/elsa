@@ -184,9 +184,8 @@ public:
   // systems can monitor flag modifications
   virtual void setFlagsTo(DeclFlags f);
 
-  // Unfortunately, the exact meaning of this is unclear due to
-  // confusion about templates and their instantiations.
-  bool isGlobal() const { return hasFlag(DF_GLOBAL); }
+  // True if 'm_containingScope' is the global scope.
+  bool isGlobal() const;
 
   // True if the containing scope exists and is either the global scope
   // or a namespace scope.  That excludes templates since they are in

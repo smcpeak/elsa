@@ -2911,7 +2911,7 @@ bool multipleDefinitionsOK(Env &env, Variable *prior, DeclFlags dflags)
 
   // dsw: I think the "common symbol exception" only applies to
   // globals.
-  if (!prior->hasFlag(DF_GLOBAL)) {
+  if (!prior->isGlobal()) {
     return false;
   }
 

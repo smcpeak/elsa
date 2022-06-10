@@ -136,6 +136,16 @@ void Variable::setFlagsTo(DeclFlags f)
   const_cast<DeclFlags&>(flags) = f;
 }
 
+
+bool Variable::isGlobal() const
+{
+  bool flagSays = hasFlag(DF_GLOBAL);
+  bool scopeSays = (m_containingScope && m_containingScope->isGlobalScope());
+  xassert(flagSays == scopeSays);
+  return flagSays;
+}
+
+
 bool Variable::inGlobalOrNamespaceScope() const
 {
   return m_containingScope &&
