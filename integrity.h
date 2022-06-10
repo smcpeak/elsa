@@ -14,7 +14,7 @@
 //
 //   - The AST must be unambiguous.
 //   - No dependent types appear in concrete code.
-//   - Typedef Variables are marked DF_GLOBAL or not as appropriate.
+//   - Typedef Variables are isGlobal() or not as appropriate.
 //   - Other ad-hoc constraints.
 //
 // These checks only make sense after the type checker has done its job
@@ -50,7 +50,7 @@ public:      // data
   CCLang const &m_lang;
 
   // When true (which is the default), check Variable scopes and
-  // DF_GLOBAL flag.
+  // isGlobal().
   bool m_checkVariableScopes;
 
   // When true, insist that all Expressions have a non-NULL type outside

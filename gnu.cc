@@ -88,8 +88,8 @@ void Env::addGNUBuiltins()
                  // ST_ELLIPSIS instead of void*; explanation upon
                  // request; UPDATE: ok, that doesn't let d0125.cc
                  // typecheck so how about a pointer to an ST_ELLIPSIS
-//                  t_voidptr, DF_TYPEDEF | DF_BUILTIN | DF_GLOBAL);
-                 t_ellipsis_ptr, DF_TYPEDEF | DF_BUILTIN | DF_GLOBAL);
+//                  t_voidptr, DF_TYPEDEF | DF_BUILTIN);
+                 t_ellipsis_ptr, DF_TYPEDEF | DF_BUILTIN);
   addVariable(var__builtin_va_list);
   env.builtinVars.push(var__builtin_va_list);
 

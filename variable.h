@@ -190,17 +190,14 @@ public:
   // class, or namespace scope.  Templates declared at global scope are
   // global, but their instantiations are *not*, since they cannot be
   // found by name lookup.
+  //
+  // TODO: Rename to 'inGlobalScope'.
   bool isGlobal() const;
 
   // True if the containing scope exists and is either the global scope
-  // or a namespace scope.  That excludes templates since they are in
-  // a "template scope" ...
+  // or a namespace scope.  Like with 'isGlobal()', it includes
+  // templates but not their instantiations.
   bool inGlobalOrNamespaceScope() const;
-
-  // This is a test that has been historically a part of these queries.
-  // I started trying to clean them up but failed.
-  bool isGlobal_flag_or_scope() const
-    { return isGlobal() || inGlobalOrNamespaceScope(); }
 
   bool isStaticLinkage() const {
     // quarl 2006-07-11
@@ -208,7 +205,7 @@ public:
     //    Note that these are not exclusive; a variable can have both static
     //    linkage (by being inline) and be a static member.
     return (((hasFlag(DF_STATIC) &&
-              isGlobal_flag_or_scope()) ||
+              inGlobalOrNamespaceScope()) ||
              hasAllFlags(DF_INLINE | DF_MEMBER)) /*&&
                                                    !hasFlag(DF_GNU_EXTERN_INLINE)*/);
   }
@@ -216,7 +213,7 @@ public:
   // True of variables declared in and local to a function.  False for
   // members of local classes.
   bool isLocalVariable() const {
-    return !( isGlobal_flag_or_scope() || isMember() );
+    return !( inGlobalOrNamespaceScope() || isMember() );
   }
 
   bool isStaticLocal() const {

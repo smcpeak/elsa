@@ -407,8 +407,8 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
   // create first scope
   SourceLoc emptyLoc = SL_UNKNOWN;
   {
-    // among other things, SK_GLOBAL causes Variables inserted into
-    // this scope to acquire DF_GLOBAL
+    // Among other things, SK_GLOBAL causes Variables inserted into
+    // this scope to become 'isGlobal()'.
     Scope *s = new Scope(SK_GLOBAL, 0 /*changeCount*/, emptyLoc);
 
     // dsw: it is very helpful to be able to get to the global scope
@@ -523,7 +523,7 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
     // typedef bool _Bool;
     Type *t_bool = getSimpleType(ST_BOOL);
     addVariable(makeVariable(SL_INIT, str("_Bool"),
-                             t_bool, DF_TYPEDEF | DF_BUILTIN | DF_GLOBAL));
+                             t_bool, DF_TYPEDEF | DF_BUILTIN));
   }
 
   memset(complexComponentFields, 0, sizeof(complexComponentFields));
@@ -1787,9 +1787,9 @@ Type *Env::declareEnum(SourceLoc loc /*...*/, EnumType *et)
   }
 
   // Although we may not have added 'tv' to any scope (either because it
-  // has no name, or because 'lang.tagAreTypes==false'), its DF_GLOBAL
-  // flag should be set if appropriate.  That is done by registering it
-  // the scope we would have put it into.
+  // has no name, or because 'lang.tagAreTypes==false'), its
+  // 'm_containingScope' should be set if appropriate.  That is done by
+  // registering it the scope we would have put it into.
   //
   // It is ugly to be doing this redundantly in the case where the
   // variable *was* added to a scope.
@@ -2591,8 +2591,8 @@ Type *Env::makeNewCompound(CompoundType *&ct, Scope * /*nullable*/ scope,
   }
 
   if (scope) {
-    // We register even anonymous types to get, e.g., DF_GLOBAL set on
-    // 'tv' when appropriate.
+    // We register even anonymous types to get 'tv->m_containingScope'
+    // set when appropriate.
     scope->registerVariable(tv);
 
     // If the type has a name, and we're in C++, automatically make it

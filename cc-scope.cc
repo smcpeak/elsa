@@ -206,11 +206,6 @@ bool Scope::addVariable(Variable *v, bool forceReplace)
     }
   }
 
-  // moved into registerVariable()
-  //if (isGlobalScope()) {
-  //  v->setFlag(DF_GLOBAL);
-  //}
-
   if (insertUnique(variables, v->name, v, changeCount, forceReplace)) {
     afterAddVariable(v);
     return true;
@@ -287,21 +282,6 @@ void Scope::registerVariable(Variable *v)
   if (curCompound) {
     // take access control from scope's current setting
     v->setAccess(curAccess);
-  }
-
-  if (isGlobalScope()
-      // FIX: is this right?  dsw: if we are in a template scope that
-      // is in a global scope, you are effectively also a global
-      // unless you are a template parameter
-      //
-      // sm: TODO: what is going on here?  why does this matter?  what
-      // is being set DF_GLOBAL that wouldn't otherwise?
-      //
-      // sm: who pays attention that flag?
-      //    dsw: oink pays attention to that flag!
-      || (isGlobalTemplateScope() && !v->hasFlag(DF_PARAMETER))
-      ) {
-    v->setFlag(DF_GLOBAL);
   }
 }
 

@@ -114,13 +114,6 @@ enum DeclFlags {
   // bits is now quite crowded.
 
   DF_ENUMERATOR  = 0x00000400,    // true for values in an 'enum' (enumerators in the terminology of the C++ standard)
-
-  // Set for entities declared in the global namespace, as opposed to
-  // locals, class members, or namespace members.  This includes
-  // anonymous entities (like a struct with no tag, and only a global
-  // typedef) and, in C, types declared inside the body of a struct.
-  DF_GLOBAL      = 0x00000800,
-
   DF_INITIALIZED = 0x00001000,    // true if has been declared with an initializer (or, for functions, with code)
   DF_BUILTIN     = 0x00002000,    // true for e.g. __builtin_constant_p -- don't emit later
   DF_PARAMETER   = 0x00010000,    // true if this is a function parameter or a handler "parameter"
@@ -157,6 +150,7 @@ enum DeclFlags {
                  = 0x00008000,
 
   // These flags are unused.
+  DF_UNUSED1     = 0x00000800,
   DF_UNUSED2     = 0x00020000,
   DF_UNUSED3     = 0x00040000,
 

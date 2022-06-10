@@ -122,11 +122,7 @@ Variable::~Variable()
 
 void Variable::checkInvariants()
 {
-  // Unfortunately, this isn't true.  DF_GLOBAL gets set on templates
-  // that are in the global scope, but there is an intervening template
-  // scope that acts as the containing scope.
-  //xassert(isGlobal() ==
-  //          (m_containingScope && m_containingScope->isGlobalScope()));
+  // There was checking here in the past.  Now it's a placeholder.
 }
 
 
@@ -139,10 +135,7 @@ void Variable::setFlagsTo(DeclFlags f)
 
 bool Variable::isGlobal() const
 {
-  bool flagSays = hasFlag(DF_GLOBAL);
-  bool scopeSays = (m_containingScope && m_containingScope->isGlobalScope());
-  xassert(flagSays == scopeSays);
-  return flagSays;
+  return m_containingScope && m_containingScope->isGlobalScope();
 }
 
 
@@ -160,7 +153,7 @@ bool Variable::linkerVisibleName() const {
 bool Variable::linkerVisibleName(bool evenIfStaticLinkage) const {
 //    bool oldAnswer;
 //    if (m_containingScope) oldAnswer = m_containingScope->linkerVisible();
-//    else oldAnswer = hasFlag(DF_GLOBAL);
+//    else oldAnswer = isGlobal();
 
   // do not consider templates
   if (isTemplate()) return false;
@@ -198,8 +191,6 @@ bool Variable::linkerVisibleName(bool evenIfStaticLinkage) const {
     // FIX: I hope this is right.
     // FIX: hmm, when else can this occur?
 //      xassert(hasFlag(DF_PARAMETER));
-    // this one fails for template parameters!?
-//      xassert(!hasFlag(DF_GLOBAL));
     return false;
   }
 

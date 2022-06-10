@@ -1389,8 +1389,7 @@ void Handler::elaborate(ElabVisitor &env)
     if (!globalVar) {
       globalVar = env.makeVariable(loc, env.makeCatchClauseVarName(),
                                    typeIdType->asRval(),
-                                   DF_STATIC // I think it is a static global
-                                   | DF_GLOBAL);
+                                   DF_STATIC);
 
       // if we catch by value, we need a copy ctor into a temporary
       // which is passed into the handler; in other words, we treat
@@ -1452,8 +1451,7 @@ bool E_throw::elaborate(ElabVisitor &env)
     if (!globalVar) {
       globalVar = env.makeVariable(loc, env.makeThrowClauseVarName(),
                                    exprType,
-                                   DF_STATIC // I think it is a static global
-                                   | DF_GLOBAL);
+                                   DF_STATIC);
 
       // clone the expr, putting the clone back into 'expr', and using
       // the original (tcheck'd) one in 'makeCtorStatement' (SCS)
