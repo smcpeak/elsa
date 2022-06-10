@@ -535,6 +535,19 @@ int CompoundType::reprSize(TypeSizes const &typeSizes) const
 }
 
 
+string CompoundType::keywordAndName() const
+{
+  if (TemplateInfo const *ti = templateInfo()) {
+    return stringb(::toString(keyword) << ' ' << ti->templateName());
+  }
+  else {
+    // TODO: It would be nice for 'name' to be fully qualified here.
+    return stringb(::toString(keyword) << " " <<
+                   (name? name : "(anon)"));
+  }
+}
+
+
 int CompoundType::numFields() const
 {
   int ct = 0;

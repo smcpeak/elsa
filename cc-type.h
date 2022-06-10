@@ -363,8 +363,16 @@ public:      // funcs
   int reprSize(TypeSizes const &typeSizes) const override;
   void traverse(TypeVisitor &vis) override;
 
-  string toStringWithFields() const;
-  string keywordAndName() const { return toCString(); }
+  // Return "<keyword> <name>", where <keyword> is like "class", and
+  // <name> is the name, or "(anon)" if anonymous.
+  //
+  // If this is a template, <name> will include template parameters, and
+  // if it is a template instantiation, <name> will include template
+  // arguments.
+  //
+  // This is not meant to be valid C++ syntax, it is meant to be
+  // descriptive in diagnostics.
+  string keywordAndName() const;
 
   int numFields() const;
 

@@ -264,6 +264,10 @@ bool Scope::addTypeTag(Variable *tag)
 // this function should behave as if it always is added.
 void Scope::registerVariable(Variable *v)
 {
+  TRACE("scope-reg",
+    toString(v->loc) << ": " << desc() <<
+    " registering variable " << (v->name? v->name : "(anon)"));
+
   if (v->getScopeKind() == SK_UNKNOWN) {
     v->setScopeKind(scopeKind);
   }
@@ -797,12 +801,17 @@ string Scope::scopeName() const
 
 string Scope::desc() const
 {
-  // name, plus address or serial number
-  #if USE_SERIAL_NUMBERS
-    return stringc << scopeName() << " #" << serialNumber;
-  #else
-    return stringc << scopeName() << " at " << stringf("%p", this);
-  #endif
+  return stringb(scopeName()
+    // Unless I'm actively in the debugger, following pointer values,
+    // the extra stuff here is just annoying clutter.
+    #if 0
+      #if USE_SERIAL_NUMBERS
+        << " #" << serialNumber
+      #else
+        << " at " << stringf("%p", this)
+      #endif
+    #endif
+  );
 }
 
 static void dumpMap(char const *label, StringRefMap<Variable> const &map)

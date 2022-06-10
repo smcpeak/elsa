@@ -16,13 +16,13 @@
 #include "cc-type-fwd.h"               // CompoundType, etc.
 #include "cc-type-visitor-fwd.h"       // TypeVisitor
 #include "lookupset.h"                 // LookupSet
+#include "serialno.h"                  // INHERIT_SERIAL_BASE
 #include "strmap.h"                    // StringRefMap
 #include "template-fwd.h"              // TemplateParams
 #include "variable-fwd.h"              // Variable
 
 // smbase
 #include "array.h"                     // ArrayStack
-#include "serialno.h"                  // INHERIT_SERIAL_BASE
 #include "sobjlist.h"                  // SObjList
 #include "srcloc.h"                    // SourceLoc
 #include "strtable.h"                  // StringRef

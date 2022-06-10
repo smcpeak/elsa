@@ -309,24 +309,24 @@ TemplateInfo::~TemplateInfo()
 }
 
 
-TemplateThingKind TemplateInfo::getKind() const
+TemplateThingKind TemplateInfo::getKind(bool checkInvariants) const
 {
   if (!instantiationOf && !specializationOf) {
     if (!isPartialInstantiation()) {
-      xassert(arguments.isEmpty());
+      xassert(!checkInvariants || arguments.isEmpty());
     }
-    xassert(hasMainOrInheritedParameters());
+    xassert(!checkInvariants || hasMainOrInheritedParameters());
     return TTK_PRIMARY;
   }
 
   // specialization or instantiation
-  xassert(arguments.isNotEmpty());
+  xassert(!checkInvariants || arguments.isNotEmpty());
 
   if (specializationOf) {
     return TTK_SPECIALIZATION;
   }
   else {
-    xassert(instantiationOf);
+    xassert(!checkInvariants || instantiationOf);
     return TTK_INSTANTIATION;
   }
 }
@@ -580,12 +580,17 @@ void TemplateInfo::prependArguments(ObjList<STemplateArgument> const &sargs)
 
 string TemplateInfo::templateName() const
 {
-  if (isPrimary()) {
+  // This is used for debug/diagnostic messages, and is sometimes called
+  // while the object is only partially built, so relax the invariant
+  // checking.
+  bool const checkInvariants = false;
+
+  if (isPrimary(checkInvariants)) {
     return stringc << var->fullyQualifiedName0()
                    << paramsLikeArgsToString();
   }
 
-  if (isSpecialization()) {
+  if (isSpecialization(checkInvariants)) {
     return stringc << var->fullyQualifiedName0()
                    << sargsToString(arguments);
   }

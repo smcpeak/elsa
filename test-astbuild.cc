@@ -250,16 +250,14 @@ E_compoundLit *TestASTSynth::testMakeE_compoundLit()
 {
   CompoundType *ct = m_typeFactory.makeCompoundType(
     CompoundType::K_STRUCT, m_stringTable.add("S"));
+  Type *t_ct = m_typeFactory.makeCVAtomicType(ct, CV_NONE);
+  ct->typedefVar = makeVar("S", t_ct, DF_TYPEDEF);
 
   Type *t_int = m_typeFactory.getSimpleType(ST_INT);
   Variable *vx = makeVar("x", t_int);
   Variable *vy = makeVar("y", t_int);
   ct->addVariable(vx);
   ct->addVariable(vy);
-
-  Type *t_ct = m_typeFactory.makeCVAtomicType(ct, CV_NONE);
-
-  ct->typedefVar = makeVar("S", t_ct, DF_TYPEDEF);
 
   IN_compound *inc = new IN_compound(loc, NULL /*inits*/);
   inc->inits.append(new IN_expr(loc, makeE_intLit(3)));

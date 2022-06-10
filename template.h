@@ -282,11 +282,21 @@ public:      // funcs
   // name of the template class or function
   //StringRef getBaseName() const;    // who calls this?
 
-  // what kind of template thing is this?
-  TemplateThingKind getKind() const;
-  bool isPrimary() const { return getKind() == TTK_PRIMARY; }
-  bool isSpecialization() const { return getKind() == TTK_SPECIALIZATION; }
-  bool isInstantiation() const { return getKind() == TTK_INSTANTIATION; }
+  // What kind of template thing is this?
+  //
+  // By default, this checks some invariants too.  It's probably a
+  // mistake to have done that here rather than in a dedicated function.
+  // This is sometimes called while we're still building the
+  // TemplateInfo, so the invariants do not hold.  Consequently,
+  // invariant checking can be turned off.
+  TemplateThingKind getKind(bool checkInvariants = true) const;
+
+  bool isPrimary(bool checkInvariants = true) const
+    { return getKind(checkInvariants) == TTK_PRIMARY; }
+  bool isSpecialization(bool checkInvariants = true) const
+    { return getKind(checkInvariants) == TTK_SPECIALIZATION; }
+  bool isInstantiation() const
+    { return getKind() == TTK_INSTANTIATION; }
 
   // some more queries along these lines
   bool isNotPrimary() const { return !isPrimary(); }

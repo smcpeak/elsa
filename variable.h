@@ -184,7 +184,12 @@ public:
   // systems can monitor flag modifications
   virtual void setFlagsTo(DeclFlags f);
 
-  // True if 'm_containingScope' is the global scope.
+  // True if 'm_containingScope' is the global scope.  This is true of
+  // entities (including anonymous, such as a struct with no tag)
+  // declared in the global scope, as opposed to local, prototype,
+  // class, or namespace scope.  Templates declared at global scope are
+  // global, but their instantiations are *not*, since they cannot be
+  // found by name lookup.
   bool isGlobal() const;
 
   // True if the containing scope exists and is either the global scope
