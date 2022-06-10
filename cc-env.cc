@@ -408,7 +408,7 @@ Env::Env(StringTable &s, CCLang &L, TypeFactory &tf,
   SourceLoc emptyLoc = SL_UNKNOWN;
   {
     // Among other things, SK_GLOBAL causes Variables inserted into
-    // this scope to become 'isGlobal()'.
+    // this scope to become 'inGlobalScope()'.
     Scope *s = new Scope(SK_GLOBAL, 0 /*changeCount*/, emptyLoc);
 
     // dsw: it is very helpful to be able to get to the global scope
@@ -2911,7 +2911,7 @@ bool multipleDefinitionsOK(Env &env, Variable *prior, DeclFlags dflags)
 
   // dsw: I think the "common symbol exception" only applies to
   // globals.
-  if (!prior->isGlobal()) {
+  if (!prior->inGlobalScope()) {
     return false;
   }
 
@@ -3217,7 +3217,7 @@ OverloadSet *Env::getOverloadForDeclaration(Variable *&prior, Type *type)
   OverloadSet *overloadSet = NULL;    // null until valid overload seen
   if (lang.allowOverloading &&
       prior &&
-      !(prior->name == string_main && prior->isGlobal()) &&   // cannot overload main()
+      !(prior->name == string_main && prior->inGlobalScope()) &&   // cannot overload main()
       prior->type->isFunctionType() &&
       type->isFunctionType()) {
     // potential overloading situation
@@ -3780,7 +3780,7 @@ noPriorDeclaration:
 // reference: C++98, 8.3.6
 void Env::mergeDefaultArguments(SourceLoc loc, Variable *prior, FunctionType *type)
 {
-  if (prior->name == string_main && prior->isGlobal()) {
+  if (prior->name == string_main && prior->inGlobalScope()) {
     // main() should not have default args anyway, and the scheme
     // for allowing varying declarations messes up the logic here
     return;

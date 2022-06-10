@@ -3700,7 +3700,7 @@ void Declarator::mid_tcheck(Env &env, Tcheck &dt)
 
     if (var &&
         var->name == env.string_main &&
-        var->isGlobal()) {
+        var->inGlobalScope()) {
       env.handleTypeOfMain(decl->loc, var, dt.type);
     }
   }

@@ -208,7 +208,7 @@ void IntegrityVisitor::checkDefinitionTypedefVar(Variable const *var)
 
 void IntegrityVisitor::shouldBeGlobal(Variable const *var)
 {
-  xassert(var->isGlobal());
+  xassert(var->inGlobalScope());
 
   Scope *scope = var->m_containingScope;
   xassert(scope);
@@ -217,7 +217,7 @@ void IntegrityVisitor::shouldBeGlobal(Variable const *var)
 
 void IntegrityVisitor::shouldNotBeGlobal(Variable const *var)
 {
-  xassert(!var->isGlobal());
+  xassert(!var->inGlobalScope());
 
   Scope *scope = var->m_containingScope;
   xassert(!( scope && scope->isGlobalScope() ));

@@ -61,7 +61,7 @@ public:
 bool DeclTypeChecker::visitDeclarator(Declarator *obj)
 {
   if (obj->type != obj->var->type &&
-      !obj->var->isGlobal() &&
+      !obj->var->inGlobalScope() &&
       !obj->var->isMember() &&
       !obj->type->isArrayType()) {
     instances++;

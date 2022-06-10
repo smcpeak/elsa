@@ -133,7 +133,7 @@ void Variable::setFlagsTo(DeclFlags f)
 }
 
 
-bool Variable::isGlobal() const
+bool Variable::inGlobalScope() const
 {
   return m_containingScope && m_containingScope->isGlobalScope();
 }
@@ -153,7 +153,7 @@ bool Variable::linkerVisibleName() const {
 bool Variable::linkerVisibleName(bool evenIfStaticLinkage) const {
 //    bool oldAnswer;
 //    if (m_containingScope) oldAnswer = m_containingScope->linkerVisible();
-//    else oldAnswer = isGlobal();
+//    else oldAnswer = inGlobalScope();
 
   // do not consider templates
   if (isTemplate()) return false;

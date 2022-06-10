@@ -190,12 +190,10 @@ public:
   // class, or namespace scope.  Templates declared at global scope are
   // global, but their instantiations are *not*, since they cannot be
   // found by name lookup.
-  //
-  // TODO: Rename to 'inGlobalScope'.
-  bool isGlobal() const;
+  bool inGlobalScope() const;
 
   // True if the containing scope exists and is either the global scope
-  // or a namespace scope.  Like with 'isGlobal()', it includes
+  // or a namespace scope.  Like with 'inGlobalScope()', it includes
   // templates but not their instantiations.
   bool inGlobalOrNamespaceScope() const;
 
