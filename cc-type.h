@@ -266,7 +266,7 @@ public:      // data
   bool m_isForwardDeclared : 1;
 
   // When true, this is a GNU transparent union.
-  bool isTransparentUnion : 1;
+  bool m_isTransparentUnion : 1;
 
   // When true, this is an anonymous struct or union (C11 6.7.2.1p13,
   // C++14 9.5p5).  This is *not* the same as merely having a NULL name

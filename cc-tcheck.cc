@@ -6538,7 +6538,7 @@ int compareArgsToParams(Env &env, FunctionType *ft, FakeList<ArgExpression> *arg
     // GCC does not do the transparent union thing in C++ mode.
     if (!env.lang.isCplusplus && param->type->isUnionType()) {
       CompoundType *ct = param->type->asCompoundType();
-      if (ct->isTransparentUnion) {
+      if (ct->m_isTransparentUnion) {
         // look for a member of the union that has the same type
         // as the argument
         SFOREACH_OBJLIST(Variable, ct->dataMembers, memberIter) {

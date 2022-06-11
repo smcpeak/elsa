@@ -1716,7 +1716,7 @@ void AttributeSpecifierList::tcheck(Env &env,
     }
     else if (tc.m_type->isUnionType()) {
       CompoundType *u = tc.m_type->asCompoundType();
-      u->isTransparentUnion = true;
+      u->m_isTransparentUnion = true;
     }
     else {
       env.error(tc.m_type, stringb(
