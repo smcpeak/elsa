@@ -4005,7 +4005,7 @@ E_addrOf *Env::build_E_addrOf(Expression *underlying)
   // are we building an address-of nonstatic member?
   if (underlying->isE_variable()) {
     Variable *underVar = underlying->asE_variable()->var;
-    if (underVar->hasFlag(DF_MEMBER) &&
+    if (underVar->isMember() &&
         !underVar->hasFlag(DF_STATIC)) {
       CompoundType *inClassNAT = underVar->m_containingScope->curCompound;
       xassert(inClassNAT);

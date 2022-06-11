@@ -206,13 +206,13 @@ public:
 
   bool isStaticLinkage() const {
     // quarl 2006-07-11
-    //    See Declarator::mid_tcheck() for why this checks for DF_INLINE|DF_MEMBER.
+    //    See Declarator::mid_tcheck() for why this checks for DF_INLINE && isMember().
     //    Note that these are not exclusive; a variable can have both static
     //    linkage (by being inline) and be a static member.
-    return (((hasFlag(DF_STATIC) &&
-              inGlobalOrNamespaceScope()) ||
-             hasAllFlags(DF_INLINE | DF_MEMBER)) /*&&
-                                                   !hasFlag(DF_GNU_EXTERN_INLINE)*/);
+    return ( ( (hasFlag(DF_STATIC) &&
+                inGlobalOrNamespaceScope()) ||
+               (hasFlag(DF_INLINE) && isMember())
+             ) /*&& !hasFlag(DF_GNU_EXTERN_INLINE)*/);
   }
 
   // True of variables declared in and local to a function.  False for
@@ -225,10 +225,12 @@ public:
     return hasFlag(DF_STATIC) && isLocalVariable();
   }
 
-  bool isStaticMember() const { return hasAllFlags(DF_STATIC | DF_MEMBER); }
-  bool isNonStaticMember() const { return hasFlag(DF_MEMBER) && !hasFlag(DF_STATIC); }
+  bool isStaticMember() const { return hasFlag(DF_STATIC) && isMember(); }
+  bool isNonStaticMember() const { return isMember() && !hasFlag(DF_STATIC); }
   // bool isStatic() const { return hasFlag(DF_STATIC); }
-  bool isMember() const { return hasFlag(DF_MEMBER); }
+
+  // True if this is a member of a class (CompoundType).
+  bool isMember() const;
 
   // True if this Variable represents a namespace.  For the purpose of
   // this function, the global scope is considered a namespace.

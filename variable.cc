@@ -167,6 +167,26 @@ CompoundType const * NULLABLE Variable::containingCompoundForLookup() const
 }
 
 
+bool Variable::isMember() const
+{
+  bool flagSays = hasFlag(DF_MEMBER);
+  bool scopeSays = (m_containingScope &&
+                    m_containingScope->curCompound != NULL);
+
+  if (scopeSays && !flagSays) {
+    if (m_containingScope->curCompound->m_isAnonymousCompound) {
+      // This is the special case where we switched the members to
+      // *not* say DF_MEMBER in order to avoid 'this->' elaboration.
+      // Continue to say this is not a member.
+      return flagSays;
+    }
+  }
+
+  xassert(flagSays == scopeSays);
+  return flagSays;
+}
+
+
 bool Variable::linkerVisibleName() const {
   return linkerVisibleName(false);
 }
@@ -226,7 +246,7 @@ bool Variable::linkerVisibleName(bool evenIfStaticLinkage) const {
   // CompoundTypes are linker visible if the CompoundType is linkerVisible.
   // Non-static members are visible only if they are FunctionTypes.
   if (m_containingScope->isClassScope()) {
-    if (!hasFlag(DF_MEMBER)) {
+    if (!isMember()) {
       return false;
     }
 

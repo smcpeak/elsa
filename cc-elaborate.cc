@@ -417,7 +417,7 @@ void Declarator::elaborateCDtors(ElabVisitor &env, DeclFlags dflags)
   // sm: at least in t0318.cc, they do not; the Variable has the
   // correct info, whereas the declaration merely has what was
   // syntactically present and/or obvious
-  bool isMember =      var->hasFlag(DF_MEMBER);
+  bool isMember =      var->isMember();
   bool isStatic =      var->hasFlag(DF_STATIC);
   // this used to check if the *var* had an extern flag, which is not
   // correct because if there is a later declaration in the file for

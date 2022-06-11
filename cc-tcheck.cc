@@ -2776,6 +2776,11 @@ void Enumerator::tcheck(Env &env, EnumType *parentEnum, Type *parentType)
     forceReplace = true;
   }
 
+  if (env.acceptingScope(var->flags)->curCompound) {
+    // Going into a class scope.
+    var->setFlag(DF_MEMBER);
+  }
+
   if (!env.addVariable(var, forceReplace)) {
     env.error(stringc
       << "enumerator " << name << " conflicts with an existing variable "
@@ -3312,7 +3317,7 @@ realStart:
       }
     }
 
-    if (prior->hasFlag(DF_MEMBER)) {
+    if (prior->isMember()) {
       // this intends to be the definition of a class member; make sure
       // the code doesn't try to define a nonstatic data member
       if (!prior->type->isFunctionType() &&
@@ -8314,7 +8319,7 @@ Type *resolveOverloadedUnaryOperator(
         OperatorName *oname = new ON_operator(op);
         PQ_operator *pqo = new PQ_operator(SL_UNKNOWN, oname, opName);
 
-        if (winner->hasFlag(DF_MEMBER)) {
+        if (winner->isMember()) {
           // replace '~a' with 'a.operator~()'
           replacement = new E_funCall(
             new E_fieldAcc(expr, pqo),               // function
@@ -8428,7 +8433,7 @@ Type *resolveOverloadedBinaryOperator(
 
       if (!winner->hasFlag(DF_BUILTIN)) {
         PQ_operator *pqo = new PQ_operator(SL_UNKNOWN, new ON_operator(op), opName);
-        if (winner->hasFlag(DF_MEMBER)) {
+        if (winner->isMember()) {
           // replace 'a+b' with 'a.operator+(b)'
           replacement = new E_funCall(
             // function to invoke
@@ -11186,6 +11191,11 @@ void ND_usingDecl::tcheck(Env &env)
     // if the lookup was dependent, add the name with dependent type
     // (k0048.cc, t0468.cc)
     Variable *v = env.makeVariable(name->loc, name->getName(), origVar->type, DF_NONE);
+
+    // If 'v' will go into a class scope, set DF_MEMBER.
+    if (env.scope()->curCompound) {
+      v->setFlag(DF_MEMBER);
+    }
 
     // add with replacement; if the name already exists, then presumably
     // we are trying to make an overload set, but without a real function
