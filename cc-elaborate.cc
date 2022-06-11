@@ -754,7 +754,7 @@ bool ElabVisitor::wantsMemberInit(Variable *var)
   if (var->type->isFunctionType()) return false;
   // skip arrays for now; FIX: do something correct here
   if (var->type->isArrayType()) return false;
-  if (var->isStaticMember()) return false;
+  if (var->isStaticClassMember()) return false;
   if (var->hasFlag(DF_TYPEDEF)) return false;
   // FIX: do all this with one test
   xassert(!var->hasFlag(DF_AUTO));

@@ -6144,7 +6144,7 @@ Type *E_variable::itcheck_var_set(Env &env, Expression *&replacement,
 
   // elaborate 'this->'
   if (!(flags & LF_NO_IMPL_THIS) &&
-      var->isNonStaticMember()) {
+      var->isNonStaticClassMember()) {
     replacement = wrapWithImplicitThis(env, var, name);
     return replacement->type;
   }
@@ -6827,7 +6827,7 @@ void possiblyWrapWithImplicitThis(Env &env, Expression *&func,
 {
   if (fevar &&
       fevar->var &&
-      fevar->var->isNonStaticMember()) {
+      fevar->var->isNonStaticClassMember()) {
     feacc = wrapWithImplicitThis(env, fevar->var, fevar->name);
     func = feacc;
     fevar = NULL;
@@ -8961,7 +8961,7 @@ Type *E_addrOf::itcheck_addrOf_set(Env &env, Expression *&replacement,
     xassert(evar->var);
     env.ensureFuncBodyTChecked(evar->var);
 
-    if (evar->var->isNonStaticMember()) {
+    if (evar->var->isNonStaticClassMember()) {
       return makePTMType(env, evar->var, evar->name->loc);
     }
   }

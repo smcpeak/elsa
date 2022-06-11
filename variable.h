@@ -225,9 +225,11 @@ public:
     return hasFlag(DF_STATIC) && isLocalVariable();
   }
 
-  // TODO: Rename these to say "ClassMember".
-  bool isStaticMember() const { return hasFlag(DF_STATIC) && isClassMember(); }
-  bool isNonStaticMember() const { return isClassMember() && !hasFlag(DF_STATIC); }
+  bool isStaticClassMember() const
+    { return isClassMember() && hasFlag(DF_STATIC); }
+  bool isNonStaticClassMember() const
+    { return isClassMember() && !hasFlag(DF_STATIC); }
+
   // bool isStatic() const { return hasFlag(DF_STATIC); }
 
   // True if this is a member of a class (CompoundType).
