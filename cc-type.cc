@@ -570,7 +570,21 @@ int CompoundType::numFields() const
 
 void CompoundType::addField(Variable *v)
 {
-  addVariable(v);
+  if (v->name) {
+    addVariable(v);
+  }
+
+  else {
+    // Associate 'v' with the scope, setting its containing scope.
+    registerVariable(v);
+
+    // Add it to the data members as well so that Elsa clients can easily
+    // see that there is a nested member here.
+    dataMembers.append(v);
+    TRACE("anon-comp", stringb(
+      "Added anonymous member declared at " << toLCString(v->loc) <<
+      " to container '" << toString() << "'."));
+  }
 }
 
 

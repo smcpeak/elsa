@@ -996,20 +996,9 @@ static void addAnonymousMemberToCompound(
   // otherwise we will give the wrong answer for 'isMember()'.
   xassert(memberCT->typedefVar->m_containingScope == container);
 
-  // Make the anonymous member.
-  Variable *member =
-    env.tfac.makeVariable(loc, NULL /*name*/, memberType, DF_NONE);
-
-  // We do not use the normal 'addVariable' because the member has no
-  // name, but we do want it properly associated with the scope.
-  container->registerVariable(member);
-
-  // Add it to the data members as well so that Elsa clients can easily
-  // see that there is a nested member here.
-  container->dataMembers.append(member);
-  TRACE("anon-comp", stringb(
-    "Added anonymous member declared at " << toLCString(member->loc) <<
-    " to container '" << container->toString() << "'."));
+  // Make the anonymous member and add it to the container.
+  container->addField(
+    env.tfac.makeVariable(loc, NULL /*name*/, memberType, DF_NONE));
 
   // Find the non-anonymous enclosing type.
   CompoundType *namedContainer = container;

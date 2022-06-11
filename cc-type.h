@@ -415,7 +415,14 @@ public:      // funcs
   Variable *getNamedField(StringRef name, Env &env, LookupFlags f=LF_NONE)
     { return lookupVariable(name, env, f); }
 
-  // alias for Scope::addVariable (should probably be deleted)
+  // Add a data field.
+  //
+  // If 'v->name != NULL', does 'addVariable(v)'.
+  //
+  // For anonymous members, 'v' gets registered as a member of the
+  // scope, and added to 'dataMembers', so it is there from a dynamic
+  // semantic perspective.  But it is not added to the lookup map, so it
+  // is absent for static semantics.
   void addField(Variable *v);
 
   // sm: for compatibility with existing code
