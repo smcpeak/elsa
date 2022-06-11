@@ -231,8 +231,26 @@ public:
   void traverse(TypeVisitor &vis);
 };
 
-// represent a user-defined compound type; the members of the
-// compound are whatever has been entered in the Scope
+// A CompoundType represents a class, struct, or union type.  The
+// members of the compound are whatever has been entered in the Scope.
+//
+// Note: Using the term "compound" to refer to struct, class, and union
+// types is my invention.  The C and C++ standards do not have an
+// equivalent unambiguous term, unfortunately.
+//
+// The C11 standard does not define "compound type", although it does
+// have "compound literals" (6.5.2.5), the type of which is almost any
+// object (non-function) type.  The closest standard term to my
+// CompoundType would be "structure or union type" (6.2.5p20).
+//
+// C++14 3.9.2 defines "compound type" as approximately what is
+// described by my "Type" hierarchy, although handling of cv-qualifiers
+// is different.  The closest standard term would be simply "class",
+// which does include union types (9p5).  I chose not to use that term
+// (i.e., "ClassType") due to possible confusion with types that
+// specifically use the "class" keyword, although I now question that
+// decision.
+//
 class CompoundType : public NamedAtomicType, public Scope {
 public:      // types
   // NOTE: keep these consistent with TypeIntr (in file cc-flags.h)
