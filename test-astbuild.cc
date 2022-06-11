@@ -220,6 +220,14 @@ public:      // methods
   Variable *makeVar(char const *name, Type *type,
                     DeclFlags declFlags = DF_NONE);
 
+  // Make the CompoundType object and its typedefVar.
+  CompoundType *beginCompoundType(
+    CompoundType::Keyword keyword,
+    char const *name);
+
+  // Make a structure definition with test contents.
+  TS_classSpec *makeStructDefn();
+
   E_compoundLit *testMakeE_compoundLit();
 
   // Synthesize AST for the body of a function to test the synthesis.
@@ -241,28 +249,69 @@ TestASTSynth::TestASTSynth(
 Variable *TestASTSynth::makeVar(char const *name, Type *type,
                                 DeclFlags declFlags)
 {
+  StringRef nameRef = name? m_stringTable.add(name) : NULL;
   return m_typeFactory.makeVariable(loc,
-    m_stringTable.add(name), type, declFlags);
+    nameRef, type, declFlags);
+}
+
+
+CompoundType *TestASTSynth::beginCompoundType(
+  CompoundType::Keyword keyword,
+  char const *name)
+{
+  StringRef nameRef = name? m_stringTable.add(name) : NULL;
+  CompoundType *ct = m_typeFactory.makeCompoundType(
+    keyword, nameRef);
+  Type *t_ct = m_typeFactory.makeCVAtomicType(ct, CV_NONE);
+  ct->typedefVar = makeVar(nameRef, t_ct, DF_TYPEDEF);
+  return ct;
+}
+
+
+// struct Outer {
+//   int x;
+//   union {
+//     int y;
+//     int z;
+//   };
+// };
+TS_classSpec *TestASTSynth::makeStructDefn()
+{
+  CompoundType *outerCT =
+    beginCompoundType(CompoundType::K_STRUCT, "Outer");
+
+  Type *t_int = m_typeFactory.getSimpleType(ST_INT);
+  outerCT->addField(makeVar("x", t_int));
+
+  CompoundType *innerCT =
+    beginCompoundType(CompoundType::K_UNION, NULL);
+  innerCT->m_isAnonymousCompound = true;
+
+  innerCT->addField(makeVar("y", t_int));
+  innerCT->addField(makeVar("z", t_int));
+
+  Type *t_inner = m_typeFactory.makeCVAtomicType(innerCT, CV_NONE);
+  outerCT->addField(makeVar(NULL, t_inner));
+
+  return makeTS_classSpec(outerCT);
 }
 
 
 E_compoundLit *TestASTSynth::testMakeE_compoundLit()
 {
-  CompoundType *ct = m_typeFactory.makeCompoundType(
-    CompoundType::K_STRUCT, m_stringTable.add("S"));
-  Type *t_ct = m_typeFactory.makeCVAtomicType(ct, CV_NONE);
-  ct->typedefVar = makeVar("S", t_ct, DF_TYPEDEF);
+  CompoundType *ct = beginCompoundType(CompoundType::K_STRUCT, "S");
 
   Type *t_int = m_typeFactory.getSimpleType(ST_INT);
   Variable *vx = makeVar("x", t_int);
   Variable *vy = makeVar("y", t_int);
-  ct->addVariable(vx);
-  ct->addVariable(vy);
+  ct->addField(vx);
+  ct->addField(vy);
 
   IN_compound *inc = new IN_compound(loc, NULL /*inits*/);
   inc->inits.append(new IN_expr(loc, makeE_intLit(3)));
   inc->inits.append(new IN_expr(loc, makeE_intLit(4)));
 
+  Type *t_ct = m_typeFactory.makeCVAtomicType(ct, CV_NONE);
   return makeE_compoundLit(t_ct, inc);
 }
 
@@ -355,6 +404,13 @@ void TestASTSynth::buildAndPrint()
 {
   TranslationUnit *tu = new TranslationUnit(NULL /*topForms*/);
 
+  // struct Outer { ... };
+  {
+    Declaration *declaration =
+      new Declaration(DF_NONE, makeStructDefn(), NULL /*decllist*/);
+    tu->topForms.append(new TF_decl(loc, declaration));
+  }
+
   // Type: int ()()
   Type *t_int = m_typeFactory.getSimpleType(ST_INT);
   FunctionType *t_func = m_typeFactory.makeFunctionType(t_int);
@@ -379,7 +435,14 @@ void TestASTSynth::buildAndPrint()
   // Check invariants.
   {
     IntegrityVisitor ivis(m_lang, false /*inTemplate*/);
+
+    // The AST builders should set expression types.
     ivis.m_requireExpressionTypes = true;
+
+    // There's not much point in having the AST builders construct
+    // scopes, since we won't be doing any name lookup.
+    ivis.m_checkVariableScopes = false;
+
     ivis.checkTU(tu);
   }
 

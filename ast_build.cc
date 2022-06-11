@@ -228,19 +228,26 @@ TypeSpecifier *ElsaASTBuild::makeTypeSpecifier(Type const *type)
     case AtomicType::T_ENUM: {
       NamedAtomicType *ntype = atype->atomic->asNamedAtomicType();
 
-      // This won't work if the type is anonymous because an elaborated
-      // type specifier must have a name.
-      xassert(ntype->name);
-
-      // If we are making a specifier for a compound or enum directly,
-      // then use the elaborated form.  If instead we were to make a
-      // specifier for a TypedefType of one of these, then we would make
-      // a TS_name.
-      TS_elaborated *tse = new TS_elaborated(loc(), ntype->getTypeIntr(),
-                                             makePQName(ntype->typedefVar));
-      tse->atype = ntype;
-      tspec = tse;
-
+      if (ntype->name) {
+        // If we are making a specifier for a compound or enum directly,
+        // then use the elaborated form.  (This assumes the definition
+        // appears elsewhere.)  If instead we were to make a specifier
+        // for a TypedefType of one of these, then we would make a
+        // TS_name.
+        TS_elaborated *tse = new TS_elaborated(loc(), ntype->getTypeIntr(),
+                                               makePQName(ntype->typedefVar));
+        tse->atype = ntype;
+        tspec = tse;
+      }
+      else {
+        // For an anonymous type, we must use the definition.
+        if (CompoundType const *ct = atype->atomic->ifCompoundTypeC()) {
+          tspec = makeTS_classSpec(ct);
+        }
+        else {
+          xunimp("makeTypeSpecifier for anonymous enum");
+        }
+      }
       break;
     }
 
@@ -251,6 +258,45 @@ TypeSpecifier *ElsaASTBuild::makeTypeSpecifier(Type const *type)
 
   tspec->cv = atype->cv;
   return tspec;
+}
+
+
+TS_classSpec *ElsaASTBuild::makeTS_classSpec(CompoundType const *ct)
+{
+  xassert(ct->typedefVar);
+
+  // Construct new members to denote that type.
+  MemberList *memberList = new MemberList(NULL /*list*/);
+  SFOREACH_OBJLIST(Variable, ct->dataMembers, memberIter) {
+    Variable const *varC = memberIter.data();
+
+    // The Declaration wants a non-const pointer, but no modification
+    // should happen due to letting it have one.
+    Variable *var = const_cast<Variable*>(varC);
+
+    // Make a declaration for the member.
+    Declaration *declaration = makeDeclaration(var, DC_MR_DECL);
+    Member *member = new MR_decl(var->loc, declaration);
+
+    // Add it.
+    memberList->list.append(member);
+  }
+
+  if (ct->bases.isNotEmpty()) {
+    xunimp("makeTS_classSpec: class with base classes");
+  }
+
+  // Package as a TS_classSpec.
+  TS_classSpec *classSpec = new TS_classSpec(
+    ct->typedefVar->loc,
+    ct->getTypeIntr(),
+    makePQName(ct->typedefVar),
+    FakeList<BaseClassSpec>::emptyList(),
+    memberList
+  );
+  classSpec->ctype = legacyTypeNC(ct);
+
+  return classSpec;
 }
 
 

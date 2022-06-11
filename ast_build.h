@@ -105,6 +105,9 @@ public:      // methods
   // TypedefType.
   TypeSpecifier *makeTypeSpecifier(Type const *type);
 
+  // Create a class definition.
+  TS_classSpec *makeTS_classSpec(CompoundType const *ct);
+
   // Given 'var', return a TypeSpecifier and a Declarator (both as owner
   // pointers) that declares that variable.
   std::pair<TypeSpecifier*, Declarator*>

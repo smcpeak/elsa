@@ -1,4 +1,12 @@
 ---- stdout ----
+struct Outer {
+  int x;
+  union /*anonymous compound member*/ {
+    int y;
+    int z;
+  };
+};
+
 int main(void)
 {
   int x = 3;
