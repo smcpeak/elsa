@@ -665,7 +665,7 @@ void Env::addGNUBuiltins()
     for (int prec=0; prec<=2; prec++) {
       StringRef n = axis==0? string_realSelector : string_imagSelector;
       Type *t = env.getSimpleType(constructFloatingType(prec, axis));
-      Variable *v = makeVariable(SL_INIT, n, t, DF_BUILTIN | DF_MEMBER);
+      Variable *v = makeVariable(SL_INIT, n, t, DF_BUILTIN);
       complexComponentFields[axis][prec] = v;
     }
   }

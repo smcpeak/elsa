@@ -183,7 +183,7 @@ void addCompilerSuppliedDecls(Env &env, SourceLoc loc, CompoundType *ct)
     FunctionType *ft = env.beginConstructorFunctionType(loc, ct);
     env.doneParams(ft);
     Variable *v = env.makeVariable(loc, env.constructorSpecialName, ft,
-                  DF_MEMBER | DF_IMPLICIT);
+                  DF_IMPLICIT);
     // NOTE: we don't use env.addVariableWithOload() because this is
     // a special case: we only insert if there are no ctors AT ALL.
     env.addVariable(v);
@@ -227,7 +227,7 @@ void addCompilerSuppliedDecls(Env &env, SourceLoc loc, CompoundType *ct)
     ft->addParam(refToSelfParam);
     env.doneParams(ft);
     Variable *v = env.makeVariable(loc, env.constructorSpecialName, ft,
-                                   DF_MEMBER | DF_IMPLICIT);
+                                   DF_IMPLICIT);
     env.addVariableWithOload(ctor0, v);     // always overloaded; ctor0!=NULL
     env.madeUpVariables.push(v);
   }
@@ -282,7 +282,7 @@ void addCompilerSuppliedDecls(Env &env, SourceLoc loc, CompoundType *ct)
     env.doneParams(ft);
 
     Variable *v = env.makeVariable(loc, env.operatorName[OP_ASSIGN], ft,
-                                   DF_MEMBER | DF_IMPLICIT);
+                                   DF_IMPLICIT);
     env.addVariableWithOload(assign_op0, v);
     env.madeUpVariables.push(v);
   }
@@ -295,7 +295,7 @@ void addCompilerSuppliedDecls(Env &env, SourceLoc loc, CompoundType *ct)
     // add a dtor declaration: ~Class();
     FunctionType *ft = env.makeDestructorFunctionType(loc, ct);
     Variable *v = env.makeVariable(loc, dtorName, ft,
-                                   DF_MEMBER | DF_IMPLICIT);
+                                   DF_IMPLICIT);
     env.addVariable(v);       // cannot be overloaded
 
     // put it on the list of made-up variables since there are no
@@ -2551,11 +2551,6 @@ Type *Env::makeNewCompound(CompoundType *&ct, Scope * /*nullable*/ scope,
   if (builtin) env.builtinVars.push(tv);
   ct->typedefVar = tv;
 
-  // Going into class?  Set DF_MEMBER.
-  if (scope && scope->curCompound) {
-    tv->setFlag(DF_MEMBER);
-  }
-
   // add the tag to the scope
   ct->m_isForwardDeclared = forward;
   if (name && scope) {
@@ -3346,9 +3341,6 @@ Variable *Env::createDeclaration(
   // when we go to do the insertion
   bool forceReplace = false;
 
-  // Check that DF_MEMBER is equivalent to inserting into a compound.
-  xassert(((dflags & DF_MEMBER)!=0) == (scope->curCompound!=NULL));
-
   bool staticBecauseInline = false;
   // quarl 2006-07-11
   //    "inline" implies static linkage under certain conditions.  We can't
@@ -3356,10 +3348,10 @@ Variable *Env::createDeclaration(
   //    overloaded; but we must set it under some of those conditions
   //    because env won't be available in Variable::linkerVisibleName().
   if ((dflags & DF_INLINE) && !(dflags & DF_GNU_EXTERN_INLINE) /*&& !(dflags & DF_EXTERN)*/) {
-    if (dflags & DF_MEMBER) {
+    if (scope->curCompound) {
       // quarl 2006-07-11
-      //    Can't set DF_STATIC since DF_MEMBER|DF_STATIC implies static
-      //    member.  However, when DF_INLINE|DF_MEMBER can only occur in C++
+      //    Can't set DF_STATIC since isMember() && DF_STATIC implies static
+      //    member.  However, DF_INLINE && isMember() can only occur in C++
       //    where inlineImpliesStaticLinkage, so we check for that combination
       //    in isStaticLinkage().  It would be nice to factor DF_STATIC into
       //    DF_STATIC_LINKAGE and DF_STATIC_MEMBER.

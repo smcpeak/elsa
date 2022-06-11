@@ -117,7 +117,6 @@ enum DeclFlags {
   DF_INITIALIZED = 0x00001000,    // true if has been declared with an initializer (or, for functions, with code)
   DF_BUILTIN     = 0x00002000,    // true for e.g. __builtin_constant_p -- don't emit later
   DF_PARAMETER   = 0x00010000,    // true if this is a function parameter or a handler "parameter"
-  DF_MEMBER      = 0x00080000,    // true for members of classes (data, static data, functions); *not* true for namespace members
   DF_DEFINITION  = 0x00100000,    // set once we've seen this Variable's definition
   DF_INLINE_DEFN = 0x00200000,    // set for inline function definitions on second pass of tcheck
   DF_IMPLICIT    = 0x00400000,    // set for C++ implicit typedefs (if also DF_TYPEDEF),
@@ -153,6 +152,7 @@ enum DeclFlags {
   DF_UNUSED1     = 0x00000800,
   DF_UNUSED2     = 0x00020000,
   DF_UNUSED3     = 0x00040000,
+  DF_UNUSED4     = 0x00080000,
 
   ALL_DECLFLAGS  = 0xFFFFFFFF,
   NUM_DECLFLAGS  = 32             // # bits set to 1 in ALL_DECLFLAGS

@@ -169,11 +169,7 @@ CompoundType const * NULLABLE Variable::containingCompoundForLookup() const
 
 bool Variable::isMember() const
 {
-  bool flagSays = hasFlag(DF_MEMBER);
-  bool scopeSays = (containingCompoundForLookup() != NULL);
-
-  xassert(flagSays == scopeSays);
-  return flagSays;
+  return (containingCompoundForLookup() != NULL);
 }
 
 

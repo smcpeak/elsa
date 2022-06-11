@@ -230,6 +230,12 @@ public:
   // bool isStatic() const { return hasFlag(DF_STATIC); }
 
   // True if this is a member of a class (CompoundType).
+  //
+  // Except: If this is a member of an anonymous union that is declared
+  // at block or file or namespace scope (i.e., not class scope), then
+  // this is false.
+  //
+  // TODO: Rename to 'isClassMember'.
   bool isMember() const;
 
   // True if this Variable represents a namespace.  For the purpose of

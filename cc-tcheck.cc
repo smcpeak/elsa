@@ -1068,19 +1068,6 @@ static void handleAnonymousCompound(
   }
 
   else if (env.lang.isCplusplus && anonCT->isUnion()) {
-    // Ugly hack: The members of 'anonCT' have DF_MEMBER because they
-    // were created as members of that union.  But now I want to regard
-    // them as being like local variables so that the code that adds
-    // implicit 'this->' to member accesses will not run.  So, clear
-    // that flag.
-    //
-    // TODO: DF_MEMBER should go away, replaced by something that looks
-    // at 'm_containingScope'.
-    SFOREACH_OBJLIST_NC(Variable, anonCT->dataMembers, iter) {
-      Variable *member = iter.data();
-      member->clearFlag(DF_MEMBER);
-    }
-
     // For C++ anonymous unions at (e.g.) block scope, just do the
     // lookup part.
     anonCT->m_isAnonymousCompound = true;
@@ -2776,11 +2763,6 @@ void Enumerator::tcheck(Env &env, EnumType *parentEnum, Type *parentType)
     forceReplace = true;
   }
 
-  if (env.acceptingScope(var->flags)->curCompound) {
-    // Going into a class scope.
-    var->setFlag(DF_MEMBER);
-  }
-
   if (!env.addVariable(var, forceReplace)) {
     env.error(stringc
       << "enumerator " << name << " conflicts with an existing variable "
@@ -3248,11 +3230,6 @@ realStart:
   // also Env::checkForQualifiedMemberDeclarator().
   CompoundType *enclosingClass =
     name->hasQualifiers()? NULL : scope->curCompound;
-
-  // if we're in the scope of a class at all then we're DF_MEMBER
-  if (scope->curCompound && !isFriend) {
-    dt.dflags |= DF_MEMBER;
-  }
 
   // if we're not in a class member list, and the type is not a
   // function type, and 'extern' is not specified, then this is
@@ -3783,10 +3760,10 @@ void Declarator::mid_tcheck(Env &env, Tcheck &dt)
     }
   }
   // else if (dt.dflags >= (DF_INLINE) && env.lang.inlineImpliesStaticLinkage) {
-  //   if (dt.dflags & DF_MEMBER) {
+  //   if (inClassBody) {
   //     // quarl 2006-07-11
-  //     //    Can't set DF_STATIC since DF_MEMBER|DF_STATIC implies static
-  //     //    member.  However, when DF_INLINE|DF_MEMBER can only occur in C++
+  //     //    Can't set DF_STATIC since isMember() && DF_STATIC implies static
+  //     //    member.  However, DF_INLINE && isMember() can only occur in C++
   //     //    where inlineImpliesStaticLinkage, so we check for that combination
   //     //    in isStaticLinkage().  It would be nice to factor DF_STATIC into
   //     //    DF_STATIC_LINKAGE and DF_STATIC_MEMBER.
@@ -11191,11 +11168,6 @@ void ND_usingDecl::tcheck(Env &env)
     // if the lookup was dependent, add the name with dependent type
     // (k0048.cc, t0468.cc)
     Variable *v = env.makeVariable(name->loc, name->getName(), origVar->type, DF_NONE);
-
-    // If 'v' will go into a class scope, set DF_MEMBER.
-    if (env.scope()->curCompound) {
-      v->setFlag(DF_MEMBER);
-    }
 
     // add with replacement; if the name already exists, then presumably
     // we are trying to make an overload set, but without a real function
