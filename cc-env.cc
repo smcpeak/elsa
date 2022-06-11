@@ -2551,6 +2551,11 @@ Type *Env::makeNewCompound(CompoundType *&ct, Scope * /*nullable*/ scope,
   if (builtin) env.builtinVars.push(tv);
   ct->typedefVar = tv;
 
+  // Going into class?  Set DF_MEMBER.
+  if (scope && scope->curCompound) {
+    tv->setFlag(DF_MEMBER);
+  }
+
   // add the tag to the scope
   ct->m_isForwardDeclared = forward;
   if (name && scope) {
@@ -3340,6 +3345,9 @@ Variable *Env::createDeclaration(
   // if this gets set, we'll replace a conflicting variable
   // when we go to do the insertion
   bool forceReplace = false;
+
+  // Check that DF_MEMBER is equivalent to inserting into a compound.
+  xassert(((dflags & DF_MEMBER)!=0) == (scope->curCompound!=NULL));
 
   bool staticBecauseInline = false;
   // quarl 2006-07-11
