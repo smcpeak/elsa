@@ -170,17 +170,7 @@ CompoundType const * NULLABLE Variable::containingCompoundForLookup() const
 bool Variable::isMember() const
 {
   bool flagSays = hasFlag(DF_MEMBER);
-  bool scopeSays = (m_containingScope &&
-                    m_containingScope->curCompound != NULL);
-
-  if (scopeSays && !flagSays) {
-    if (m_containingScope->curCompound->m_isAnonymousCompound) {
-      // This is the special case where we switched the members to
-      // *not* say DF_MEMBER in order to avoid 'this->' elaboration.
-      // Continue to say this is not a member.
-      return flagSays;
-    }
-  }
+  bool scopeSays = (containingCompoundForLookup() != NULL);
 
   xassert(flagSays == scopeSays);
   return flagSays;
