@@ -75,13 +75,14 @@ public:      // data
   bool canAcceptNames;
 
   // (serf) This is the parent (enclosing) scope, but only if that
-  // scope has a name (rationale: allow anonymous scopes to be
-  // deallocated).  For classes, this field is only set to non-NULL
-  // after the inner class has been fully constructed, since we can
-  // rely on the Environment's scope stack to look up things in
-  // containing classes while building the inner class for the first
-  // time (why did I do that??).  For namespaces, it's set as soon as
-  // the namespace is created.
+  // scope 'isPermanentScope()'.
+  //
+  // For classes, this field is only set to non-NULL after the inner
+  // class has been fully constructed, since we can rely on the
+  // Environment's scope stack to look up things in containing classes
+  // while building the inner class for the first time (why did I do
+  // that?).  For namespaces, it's set as soon as the namespace is
+  // created.
   Scope *parentScope;
 
   // what kind of scope is this?
@@ -193,9 +194,11 @@ public:      // funcs
   // template params or args ...
   bool isTemplateScope() const      { return isTemplateParamScope() || isTemplateArgScope(); }
 
-  // true if this scope is guaranteed to stick around until the end of
-  // the translation unit, and hence child scopes' 'parentScope' field
-  // and Variable::scope should be set to point at it
+  // True of the global scope, namespace scopes, and class scopes.
+  //
+  // It excludes function/block scopes on the premise that we could
+  // (although currently do not) deallocate them after the corresponding
+  // function has been processed.
   bool isPermanentScope() const;
 
   // are we in a template scope that is in a global scope?
@@ -233,6 +236,13 @@ public:      // funcs
 
   // somewhat common sequence: register, add, assert that the add worked
   void addUniqueVariable(Variable *v);
+
+  // Add 'v' to 'variables' so it is found by lookup, but do *not* call
+  // 'afterAddVariable', nor 'registerVariable'.
+  //
+  // If there is a collision with an existing entry, return the existing
+  // one (meaning failure), otherwise NULL (meaning success).
+  Variable * NULLABLE addVariableForLookupOnly(Variable *v);
 
   // 2005-02-24: new and improved lookup
   void lookup(LookupSet &set, StringRef name, Env &env, LookupFlags flags);

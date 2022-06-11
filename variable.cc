@@ -146,6 +146,27 @@ bool Variable::inGlobalOrNamespaceScope() const
           m_containingScope->isNamespace());
 }
 
+
+CompoundType const * NULLABLE Variable::containingCompoundForLookup() const
+{
+  if (m_containingScope) {
+    if (CompoundType const *ct = m_containingScope->curCompound) {
+      if (ct->m_isAnonymousCompound) {
+        // The point: if 'ct' is an anonymous compound, then it is not
+        // the place that lookup will find 'this'.  Look higher.
+        return ct->typedefVar->containingCompoundForLookup();
+      }
+      else {
+        // Found it.
+        return ct;
+      }
+    }
+  }
+
+  return NULL;
+}
+
+
 bool Variable::linkerVisibleName() const {
   return linkerVisibleName(false);
 }
@@ -468,7 +489,7 @@ string Variable::fullyQualifiedName0() const
       }
     }
     else {
-      tmp << "/*anon*/";
+      tmp << "/*anon at " << toLCString(loc) << "*/";
     }
   }
   return tmp;

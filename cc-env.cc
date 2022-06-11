@@ -2996,7 +2996,9 @@ Variable *Env::makeUsingAliasFor(SourceLoc loc, Variable *origVar)
 
     // 7.3.3 para 4: the original member must be in a base class of
     // the class where the alias is put
-    if (!enclosingClass->hasBaseClass(origVar->m_containingScope->curCompound)) {
+    CompoundType const *origVarCT = origVar->containingCompoundForLookup();
+    xassert(origVarCT);
+    if (!enclosingClass->hasBaseClass(origVarCT)) {
       error(stringc << "bad alias '" << name
                     << "': original must be in a base class of alias' scope");
       return NULL;

@@ -9,7 +9,11 @@ in/k0046a.cc is an example of an anonymous struct:
       };
   };
 
-My reading of the standard is that this is invalid.
+My reading of the standard is that this is invalid in C++.  C++14 9.5p5
+allows anonymous *unions*, but that's it.
+
+Note that C11 6.7.2.1p13 allows anonymous structs and unions, but the
+semantics are somewhat different.  This document is about C++.
 
 I did some googling, and found:
 

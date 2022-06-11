@@ -1,5 +1,5 @@
 // cc.in32
-// anonymous unions
+// Anonymous unions: C++14 9.5p5.
 
 int main()
 {
@@ -13,10 +13,13 @@ int main()
 }
 
 
-int foo()
+int foo(int x)
 {
-  // better not still be able to see 'ret' ..
-  //ERROR(1): return ret;     // undeclared
+  if (x) {
+    // better not still be able to see 'ret' ..
+    //ERROR(1): return ret;     // undeclared
+  }
+  return 0;
 }
 
 
@@ -27,16 +30,18 @@ struct nsStr {
   };
 };
 
-void someFunc()
+short *someFunc(struct nsStr s)
 {
-  nsStr s;
-  s.mUStr;
+  return s.mUStr;
 }
 
 
-char *anotherFunc()
+char *anotherFunc(int x)
 {
-  //ERROR(2): return mStr;
+  if (x) {
+    //ERROR(2): return mStr;
+  }
+  return 0;
 }
 
 

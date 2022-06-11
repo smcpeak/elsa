@@ -71,9 +71,14 @@ Scope::~Scope()
 
 bool Scope::isPermanentScope() const
 {
+  // 2022-06-10: Previously, this returned false for anonymous
+  // CompoundTypes, but I think that was a mistake, since I want to be
+  // able to handle named and anonymous entities as uniformly as
+  // possible.
+
   return isGlobalScope() ||
          isNamespace() ||
-         (curCompound && curCompound->name);
+         curCompound != NULL;
 }
 
 
@@ -291,6 +296,20 @@ void Scope::addUniqueVariable(Variable *v)
   registerVariable(v);
   bool ok = addVariable(v);
   xassert(ok);
+}
+
+
+Variable * NULLABLE Scope::addVariableForLookupOnly(Variable *v)
+{
+  // First check for a collision.
+  if (Variable *existing = variables.get(v->name)) {
+    return existing;
+  }
+
+  // Now add it.
+  variables.add(v->name, v);
+  changeCount++;
+  return NULL;
 }
 
 

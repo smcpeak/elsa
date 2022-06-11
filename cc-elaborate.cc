@@ -744,6 +744,12 @@ void ElabVisitor::elaborateFunctionStart(Function *f)
 // Does this Variable want a no-arg MemberInitializer?
 bool ElabVisitor::wantsMemberInit(Variable *var)
 {
+  if (var->name == NULL) {
+    // If there is no name, we cannot create a member init.  This
+    // happens for anonymous structs (C) and unions (C/C++).
+    return false;
+  }
+
   // function members should be skipped
   if (var->type->isFunctionType()) return false;
   // skip arrays for now; FIX: do something correct here

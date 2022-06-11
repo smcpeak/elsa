@@ -952,7 +952,149 @@ bool Function::instButNotTchecked() const
 
 // MemberInit
 
+
 // -------------------- Declaration -------------------
+// Add the named data members of 'ct' to 'scope' for the purpose of
+// lookup.
+static void addDataMembersToScopeForLookup(
+  Env &env,
+  CompoundType *ct,
+  Scope *scope)
+{
+  SFOREACH_OBJLIST_NC(Variable, ct->dataMembers, iter) {
+    Variable *memberMember = iter.data();
+    if (!memberMember->name) {
+      continue;
+    }
+
+    TRACE("anon-comp", stringb(
+      "Adding named member '" << memberMember->name <<
+      "' to lookup tables for scope '" <<
+      scope->scopeName() << "'."));
+
+    if (Variable *existing =
+          scope->addVariableForLookupOnly(memberMember)) {
+      env.error(memberMember->loc, stringb(
+        "Member '" << memberMember->name << "' of anonymous " <<
+        toString(ct->keyword) << " conflicts with existing "
+        "member declared at " << toString(existing->loc) << "."));
+    }
+  }
+}
+
+
+// Add to 'container' an anonymous member of 'memberType'.
+static void addAnonymousMemberToCompound(
+  Env &env,
+  SourceLoc loc,
+  Type *memberType,
+  CompoundType *container)
+{
+  CompoundType *memberCT = memberType->asCompoundType();
+
+  // Make the anonymous member.
+  Variable *member =
+    env.tfac.makeVariable(loc, NULL /*name*/, memberType, DF_NONE);
+
+  // We do not use the normal 'addVariable' because the member has no
+  // name, but we do want it properly associated with the scope.
+  container->registerVariable(member);
+
+  // Add it to the data members as well so that Elsa clients can easily
+  // see that there is a nested member here.
+  container->dataMembers.append(member);
+  TRACE("anon-comp", stringb(
+    "Added anonymous member declared at " << toLCString(member->loc) <<
+    " to container '" << container->toString() << "'."));
+
+  // Find the non-anonymous enclosing type.
+  CompoundType *namedContainer = container;
+  while (namedContainer->name == NULL) {
+    Scope *s = env.enclosingKindScopeAbove(SK_CLASS, namedContainer);
+    xassert(s && s->curCompound);
+    namedContainer = s->curCompound;
+  }
+
+  // Add all of the named members of 'memberCT' to 'namedContainer' so
+  // they will be found by name lookup.  (Nested anonymous compounds
+  // will have already added their members to 'namedContainer'.)
+  addDataMembersToScopeForLookup(env, memberCT, namedContainer);
+}
+
+
+// 'anonType' has just been declared as a compound without any tag or
+// declarators.
+//
+// For the case of an anonymous compound inside another compound, we
+// create a structure mimicking what we would get if a declarator had
+// been present (to get the right dynamic semantics), and also insert
+// the members into parent scopes to enable lookup to find them without
+// that declarator being mentioned (to get the right static semantics,
+// since it has no name).
+//
+// However, for the case (allowed in C++) of an anonymous union that is
+// inside some non-class scope, currently we only do the lookup part
+// (satisfying the static semantics, but not the dynamic semantics).
+//
+// TODO: I'd like non-class scopes to have something like the
+// 'dataMembers' of CompoundType that records the contained variables,
+// and then handle them the same as I do for CompoundType, adding an
+// unnamed member, so clients can see that there is something there.
+//
+static void handleAnonymousCompound(
+  Env &env,
+  SourceLoc loc,
+  Type *anonType)
+{
+  CompoundType *anonCT = anonType->asCompoundType();
+
+  if (CompoundType *scopeCT = env.scope()->curCompound) {
+    if (env.lang.isCplusplus && !anonCT->isUnion()) {
+      if (env.lang.allowAnonymousStructs == B3_WARN) {
+        env.warning(loc, "anonymous structs are not legal in C++ "
+                         "(gcc/msvc bug/extension allows it)");
+      }
+      else if (env.lang.allowAnonymousStructs == B3_FALSE) {
+        // In ANSI mode, we treat it a struct with no tag and no
+        // declarator as a useless declaration, since it is valid C++.
+        goto useless;
+      }
+    }
+
+    // C anonymous struct or union, or C++ anonymous union within a
+    // compound type.  Both can be handled the same way.
+    anonCT->m_isAnonymousCompound = true;
+    addAnonymousMemberToCompound(env, loc, anonType, scopeCT);
+  }
+
+  else if (env.lang.isCplusplus && anonCT->isUnion()) {
+    // Ugly hack: The members of 'anonCT' have DF_MEMBER because they
+    // were created as members of that union.  But now I want to regard
+    // them as being like local variables so that the code that adds
+    // implicit 'this->' to member accesses will not run.  So, clear
+    // that flag.
+    //
+    // TODO: DF_MEMBER should go away, replaced by something that looks
+    // at 'm_containingScope'.
+    SFOREACH_OBJLIST_NC(Variable, anonCT->dataMembers, iter) {
+      Variable *member = iter.data();
+      member->clearFlag(DF_MEMBER);
+    }
+
+    // For C++ anonymous unions at (e.g.) block scope, just do the
+    // lookup part.
+    anonCT->m_isAnonymousCompound = true;
+    addDataMembersToScopeForLookup(env, anonCT, env.scope());
+  }
+
+  else {
+  useless:
+    // Warn if no name and no declarators.
+    env.warning(loc, "Useless declaration.");
+  }
+}
+
+
 void Declaration::tcheck(Env &env, DeclaratorContext context)
 {
   // if there are no declarators, the type specifier's tchecker
@@ -1013,23 +1155,6 @@ void Declaration::tcheck(Env &env, DeclaratorContext context)
     }
   }
 
-  // give warning for anonymous struct
-  //    TODO: this seems to be dead code since cs->name is assigned above if NULL
-  if (fl_isEmpty(decllist) &&
-      spec->isTS_classSpec() &&
-      spec->asTS_classSpec()->name == NULL &&
-      spec->asTS_classSpec()->keyword != TI_UNION) {
-    if (env.lang.allowAnonymousStructs == B3_WARN) {
-      env.warning(spec->loc, "anonymous structs are not legal in C++ "
-                             "(gcc/msvc bug/extension allows it)");
-    }
-    else if (env.lang.allowAnonymousStructs == B3_FALSE) {
-      // it's actually not an error yet, it is just useless, because
-      // it cannot be used
-      env.warning(spec->loc, "useless declaration");
-    }
-  }
-
   // check the specifier in the prevailing environment
   TypeSpecifier::Tcheck tstc(dflags);
   Type *specType = spec->tcheck(env, tstc);
@@ -1059,6 +1184,18 @@ void Declaration::tcheck(Env &env, DeclaratorContext context)
     }
   }
   // ---- end of code from tcheckFakeExprList ----
+
+  else /*no declarators*/ {
+    if (TS_classSpec const *cspec = spec->ifTS_classSpecC()) {
+      if (cspec->name == NULL) {
+        // If the type specifier defined a CompoundType, but did not
+        // give it a tag name, then this could be a C anonymous struct
+        // or union (C11 6.7.2.1p13) or C++ anonymous union (C++14
+        // 9.5p5).
+        handleAnonymousCompound(env, spec->loc, specType);
+      }
+    }
+  }
 }
 
 
@@ -2250,6 +2387,9 @@ Type *TS_classSpec::itcheck(Env &env, Tcheck &tc)
 
   // check the body of the definition
   tcheckIntoCompound(env, dflags, ct);
+  TRACE("class-defn", stringb(
+    "Data members of '" << ct->toString() <<
+    "': " << ct->dataMembersToString()));
 
   if (!env.lang.isCplusplus && ct->dataMembers.isEmpty()) {
     env.diagnose3(env.lang.m_pedanticAllowEmptyStructsInC, loc,
@@ -2904,20 +3044,6 @@ void checkOperatorOverload(Env &env, Declarator::Tcheck &dt,
 }
 
 
-bool forAnonymous_isUnion(Env &env, CompoundType::Keyword k)
-{
-  if (k == CompoundType::K_UNION) {
-    return true;
-  }
-
-  if (env.lang.allowAnonymousStructs) {
-    return true;
-  }
-
-  return false;
-}
-
-
 // This function is perhaps the most complicated in this entire
 // module.  It has the responsibility of adding a variable called
 // 'name' to the environment.  But to do this it has to implement the
@@ -3097,16 +3223,6 @@ realStart:
         EF_DISAMBIGUATES);
       goto makeDummyVar;
     }
-  }
-
-  // member of an anonymous union?  (note that if the union had
-  // declarators, then it would have been given a name by now)
-  if (scope->curCompound &&
-      scope->curCompound->name == NULL &&
-      forAnonymous_isUnion(env, scope->curCompound->keyword)) {
-    // we're declaring a field of an anonymous union, which actually
-    // goes in the enclosing scope
-    scope = env.enclosingScope();
   }
 
   // constructor?

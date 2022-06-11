@@ -258,6 +258,7 @@ CompoundType::CompoundType(Keyword k, StringRef n)
     Scope(SK_CLASS, 0 /*changeCount*/, SL_UNKNOWN /*dummy loc*/),
     forward(true),
     isTransparentUnion(false),
+    m_isAnonymousCompound(false),
     keyword(k),
     bases(),
     virtualBases(),
@@ -612,6 +613,29 @@ int CompoundType::getDataMemberPositionAndType(Type const * /*OUT*/ &type,
 }
 
 
+string CompoundType::dataMembersToString() const
+{
+  stringBuilder sb;
+  sb << "{ ";
+
+  SFOREACH_OBJLIST(Variable, dataMembers, iter) {
+    Variable const *member = iter.data();
+
+    sb << member->type->toString() << ' ';
+    if (member->name) {
+      sb << member->name;
+    }
+    else {
+      sb << "/*anon at " << toLCString(member->loc) << "*/";
+    }
+    sb << "; ";
+  }
+
+  sb << '}';
+  return sb.str();
+}
+
+
 // TODO: Does this handle members of base classes correctly?  What
 // about virtual inheritance?
 int CompoundType::getDataMemberOffset(
@@ -823,6 +847,23 @@ int CompoundType::countBaseClassSubobjects(CompoundType const *ct) const
   SFOREACH_OBJLIST(BaseClassSubobj const, objs, iter) {
     if (iter.data()->ct == ct) {
       count++;
+    }
+  }
+
+  // Count anonymous compound members as being subobjects for this,
+  // since the goal is simply to make sure there is exactly one within
+  // the type where lookup was performed.
+  SFOREACH_OBJLIST(Variable, dataMembers, iter) {
+    Variable const *member = iter.data();
+    if (member->name == NULL) {
+      if (CompoundType const *memberCT = member->type->ifCompoundTypeC()) {
+        if (memberCT == ct) {
+          count++;
+        }
+        else {
+          count += memberCT->countBaseClassSubobjects(ct);
+        }
+      }
     }
   }
 

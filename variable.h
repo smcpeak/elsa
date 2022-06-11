@@ -197,6 +197,13 @@ public:
   // templates but not their instantiations.
   bool inGlobalOrNamespaceScope() const;
 
+  // Usually, this is 'm_containingScope->curCompound'.  But if that is
+  // an anonymous compound contained within another compound, go up the
+  // scope tree to find a CompoundType that is not an anonymous
+  // compound, which is where this Variable will have been inserted for
+  // lookup purposes.  Returns NULL if such a compound is not found.
+  CompoundType const * NULLABLE containingCompoundForLookup() const;
+
   bool isStaticLinkage() const {
     // quarl 2006-07-11
     //    See Declarator::mid_tcheck() for why this checks for DF_INLINE|DF_MEMBER.

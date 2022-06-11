@@ -220,7 +220,10 @@ public:      // data
   Bool3 allowModifiersWithTypedefNames;
 
   // gcc/msvc bug/extension compatibility: allow anonymous structs;
-  // see doc/anon-structs.txt
+  // see doc/anon-structs.txt.
+  //
+  // This only has an effect for C++.  In C mode, anonymous structs are
+  // always allowed.
   Bool3 allowAnonymousStructs;
 
   // gcc-2 bug compatibility: In gcc-2, namespace "std::" is actually

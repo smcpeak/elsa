@@ -640,7 +640,14 @@ void TS_classSpec::iprint(PrintEnv &env) const
   env << toString(ql);          // see string toString(class dummyType*) above
   env << toString(keyword) << ' ';
   ext_printAfterClassKey(env);
-  if (name) env << name->toString();
+
+  if (name) {
+    env << name->toString();
+  }
+  else if (ctype &&     // Tolerate syntax that hasn't been tchecked.
+           ctype->m_isAnonymousCompound) {
+    env << "/*anonymous compound member*/";
+  }
 
   if (fl_isNotEmpty(bases)) {
     TPSEQUENCE;

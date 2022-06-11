@@ -18,9 +18,13 @@ SMBASE_FROM_HERE = ../$(SMBASE)
 # External tools.
 PYTHON3 = python3
 PERL    = perl
+GCC     = gcc
 
 # How to invoke run-compare-expect.py.
 RUN_COMPARE_EXPECT = $(PYTHON3) $(SMBASE_FROM_HERE)/run-compare-expect.py
+
+# How to invoke multitest.pl.
+RUN_MULTITEST = $(PERL) ../multitest.pl
 
 # Name of parser binary.
 CCPARSE = ../ccparse.exe
@@ -32,6 +36,8 @@ include ../config.mk
 
 # ------------------------------ rules ---------------------------------
 # Defines CREATE_OUTPUT_DIRECTORY, among other things.
+#
+# TODO: Use CREATE_OUTPUT_DIRECTORY where appropriate.
 include $(SMBASE_FROM_HERE)/sm-lib.mk
 
 
@@ -236,7 +242,6 @@ out/pqname/%.c.ok: pqname/%.c pqname/%.c.expect $(CCPARSE)
 # Type-check tests simply run ccparse and expect it to do its own
 # internal validation with internal testing hooks.
 
-TESTS += tcheck/anon-union-in-struct.c
 TESTS += tcheck/builtin-offsetof.c
 TESTS += tcheck/c99-array-declarator-qualifier.c
 TESTS += tcheck/cast-btw-float-and-ptr.c
@@ -258,7 +263,7 @@ TESTS += tcheck/static-assert.c
 # Run a C tcheck test
 out/tcheck/%.c.ok: tcheck/%.c $(CCPARSE)
 	@mkdir -p $(dir $@)
-	$(PERL) ../multitest.pl $(CCPARSE) tcheck/$*.c
+	$(RUN_MULTITEST) $(CCPARSE) tcheck/$*.c
 	touch $@
 
 TESTS += tcheck/builtin-offsetof.cc
@@ -268,8 +273,30 @@ TESTS += tcheck/template-default-arg-templ-spec.cc
 # Run a C++ tcheck test
 out/tcheck/%.cc.ok: tcheck/%.cc $(CCPARSE)
 	@mkdir -p $(dir $@)
-	$(PERL) ../multitest.pl $(CCPARSE) tcheck/$*.cc
+	$(RUN_MULTITEST) $(CCPARSE) tcheck/$*.cc
 	touch $@
+
+
+# ------------------------------- run ----------------------------------
+# Test that we can run the pprint output and it exits with code 0.
+out/run/%: run/% $(CCPARSE)
+	$(CREATE_OUTPUT_DIRECTORY)
+	@#
+	@# First check that it parses, and any errors detected.
+	@#
+	$(RUN_MULTITEST) $(CCPARSE) run/$*
+	@#
+	@# Now pretty-print, compile, and run.
+	@#
+	$(CCPARSE) --pretty-print run/$* > out/run/pprint-$*
+	$(GCC) -o out/run/$*.exe out/run/pprint-$*
+	./out/run/$*.exe
+	touch $@
+
+.PHONY: run-tests
+check-run: out/run/anon-union-in-struct.c
+
+check: check-run
 
 
 # ------------------------------ errmsg --------------------------------

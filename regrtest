@@ -1141,7 +1141,7 @@ failparse k0102.cc "template parameter template-instantiated on another template
 failparse k0103.cc "'duplicate definition' from 'using' declaration"
 testparse k0104.cc #"restrict reference"
 failparse k0105.cc "function pointer dependent type"
-failparse k0106.cc "anonymous struct in anonymous union"
+testparse k0106.cc #"anonymous struct in anonymous union"
 failparse k0107.cc "inline explicit instantiation"
 failparse k0108.cc "explicit instantiation of constructor"
 failparse k0109.cc "instantiating template member function"

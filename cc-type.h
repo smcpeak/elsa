@@ -239,11 +239,17 @@ public:      // types
   enum Keyword { K_STRUCT, K_CLASS, K_UNION, NUM_KEYWORDS };
 
 public:      // data
+  // TODO: Rename this to something more descriptive.
   bool forward : 1;               // true when it's only fwd-declared
 
-  // When true, this is a GNU transparent union.  I think adding
-  // a bool like this is inelegant, but oh well.
+  // When true, this is a GNU transparent union.
   bool isTransparentUnion : 1;
+
+  // When true, this is an anonymous struct or union (C11 6.7.2.1p13,
+  // C++14 9.5p5).  This is *not* the same as merely having a NULL name
+  // (although that is implied) since it alters the lookup rules for
+  // members.
+  bool m_isAnonymousCompound : 1;
 
   Keyword keyword;            // keyword used to introduce the type
 
@@ -251,6 +257,12 @@ public:      // data
   // of the class definition; note that this is partially redundant
   // with the Scope's 'variables' map, and hence should not be changed
   // without also updating that map
+  //
+  // Some members have name==NULL in order to implement anonymous
+  // compound members (C11 6.7.2.1p13, C++14 9.5p5).
+  //
+  // Currently, unnamed bit-fields (C11 6.7.2.1p12, C++14 9.6p2) are
+  // simply discarded, so do not appear here.
   SObjList<Variable> dataMembers;
 
   // classes from which this one directly/syntactically inherits;
@@ -326,7 +338,7 @@ protected:   // funcs
   friend class TypeFactory;
 
   // override no-op implementation in Scope
-  void afterAddVariable(Variable *v) override;
+  virtual void afterAddVariable(Variable *v) override;
 
 public:      // funcs
   virtual ~CompoundType();
@@ -399,6 +411,10 @@ public:      // funcs
   int getDataMemberPositionAndType(Type const * /*OUT*/ &type,
                                    StringRef name) const;
 
+  // Return a string like "{ int x; char y; Foo foo; }" that describes
+  // the data members for diagnostic messages.
+  string dataMembersToString() const;
+
   // return the offset in bytes of 'dataMember' in this struct;
   // fail an assertion if it is not present (why does this function
   // take a Variable* and the previous one a StringRef?  I'm not
@@ -427,8 +443,11 @@ public:      // funcs
   // render the subobject hierarchy to a 'dot' graph
   string renderSubobjHierarchy() const;
 
-  // how many times does 'ct' appear as a subobject?
-  // returns 1 if ct==this
+  // How many times does 'ct' appear as a subobject?  Returns 1 if
+  // ct==this.
+  //
+  // This also counts anonymous compound members (C11 6.7.2.1p13), even
+  // though they are not included in 'getSubobjects'.
   int countBaseClassSubobjects(CompoundType const *ct) const;
 
   bool hasUnambiguousBaseClass(CompoundType const *ct) const
