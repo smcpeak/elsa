@@ -187,6 +187,7 @@ void IntegrityVisitor::checkDefinitionTypedefVar(Variable const *var)
 
   else if (m_lang.noInnerClasses &&    // i.e., we are in C
            var->isType() &&            // currently always true
+           var->name != NULL &&        // anons don't go to global
            withinSyntax(ES_CLASS) &&
            !withinSyntax(ES_FUNCTION)) {
     // In C, if a type is defined inside a struct, it is as if it was

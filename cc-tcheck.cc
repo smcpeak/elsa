@@ -992,6 +992,10 @@ static void addAnonymousMemberToCompound(
 {
   CompoundType *memberCT = memberType->asCompoundType();
 
+  // The member type should have 'container' as its parent scope,
+  // otherwise we will give the wrong answer for 'isMember()'.
+  xassert(memberCT->typedefVar->m_containingScope == container);
+
   // Make the anonymous member.
   Variable *member =
     env.tfac.makeVariable(loc, NULL /*name*/, memberType, DF_NONE);
@@ -2133,16 +2137,28 @@ CompoundType *checkClasskeyAndName(
 
     // making an ordinary compound, or a template primary?
     if (!templateArgs) {
-      Scope *destScope = (forward || definition) ?
-        // if forward=true, 3.3.1 para 5 says:
-        //   the elaborated-type-specifier declares the identifier to be a
-        //   class-name in the scope that contains the declaration
-        // if definition=true, I think it works the same [ref?]
-        env.typeAcceptingScope() :
+      Scope *destScope;
+      if (forward || definition) {
+        if (name) {
+          // if forward=true, 3.3.1 para 5 says:
+          //   the elaborated-type-specifier declares the identifier to be a
+          //   class-name in the scope that contains the declaration
+          // if definition=true, I think it works the same [ref?]
+          destScope = env.typeAcceptingScope();
+        }
+        else {
+          // If the type has no name, then we want to bypass the usual
+          // rule in C that puts nested types into the global scope so
+          // that anonymous compounds point at their containers.
+          destScope = env.acceptingScope();
+        }
+      }
+      else {
         // 3.3.1 para 5 says:
         //   the identifier is declared in the smallest non-class,
         //   non-function-prototype scope that contains the declaration
-        env.outerScope() ;
+        destScope = env.outerScope();
+      }
 
       // this sets the parameterized primary of the scope
       env.makeNewCompound(ct, destScope, stringName, loc, keyword,
