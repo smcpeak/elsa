@@ -36,9 +36,11 @@ include ../config.mk
 
 # ------------------------------ rules ---------------------------------
 # Defines CREATE_OUTPUT_DIRECTORY, among other things.
-#
-# TODO: Use CREATE_OUTPUT_DIRECTORY where appropriate.
 include $(SMBASE_FROM_HERE)/sm-lib.mk
+
+# Like $(CREATE_OUTPUT_DIRECTORY), but also create the 'idem'
+# subdirectory underneath it so the 'idemcheck' script will work.
+CREATE_OUTPUT_DIRECTORY_IDEM = @mkdir -p $(dir $@)idem
 
 
 # List of tests.  This gets added to below.
@@ -69,7 +71,7 @@ TESTS += pprint/vararg-promote.cc
 
 # Run a C++ pretty-print test.
 out/pprint/%.cc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
-	@mkdir -p $(dir $@)idem
+	$(CREATE_OUTPUT_DIRECTORY_IDEM)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/pprint/$*.cc.actual \
 	  --expect pprint/$*.cc.expect \
@@ -133,7 +135,7 @@ TESTS += pprint/weak-alias.c
 # in C and the things it does do (mainly about structure assignment)
 # are things I do not want, at least as part of a pprint test.
 out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect pprint/%.c.isc.expect $(CCPARSE)
-	@mkdir -p $(dir $@)idem
+	$(CREATE_OUTPUT_DIRECTORY_IDEM)
 #	Main pretty-print.
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/pprint/$*.c.actual \
@@ -159,7 +161,7 @@ out/pprint/%.c.ok: pprint/%.c pprint/%.c.expect pprint/%.c.isc.expect $(CCPARSE)
 
 # Test without passing the result into GCC.
 out/pprint/%.c.nogcc.ok: pprint/%.c pprint/%.c.expect $(CCPARSE)
-	@mkdir -p $(dir $@)idem
+	$(CREATE_OUTPUT_DIRECTORY_IDEM)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/pprint/$*.c.actual \
 	  --expect pprint/$*.c.expect \
@@ -173,7 +175,7 @@ check: out/pprint/gnu-asm.c.nogcc.ok
 
 # Test C++ without passing the result into GCC.
 out/pprint/%.cc.nogcc.ok: pprint/%.cc pprint/%.cc.expect $(CCPARSE)
-	@mkdir -p $(dir $@)idem
+	$(CREATE_OUTPUT_DIRECTORY_IDEM)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/pprint/$*.cc.actual \
 	  --expect pprint/$*.cc.expect \
@@ -191,7 +193,7 @@ TESTS += strlit/strlit1.cc
 
 # Run a C++ string literal test.
 out/strlit/%.cc.ok: strlit/%.cc strlit/%.cc.expect $(CCPARSE)
-	@mkdir -p $(dir $@)
+	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/strlit/$*.cc.actual \
 	  --expect strlit/$*.cc.expect \
@@ -204,7 +206,7 @@ TESTS += strlit/multiline.c
 
 # Run a C string literal test.
 out/strlit/%.c.ok: strlit/%.c strlit/%.c.expect $(CCPARSE)
-	@mkdir -p $(dir $@)
+	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/strlit/$*.c.actual \
 	  --expect strlit/$*.c.expect \
@@ -219,7 +221,7 @@ out/strlit/%.c.ok: strlit/%.c strlit/%.c.expect $(CCPARSE)
 TESTS += pqname/pqname1.c
 
 out/pqname/%.cc.ok: pqname/%.cc pqname/%.cc.expect $(CCPARSE)
-	@mkdir -p $(dir $@)
+	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/pqname/$*.cc.actual \
 	  --expect pqname/$*.cc.expect \
@@ -230,7 +232,7 @@ out/pqname/%.cc.ok: pqname/%.cc pqname/%.cc.expect $(CCPARSE)
 TESTS += pqname/pqname2.cc
 
 out/pqname/%.c.ok: pqname/%.c pqname/%.c.expect $(CCPARSE)
-	@mkdir -p $(dir $@)
+	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/pqname/$*.c.actual \
 	  --expect pqname/$*.c.expect \
@@ -262,7 +264,7 @@ TESTS += tcheck/static-assert.c
 
 # Run a C tcheck test
 out/tcheck/%.c.ok: tcheck/%.c $(CCPARSE)
-	@mkdir -p $(dir $@)
+	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_MULTITEST) $(CCPARSE) tcheck/$*.c
 	touch $@
 
@@ -272,7 +274,7 @@ TESTS += tcheck/template-default-arg-templ-spec.cc
 
 # Run a C++ tcheck test
 out/tcheck/%.cc.ok: tcheck/%.cc $(CCPARSE)
-	@mkdir -p $(dir $@)
+	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_MULTITEST) $(CCPARSE) tcheck/$*.cc
 	touch $@
 
@@ -357,7 +359,7 @@ check: check-errmsg
 
 # ---------------------------- unit tests ------------------------------
 out/unit-tests.ok: $(CCPARSE)
-	@mkdir -p $(dir $@)
+	$(CREATE_OUTPUT_DIRECTORY)
 	./$(CCPARSE) --unit-tests
 	touch $@
 
@@ -365,7 +367,7 @@ check: out/unit-tests.ok
 
 
 out/test-astbuild.ok: $(CCPARSE) test-astbuild.expect
-	@mkdir -p $(dir $@)
+	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/test-astbuild.actual \
 	  --expect test-astbuild.expect \
