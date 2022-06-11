@@ -257,8 +257,13 @@ public:      // types
   enum Keyword { K_STRUCT, K_CLASS, K_UNION, NUM_KEYWORDS };
 
 public:      // data
-  // TODO: Rename this to something more descriptive.
-  bool forward : 1;               // true when it's only fwd-declared
+  // True when this is only forward-declared.  If a definition is then
+  // provided in this TU, this gets changed to false.
+  //
+  // This is also true for a class template instantiation if, so far,
+  // we have not instantiated the class body (either because we have
+  // not needed it, or the template is only a forward declaration).
+  bool m_isForwardDeclared : 1;
 
   // When true, this is a GNU transparent union.
   bool isTransparentUnion : 1;
@@ -361,7 +366,7 @@ protected:   // funcs
 public:      // funcs
   virtual ~CompoundType();
 
-  bool isComplete() const { return !forward; }
+  bool isComplete() const { return !m_isForwardDeclared; }
   bool isUnion() const { return keyword == K_UNION; }
 
   // true if this is a class that is incomplete because it requires

@@ -2552,7 +2552,7 @@ Type *Env::makeNewCompound(CompoundType *&ct, Scope * /*nullable*/ scope,
   ct->typedefVar = tv;
 
   // add the tag to the scope
-  ct->forward = forward;
+  ct->m_isForwardDeclared = forward;
   if (name && scope) {
     bool ok = scope->addCompound(ct);
     xassert(ok);     // already checked that it was ok

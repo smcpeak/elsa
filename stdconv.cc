@@ -416,7 +416,7 @@ StandardConversion getStandardConversion
 
     // the src type must be complete for this conversion
     if (src->isCompoundType() &&
-        src->asCompoundTypeC()->forward) {
+        src->asCompoundTypeC()->m_isForwardDeclared) {
       return conv.error("type must be complete to strip '&'");
     }
 

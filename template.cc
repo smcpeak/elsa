@@ -2624,7 +2624,7 @@ Variable *Env::instantiateClassTemplate
   // create the CompoundType
   CompoundType const *specCT = spec->type->asCompoundType();
   CompoundType *instCT = tfac.makeCompoundType(specCT->keyword, specCT->name);
-  instCT->forward = true;
+  instCT->m_isForwardDeclared = true;
   instCT->instName = str(stringc << specCT->name << sargsToString(primaryArgs));
   instCT->parentScope = specCT->parentScope;
 
@@ -2685,7 +2685,7 @@ void Env::instantiateClassBody(Variable *inst)
 {
   TemplateInfo *instTI = inst->templateInfo();
   CompoundType *instCT = inst->type->asCompoundType();
-  xassert(instCT->forward);     // otherwise already instantiated!
+  xassert(instCT->m_isForwardDeclared);     // otherwise already instantiated!
 
   Variable *spec = instTI->instantiationOf;
   TemplateInfo *specTI = spec->templateInfo();
@@ -2756,10 +2756,10 @@ void Env::instantiateClassBody(Variable *inst)
   ScopeSeq qualifierScopes;
   tcheckDeclaratorPQName(env, qualifierScopes, instCT->syntax->name, LF_DECLARATOR);
 
-  // the instantiation is will be complete; I think we must do this
+  // the instantiation will be complete; I think we must do this
   // before checking into the compound to avoid repeatedly attempting
   // to instantiate this class
-  instCT->forward = false;
+  instCT->m_isForwardDeclared = false;
   instCT->syntax->ctype = instCT;
 
   // check the class body, forcing it to use 'instCT'; don't check
@@ -2816,7 +2816,7 @@ void Env::ensureClassBodyInstantiated(CompoundType *ct)
     TemplateInfo *instTI = inst->templateInfo();
     Variable *spec = instTI->instantiationOf;
     CompoundType *specCT = spec->type->asCompoundType();
-    if (specCT->forward) {
+    if (specCT->m_isForwardDeclared) {
       TRACE("template", "would like to instantiate body of " <<
                         instTI->templateName() <<
                         ", but no template defn available");
@@ -3591,7 +3591,7 @@ bool Env::mergeParameterLists(Variable *prior,
                               SObjList<Variable> const &srcParams)
 {
   // if 'prior' is actually a definition, then don't make any changes
-  bool priorIsDefn = !prior->type->asCompoundType()->forward;
+  bool priorIsDefn = !prior->type->asCompoundType()->m_isForwardDeclared;
 
   TRACE("templateParams", "mergeParameterLists: prior=" << prior->name
     << ", dest=" << paramsToCString(destParams)
@@ -4187,7 +4187,7 @@ void Env::applyArgumentMap_ensureComplete(CompoundType *ct)
   // if the class is still incomplete (because the definition was
   // not available), I say it's another case like those mentioned
   // in 14.8.2p2b3, even though it isn't explicitly among them
-  if (ct->forward) {
+  if (ct->m_isForwardDeclared) {
     xTypeDeduction(stringc
       << "attempt to access member of '" << ct->instName
       << "' but no definition has been seen");

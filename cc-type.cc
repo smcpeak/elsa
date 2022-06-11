@@ -256,7 +256,7 @@ string BaseClassSubobj::canonName() const
 CompoundType::CompoundType(Keyword k, StringRef n)
   : NamedAtomicType(n),
     Scope(SK_CLASS, 0 /*changeCount*/, SL_UNKNOWN /*dummy loc*/),
-    forward(true),
+    m_isForwardDeclared(true),
     isTransparentUnion(false),
     m_isAnonymousCompound(false),
     keyword(k),

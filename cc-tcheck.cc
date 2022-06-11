@@ -2057,7 +2057,7 @@ CompoundType *checkClasskeyAndName(
       spec = env.findInstantiation(primaryTI, *templateArgs);
       if (spec) {
         ct = spec->type->asCompoundType();
-        if (ct->forward) {
+        if (ct->m_isForwardDeclared) {
           // body not yet instantiated, we're ok
           TRACE("template", "changing " << ct->instName <<
                             " from implicit inst to explicit spec");
@@ -2128,9 +2128,9 @@ CompoundType *checkClasskeyAndName(
                           ", defnScope is " << defnScope->desc());
       }
 
-      if (ct->forward) {
+      if (ct->m_isForwardDeclared) {
         // now it is no longer a forward declaration
-        ct->forward = false;
+        ct->m_isForwardDeclared = false;
       }
       else {
         breaker();
