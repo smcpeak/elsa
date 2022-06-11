@@ -996,18 +996,18 @@ public:
   // append a parameter to the (ordinary) parameters list
   void addParam(Variable *param);
 
-  // add the implicit '__receiver' param; sets 'isMember()' to true
+  // add the implicit '__receiver' param; sets 'isMethod()' to true
   void addReceiver(Variable *param);
 
   // Note: After calling 'addParam', etc., the client must call
   // TypeFactory::doneParams so that the factory has a chance to
   // do any final adjustments.
 
-  Variable const *getReceiverC() const;  // 'isMember' must be true
+  Variable const *getReceiverC() const;  // 'isMethod' must be true
   Variable *getReceiver() { return const_cast<Variable*>(getReceiverC()); }
 
-  CVFlags getReceiverCV() const;         // dig down; or CV_NONE if !isMember
-  CompoundType *getClassOfMember();      // 'isMember' must be true
+  CVFlags getReceiverCV() const;         // dig down; or CV_NONE if !isMethod
+  CompoundType *getClassOfMember();      // 'isMethod' must be true
 
   // 'getClassOfMember()' only works if the function is a member of a
   // concrete class.  If it's a member of a template class, this must be

@@ -528,13 +528,6 @@ class IDeclarator {
   public bool hasInnerGrouping() const;
 
   -> D_func {
-       // I want to know which D_funcs are members of classes (whether
-       // static or not), but it's not sufficient to just check my
-       // environment context since I get confused by pointers to
-       // functions.. so I set this to true in MR_decl::tcheck and
-       // MR_func::tcheck
-       public bool isMember = false;
-
        // Provide a hook for extensions to make adjustments to a
        // just-created FunctionType during type checking.  (This is
        // ugly, but so is the way FunctionTypes are created in general.)

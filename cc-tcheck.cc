@@ -2983,8 +2983,8 @@ void checkOperatorOverload(Env &env, Declarator::Tcheck &dt,
 
   xassert(desc & (ONEPARAM | TWOPARAMS | ANYPARAMS));
 
-  bool isMember = scope->curCompound != NULL;
-  if (!isMember && !(desc & NONMEMBER)) {
+  bool isClassMember = scope->curCompound != NULL;
+  if (!isClassMember && !(desc & NONMEMBER)) {
     env.error(loc, stringc << strname << " must be a member function");
   }
 
@@ -3014,7 +3014,7 @@ void checkOperatorOverload(Env &env, Declarator::Tcheck &dt,
       if (!t->isSimple(ST_INT) ||
           t->getCVFlags()!=CV_NONE) {
         env.error(loc, stringc
-          << (isMember? "" : "second ")
+          << (isClassMember? "" : "second ")
           << "parameter of " << strname
           << " must have type 'int', not '"
           << t->toString() << "', if it is present");
@@ -3294,7 +3294,7 @@ realStart:
       }
     }
 
-    if (prior->isMember()) {
+    if (prior->isClassMember()) {
       // this intends to be the definition of a class member; make sure
       // the code doesn't try to define a nonstatic data member
       if (!prior->type->isFunctionType() &&
@@ -3762,8 +3762,8 @@ void Declarator::mid_tcheck(Env &env, Tcheck &dt)
   // else if (dt.dflags >= (DF_INLINE) && env.lang.inlineImpliesStaticLinkage) {
   //   if (inClassBody) {
   //     // quarl 2006-07-11
-  //     //    Can't set DF_STATIC since isMember() && DF_STATIC implies static
-  //     //    member.  However, DF_INLINE && isMember() can only occur in C++
+  //     //    Can't set DF_STATIC since isClassMember() && DF_STATIC implies static
+  //     //    member.  However, DF_INLINE && isClassMember() can only occur in C++
   //     //    where inlineImpliesStaticLinkage, so we check for that combination
   //     //    in isStaticLinkage().  It would be nice to factor DF_STATIC into
   //     //    DF_STATIC_LINKAGE and DF_STATIC_MEMBER.
@@ -6916,7 +6916,7 @@ Type *E_funCall::inner2_itcheck(Env &env, LookupSet &candidates)
     if (fevar &&                                // E_variable,
         !pqname->hasQualifiers() &&             // unqualified,
         (fevar->type->isSimple(ST_NOTFOUND) ||  // orig lookup failed
-         !fevar->var->isMember())) {            //   or found a nonmember
+         !fevar->var->isClassMember())) {       //   or found a nonmember
       // get additional candidates from associated scopes
       ArrayStack<Type*> argTypes(fl_count(args));
       FAKELIST_FOREACH(ArgExpression, args, iter) {
@@ -8296,7 +8296,7 @@ Type *resolveOverloadedUnaryOperator(
         OperatorName *oname = new ON_operator(op);
         PQ_operator *pqo = new PQ_operator(SL_UNKNOWN, oname, opName);
 
-        if (winner->isMember()) {
+        if (winner->isClassMember()) {
           // replace '~a' with 'a.operator~()'
           replacement = new E_funCall(
             new E_fieldAcc(expr, pqo),               // function
@@ -8410,7 +8410,7 @@ Type *resolveOverloadedBinaryOperator(
 
       if (!winner->hasFlag(DF_BUILTIN)) {
         PQ_operator *pqo = new PQ_operator(SL_UNKNOWN, new ON_operator(op), opName);
-        if (winner->isMember()) {
+        if (winner->isClassMember()) {
           // replace 'a+b' with 'a.operator+(b)'
           replacement = new E_funCall(
             // function to invoke

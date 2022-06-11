@@ -198,7 +198,7 @@ and references uniformly if you want, by using
 <b>FunctionType</b> represents a function type.  The parameters
 are represented as a list of Variable
 (<a href="../variable.h">variable.h</a>) objects.  Nonstatic
-member functions have the <tt>isMember</tt> flag set, in which
+member functions have the <tt>isMethod</tt> flag set, in which
 case their first parameter is called "this" and has type
 "C <i>cv</i> &", where "C" is the name of the class of which the
 function is a member, and <i>cv</i> is optional const/volatile flags.
@@ -233,8 +233,8 @@ functions and member data.
 
 <p>
 Note that creating a Pointer to a Function that happens to have
-<tt>isMember</tt> be true is not the same thing as a PointerToMember
-to a Function (without <tt>isMember</tt>).  The former is a concept
+<tt>isMethod</tt> be true is not the same thing as a PointerToMember
+to a Function (without <tt>isMethod</tt>).  The former is a concept
 that I think would be useful, but does not exist in C++.  The latter
 is C++'s pointer-to-member (to a function), and has the "heterogeneous
 array" semantics.

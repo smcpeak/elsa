@@ -206,27 +206,28 @@ public:
 
   bool isStaticLinkage() const {
     // quarl 2006-07-11
-    //    See Declarator::mid_tcheck() for why this checks for DF_INLINE && isMember().
+    //    See Declarator::mid_tcheck() for why this checks for DF_INLINE && isClassMember().
     //    Note that these are not exclusive; a variable can have both static
     //    linkage (by being inline) and be a static member.
     return ( ( (hasFlag(DF_STATIC) &&
                 inGlobalOrNamespaceScope()) ||
-               (hasFlag(DF_INLINE) && isMember())
+               (hasFlag(DF_INLINE) && isClassMember())
              ) /*&& !hasFlag(DF_GNU_EXTERN_INLINE)*/);
   }
 
   // True of variables declared in and local to a function.  False for
   // members of local classes.
   bool isLocalVariable() const {
-    return !( inGlobalOrNamespaceScope() || isMember() );
+    return !( inGlobalOrNamespaceScope() || isClassMember() );
   }
 
   bool isStaticLocal() const {
     return hasFlag(DF_STATIC) && isLocalVariable();
   }
 
-  bool isStaticMember() const { return hasFlag(DF_STATIC) && isMember(); }
-  bool isNonStaticMember() const { return isMember() && !hasFlag(DF_STATIC); }
+  // TODO: Rename these to say "ClassMember".
+  bool isStaticMember() const { return hasFlag(DF_STATIC) && isClassMember(); }
+  bool isNonStaticMember() const { return isClassMember() && !hasFlag(DF_STATIC); }
   // bool isStatic() const { return hasFlag(DF_STATIC); }
 
   // True if this is a member of a class (CompoundType).
@@ -234,9 +235,7 @@ public:
   // Except: If this is a member of an anonymous union that is declared
   // at block or file or namespace scope (i.e., not class scope), then
   // this is false.
-  //
-  // TODO: Rename to 'isClassMember'.
-  bool isMember() const;
+  bool isClassMember() const;
 
   // True if this Variable represents a namespace.  For the purpose of
   // this function, the global scope is considered a namespace.

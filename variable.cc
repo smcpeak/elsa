@@ -167,7 +167,7 @@ CompoundType const * NULLABLE Variable::containingCompoundForLookup() const
 }
 
 
-bool Variable::isMember() const
+bool Variable::isClassMember() const
 {
   return (containingCompoundForLookup() != NULL);
 }
@@ -232,7 +232,7 @@ bool Variable::linkerVisibleName(bool evenIfStaticLinkage) const {
   // CompoundTypes are linker visible if the CompoundType is linkerVisible.
   // Non-static members are visible only if they are FunctionTypes.
   if (m_containingScope->isClassScope()) {
-    if (!isMember()) {
+    if (!isClassMember()) {
       return false;
     }
 

@@ -3350,8 +3350,8 @@ Variable *Env::createDeclaration(
   if ((dflags & DF_INLINE) && !(dflags & DF_GNU_EXTERN_INLINE) /*&& !(dflags & DF_EXTERN)*/) {
     if (scope->curCompound) {
       // quarl 2006-07-11
-      //    Can't set DF_STATIC since isMember() && DF_STATIC implies static
-      //    member.  However, DF_INLINE && isMember() can only occur in C++
+      //    Can't set DF_STATIC since isClassMember() && DF_STATIC implies static
+      //    member.  However, DF_INLINE && isClassMember() can only occur in C++
       //    where inlineImpliesStaticLinkage, so we check for that combination
       //    in isStaticLinkage().  It would be nice to factor DF_STATIC into
       //    DF_STATIC_LINKAGE and DF_STATIC_MEMBER.
@@ -4005,7 +4005,7 @@ E_addrOf *Env::build_E_addrOf(Expression *underlying)
   // are we building an address-of nonstatic member?
   if (underlying->isE_variable()) {
     Variable *underVar = underlying->asE_variable()->var;
-    if (underVar->isMember() &&
+    if (underVar->isClassMember() &&
         !underVar->hasFlag(DF_STATIC)) {
       CompoundType *inClassNAT = underVar->m_containingScope->curCompound;
       xassert(inClassNAT);
