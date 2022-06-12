@@ -2241,6 +2241,23 @@ void IN_ctor::print(PrintEnv &env, bool) const
 }
 
 
+// prints designators in the new C99 style, not the obsolescent ":"
+// style
+static void print_DesignatorList(PrintEnv &env, FakeList<Designator> *dl) {
+  xassert(dl);
+  FAKELIST_FOREACH_NC(Designator, dl, d) {
+    d->print(env);
+  }
+  env << "=";
+}
+
+void IN_designated::print(PrintEnv &env, bool outermost) const
+{
+  print_DesignatorList(env, designator_list);
+  init->print(env, outermost);
+}
+
+
 void SIN_stringLit::print(PrintEnv &env, bool) const
 {
   m_stringLit->print(env, OPREC_ASSIGN);
@@ -2337,7 +2354,26 @@ void SIN_union::print(PrintEnv &env, bool outermost) const
 }
 
 
-// InitLabel
+// ---------------------------- Designator -----------------------------
+void FieldDesignator::print(PrintEnv &env) const
+{
+  xassert(id);
+  env << "." << id;
+}
+
+
+void SubscriptDesignator::print(PrintEnv &env) const
+{
+  xassert(idx_expr);
+  env << "[";
+  idx_expr->print(env, OPREC_LOWEST);
+  if (idx_expr2) {
+    env << " ... ";
+    idx_expr2->print(env, OPREC_LOWEST);
+  }
+  env << "]";
+}
+
 
 // -------------------- TemplateDeclaration ---------------
 void TemplateDeclaration::print(PrintEnv &env) const

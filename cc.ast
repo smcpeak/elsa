@@ -848,19 +848,13 @@ class Designator (SourceLoc loc) {
     }
   }
 
-  pure_virtual void print(PrintEnv &env) const;
-
   -> FieldDesignator(StringRef id);
 
   // Represent "[idx_expr]" or "[idx_expr ... idx_expr2]".  The latter
   // initializes an entire range, inclusive of both endpoints, and is
   // a GNU extension on top of C99 designated initializers.
   -> SubscriptDesignator(Expression idx_expr, // taken from D_array
-                         Expression /*nullable*/ idx_expr2)
-  {
-    public int idx_computed  = INT_MIN; // index computed at compile time
-    public int idx_computed2 = INT_MIN; // index range end computed at compile time
-  }
+                         Expression /*nullable*/ idx_expr2);
 }
 
 

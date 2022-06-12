@@ -968,6 +968,15 @@ class Initializer {
 }
 
 
+class Designator {
+  -> SubscriptDesignator
+  {
+    public int idx_computed  = INT_MIN; // index computed at compile time
+    public int idx_computed2 = INT_MIN; // index range end computed at compile time
+  }
+}
+
+
 class TemplateDeclaration {
   public void tcheck(Env &env);
   pure_virtual void itcheck(Env &env);

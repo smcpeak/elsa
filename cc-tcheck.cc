@@ -6544,6 +6544,7 @@ int compareArgsToParams(Env &env, FunctionType *ft, FakeList<ArgExpression> *arg
     if (!env.lang.isCplusplus && param->type->isUnionType()) {
       CompoundType *ct = param->type->asCompoundType();
       if (ct->m_isTransparentUnion) {
+#ifdef GNU_EXTENSION
         // look for a member of the union that has the same type
         // as the argument
         SFOREACH_OBJLIST(Variable, ct->dataMembers, memberIter) {
@@ -6591,6 +6592,9 @@ int compareArgsToParams(Env &env, FunctionType *ft, FakeList<ArgExpression> *arg
         // we might not have found any matching member, but I don't
         // care b/c I am not trying to diagnose errors, just
         // normalize away some extension syntax
+#else // !GNU_EXTENSION
+        xfailure("Transparent union requires Elsa GNU extension.");
+#endif // !GNU_EXTENSION
       }
       else {
         // not a transparent union, do nothing special

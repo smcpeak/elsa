@@ -198,6 +198,11 @@ class Initializer {
 }
 
 
+class Designator {
+  pure_virtual void print(PrintEnv &env) const;
+}
+
+
 class TemplateDeclaration {
   public void print(PrintEnv &env) const;
   pure_virtual void iprint(PrintEnv &env) const;

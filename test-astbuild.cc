@@ -228,7 +228,9 @@ public:      // methods
   // Make a structure definition with test contents.
   TS_classSpec *makeStructDefn();
 
+#ifdef GNU_EXTENSION
   E_compoundLit *testMakeE_compoundLit();
+#endif // GNU_EXTENSION
 
   // Synthesize AST for the body of a function to test the synthesis.
   void populateBody(S_compound *body);
@@ -297,6 +299,7 @@ TS_classSpec *TestASTSynth::makeStructDefn()
 }
 
 
+#ifdef GNU_EXTENSION
 E_compoundLit *TestASTSynth::testMakeE_compoundLit()
 {
   CompoundType *ct = beginCompoundType(CompoundType::K_STRUCT, "S");
@@ -314,6 +317,7 @@ E_compoundLit *TestASTSynth::testMakeE_compoundLit()
   Type *t_ct = m_typeFactory.makeCVAtomicType(ct, CV_NONE);
   return makeE_compoundLit(t_ct, inc);
 }
+#endif // GNU_EXTENSION
 
 
 void TestASTSynth::populateBody(S_compound *body)
@@ -395,8 +399,10 @@ void TestASTSynth::populateBody(S_compound *body)
     body->stmts.append(sexpr);
   }
 
+#ifdef GNU_EXTENSION
   body->stmts.append(new S_return(loc, new FullExpression(
     testMakeE_compoundLit())));
+#endif // GNU_EXTENSION
 }
 
 

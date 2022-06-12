@@ -1283,7 +1283,27 @@ void ArgExpression::printAmbiguities(ostream &os, int indent) const
 
 // ExpressionListOpt
 // Initializer
-// InitLabel
+
+
+// ---------------------------- Designator -----------------------------
+void Designator::printAmbiguities(ostream &os, int indent) const
+{
+  genericPrintAmbiguities(this, "Designator", os, indent);
+
+  genericCheckNexts(this);
+}
+
+void Designator::addAmbiguity(Designator *alt)
+{
+  genericAddAmbiguity(this, alt);
+}
+
+void Designator::setNext(Designator *newNext)
+{
+  genericSetNext(this, newNext);
+}
+
+
 // TemplateDeclaration
 
 // -------------------- TemplateParameter ---------------------

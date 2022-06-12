@@ -206,6 +206,7 @@ ifeq ($(USE_GNU),1)
   CC_AST_MODS += gnu.ast
   CC_GR_MODS  += gnu.gr
   EXT_OBJS    += gnu.o
+  EXT_OBJS    += ubermods-attrspec.o
 endif
 
 
@@ -335,7 +336,6 @@ ELSA_OBJS += test-strip-comments.o
 ELSA_OBJS += type-printer.o
 ELSA_OBJS += type-sizes.o
 ELSA_OBJS += typelistiter.o
-ELSA_OBJS += ubermods-attrspec.o
 ELSA_OBJS += variable.o
 
 # Parser as a library.
