@@ -451,7 +451,7 @@ public:      // funcs
   // sure, I think Variable* is better, but don't want to mess with
   // the other one right now)
   int getDataMemberOffset(
-    TypeSizes const &typeSizes, Variable *dataMember) const;
+    TypeSizes const &typeSizes, Variable const *dataMember) const;
 
   // add to 'bases'; incrementally maintains 'virtualBases'
   virtual void addBaseClass(BaseClass * /*owner*/ newBase);

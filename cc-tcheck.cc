@@ -9721,50 +9721,38 @@ Type *E_implicitStandardConversion::itcheck_x(Env &env, Expression *&replacement
 }
 
 
+static bool interpretDesignation(
+  Env &env,
+  SubobjectAccessPath &path,
+  FakeList<Designator> *designation,
+  Type const *type);
+
+
 Type *E_offsetof::itcheck_x(Env &env, Expression *&replacement)
 {
   ASTTypeId::Tcheck tc(DF_NONE, DC_E_OFFSETOF);
   atype = atype->tcheck(env, tc);
 
-  // This is how E_fieldAcc checks its field name.
-  tcheckPQName(fieldName, env, NULL /*scope*/, LF_NONE);
-
-  if (CompoundType *ct = atype->getType()->ifCompoundType()) {
-    // Find the field that 'fieldName' refers to.
-    //
-    // This is not right because, although we start our search in scope
-    // 'ct', a qualifier in 'fieldName' can take us to any name,
-    // including things that are not fields.  The lookup procedure in
-    // E_fieldAcc::tcheck deals with that issue, but is very complex and
-    // not easily factored for reuse.  So for now I accept that this
-    // will accept invalid code.
-    LookupSet results;
-    env.lookupPQ_withScope(results, fieldName, LF_NONE, ct);
-    if (results.isEmpty()) {
-      env.error(stringb(
-        "In 'offsetof', field name '" << fieldName->toString() <<
-        "' not found in type '" << ct->toString() << "'."));
-    }
-    else if (results.count() > 1) {
-      // TODO: Say what the possibilities are.
-      env.error("In 'offsetof', field name is ambiguous.");
+  // Check the designation, getting the access path.
+  SubobjectAccessPath path;
+  if (interpretDesignation(env, path, memberDesignator,
+                           atype->getType())) {
+    xassert(!path.empty());
+    if (CompoundType *ct = atype->getType()->ifCompoundType()) {
+      // Get the first field.
+      //
+      // TODO: Record the entire path.
+      this->field = ct->getDataMemberByPositionC(path.frontIndex());
     }
     else {
-      Variable *field = results.first();
-
-      // TODO: I would like to do this as a way of validating that the
-      // field is actually a member of 'ct', but it does not work for
-      // derived classes.
-      //ct->getDataMemberOffset(env.lang.m_typeSizes, field);
-
-      this->field = field;
+      env.error(stringb(
+        "The first argument to 'offsetof' is expected to be a "
+        "struct/class/union, but here is '" <<
+        atype->getType()->toString() << "'."));
     }
   }
   else {
-    env.error(stringb(
-      "The first argument to 'offsetof' is expected to be a "
-      "struct/class/union, but here is '" <<
-      atype->getType()->toString() << "'."));
+    // Errors already reported.
   }
 
   return env.m_size_t_Type;

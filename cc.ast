@@ -726,7 +726,8 @@ class Expression {
   -> E_implicitStandardConversion(StandardConversion conv,
                                   Expression expr);
 
-  // Compute the offset of 'fieldName' within structure 'atype'.
+  // Compute the offset of 'memberDesignator' within structure 'atype'.
+  // See C11 7.19p3 and C++14 18.2p4.
   //
   // Currently, this node is only created when parsing the GNU
   // __builtin_offsetof extension.  But it could be parsed by other
@@ -734,7 +735,9 @@ class Expression {
   // expansion of the 'offsetof' macro defined in the traditional way.
   // Thus, I do not regard this as an "extension" AST node, even though
   // it is only produced in GNU mode.
-  -> E_offsetof(ASTTypeId atype, PQName fieldName);
+  //
+  // The first Designator is always a FieldDesignator.
+  -> E_offsetof(ASTTypeId atype, FakeList<Designator> *memberDesignator);
 }
 
 

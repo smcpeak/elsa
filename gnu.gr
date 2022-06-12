@@ -102,10 +102,14 @@ nonterm(Expression*) UnaryExpression {
 
   // https://gcc.gnu.org/onlinedocs/gcc/Offsetof.html
   //
-  // TODO: 'fieldName' can actually be a sequence of fields and array
-  // index expressions.
-  -> "__builtin_offsetof" "(" t:TypeId "," n:NameAfterDot ")"
-       { return new E_offsetof(t, n); }
+  // 2022-06-12: I changed 'n' from 'NameAfterDot' to 'DesignatorList'.
+  // The latter accomodates things like 'arr[3]', while the former would
+  // allow qualified names.
+  //
+  // TODO: I think Designator should be changed to accept qualified
+  // names too.
+  -> "__builtin_offsetof" "(" t:TypeId "," m:MemberDesignator ")"
+       { return new E_offsetof(t, m); }
 
   -> "__offsetof__" "(" e:Expression ")"
        { return new E_grouping(e); }
@@ -141,6 +145,28 @@ nonterm(Expression*) UnaryExpression {
 nonterm(Expression*) ParenthesizedExpression {
   -> "(" e:Expression ")"
        { return new E_grouping(e); }
+}
+
+
+// C11 7.19p3 and C++14 18.2p4 "member-designator", which is defined,
+// essentially, as whatever will make the syntax
+// "&(t.member-designator)" valid if 't' is a structure instance.
+//
+// My definition is this is like DesignatorList except we are forced to
+// begin with the FieldDesignator production, and the leading "." is
+// omitted.
+nonterm(FakeList<Designator>*) MemberDesignator {
+  -> first:FirstMemberDesignator
+       { return FakeList<Designator>::makeList(first); }
+
+  -> first:FirstMemberDesignator rest:DesignatorList
+       { first->setNext(fl_first(rest));
+         return FakeList<Designator>::makeList(first); }
+}
+
+nonterm(Designator*) FirstMemberDesignator {
+  -> id:Identifier
+       { return new FieldDesignator(loc, id); }
 }
 
 

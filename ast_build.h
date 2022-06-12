@@ -225,6 +225,9 @@ public:      // methods
 #endif // GNU_EXTENSION
 
   S_expr *makeS_expr(SourceLoc loc, Expression *expr);
+
+  FieldDesignator *makeFieldDesignator(SourceLoc loc,
+    Variable const *var);
 };
 
 

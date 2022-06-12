@@ -2140,7 +2140,25 @@ void E_offsetof::iprint(PrintEnv &env) const
 
   atype->print(env);
   env << "," << env.sp;
-  fieldName->print(env);
+
+  // For iterating over the list.
+  Designator const *desig = fl_firstC(memberDesignator);
+
+  // The list should start with FieldDesignator.
+  if (FieldDesignator const *fd = desig->ifFieldDesignatorC()) {
+    // Omit the leading ".".
+    env << fd->id;
+    desig = desig->next;
+  }
+  else {
+    // Print it anyway (by not advancing 'desig' here).  I don't like to
+    // fail assertions inside printing code.
+  }
+
+  // Print the remainder.
+  for (; desig; desig = desig->next) {
+    desig->print(env);
+  }
 
   env.end();
 

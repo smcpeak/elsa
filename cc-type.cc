@@ -653,7 +653,7 @@ string CompoundType::dataMembersToString() const
 // TODO: Does this handle members of base classes correctly?  What
 // about virtual inheritance?
 int CompoundType::getDataMemberOffset(
-  TypeSizes const &typeSizes, Variable *dataMember) const
+  TypeSizes const &typeSizes, Variable const *dataMember) const
 {
   int offset = 0;
   SFOREACH_OBJLIST(Variable, dataMembers, iter) {

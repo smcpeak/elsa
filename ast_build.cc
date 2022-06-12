@@ -844,9 +844,10 @@ E_offsetof *ElsaASTBuild::makeE_offsetof(Type const *structType, Variable *field
 {
   ASTTypeId *typeId =
     makeASTTypeId(structType, NULL /*name*/, DC_E_OFFSETOF);
-  E_offsetof *eo = new E_offsetof(typeId, makePQName(field));
-  eo->type = m_typeFactory.getSimpleType(
-    m_lang.m_typeSizes.m_type_of_size_t);
+  E_offsetof *eo = new E_offsetof(typeId,
+    FakeList<Designator>::makeList(makeFieldDesignator(SL_SYNTH, field)));
+  eo->type =
+    m_typeFactory.getSimpleType(m_lang.m_typeSizes.m_type_of_size_t);
   eo->field = field;
   return eo;
 }
@@ -882,6 +883,14 @@ E___builtin_va_arg *ElsaASTBuild::makeE___builtin_va_arg(SourceLoc loc,
 S_expr *ElsaASTBuild::makeS_expr(SourceLoc loc, Expression *expr)
 {
   return new S_expr(loc, new FullExpression(expr));
+}
+
+
+FieldDesignator *ElsaASTBuild::makeFieldDesignator(SourceLoc loc,
+  Variable const *var)
+{
+  xassert(var->name);
+  return new FieldDesignator(loc, var->name);
 }
 
 

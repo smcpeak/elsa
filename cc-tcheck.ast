@@ -813,8 +813,11 @@ class Expression {
      }
 
   -> E_offsetof {
-       // The field that 'fieldName' refers to.
-       public Variable *field = NULL;
+       // The field that 'memberDesignator' refers to.
+       //
+       // TODO: This is only the first field, but there can be multiple
+       // designators.
+       public Variable const *field = NULL;
      }
 }
 
