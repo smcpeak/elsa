@@ -297,6 +297,7 @@ out/run/%: run/% $(CCPARSE)
 
 .PHONY: run-tests
 check-run: out/run/anon-union-in-struct.c
+check-run: out/run/hex-e-minus.c
 
 check: check-run
 

@@ -1713,6 +1713,13 @@ static bool bothGray(OperatorPrecedence p1, OperatorPrecedence p2)
   return isGrayArea(p1) && isGrayArea(p2);
 }
 
+// True if 'text' begins with a hexadecimal-prefix (C11 6.4.4.1p1).
+static bool hasHexadecimalPrefix(StringRef text)
+{
+  return text[0] == '0' &&
+         (text[1] == 'X' || text[1] == 'x');
+}
+
 // Return true if 'e' is something so simple that it makes sense to
 // write it as an operand of '+' or similar without a separating space.
 // So, for example, "x+y" is fine, but "a.x+y" should be written as
@@ -1724,13 +1731,25 @@ static bool verySimple(Expression const *e)
 {
   // Skip ISCs since this logic is written for the case where ISCs are
   // not printed.
-  if (e->isE_implicitStandardConversion()) {
-    e = e->asE_implicitStandardConversionC()->expr;
+  if (E_implicitStandardConversion const *isc =
+        e->ifE_implicitStandardConversionC()) {
+    e = isc->expr;
+  }
+
+  // Do not regard hexadecimal literals as "simple" because, otherwise,
+  // an expression like "0x123e + 0x4567" could be printed as
+  // "0x123e+0x4567", which is invalid because the '+' looks like it is
+  // forming a hex float literal.  And, stylistically, I think it looks
+  // better to use spaces near hex literals since it's almost like the
+  // "x" after "0" is behaving like a tightly-binding operator.
+  if (E_intLit const *il = e->ifE_intLitC()) {
+    return !hasHexadecimalPrefix(il->text);
+  }
+  if (E_floatLit const *fl = e->ifE_floatLitC()) {
+    return !hasHexadecimalPrefix(fl->text);
   }
 
   return e->isE_boolLit() ||
-         e->isE_intLit() ||
-         e->isE_floatLit() ||
          e->isE_charLit() ||
          e->isE_this() ||
          e->isE_variable();
