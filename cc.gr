@@ -1,17 +1,25 @@
 // cc.gr            see license.txt for copyright and terms of use
-// grammar for C++
+// Grammar for C and C++.
 
-// A word of warning: there are three sources of names running
+// A word of warning: there are four sources of names running
 // around here:
-//   (1) the c++ standard's grammar's names
-//   (2) my modified grammar's names
-//   (3) names of AST nodes
-// (1) and (2) correspond everywhere except in places where I want
+//   (1a) the C++ standard grammar names
+//   (1b) the C standard grammar names
+//   (2)  my modified grammar names
+//   (3)  names of AST nodes
+// (1a) and (2) correspond everywhere except in places where I want
 // the grammar to do more parsing work than the standard's (mainly
 // for declarators) and where I've chosen to fold in "opt".  The
 // names in (3) are often different because later phases of analysis
 // want to see different conceptual structure.  Anyway, the point is
 // to be aware of which kind of name a given thing is.
+
+// The intent is that the grammar in this file be a union of the
+// grammars in the ANSI C11 and C++14 standards.  There are additional
+// constructs in grammar "extensions", namely kandr.gr for old K&R
+// constructs, and gnu.gr for GNU extensions.  But this file, cc.gr, is
+// meant to have everything described in the official standards, minus
+// whatever I haven't gotten around to implementing.
 
 
 // Note about destructive actions: because semantic values can be
@@ -59,8 +67,8 @@ option useGCDefaults;
 option defaultMergeAborts;
 
 // expected statistics
-option shift_reduce_conflicts 47;
-option reduce_reduce_conflicts 73;
+option shift_reduce_conflicts 48;
+option reduce_reduce_conflicts 74;
 option unreachable_nonterminals 0;
 option unreachable_terminals 6;
 
@@ -1413,11 +1421,21 @@ nonterm(Initializer*) SimpleInitializerClause {
        { return c; }
 }
 
-// this nonterminal exists so that extensions can augment it with
-// possibilities for designated initializers
 nonterm(Initializer*) InitializerClause {
   -> init:SimpleInitializerClause
        { return init; }
+
+  // obsolescent form
+  // http://gcc.gnu.org/onlinedocs/gcc-3.2.2/gcc/Designated-Inits.html
+  -> d:Identifier ":" init:SimpleInitializerClause
+    { return new IN_designated(loc, FakeList<Designator>::makeList(new FieldDesignator(loc, d)),
+                               init); }
+  // C99 official form; C99 standard section 6.7.8
+  -> dl:DesignatorList "=" init:SimpleInitializerClause
+    { return new IN_designated(loc, dl, init); }
+  // dsw: another form I run into
+  -> dl:DesignatorList init:SimpleInitializerClause
+    { return new IN_designated(loc, dl, init); }
 }
 
 nonterm(IN_compound*) CompoundInitializer {
@@ -1447,6 +1465,28 @@ nonterm(IN_compound*) InitializerList {
   -> list:InitializerList "," init:InitializerClause
        { xassert(list != NULL && "8706f04b-0a31-407e-b31b-40607d31edf9");
          list->inits.append(init); return list; }
+}
+
+
+// C11 6.7.9p1 "designation".
+nonterm(FakeList<Designator>*) DesignatorList {
+  -> d:Designator
+    { return FakeList<Designator>::makeList(d); }
+  -> d:Designator dl:DesignatorList
+    { d->setNext(fl_first(dl));
+    return FakeList<Designator>::makeList(d); }
+}
+
+// C11 6.7.9p1 "designator".
+nonterm(Designator*) Designator {
+  -> "." id:Identifier
+    { return new FieldDesignator(loc, id); }
+  -> "[" idx_expr:ConstantExpression "]"
+    { return new SubscriptDesignator(loc, idx_expr, NULL); }
+  // range designator "[ 1 ... 3 ] =".  This is a gcc-ism:
+  // http://gcc.gnu.org/onlinedocs/gcc-3.2.2/gcc/Designated-Inits.html
+  -> "[" idx_expr:ConstantExpression "..." idx_expr2:ConstantExpression "]"
+    { return new SubscriptDesignator(loc, idx_expr, idx_expr2); }
 }
 
 

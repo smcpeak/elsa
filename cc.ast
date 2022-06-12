@@ -815,6 +815,52 @@ class Initializer (SourceLoc loc) {
 
   // constructor initializer, like "int x(3);"
   -> IN_ctor(FakeList<ArgExpression> *args);
+
+  // A designation (list of fields/subscripts; see C11 6.7.9) in front
+  // of an undesignated initializer.
+  //
+  // This only ever appears as an element of IN_compound::list.
+  -> IN_designated(FakeList<Designator> *designator_list,
+                   Initializer init);
+}
+
+
+// Element in a sequence of member and array element accesses.
+class Designator (SourceLoc loc) {
+  // FakeList link; use setNext
+  public Designator *next;  ctor next=NULL;
+  public void setNext(Designator *newNext);
+
+  // dsw: I seem to need all of this ambiguity stuff in order to use
+  // genericSetNext
+
+  // ambiguity representation
+  public Designator *ambiguity; ctor ambiguity=NULL;
+  public void addAmbiguity(Designator *alternative);
+  custom traverse { if (ambiguity) ambiguity->traverse(vis); }
+
+  // print ambiguities
+  public void printAmbiguities(ostream &os, int indent) const;
+  custom preemptDebugPrint {
+    if (ambiguity) {
+      printAmbiguities(os, indent);
+      return;     // skip the normal, unambiguous-node print code
+    }
+  }
+
+  pure_virtual void print(PrintEnv &env) const;
+
+  -> FieldDesignator(StringRef id);
+
+  // Represent "[idx_expr]" or "[idx_expr ... idx_expr2]".  The latter
+  // initializes an entire range, inclusive of both endpoints, and is
+  // a GNU extension on top of C99 designated initializers.
+  -> SubscriptDesignator(Expression idx_expr, // taken from D_array
+                         Expression /*nullable*/ idx_expr2)
+  {
+    public int idx_computed  = INT_MIN; // index computed at compile time
+    public int idx_computed2 = INT_MIN; // index range end computed at compile time
+  }
 }
 
 

@@ -10446,7 +10446,6 @@ static bool tcheckAndConstEval(Env &env, Expression *&expr, int &value)
 }
 
 
-#ifdef GNU_EXTENSION
 // Check that 'indexValue' is within bounds for 'arrayType'.  If
 // not, add an error to 'env' and return false.  'indexExpr' is the
 // source expression that was evaluated to get 'indexValue'.
@@ -10577,7 +10576,6 @@ static bool interpretDesignation(
     return false;
   }
 }
-#endif // GNU_EXTENSION
 
 
 // Initializer 'braces' is a redundant pair of braces around the
@@ -10607,7 +10605,6 @@ static SemanticInitializer * NULLABLE handleRedundantInitBraces(
   if (IN_expr *ie = inner->ifIN_expr()) {
     return ie->tcheck(env, wholeType);
   }
-#ifdef GNU_EXTENSION
   else if (inner->isIN_designated()) {
     env.error(inner->loc, stringb(
       "When initializing non-aggregate type '" << wholeType->toString() <<
@@ -10615,7 +10612,6 @@ static SemanticInitializer * NULLABLE handleRedundantInitBraces(
       "designator present."));
     return NULL;
   }
-#endif // GNU_EXTENSION
   else if (inner->isIN_compound()) {
     env.error(inner->loc, stringb(
       "When initializing non-aggregate type '" << wholeType->toString() <<
@@ -10682,7 +10678,6 @@ SemanticInitializer * NULLABLE
   for (ASTListIterNC<Initializer> initIter(inits);
        !initIter.isDone(); initIter.adv()) {
     Initializer *srcInit = initIter.data();
-#ifdef GNU_EXTENSION
     if (IN_designated *srcDInit = srcInit->ifIN_designated()) {
       // Change 'destPath' to match the specified designation.
       destPath.clear();
@@ -10698,9 +10693,7 @@ SemanticInitializer * NULLABLE
       srcInit = srcDInit->init;
       xassert(!srcInit->isIN_designated());
     }
-    else
-#endif // GNU_EXTENSION
-    {
+    else {
       // Advance 'destPath' to the next subobject.
       if (!destPath.stepForward(env, 0 /*pathIndex*/, wholeType)) {
         break;

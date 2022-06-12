@@ -22,14 +22,16 @@
 //   - gcc C++ min and max operators ">?" and "<?"
 //   - gcc asm with register constraints, etc.
 //   - gcc asm labels: "int foo asm("myfoo") = 2"
-//   - C99 designated initializers: "... = { .x=..., .y=... }"
-//     including gcc range extension: "[ 1 ... 3 ] = ..."
 //   - C99 restrict keyword
 //   - C99 qualifiers in array declarator: "[const ...]"
 //   - C11 'static' in an array declarator
 //   - gcc __attribute__
 //   - gcc computed gotos
 //   - gcc/C99 complex/imaginary
+//
+// 2022-06-12: Designated initializers were moved to cc.gr, as my
+// intent now is to migrate anything that is in an official standard
+// over there eventually.
 
 
 verbatim {
@@ -366,42 +368,6 @@ nonterm(IDeclarator*) Declarator {
   // asm label + attributes ...
   -> d:DirectDeclarator "asm" "(" StringLiteral ")" asl:AttributeSpecifierList
        { d->appendASL(asl); return d; }
-}
-
-
-// ----------- C99 designated initializers -----------
-// Designated Initializers
-nonterm(Initializer*) InitializerClause {
-  // obsolescent form
-  // http://gcc.gnu.org/onlinedocs/gcc-3.2.2/gcc/Designated-Inits.html
-  -> d:Identifier ":" init:SimpleInitializerClause
-    { return new IN_designated(loc, FakeList<Designator>::makeList(new FieldDesignator(loc, d)),
-                               init); }
-  // C99 official form; C99 standard section 6.7.8
-  -> dl:DesignatorList "=" init:SimpleInitializerClause
-    { return new IN_designated(loc, dl, init); }
-  // dsw: another form I run into
-  -> dl:DesignatorList init:SimpleInitializerClause
-    { return new IN_designated(loc, dl, init); }
-}
-
-nonterm(FakeList<Designator>*) DesignatorList {
-  -> d:Designator
-    { return FakeList<Designator>::makeList(d); }
-  -> d:Designator dl:DesignatorList
-    { d->setNext(fl_first(dl));
-    return FakeList<Designator>::makeList(d); }
-}
-
-nonterm(Designator*) Designator {
-  -> "." id:Identifier
-    { return new FieldDesignator(loc, id); }
-  -> "[" idx_expr:ConstantExpression "]"
-    { return new SubscriptDesignator(loc, idx_expr, NULL); }
-  // range designator "[ 1 ... 3 ] =".  This is a gcc-ism:
-  // http://gcc.gnu.org/onlinedocs/gcc-3.2.2/gcc/Designated-Inits.html
-  -> "[" idx_expr:ConstantExpression "..." idx_expr2:ConstantExpression "]"
-    { return new SubscriptDesignator(loc, idx_expr, idx_expr2); }
 }
 
 
