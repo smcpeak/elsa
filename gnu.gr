@@ -29,9 +29,10 @@
 //   - gcc computed gotos
 //   - gcc/C99 complex/imaginary
 //
-// 2022-06-12: Designated initializers were moved to cc.gr, as my
-// intent now is to migrate anything that is in an official standard
-// over there eventually.
+// 2022-06-12: Standard designated initializers were moved to cc.gr, as
+// my intent now is to migrate anything that is in an official standard
+// over there eventually.  However, a couple non-standard forms remain
+// here.
 
 
 verbatim {
@@ -368,6 +369,30 @@ nonterm(IDeclarator*) Declarator {
   // asm label + attributes ...
   -> d:DirectDeclarator "asm" "(" StringLiteral ")" asl:AttributeSpecifierList
        { d->appendASL(asl); return d; }
+}
+
+
+// ---------- designated initializers -----------
+// Although designated initializers are part of C11, these forms are GNU
+// extensions that Elsa has supported for a long time.  I could remove
+// them, but they don't seem to be causing problems.
+nonterm(Initializer*) InitializerClause {
+  // obsolescent form
+  // http://gcc.gnu.org/onlinedocs/gcc-3.2.2/gcc/Designated-Inits.html
+  //
+  // This form contributes one S/R and one R/R conflict.  I think this
+  // is due to merged lookahead sets (not an ambiguity) because the
+  // conflicts are at the spot before the ":", but do not involve ":" as
+  // lookahead.
+  -> d:Identifier ":" init:SimpleInitializerClause
+    { return new IN_designated(loc, FakeList<Designator>::makeList(new FieldDesignator(loc, d)),
+                               init); }
+
+  // dsw: another form I run into
+  //
+  // Surprisingly, this does not contribute any conflicts.
+  -> dl:DesignatorList init:SimpleInitializerClause
+    { return new IN_designated(loc, dl, init); }
 }
 
 

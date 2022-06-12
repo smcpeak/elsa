@@ -67,8 +67,8 @@ option useGCDefaults;
 option defaultMergeAborts;
 
 // expected statistics
-option shift_reduce_conflicts 48;
-option reduce_reduce_conflicts 74;
+option shift_reduce_conflicts 47;
+option reduce_reduce_conflicts 73;
 option unreachable_nonterminals 0;
 option unreachable_terminals 6;
 
@@ -1425,17 +1425,9 @@ nonterm(Initializer*) InitializerClause {
   -> init:SimpleInitializerClause
        { return init; }
 
-  // obsolescent form
-  // http://gcc.gnu.org/onlinedocs/gcc-3.2.2/gcc/Designated-Inits.html
-  -> d:Identifier ":" init:SimpleInitializerClause
-    { return new IN_designated(loc, FakeList<Designator>::makeList(new FieldDesignator(loc, d)),
-                               init); }
-  // C99 official form; C99 standard section 6.7.8
+  // C11 6.7.9
   -> dl:DesignatorList "=" init:SimpleInitializerClause
-    { return new IN_designated(loc, dl, init); }
-  // dsw: another form I run into
-  -> dl:DesignatorList init:SimpleInitializerClause
-    { return new IN_designated(loc, dl, init); }
+       { return new IN_designated(loc, dl, init); }
 }
 
 nonterm(IN_compound*) CompoundInitializer {
@@ -1468,7 +1460,7 @@ nonterm(IN_compound*) InitializerList {
 }
 
 
-// C11 6.7.9p1 "designation".
+// C11 6.7.9p1 "designator-list".
 nonterm(FakeList<Designator>*) DesignatorList {
   -> d:Designator
     { return FakeList<Designator>::makeList(d); }
