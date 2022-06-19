@@ -102,6 +102,9 @@ public:      // data
   // Map from Clang file pointer to its name.
   std::map<CXFile /*cxFile*/, StringRef /*fname*/> m_cxFileToName;
 
+  // Map from SourceLoc of a declaration to its associated Variable.
+  std::map<SourceLoc, Variable *> m_locToVariable;
+
 public:      // methods
   ImportClang(CXIndex cxIndex,
               CXTranslationUnit cxTranslationUnit,
@@ -113,7 +116,8 @@ public:      // methods
       m_cxIndex(cxIndex),
       m_cxTranslationUnit(cxTranslationUnit),
       m_elsaParse(elsaParse),
-      m_cxFileToName()
+      m_cxFileToName(),
+      m_locToVariable()
   {}
 
   // Entry point to the importer.
@@ -133,7 +137,10 @@ public:      // methods
 
   TopForm *importTopForm(CXCursor cxTopForm);
 
-  Declaration *importVarDecl(CXCursor cxVarDecl,
+  // Get the Variable that represents the entity declared at 'cxDecl'.
+  Variable *variableForDeclaration(CXCursor cxDecl);
+
+  Declaration *importVarOrTypedefDecl(CXCursor cxVarDecl,
     DeclaratorContext context);
 
   Type *importType(CXType cxType);

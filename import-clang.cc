@@ -147,8 +147,9 @@ TopForm *ImportClang::importTopForm(CXCursor cxTopForm)
     default:
       xfailure(stringb("Unknown cxKind: " << cxKind));
 
+    case CXCursor_TypedefDecl:
     case CXCursor_VarDecl: {
-      Declaration *decl = importVarDecl(cxTopForm, DC_TF_DECL);
+      Declaration *decl = importVarOrTypedefDecl(cxTopForm, DC_TF_DECL);
       return new TF_decl(loc, decl);
     }
   }
@@ -157,29 +158,75 @@ TopForm *ImportClang::importTopForm(CXCursor cxTopForm)
 }
 
 
-Declaration *ImportClang::importVarDecl(CXCursor cxVarDecl,
+Variable *ImportClang::variableForDeclaration(CXCursor cxDecl)
+{
+  // CXCursor is a structure with several elements, so does not appear
+  // usable as a map key.  Use the location instead.
+  SourceLoc loc = importSourceLocation(clang_getCursorLocation(cxDecl));
+
+  StringRef name = importString(clang_getCursorSpelling(cxDecl));
+
+  Variable *&var = m_locToVariable[loc];
+  if (!var) {
+    Type *type;
+
+    // TODO: This will need additional refinement.
+    DeclFlags declFlags = DF_NONE;
+    if (clang_getCursorKind(cxDecl) == CXCursor_TypedefDecl) {
+      declFlags = DF_TYPEDEF;
+
+      // For a typedef, the 'type' is the underlying type.
+      type = importType(clang_getTypedefDeclUnderlyingType(cxDecl));
+    }
+    else {
+      // For anything else, the type is what the declaration says.
+      type = importType(clang_getCursorType(cxDecl));
+    }
+
+    xassert(!var);
+    var = makeVariable(loc, name, type, declFlags);
+  }
+
+  else {
+    // Detect location collisions.
+    xassert(var->name == name);
+  }
+
+  return var;
+}
+
+
+Declaration *ImportClang::importVarOrTypedefDecl(CXCursor cxVarDecl,
   DeclaratorContext context)
 {
-  Type *type = importType(clang_getCursorType(cxVarDecl));
-  StringRef name = importString(clang_getCursorSpelling(cxVarDecl));
-  Variable *var = makeVariable(
-    importSourceLocation(clang_getCursorLocation(cxVarDecl)),
-    name,
-    type,
-    DF_NONE);      // TODO: Wrong
-
+  Variable *var = variableForDeclaration(cxVarDecl);
   return makeDeclaration(var, context);
 }
 
 
 Type *ImportClang::importType(CXType cxType)
 {
+  TypeFactory &tfac = m_elsaParse.m_typeFactory;
+
   switch (cxType.kind) {
     default:
       xfailure(stringb("Unknown cxType kind: " << cxType.kind));
 
     case CXType_Int:
-      return m_elsaParse.m_typeFactory.getSimpleType(ST_INT, CV_NONE);
+      return tfac.getSimpleType(ST_INT, CV_NONE);
+
+    case CXType_Typedef: {
+      CXCursor cxTypeDecl = clang_getTypeDeclaration(cxType);
+      Variable *typedefVar = variableForDeclaration(cxTypeDecl);
+
+      if (clang_isConstQualifiedType(cxType) ||
+          clang_isVolatileQualifiedType(cxType) ||
+          clang_isRestrictQualifiedType(cxType)) {
+        xunimp("cv qualifiers on typedef");
+      }
+
+      return tfac.makeTypedefType(typedefVar, CV_NONE);
+    }
   }
 
   // Not reached.
