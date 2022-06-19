@@ -359,6 +359,23 @@ check-errmsg: out/errmsg-pedantic-errors/zero-size-array.cc
 check: check-errmsg
 
 
+# --------------------------- clang tests ------------------------------
+# Run ccparse --clang.
+out/clang/in/%: ../in/% $(CCPARSE)
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(CCPARSE) --clang $<
+	touch $@
+
+.PHONY: check-clang
+ifeq ($(USE_CLANG),1)
+check: check-clang
+endif
+
+check-clang: out/clang/in/t0001.cc
+check-clang: out/clang/in/t0002.cc
+check-clang: out/clang/in/t0003.cc
+
+
 # ---------------------------- unit tests ------------------------------
 out/unit-tests.ok: $(CCPARSE)
 	$(CREATE_OUTPUT_DIRECTORY)
