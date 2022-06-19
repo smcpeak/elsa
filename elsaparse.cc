@@ -543,26 +543,7 @@ bool ElsaParse::parse(char const *inputFname)
     m_translationUnit->traverse(loweredVisitor);
   }
 
-  if (m_prettyPrint) {
-    CTypePrinter typePrinter(m_lang);
-    PrintEnv env(typePrinter, m_lang);
-    env.m_printComments = m_prettyPrintComments;
-    env.m_printISC = m_prettyPrintISC;
-
-    // TODO: Plumb a proper command line switch through to here.
-    if (tracingSys("printSyntacticInitializers")) {
-      env.m_printSemanticInitializers = false;
-    }
-
-    cout << "// ---- START ----" << endl;
-    cout << "// -*- c++ -*-" << endl;
-    m_translationUnit->print(env);
-    if (tracingSys("dumpTreePrintTree")) {
-      env.debugPrintCout();
-    }
-    cout << env.getResult();
-    cout << "// ---- STOP ----" << endl;
-  }
+  maybePrettyPrint();
 
   // test AST cloning
   if (tracingSys("testClone")) {
@@ -603,6 +584,31 @@ bool ElsaParse::parse(char const *inputFname)
   }
 
   return true;
+}
+
+
+void ElsaParse::maybePrettyPrint()
+{
+  if (m_prettyPrint) {
+    CTypePrinter typePrinter(m_lang);
+    PrintEnv env(typePrinter, m_lang);
+    env.m_printComments = m_prettyPrintComments;
+    env.m_printISC = m_prettyPrintISC;
+
+    // TODO: Plumb a proper command line switch through to here.
+    if (tracingSys("printSyntacticInitializers")) {
+      env.m_printSemanticInitializers = false;
+    }
+
+    cout << "// ---- START ----" << endl;
+    cout << "// -*- c++ -*-" << endl;
+    m_translationUnit->print(env);
+    if (tracingSys("dumpTreePrintTree")) {
+      env.debugPrintCout();
+    }
+    cout << env.getResult();
+    cout << "// ---- STOP ----" << endl;
+  }
 }
 
 

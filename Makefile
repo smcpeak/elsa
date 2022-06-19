@@ -76,6 +76,20 @@ SMFLEX  = $(SMFLEXDIR)/smflex -b
 ELKHOUND_OPTIONS = -v -tr lrtable
 
 
+# ---- Clang ----
+# These are only used if USE_CLANG is set to 1.
+USE_CLANG = 0
+
+# Installation directory for Clang+LLVM
+CLANG_LLVM_PREFIX_DIR = $(shell llvm-config --prefix)
+
+# Include directory for finding Clang headers.
+CLANG_LLVM_INCLUDE_DIR = $(CLANG_LLVM_PREFIX_DIR)/include
+
+# Library directory where libclang.a can be found.
+CLANG_LLVM_LIB_DIR = $(CLANG_LLVM_PREFIX_DIR)/lib
+
+
 # ---- Options within this Makefile ----
 # Modules to compile with coverage info, for example 'cc-tcheck'.
 #
@@ -251,6 +265,12 @@ packedword_test.exe: packedword_test.o $(LIBS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^
 
 
+
+# ------------------------- import-clang ---------------------
+import-clang.o: import-clang.cc
+	$(CXX) -c -o $@ $(GENDEPS_FLAGS) -I$(CLANG_LLVM_INCLUDE_DIR) $(CXXFLAGS) $<
+
+
 # ------------------------- ccparse ---------------------
 # combine base lexer description and extensions
 TOCLEAN += lexer.lex
@@ -352,9 +372,16 @@ CCPARSE_OBJS :=
 CCPARSE_OBJS += main.o
 CCPARSE_OBJS += test-astbuild.o
 
+ifeq ($(USE_CLANG),1)
+CCPARSE_OBJS += import-clang.o
+LDFLAGS += -L$(CLANG_LLVM_LIB_DIR) -Wl,-rpath=$(CLANG_LLVM_LIB_DIR) -lclang
+else
+CCPARSE_OBJS += import-clang-stub.o
+endif
+
 # parser binary
 ccparse.exe: $(CCPARSE_OBJS) libelsa.a $(LIBS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $^
+	$(CXX) -o $@ $(CXXFLAGS) $^ $(LDFLAGS)
 	./ccparse.exe in/t0001.cc
 
 

@@ -4,6 +4,7 @@
 // elsa
 #include "ast_build.h"                 // test_astbuild
 #include "elsaparse.h"                 // ElsaParse
+#include "import-clang.h"              // clangParseTranslationUnit
 #include "strip-comments.h"            // strip_comments_unit_tests
 
 // smbase
@@ -27,6 +28,12 @@ static bool verboseOutput = false;
 
 // When true, the elaboration pass is run after parsing.
 static bool enableElaboration = true;
+
+// When true, use Clang to parse instead of Elsa.
+static bool useClang = false;
+
+// When non-NULL, points to an argv-array of clang options.
+static char const * const *clangOptions = NULL;
 
 
 // Decode the --target argument.
@@ -55,6 +62,20 @@ static void runUnitTests()
 {
   strip_comments_unit_tests();
   cout << "unit tests passed\n";
+}
+
+
+static int runClangParse(ElsaParse &elsaParse)
+{
+  std::vector<std::string> gccOptions;
+  for (char const * const *p = clangOptions; *p; p++) {
+    gccOptions.push_back(*p);
+  }
+  clangParseTranslationUnit(elsaParse, gccOptions);
+
+  elsaParse.maybePrettyPrint();
+
+  return 0;
 }
 
 
@@ -145,6 +166,11 @@ static char const *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
       argv++;
       argc--;
     }
+    else if (streq(argv[1], "--clang")) {
+      useClang = true;
+      argv++;
+      argc--;
+    }
     else if (streq(argv[1], "--unit-tests")) {
       runUnitTests();
       exit(0);
@@ -161,8 +187,8 @@ static char const *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
     }
   }
 
-  if (argc != 2) {
-    cout << "usage: " << progName << " [options] input-file\n"
+  if (argc < 2) {
+    cout << "usage: " << progName << " [options] input-file [clang-opts]\n"
             "  options:\n"
             "    -tr <flags>              turn on given tracing flags (comma-separated)\n"
             "    -x<lang>                 parse input as <lang>: \"c\" or \"c++\"\n"
@@ -179,11 +205,15 @@ static char const *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
             "    --print-string-literals  print every decoded string literal\n"
             "    --no-elaborate           disable elaboration pass\n"
             "    --unit-tests             run internal unit tests\n"
+            "    --clang                  Use Clang to parse the input.\n"
          << (additionalInfo? additionalInfo : "");
     exit(argc==1? 0 : 2);    // error if any args supplied
   }
 
   char const *inputFname = argv[1];
+  if (useClang) {
+    clangOptions = argv+1;
+  }
 
   // ------ choose overall language ------
   CCLang &lang = elsaParse.m_lang;
@@ -347,6 +377,12 @@ static int doit(int argc, char **argv)
     cout << "tracing flags:\n\t";
     printTracers(std::cout, "\n\t");
     cout << endl;
+  }
+
+  if (useClang) {
+    runClangParse(elsaParse);
+    strTable.clear();
+    return 0;
   }
 
   // Run the parser.

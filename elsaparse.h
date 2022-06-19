@@ -112,6 +112,9 @@ public:      // methods
   //
   bool parse(char const *inputFname);
 
+  // If 'm_prettyPrint', pretty-print the AST.
+  void maybePrettyPrint();
+
   // Print the phase times.
   void printTimes();
 
