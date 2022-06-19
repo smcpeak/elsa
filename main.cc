@@ -5,6 +5,7 @@
 #include "ast_build.h"                 // test_astbuild
 #include "elsaparse.h"                 // ElsaParse
 #include "import-clang.h"              // clangParseTranslationUnit
+#include "integrity.h"                 // integrityCheckTU
 #include "strip-comments.h"            // strip_comments_unit_tests
 
 // smbase
@@ -74,6 +75,12 @@ static int runClangParse(ElsaParse &elsaParse)
   clangParseTranslationUnit(elsaParse, gccOptions);
 
   elsaParse.maybePrettyPrint();
+
+  if (tracingSys("printTypedAST")) {
+    elsaParse.m_translationUnit->debugPrint(cout, 0);
+  }
+
+  integrityCheckTU(elsaParse.m_lang, elsaParse.m_translationUnit);
 
   return 0;
 }
