@@ -285,6 +285,17 @@ Type *ImportClang::importType(CXType cxType)
 {
   TypeFactory &tfac = m_elsaParse.m_typeFactory;
 
+  CVFlags cv = CV_NONE;
+  if (clang_isConstQualifiedType(cxType)) {
+    cv |= CV_CONST;
+  }
+  if (clang_isVolatileQualifiedType(cxType)) {
+    cv |= CV_VOLATILE;
+  }
+  if (clang_isRestrictQualifiedType(cxType)) {
+    cv |= CV_RESTRICT;
+  }
+
   switch (cxType.kind) {
     default:
       xfailure(stringb("Unknown cxType kind: " << cxType.kind));
@@ -293,22 +304,20 @@ Type *ImportClang::importType(CXType cxType)
       xfailure("importType: cxType is invalid");
 
     case CXType_Int:
-      return tfac.getSimpleType(ST_INT, CV_NONE);
+      return tfac.getSimpleType(ST_INT, cv);
+
+    case CXType_Pointer:
+      return tfac.makePointerType(cv,
+        importType(clang_getPointeeType(cxType)));
 
     case CXType_Typedef: {
       CXCursor cxTypeDecl = clang_getTypeDeclaration(cxType);
       Variable *typedefVar = variableForDeclaration(cxTypeDecl);
-
-      if (clang_isConstQualifiedType(cxType) ||
-          clang_isVolatileQualifiedType(cxType) ||
-          clang_isRestrictQualifiedType(cxType)) {
-        xunimp("cv qualifiers on typedef");
-      }
-
-      return tfac.makeTypedefType(typedefVar, CV_NONE);
+      return tfac.makeTypedefType(typedefVar, cv);
     }
 
     case CXType_FunctionProto: {
+      xassert(cv == CV_NONE);
       Type *retType = importType(clang_getResultType(cxType));
 
       FunctionType *ft = tfac.makeFunctionType(retType);
