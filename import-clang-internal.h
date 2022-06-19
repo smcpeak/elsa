@@ -135,15 +135,30 @@ public:      // methods
 
   SourceLoc importSourceLocation(CXSourceLocation cxLoc);
 
+  // Get the location of 'cxCursor'.
+  SourceLoc cursorLocation(CXCursor cxCursor);
+
   TopForm *importTopForm(CXCursor cxTopForm);
 
+  Function *importFunctionDefinition(CXCursor cxFuncDefn);
+
   // Get the Variable that represents the entity declared at 'cxDecl'.
-  Variable *variableForDeclaration(CXCursor cxDecl);
+  // 'declFlags' is added to whatever is derived from the Clang AST.
+  Variable *variableForDeclaration(CXCursor cxDecl,
+    DeclFlags declFlags = DF_NONE);
 
   Declaration *importVarOrTypedefDecl(CXCursor cxVarDecl,
     DeclaratorContext context);
 
   Type *importType(CXType cxType);
+
+  S_compound *importCompoundStatement(CXCursor cxFunctionBody);
+
+  Statement *importStatement(CXCursor cxStmt);
+
+  FullExpression *importFullExpression(CXCursor cxExpr);
+
+  Expression *importExpression(CXCursor cxExpr);
 
   // Construct Elsa AST.
   Variable *makeVariable(SourceLoc loc, StringRef name,

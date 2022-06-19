@@ -137,20 +137,36 @@ SourceLoc ImportClang::importSourceLocation(CXSourceLocation cxLoc)
 }
 
 
+SourceLoc ImportClang::cursorLocation(CXCursor cxCursor)
+{
+  return importSourceLocation(clang_getCursorLocation(cxCursor));
+}
+
+
 TopForm *ImportClang::importTopForm(CXCursor cxTopForm)
 {
-  CXSourceLocation cxLoc = clang_getCursorLocation(cxTopForm);
-  SourceLoc loc = importSourceLocation(cxLoc);
+  SourceLoc loc = cursorLocation(cxTopForm);
 
   CXCursorKind cxKind = clang_getCursorKind(cxTopForm);
   switch (cxKind) {
     default:
       xfailure(stringb("Unknown cxKind: " << cxKind));
 
+    importDecl:
     case CXCursor_TypedefDecl:
     case CXCursor_VarDecl: {
       Declaration *decl = importVarOrTypedefDecl(cxTopForm, DC_TF_DECL);
       return new TF_decl(loc, decl);
+    }
+
+    case CXCursor_FunctionDecl: {
+      if (clang_isCursorDefinition(cxTopForm)) {
+        Function *func = importFunctionDefinition(cxTopForm);
+        return new TF_func(loc, func);
+      }
+      else {
+        goto importDecl;
+      }
     }
   }
 
@@ -158,11 +174,74 @@ TopForm *ImportClang::importTopForm(CXCursor cxTopForm)
 }
 
 
-Variable *ImportClang::variableForDeclaration(CXCursor cxDecl)
+Function *ImportClang::importFunctionDefinition(CXCursor cxFuncDefn)
 {
+  TypeFactory &tfac = m_elsaParse.m_typeFactory;
+
+  // Build a representative for the function.  This will have an
+  // associated FunctionType, but without parameter names.
+  Variable *funcVar = variableForDeclaration(cxFuncDefn);
+  FunctionType const *declFuncType = funcVar->type->asFunctionTypeC();
+
+  // Function body.
+  CXCursor cxFunctionBody;
+
+  // Build a FunctionType specific to this definition, containing the
+  // parameter names.
+  FunctionType *defnFuncType = tfac.makeFunctionType(declFuncType->retType);
+  {
+    bool foundBody = false;
+
+    // The parameter declarations are children of 'cxFuncDefn'.
+    std::vector<CXCursor> children = getChildren(cxFuncDefn);
+    for (CXCursor const &child : children) {
+      CXCursorKind childKind = clang_getCursorKind(child);
+      if (childKind == CXCursor_ParmDecl) {
+        Variable *paramVar = variableForDeclaration(child, DF_PARAMETER);
+        defnFuncType->addParam(paramVar);
+      }
+      else if (childKind == CXCursor_CompoundStmt) {
+        // The final child is the function body.
+        xassert(!foundBody);
+        foundBody = true;
+        cxFunctionBody = child;
+      }
+      else {
+        xfailure(stringb("Unexpected childKind: " << childKind));
+      }
+    }
+
+    defnFuncType->flags = declFuncType->flags;
+
+    tfac.doneParams(defnFuncType);
+    xassert(foundBody);
+  }
+
+  std::pair<TypeSpecifier*, Declarator*> tsAndDeclarator =
+    makeTSandDeclaratorForType(funcVar, defnFuncType, DC_FUNCTION);
+
+  S_compound *body = importCompoundStatement(cxFunctionBody);
+
+  return new Function(
+    DF_NONE,       // TODO: Refine.
+    tsAndDeclarator.first,
+    tsAndDeclarator.second,
+    nullptr,       // inits
+    body,
+    nullptr);      // handlers
+}
+
+
+Variable *ImportClang::variableForDeclaration(CXCursor cxDecl,
+  DeclFlags declFlags)
+{
+  // Go to the canonical cursor to handle the case of an entity that is
+  // declared multiple times.
+  cxDecl = clang_getCanonicalCursor(cxDecl);
+
   // CXCursor is a structure with several elements, so does not appear
   // usable as a map key.  Use the location instead.
-  SourceLoc loc = importSourceLocation(clang_getCursorLocation(cxDecl));
+  SourceLoc loc = cursorLocation(cxDecl);
 
   StringRef name = importString(clang_getCursorSpelling(cxDecl));
 
@@ -170,10 +249,8 @@ Variable *ImportClang::variableForDeclaration(CXCursor cxDecl)
   if (!var) {
     Type *type;
 
-    // TODO: This will need additional refinement.
-    DeclFlags declFlags = DF_NONE;
     if (clang_getCursorKind(cxDecl) == CXCursor_TypedefDecl) {
-      declFlags = DF_TYPEDEF;
+      declFlags |= DF_TYPEDEF;
 
       // For a typedef, the 'type' is the underlying type.
       type = importType(clang_getTypedefDeclUnderlyingType(cxDecl));
@@ -212,6 +289,9 @@ Type *ImportClang::importType(CXType cxType)
     default:
       xfailure(stringb("Unknown cxType kind: " << cxType.kind));
 
+    case CXType_Invalid:
+      xfailure("importType: cxType is invalid");
+
     case CXType_Int:
       return tfac.getSimpleType(ST_INT, CV_NONE);
 
@@ -227,11 +307,130 @@ Type *ImportClang::importType(CXType cxType)
 
       return tfac.makeTypedefType(typedefVar, CV_NONE);
     }
+
+    case CXType_FunctionProto: {
+      Type *retType = importType(clang_getResultType(cxType));
+
+      FunctionType *ft = tfac.makeFunctionType(retType);
+
+      int numParams = clang_getNumArgTypes(cxType);
+      for (int i=0; i < numParams; i++) {
+        Type *paramType = importType(clang_getArgType(cxType, i));
+
+        // The Clang AST does not appear to record the names of function
+        // parameters for non-definitions anywhere other than as tokens
+        // that would have to be parsed.
+        Variable *paramVar = makeVariable(SL_UNKNOWN, nullptr /*name*/,
+          paramType, DF_PARAMETER);
+
+        ft->addParam(paramVar);
+      }
+
+      if (clang_isFunctionTypeVariadic(cxType)) {
+        ft->setFlag(FF_VARARGS);
+      }
+
+      tfac.doneParams(ft);
+      return ft;
+    }
   }
 
   // Not reached.
 }
 
+
+S_compound *ImportClang::importCompoundStatement(CXCursor cxFunctionBody)
+{
+  SourceLoc loc = cursorLocation(cxFunctionBody);
+  S_compound *comp = new S_compound(loc, nullptr /*stmts*/);
+
+  std::vector<CXCursor> children = getChildren(cxFunctionBody);
+  for (CXCursor const &child : children) {
+    comp->stmts.append(importStatement(child));
+  }
+
+  return comp;
+}
+
+
+Statement *ImportClang::importStatement(CXCursor cxStmt)
+{
+  SourceLoc loc = cursorLocation(cxStmt);
+  CXCursorKind stmtKind = clang_getCursorKind(cxStmt);
+  std::vector<CXCursor> children = getChildren(cxStmt);
+
+  switch (stmtKind) {
+    default:
+      xunimp(stringb("Unhandled stmtKind: " << stmtKind));
+
+    case CXCursor_DeclStmt: {
+      xassert(children.size() == 1);
+      for (CXCursor const &child : children) {
+        xassert(clang_getCursorKind(child) == CXCursor_VarDecl);
+        Declaration *decl = importVarOrTypedefDecl(child, DC_S_DECL);
+        return new S_decl(loc, decl);
+      }
+    }
+
+    case CXCursor_ReturnStmt: {
+      FullExpression *retval = nullptr;
+      if (!children.empty()) {
+        xassert(children.size() == 1);
+        retval = importFullExpression(children.front());
+      }
+      return new S_return(loc, retval);
+    }
+  }
+
+  // Not reached.
+}
+
+
+FullExpression *ImportClang::importFullExpression(CXCursor cxExpr)
+{
+  return new FullExpression(importExpression(cxExpr));
+}
+
+
+Expression *ImportClang::importExpression(CXCursor cxExpr)
+{
+  CXCursorKind exprKind = clang_getCursorKind(cxExpr);
+  Type const *type = importType(clang_getCursorType(cxExpr));
+  std::vector<CXCursor> children = getChildren(cxExpr);
+
+  switch (exprKind) {
+    default:
+      xunimp(stringb("Unhandled exprKind: " << exprKind));
+
+    case CXCursor_UnexposedExpr: {
+      // This is used for implicit conversions (perhaps among other
+      // things).
+      xassert(children.size() == 1);
+      CXCursor child = children.front();
+      Type const *childType = importType(clang_getCursorType(child));
+      if (type->equals(childType)) {
+        // This happens for lvalue-to-rvalue conversions.  There does
+        // not seem to be a way in libclang to see that directly, so I
+        // will just drop the conversion.
+        return importExpression(child);
+      }
+      else {
+        xunimp("non-trivial implicit conversion");
+        return nullptr;
+      }
+    }
+
+    case CXCursor_DeclRefExpr: {
+      CXCursor decl = clang_getCursorReferenced(cxExpr);
+      Variable *var = variableForDeclaration(decl);
+      E_variable *evar = makeE_variable(var);
+      evar->type = legacyTypeNC(type);
+      return evar;
+    }
+  }
+
+  // Not reached.
+}
 
 
 Variable *ImportClang::makeVariable(SourceLoc loc, StringRef name,
