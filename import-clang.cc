@@ -72,6 +72,22 @@ void clangParseTranslationUnit(
 }
 
 
+ImportClang::ImportClang(CXIndex cxIndex,
+                         CXTranslationUnit cxTranslationUnit,
+                         ElsaParse &elsaParse)
+  : ElsaASTBuild(elsaParse.m_stringTable,
+                 elsaParse.m_typeFactory,
+                 elsaParse.m_lang,
+                 *this),
+    m_cxIndex(cxIndex),
+    m_cxTranslationUnit(cxTranslationUnit),
+    m_elsaParse(elsaParse),
+    m_globalScope(new Scope(SK_GLOBAL, 0 /*changeCount*/, SL_INIT)),
+    m_cxFileToName(),
+    m_locToVariable()
+{}
+
+
 void ImportClang::importTranslationUnit()
 {
   CXCursor cursor = clang_getTranslationUnitCursor(m_cxTranslationUnit);
@@ -143,6 +159,12 @@ SourceLoc ImportClang::cursorLocation(CXCursor cxCursor)
 }
 
 
+StringRef ImportClang::cursorSpelling(CXCursor cxCursor)
+{
+  return importString(clang_getCursorSpelling(cxCursor));
+}
+
+
 TopForm *ImportClang::importTopForm(CXCursor cxTopForm)
 {
   SourceLoc loc = cursorLocation(cxTopForm);
@@ -151,6 +173,16 @@ TopForm *ImportClang::importTopForm(CXCursor cxTopForm)
   switch (cxKind) {
     default:
       xfailure(stringb("Unknown cxKind: " << cxKind));
+
+    case CXCursor_EnumDecl: {
+      if (clang_isCursorDefinition(cxTopForm)) {
+        Declaration *decl = importEnumDefinition(cxTopForm);
+        return new TF_decl(loc, decl);
+      }
+      else {
+        xunimp("enum forward declaration");
+      }
+    }
 
     importDecl:
     case CXCursor_TypedefDecl:
@@ -171,6 +203,71 @@ TopForm *ImportClang::importTopForm(CXCursor cxTopForm)
   }
 
   // Not reached.
+}
+
+
+Declaration *ImportClang::importEnumDefinition(CXCursor cxEnumDefn)
+{
+  SourceLoc loc = cursorLocation(cxEnumDefn);
+
+  // This call creates the EnumType.
+  Variable *enumVar = variableForDeclaration(cxEnumDefn);
+  EnumType const *enumType = enumVar->type->asNamedAtomicType()->asEnumType();
+
+  // Add the enumerators to 'enumerators'.
+  FakeList<Enumerator> *enumerators = FakeList<Enumerator>::emptyList();
+  for (CXCursor const &cxEnumerator : getChildren(cxEnumDefn)) {
+    xassert(clang_getCursorKind(cxEnumerator) == CXCursor_EnumConstantDecl);
+
+    Enumerator *enumerator = importEnumerator(cxEnumerator, enumType);
+
+    enumerators = fl_prepend(enumerators, enumerator);
+  }
+
+  // The list was built in reverse order due to prepending.
+  enumerators = fl_reverse(enumerators);
+
+  TS_enumSpec *enumTS = new TS_enumSpec(loc, enumVar->name, enumerators);
+  enumTS->etype = legacyTypeNC(enumType);
+
+  // Wrap up the type specifier in a declaration with no declarators.
+  return new Declaration(DF_NONE, enumTS, nullptr /*decllist*/);
+}
+
+
+Enumerator *ImportClang::importEnumerator(CXCursor cxEnumerator,
+  EnumType const *enumType)
+{
+  // Get the enumerator name and value.
+  //
+  // This duplicates work done in 'importEnumType'.  I'm not sure how
+  // best to avoid that; the possibility of forward-declared enums
+  // means I might need the semantics before I see the syntax.
+  StringRef name = cursorSpelling(cxEnumerator);
+  long long llValue = clang_getEnumConstantDeclValue(cxEnumerator);
+  int intValue = (int)llValue;
+  if (intValue != llValue) {
+    xunimp(stringb("Enumerator value out of representation range: " << llValue));
+  }
+
+  // Get the expression that specifies the value, if any.
+  Expression * NULLABLE expr = nullptr;
+  std::vector<CXCursor> children = getChildren(cxEnumerator);
+  if (!children.empty()) {
+    xassert(children.size() == 1);
+    expr = importExpression(children.front());
+  }
+
+  // Get the EnumType::Value for this enumerator.
+  EnumType::Value const *valueObject = enumType->getValue(name);
+  xassert(valueObject);
+
+  // Build the enumerator.
+  SourceLoc loc = cursorLocation(cxEnumerator);
+  Enumerator *enumerator = new Enumerator(loc, name, expr);
+  enumerator->var = valueObject->decl;
+  enumerator->enumValue = intValue;
+  return enumerator;
 }
 
 
@@ -243,25 +340,43 @@ Variable *ImportClang::variableForDeclaration(CXCursor cxDecl,
   // usable as a map key.  Use the location instead.
   SourceLoc loc = cursorLocation(cxDecl);
 
-  StringRef name = importString(clang_getCursorSpelling(cxDecl));
+  StringRef name = cursorSpelling(cxDecl);
 
   Variable *&var = m_locToVariable[loc];
   if (!var) {
     Type *type;
 
-    if (clang_getCursorKind(cxDecl) == CXCursor_TypedefDecl) {
+    CXCursorKind declKind = clang_getCursorKind(cxDecl);
+    if (declKind == CXCursor_TypedefDecl) {
       declFlags |= DF_TYPEDEF;
 
       // For a typedef, the 'type' is the underlying type.
       type = importType(clang_getTypedefDeclUnderlyingType(cxDecl));
     }
+
+    else if (declKind == CXCursor_EnumDecl) {
+      declFlags |= DF_TYPEDEF;
+
+      // Use the definition if it is available.
+      CXCursor cxDefn = clang_getCursorDefinition(cxDecl);
+      if (!clang_Cursor_isNull(cxDefn)) {
+        cxDecl = cxDefn;
+      }
+
+      EnumType *enumType = importEnumType(cxDecl);
+
+      xassert(!var);
+      var = enumType->typedefVar;
+      return var;
+    }
+
     else {
       // For anything else, the type is what the declaration says.
       type = importType(clang_getCursorType(cxDecl));
     }
 
     xassert(!var);
-    var = makeVariable(loc, name, type, declFlags);
+    var = makeVariable_setScope(loc, name, type, declFlags, cxDecl);
   }
 
   else {
@@ -306,6 +421,9 @@ Type *ImportClang::importType(CXType cxType)
     case CXType_Int:
       return tfac.getSimpleType(ST_INT, cv);
 
+    case CXType_UInt:
+      return tfac.getSimpleType(ST_UNSIGNED_INT, cv);
+
     case CXType_Pointer:
       return tfac.makePointerType(cv,
         importType(clang_getPointeeType(cxType)));
@@ -342,9 +460,53 @@ Type *ImportClang::importType(CXType cxType)
       tfac.doneParams(ft);
       return ft;
     }
+
+    case CXType_Enum: {
+      CXCursor cxTypeDecl = clang_getTypeDeclaration(cxType);
+      Variable *typedefVar = variableForDeclaration(cxTypeDecl);
+      return typedefVar->type;
+    }
   }
 
   // Not reached.
+}
+
+
+EnumType *ImportClang::importEnumType(CXCursor cxEnumDefn)
+{
+  SourceLoc loc = cursorLocation(cxEnumDefn);
+  StringRef enumName = cursorSpelling(cxEnumDefn);
+  TypeFactory &tfac = m_elsaParse.m_typeFactory;
+
+  // Set up the initially empty EnumType.
+  EnumType *enumType = tfac.makeEnumType(enumName);
+  Type *type = tfac.makeCVAtomicType(enumType, CV_NONE);
+  enumType->typedefVar =
+    makeVariable_setScope(loc, enumName, type, DF_NONE, cxEnumDefn);
+
+  // Get all of the enumerators and add them to 'enumType'.
+  for (CXCursor const &cxEnumerator : getChildren(cxEnumDefn)) {
+    xassert(clang_getCursorKind(cxEnumerator) == CXCursor_EnumConstantDecl);
+
+    // Get the enumerator name and value.
+    StringRef enumeratorName = cursorSpelling(cxEnumerator);
+    long long llValue = clang_getEnumConstantDeclValue(cxEnumerator);
+    int intValue = (int)llValue;
+    if (intValue != llValue) {
+      xunimp(stringb("Enumerator value out of representation range: " << llValue));
+    }
+
+    Variable *enumeratorVar = makeVariable_setScope(
+      cursorLocation(cxEnumerator),
+      enumeratorName,
+      type,
+      DF_ENUMERATOR,
+      cxEnumerator);
+
+    enumType->addValue(enumeratorName, intValue, enumeratorVar);
+  }
+
+  return enumType;
 }
 
 
@@ -407,11 +569,13 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
   Type const *type = importType(clang_getCursorType(cxExpr));
   std::vector<CXCursor> children = getChildren(cxExpr);
 
+  Expression *ret = nullptr;
+
   switch (exprKind) {
     default:
       xunimp(stringb("Unhandled exprKind: " << exprKind));
 
-    case CXCursor_UnexposedExpr: {
+    case CXCursor_UnexposedExpr: { // 1
       // This is used for implicit conversions (perhaps among other
       // things).
       xassert(children.size() == 1);
@@ -424,21 +588,82 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
         return importExpression(child);
       }
       else {
-        xunimp("non-trivial implicit conversion");
-        return nullptr;
+        StandardConversion conv =
+          describeAsStandardConversion(type, childType);
+        ret = new E_implicitStandardConversion(conv,
+          importExpression(child));
       }
+      break;
     }
 
-    case CXCursor_DeclRefExpr: {
+    case CXCursor_DeclRefExpr: { // 101
       CXCursor decl = clang_getCursorReferenced(cxExpr);
       Variable *var = variableForDeclaration(decl);
-      E_variable *evar = makeE_variable(var);
-      evar->type = legacyTypeNC(type);
-      return evar;
+      ret = makeE_variable(var);
+      break;
+    }
+
+    case CXCursor_IntegerLiteral: { // 106
+      // Evaluate the literal as an integer.
+      CXEvalResult cxEvalResult = clang_Cursor_Evaluate(cxExpr);
+      xassert(clang_EvalResult_getKind(cxEvalResult) == CXEval_Int);
+      long long value = clang_EvalResult_getAsLongLong(cxEvalResult);
+      clang_EvalResult_dispose(cxEvalResult);
+
+      // Make an E_intLit to hold that integer.
+      StringRef valueStringRef =
+        m_elsaParse.m_stringTable.add(stringbc(value));
+      E_intLit *intLit = new E_intLit(valueStringRef);
+      intLit->i = value;
+      if ((long long)(intLit->i) != value) {
+        xunimp("Integer literal too large to represent.");
+      }
+
+      ret = intLit;
+      break;
     }
   }
 
-  // Not reached.
+  ret->type = legacyTypeNC(type);
+  return ret;
+}
+
+
+StandardConversion ImportClang::describeAsStandardConversion(
+  Type const *destType, Type const *srcType)
+{
+  CVAtomicType const *destCVAT = destType->ifCVAtomicTypeC();
+  CVAtomicType const *srcCVAT  = srcType ->ifCVAtomicTypeC();
+  if (destCVAT && srcCVAT) {
+    SimpleType const *destSimpleType = destCVAT->atomic->ifSimpleTypeC();
+    SimpleType const *srcSimpleType  = srcCVAT ->atomic->ifSimpleTypeC();
+    if (destSimpleType && srcSimpleType) {
+      if (isIntegerType(destSimpleType->type) &&
+          isIntegerType(srcSimpleType->type)) {
+        // TODO: This could also be SC_INT_PROM.
+        return SC_INT_CONV;
+      }
+    }
+  }
+
+  xunimp(stringb(
+    "describeAsStandardConversion: destType='" << destType->toString() <<
+    "' srcType='" << srcType->toString() << "'"));
+  return SC_IDENTITY;
+}
+
+
+Variable *ImportClang::makeVariable_setScope(SourceLoc loc,
+  StringRef name, Type *type, DeclFlags flags, CXCursor cxDecl)
+{
+  Variable *var = makeVariable(loc, name, type, flags);
+
+  CXCursor cxSemParent = clang_getCursorSemanticParent(cxDecl);
+  if (clang_getCursorKind(cxSemParent) == CXCursor_TranslationUnit) {
+    var->m_containingScope = m_globalScope;
+  }
+
+  return var;
 }
 
 

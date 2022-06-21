@@ -90,15 +90,22 @@ public:      // methods
 // Manage the process of importing.
 class ImportClang : public SourceLocProvider, ElsaASTBuild {
 public:      // data
+  // ---- Clang AST ----
   // Container for Clang translation-wide data.
   CXIndex m_cxIndex;
 
-  // Root of the AST.
+  // Root of the Clang AST.
   CXTranslationUnit m_cxTranslationUnit;
 
+  // ---- Elsa AST ----
   // Container for Elsa translation-wide data.
   ElsaParse &m_elsaParse;
 
+  // Object representing the global scope.  Variables that have global
+  // scope will have their 'm_containingScope' set to this.
+  Scope *m_globalScope;
+
+  // ---- Maps between Clang and Elsa ----
   // Map from Clang file pointer to its name.
   std::map<CXFile /*cxFile*/, StringRef /*fname*/> m_cxFileToName;
 
@@ -108,17 +115,7 @@ public:      // data
 public:      // methods
   ImportClang(CXIndex cxIndex,
               CXTranslationUnit cxTranslationUnit,
-              ElsaParse &elsaParse)
-    : ElsaASTBuild(elsaParse.m_stringTable,
-                   elsaParse.m_typeFactory,
-                   elsaParse.m_lang,
-                   *this),
-      m_cxIndex(cxIndex),
-      m_cxTranslationUnit(cxTranslationUnit),
-      m_elsaParse(elsaParse),
-      m_cxFileToName(),
-      m_locToVariable()
-  {}
+              ElsaParse &elsaParse);
 
   // Entry point to the importer.
   void importTranslationUnit();
@@ -138,7 +135,14 @@ public:      // methods
   // Get the location of 'cxCursor'.
   SourceLoc cursorLocation(CXCursor cxCursor);
 
+  StringRef cursorSpelling(CXCursor cxCursor);
+
   TopForm *importTopForm(CXCursor cxTopForm);
+
+  Declaration *importEnumDefinition(CXCursor cxEnumDefn);
+
+  Enumerator *importEnumerator(CXCursor cxEnumerator,
+    EnumType const *enumType);
 
   Function *importFunctionDefinition(CXCursor cxFuncDefn);
 
@@ -152,6 +156,8 @@ public:      // methods
 
   Type *importType(CXType cxType);
 
+  EnumType *importEnumType(CXCursor cxEnumDefn);
+
   S_compound *importCompoundStatement(CXCursor cxFunctionBody);
 
   Statement *importStatement(CXCursor cxStmt);
@@ -160,7 +166,16 @@ public:      // methods
 
   Expression *importExpression(CXCursor cxExpr);
 
-  // Construct Elsa AST.
+  // Describe the conversion from 'srcType' to 'destType' as a
+  // standard conversion.
+  StandardConversion describeAsStandardConversion(
+    Type const *destType, Type const *srcType);
+
+  // Make a Variable, and set its 'm_containingScope' according to
+  // 'cxDecl'.
+  Variable *makeVariable_setScope(SourceLoc loc,
+    StringRef name, Type *type, DeclFlags flags, CXCursor cxDecl);
+
   Variable *makeVariable(SourceLoc loc, StringRef name,
     Type *type, DeclFlags flags);
 };
