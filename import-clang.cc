@@ -72,6 +72,37 @@ void clangParseTranslationUnit(
 }
 
 
+// --------------------------- WrapCXTokens ----------------------------
+WrapCXTokens::WrapCXTokens(CXTranslationUnit cxTU, CXSourceLocation cxLoc)
+  : m_cxTU(cxTU),
+    m_cxTokens(clang_getToken(cxTU, cxLoc)),
+    m_numTokens(1)
+{}
+
+
+WrapCXTokens::WrapCXTokens(CXTranslationUnit cxTU, CXSourceRange cxRange)
+  : m_cxTU(cxTU),
+    m_cxTokens(nullptr),
+    m_numTokens(0)
+{
+  clang_tokenize(cxTU, cxRange, &m_cxTokens, &m_numTokens);
+}
+
+
+WrapCXTokens::~WrapCXTokens()
+{
+  clang_disposeTokens(m_cxTU, m_cxTokens, m_numTokens);
+}
+
+
+WrapCXString WrapCXTokens::stringAt(unsigned index)
+{
+  xassert(index < m_numTokens);
+  return WrapCXString(clang_getTokenSpelling(m_cxTU, m_cxTokens[index]));
+}
+
+
+// --------------------------- ImportClang -----------------------------
 ImportClang::ImportClang(CXIndex cxIndex,
                          CXTranslationUnit cxTranslationUnit,
                          ElsaParse &elsaParse)
@@ -532,9 +563,10 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
     default:
       xunimp(stringb("Unhandled stmtKind: " << stmtKind));
 
-    case CXCursor_CallExpr:        // 103
-    case CXCursor_ParenExpr:       // 111
-    case CXCursor_UnaryOperator: { // 112
+    case CXCursor_CallExpr:         // 103
+    case CXCursor_ParenExpr:        // 111
+    case CXCursor_UnaryOperator:    // 112
+    case CXCursor_BinaryOperator: { // 114
       FullExpression *fullExpr = importFullExpression(cxStmt);
       return new S_expr(loc, fullExpr);
     }
@@ -577,6 +609,16 @@ CXCursor ImportClang::getOnlyChild(CXCursor cxNode)
 }
 
 
+void ImportClang::getTwoChildren(CXCursor &c1, CXCursor &c2,
+  CXCursor cxNode)
+{
+  std::vector<CXCursor> children = getChildren(cxNode);
+  xassert(children.size() == 2);
+  c1 = children[0];
+  c2 = children[1];
+}
+
+
 static UnaryOp stringToUnaryOp(char const *str)
 {
   // Should be exactly one character.
@@ -591,6 +633,20 @@ static UnaryOp stringToUnaryOp(char const *str)
   }
 
   // Not reached.
+}
+
+
+static BinaryOp stringToBinaryOp(char const *str)
+{
+  // Use the simple and slow method.
+  for (int i=0; i < NUM_BINARYOPS; i++) {
+    if (streq(str, binaryOpNames[i])) {
+      return static_cast<BinaryOp>(i);
+    }
+  }
+
+  xfailure("Unexpected binary operator string.");
+  return NUM_BINARYOPS; // Not reached.
 }
 
 
@@ -684,13 +740,39 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
       UnaryOp unOp;
       {
         CXSourceLocation cxLoc = clang_getCursorLocation(cxExpr);
-        CXToken *cxToken = clang_getToken(m_cxTranslationUnit, cxLoc);
-        WrapCXString cxString(clang_getTokenSpelling(m_cxTranslationUnit, *cxToken));
-        unOp = stringToUnaryOp(cxString.c_str());
-        clang_disposeTokens(m_cxTranslationUnit, cxToken, 1 /*numTokens*/);
+        WrapCXTokens cxToken(m_cxTranslationUnit, cxLoc);
+        unOp = stringToUnaryOp(cxToken.stringAt(0).c_str());
       }
 
       ret = new E_unary(unOp, importExpression(getOnlyChild(cxExpr)));
+      break;
+    }
+
+    case CXCursor_BinaryOperator: { // 114
+      CXCursor cxLHS, cxRHS;
+      getTwoChildren(cxLHS, cxRHS, cxExpr);
+
+      // Get the operator.
+      BinaryOp binOp;
+      {
+        // Tokens in 'cxExpr' and 'cxLHS'.
+        WrapCXTokens cxExprTokens(m_cxTranslationUnit,
+          clang_getCursorExtent(cxExpr));
+        WrapCXTokens cxLHSTokens(m_cxTranslationUnit,
+          clang_getCursorExtent(cxLHS));
+        xassert(cxLHSTokens.size() < cxExprTokens.size());
+
+        // We will simply assume that the first token beyond the number
+        // in 'cxLHS' is the operator.
+        binOp = stringToBinaryOp(
+          cxExprTokens.stringAt(cxLHSTokens.size()).c_str());
+      }
+
+      ret = new E_binary(
+        importExpression(cxLHS),
+        binOp,
+        importExpression(cxRHS)
+      );
       break;
     }
   }

@@ -70,20 +70,64 @@ public:      // data
   // The Clang string reference.
   CXString m_cxString;
 
+  // If true, the string needs to be disposed.
+  bool m_valid;
+
 public:      // methods
   WrapCXString(CXString cxString)
-    : m_cxString(cxString)
+    : m_cxString(cxString),
+      m_valid(true)
   {}
+
+  // Allow moving, invalidating the source.
+  WrapCXString(WrapCXString &&obj)
+    : m_cxString(obj.m_cxString),
+      m_valid(obj.m_valid)
+  {
+    obj.m_valid = false;
+  }
 
   ~WrapCXString()
   {
-    clang_disposeString(m_cxString);
+    if (m_valid) {
+      clang_disposeString(m_cxString);
+    }
   }
 
   char const *c_str() const
   {
+    xassert(m_valid);
     return clang_getCString(m_cxString);
   }
+};
+
+
+class WrapCXTokens {
+  NO_OBJECT_COPIES(WrapCXTokens);
+
+public:
+  // The TU, since that is needed to dispose and to get the string.
+  CXTranslationUnit m_cxTU;
+
+  // Pointer to an array of 'm_numTokens' tokens.
+  CXToken *m_cxTokens;
+
+  // Number of tokens in 'm_cxTokens'.
+  unsigned m_numTokens;
+
+public:
+  // Use 'clang_getToken' to get one token.
+  WrapCXTokens(CXTranslationUnit cxTU, CXSourceLocation cxLoc);
+
+  // Use 'clang_tokenize' to get a sequence of tokens.
+  WrapCXTokens(CXTranslationUnit cxTU, CXSourceRange cxRange);
+
+  ~WrapCXTokens();
+
+  unsigned size() const { return m_numTokens; }
+
+  // Return the string form of token 'index'.
+  WrapCXString stringAt(unsigned index);
 };
 
 
@@ -166,6 +210,10 @@ public:      // methods
 
   // Assert that 'cxNode' has exactly one child, and return it.
   CXCursor getOnlyChild(CXCursor cxNode);
+
+  // Assert that 'cxNode' has two children, and return them.
+  void getTwoChildren(CXCursor &c1, CXCursor &c2,
+    CXCursor cxNode);
 
   Expression *importExpression(CXCursor cxExpr);
 
