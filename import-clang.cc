@@ -12,6 +12,18 @@
 #include <assert.h>                    // assert (temporary!)
 
 
+// This is a candidate to go into smbase.
+template <class DEST, class SRC>
+void checkedAssignment(DEST &dest, SRC src)
+{
+  dest = static_cast<DEST>(src);
+  if (static_cast<SRC>(dest) != src ||
+      (dest < 0) != (src < 0)) {
+    xfatal(stringb("Value " << src << " is outside representable range."));
+  }
+}
+
+
 static string cxErrorCodeString(CXErrorCode code)
 {
   static char const * const table[] = {
@@ -586,6 +598,27 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
     case CXCursor_CompoundStmt: // 202
       return importCompoundStatement(cxStmt);
 
+    case CXCursor_CaseStmt: { // 203
+      CXCursor caseValue, childStmt;
+      getTwoChildren(caseValue, childStmt, cxStmt);
+
+      S_case *ret = new S_case(loc, importExpression(caseValue),
+        importStatement(childStmt));
+      checkedAssignment(ret->labelVal, evalAsLongLong(caseValue));
+      return ret;
+    }
+
+    case CXCursor_DefaultStmt: // 204
+      return new S_default(loc, importStatement(getOnlyChild(cxStmt)));
+
+    case CXCursor_SwitchStmt: { // 206
+      CXCursor selectorExpr, childStmt;
+      getTwoChildren(selectorExpr, childStmt, cxStmt);
+
+      return new S_switch(loc, importCondition(selectorExpr),
+        importStatement(childStmt));
+    }
+
     case CXCursor_GotoStmt: { // 210
       // The 'goto' itself does not carry the label, but we can get the
       // referenced statement, and that has it.
@@ -730,6 +763,17 @@ static std::string getBinaryOperator(CXTranslationUnit cxTU, CXCursor cxExpr)
 }
 
 
+long long ImportClang::evalAsLongLong(CXCursor cxExpr)
+{
+  CXEvalResult cxEvalResult = clang_Cursor_Evaluate(cxExpr);
+  xassert(clang_EvalResult_getKind(cxEvalResult) == CXEval_Int);
+  long long value = clang_EvalResult_getAsLongLong(cxEvalResult);
+  clang_EvalResult_dispose(cxEvalResult);
+
+  return value;
+}
+
+
 Expression *ImportClang::importExpression(CXCursor cxExpr)
 {
   CXCursorKind exprKind = clang_getCursorKind(cxExpr);
@@ -788,21 +832,11 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
     }
 
     case CXCursor_IntegerLiteral: { // 106
-      // Evaluate the literal as an integer.
-      CXEvalResult cxEvalResult = clang_Cursor_Evaluate(cxExpr);
-      xassert(clang_EvalResult_getKind(cxEvalResult) == CXEval_Int);
-      long long value = clang_EvalResult_getAsLongLong(cxEvalResult);
-      clang_EvalResult_dispose(cxEvalResult);
-
-      // Make an E_intLit to hold that integer.
-      StringRef valueStringRef =
-        m_elsaParse.m_stringTable.add(stringbc(value));
-      E_intLit *intLit = new E_intLit(valueStringRef);
+      int value;
+      checkedAssignment(value, evalAsLongLong(cxExpr));
+      E_intLit *intLit = new E_intLit(
+        m_elsaParse.m_stringTable.add(stringbc(value)));
       intLit->i = value;
-      if ((long long)(intLit->i) != value) {
-        xunimp("Integer literal too large to represent.");
-      }
-
       ret = intLit;
       break;
     }
@@ -939,6 +973,13 @@ StandardConversion ImportClang::describeAsStandardConversion(
     "describeAsStandardConversion: destType='" << destType->toString() <<
     "' srcType='" << srcType->toString() << "'"));
   return SC_IDENTITY;
+}
+
+
+Condition *ImportClang::importCondition(CXCursor cxCond)
+{
+  // For now, assume it is always an expression.
+  return new CN_expr(importFullExpression(cxCond));
 }
 
 

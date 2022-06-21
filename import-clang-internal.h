@@ -215,12 +215,16 @@ public:      // methods
   void getTwoChildren(CXCursor &c1, CXCursor &c2,
     CXCursor cxNode);
 
+  long long evalAsLongLong(CXCursor cxExpr);
+
   Expression *importExpression(CXCursor cxExpr);
 
   // Describe the conversion from 'srcType' to 'destType' as a
   // standard conversion.
   StandardConversion describeAsStandardConversion(
     Type const *destType, Type const *srcType);
+
+  Condition *importCondition(CXCursor cxCond);
 
   // Make a Variable, and set its 'm_containingScope' according to
   // 'cxDecl'.
