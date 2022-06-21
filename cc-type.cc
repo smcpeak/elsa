@@ -1117,7 +1117,7 @@ EnumType::Value *EnumType::addValue(StringRef name, int value, Variable *decl)
 }
 
 
-EnumType::Value const *EnumType::getValue(StringRef name) const
+EnumType::Value const * NULLABLE EnumType::getValue(StringRef name) const
 {
   Value const *v;
   if (valueIndex.queryC(name, v)) {

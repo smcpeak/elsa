@@ -546,8 +546,8 @@ public:     // funcs
   int reprSize(TypeSizes const &typeSizes) const override;
   void traverse(TypeVisitor &vis) override;
 
-  Value *addValue(StringRef name, int value, /*nullable*/ Variable *d);
-  Value const *getValue(StringRef name) const;
+  Value *addValue(StringRef name, int value, Variable * NULLABLE d);
+  Value const * NULLABLE getValue(StringRef name) const;
 };
 
 
