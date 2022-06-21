@@ -532,6 +532,7 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
     default:
       xunimp(stringb("Unhandled stmtKind: " << stmtKind));
 
+    case CXCursor_ParenExpr:       // 111
     case CXCursor_UnaryOperator: { // 112
       FullExpression *fullExpr = importFullExpression(cxStmt);
       return new S_expr(loc, fullExpr);
@@ -567,6 +568,14 @@ FullExpression *ImportClang::importFullExpression(CXCursor cxExpr)
 }
 
 
+CXCursor ImportClang::getOnlyChild(CXCursor cxNode)
+{
+  std::vector<CXCursor> children = getChildren(cxNode);
+  xassert(children.size() == 1);
+  return children.front();
+}
+
+
 static UnaryOp stringToUnaryOp(char const *str)
 {
   // Should be exactly one character.
@@ -588,7 +597,6 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
 {
   CXCursorKind exprKind = clang_getCursorKind(cxExpr);
   Type const *type = importType(clang_getCursorType(cxExpr));
-  std::vector<CXCursor> children = getChildren(cxExpr);
 
   Expression *ret = nullptr;
 
@@ -599,8 +607,7 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
     case CXCursor_UnexposedExpr: { // 1
       // This is used for implicit conversions (perhaps among other
       // things).
-      xassert(children.size() == 1);
-      CXCursor child = children.front();
+      CXCursor child = getOnlyChild(cxExpr);
       Type const *childType = importType(clang_getCursorType(child));
       if (type->equals(childType)) {
         // This happens for lvalue-to-rvalue conversions.  There does
@@ -644,6 +651,12 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
       break;
     }
 
+    case CXCursor_ParenExpr: { // 111
+      // Elsa drops parentheses, so I will do that here as well.
+      ret = importExpression(getOnlyChild(cxExpr));
+      break;
+    }
+
     case CXCursor_UnaryOperator: { // 112
       // Get the operator.
       //
@@ -657,9 +670,7 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
         clang_disposeTokens(m_cxTranslationUnit, cxToken, 1 /*numTokens*/);
       }
 
-      std::vector<CXCursor> children = getChildren(cxExpr);
-      xassert(children.size() == 1);
-      ret = new E_unary(unOp, importExpression(children.front()));
+      ret = new E_unary(unOp, importExpression(getOnlyChild(cxExpr)));
       break;
     }
   }

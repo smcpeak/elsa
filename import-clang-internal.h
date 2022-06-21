@@ -164,6 +164,9 @@ public:      // methods
 
   FullExpression *importFullExpression(CXCursor cxExpr);
 
+  // Assert that 'cxNode' has exactly one child, and return it.
+  CXCursor getOnlyChild(CXCursor cxNode);
+
   Expression *importExpression(CXCursor cxExpr);
 
   // Describe the conversion from 'srcType' to 'destType' as a
