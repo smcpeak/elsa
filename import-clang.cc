@@ -442,6 +442,61 @@ Declaration *ImportClang::importVarOrTypedefDecl(CXCursor cxVarDecl,
 }
 
 
+// Handle the low end of the 'CXTypeKind' range.
+static SimpleTypeId cxTypeKindToSimpleTypeId(CXTypeKind kind)
+{
+  struct Entry {
+    // I store the key in the table just so I can assert that it is
+    // correct.
+    CXTypeKind m_kind;
+
+    // Some of the entries are NUM_SIMPLE_TYPES to indicate that Elsa
+    // is missing the corresponding type.
+    SimpleTypeId m_id;
+  };
+
+  Entry const table[] = {
+    #define ENTRY(kind, id) { kind, id }
+
+    // Columns: \S+ \S+
+    ENTRY(CXType_Invalid,    NUM_SIMPLE_TYPES),
+    ENTRY(CXType_Unexposed,  NUM_SIMPLE_TYPES),
+    ENTRY(CXType_Void,       ST_VOID),
+    ENTRY(CXType_Bool,       ST_BOOL),
+    ENTRY(CXType_Char_U,     ST_CHAR),   // 'char' for targets where it is unsigned
+    ENTRY(CXType_UChar,      ST_UNSIGNED_CHAR),
+    ENTRY(CXType_Char16,     NUM_SIMPLE_TYPES),
+    ENTRY(CXType_Char32,     NUM_SIMPLE_TYPES),
+    ENTRY(CXType_UShort,     ST_UNSIGNED_SHORT_INT),
+    ENTRY(CXType_UInt,       ST_UNSIGNED_INT),
+    ENTRY(CXType_ULong,      ST_UNSIGNED_LONG_INT),
+    ENTRY(CXType_ULongLong,  ST_UNSIGNED_LONG_LONG),
+    ENTRY(CXType_UInt128,    NUM_SIMPLE_TYPES),
+    ENTRY(CXType_Char_S,     ST_CHAR),   // 'char' for targets where it is signed
+    ENTRY(CXType_SChar,      ST_SIGNED_CHAR),
+    ENTRY(CXType_WChar,      ST_WCHAR_T),
+    ENTRY(CXType_Short,      ST_SHORT_INT),
+    ENTRY(CXType_Int,        ST_INT),
+    ENTRY(CXType_Long,       ST_LONG_INT),
+    ENTRY(CXType_LongLong,   ST_LONG_LONG),
+    ENTRY(CXType_Int128,     NUM_SIMPLE_TYPES),
+    ENTRY(CXType_Float,      ST_FLOAT),
+    ENTRY(CXType_Double,     ST_DOUBLE),
+    ENTRY(CXType_LongDouble, ST_LONG_DOUBLE),
+
+    #undef ENTRY
+  };
+
+  STATIC_ASSERT(TABLESIZE(table) == CXType_LongDouble+1);
+  xassert(kind < TABLESIZE(table));
+  Entry const &entry = table[kind];
+  if (entry.m_id == NUM_SIMPLE_TYPES) {
+    xunimp(stringb("Unhandled simple type kind: " << kind));
+  }
+  return entry.m_id;
+}
+
+
 Type *ImportClang::importType(CXType cxType)
 {
   TypeFactory &tfac = m_elsaParse.m_typeFactory;
@@ -457,17 +512,16 @@ Type *ImportClang::importType(CXType cxType)
     cv |= CV_RESTRICT;
   }
 
+  if (CXType_Void <= cxType.kind && cxType.kind <= CXType_LongDouble) {
+    return tfac.getSimpleType(cxTypeKindToSimpleTypeId(cxType.kind));
+  }
+
   switch (cxType.kind) {
     default:
       xfailure(stringb("Unknown cxType kind: " << cxType.kind));
 
     case CXType_Invalid:
       xfailure("importType: cxType is invalid");
-
-    case CXType_Void: return tfac.getSimpleType(ST_VOID, cv);
-    case CXType_UInt: return tfac.getSimpleType(ST_UNSIGNED_INT, cv);
-    case CXType_Int:  return tfac.getSimpleType(ST_INT, cv);
-    case CXType_Long: return tfac.getSimpleType(ST_LONG_INT, cv);
 
     case CXType_Pointer:
       return tfac.makePointerType(cv,
@@ -610,6 +664,24 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
 
     case CXCursor_DefaultStmt: // 204
       return new S_default(loc, importStatement(getOnlyChild(cxStmt)));
+
+    case CXCursor_IfStmt: { // 205
+      std::vector<CXCursor> children = getChildren(cxStmt);
+
+      Statement *elseStmt;
+      if (children.size() == 2) {
+        elseStmt = new S_skip(loc, MI_IMPLICIT);
+      }
+      else {
+        xassert(children.size() == 3);
+        elseStmt = importStatement(children[2]);
+      }
+
+      return new S_if(loc,
+        importCondition(children[0]),
+        importStatement(children[1]),
+        elseStmt);
+    }
 
     case CXCursor_SwitchStmt: { // 206
       CXCursor selectorExpr, childStmt;
