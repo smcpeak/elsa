@@ -534,7 +534,7 @@ class Statement (SourceLoc loc) {
 
   // Semantically this does nothing.  If 'm_implicit' is MI_EXPLICIT,
   // this corresponds to the empty statement ";".  Otherwise it is used
-  // when an optional element (particularly the 'elsaBranch' of 'S_if')
+  // when an optional element (particularly the 'elseBranch' of 'S_if')
   // is syntactically absent, in order to avoid that being a special
   // case.
   -> S_skip(MaybeImplicit m_implicit);
