@@ -8,6 +8,9 @@
 #include "exc.h"                       // xfatal
 #include "str.h"                       // string
 
+// libc
+#include <assert.h>                    // assert (temporary!)
+
 
 static string cxErrorCodeString(CXErrorCode code)
 {
@@ -645,8 +648,64 @@ static BinaryOp stringToBinaryOp(char const *str)
     }
   }
 
-  xfailure("Unexpected binary operator string.");
+  xfatal(stringb("Unexpected binary operator: \"" << str << "\"."));
   return NUM_BINARYOPS; // Not reached.
+}
+
+
+// For Stack Overflow question.
+// https://stackoverflow.com/questions/23227812/get-operator-type-for-cxcursor-binaryoperator/72706506#72706506
+
+// Get the first child of 'cxNode'.
+static CXCursor getFirstChild(CXCursor cxNode)
+{
+  struct Result {
+    CXCursor child;
+    bool found;
+  } result;
+  result.found = false;
+
+  clang_visitChildren(cxNode,
+    [](CXCursor c, CXCursor parent, CXClientData client_data) {
+      Result *r = (Result*)client_data;
+      r->found = true;
+      r->child = c;
+      return CXChildVisit_Break;
+    },
+    &result);
+
+  assert(result.found);
+  return result.child;
+}
+
+// Get the operator of binary expression 'cxExpr' as a string.
+static std::string getBinaryOperator(CXTranslationUnit cxTU, CXCursor cxExpr)
+{
+  // Get tokens in 'cxExpr'.
+  CXToken *exprTokens;
+  unsigned numExprTokens;
+  clang_tokenize(cxTU, clang_getCursorExtent(cxExpr),
+    &exprTokens, &numExprTokens);
+
+  // Get tokens in its left-hand side.
+  CXCursor cxLHS = getFirstChild(cxExpr);
+  CXToken *lhsTokens;
+  unsigned numLHSTokens;
+  clang_tokenize(cxTU, clang_getCursorExtent(cxLHS),
+    &lhsTokens, &numLHSTokens);
+
+  // Get the spelling of the first token not in the LHS.
+  assert(numLHSTokens < numExprTokens);
+  CXString cxString = clang_getTokenSpelling(cxTU,
+    exprTokens[numLHSTokens]);
+  std::string ret(clang_getCString(cxString));
+
+  // Clean up.
+  clang_disposeString(cxString);
+  clang_disposeTokens(cxTU, lhsTokens, numLHSTokens);
+  clang_disposeTokens(cxTU, exprTokens, numExprTokens);
+
+  return ret;
 }
 
 
@@ -764,9 +823,18 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
 
         // We will simply assume that the first token beyond the number
         // in 'cxLHS' is the operator.
+        //
+        // NOTE: This does not work when the operator results from a
+        // macro expansion, and possibly in other cases.  I will need to
+        // continue to explicitly preprocess before parsing.
         binOp = stringToBinaryOp(
           cxExprTokens.stringAt(cxLHSTokens.size()).c_str());
       }
+
+      // Leaving this here for a while to test my code above.
+      std::string binOpString =
+        getBinaryOperator(m_cxTranslationUnit, cxExpr);
+      xassert(binOpString == toString(binOp));
 
       ret = new E_binary(
         importExpression(cxLHS),
