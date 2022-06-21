@@ -532,6 +532,7 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
     default:
       xunimp(stringb("Unhandled stmtKind: " << stmtKind));
 
+    case CXCursor_CallExpr:        // 103
     case CXCursor_ParenExpr:       // 111
     case CXCursor_UnaryOperator: { // 112
       FullExpression *fullExpr = importFullExpression(cxStmt);
@@ -631,6 +632,25 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
       break;
     }
 
+    case CXCursor_CallExpr: { // 103
+      std::vector<CXCursor> children = getChildren(cxExpr);
+      xassert(!children.empty());
+
+      // The first child is the callee expression.
+      Expression *callee = importExpression(children.front());
+
+      // Remaining children are the arguments.
+      FakeList<ArgExpression> *args = FakeList<ArgExpression>::emptyList();
+      for (size_t i=1; i < children.size(); ++i) {
+        args = fl_prepend(args, new ArgExpression(
+          importExpression(children[i])));
+      }
+      args = fl_reverse(args);
+
+      ret = new E_funCall(callee, args);
+      break;
+    }
+
     case CXCursor_IntegerLiteral: { // 106
       // Evaluate the literal as an integer.
       CXEvalResult cxEvalResult = clang_Cursor_Evaluate(cxExpr);
@@ -694,6 +714,15 @@ StandardConversion ImportClang::describeAsStandardConversion(
         // TODO: This could also be SC_INT_PROM.
         return SC_INT_CONV;
       }
+    }
+  }
+
+  if (destType->isPointerType()) {
+    if (srcType->isFunctionType()) {
+      return SC_FUNC_TO_PTR;
+    }
+    if (srcType->isArrayType()) {
+      return SC_ARRAY_TO_PTR;
     }
   }
 
