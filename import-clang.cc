@@ -586,6 +586,15 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
     case CXCursor_CompoundStmt: // 202
       return importCompoundStatement(cxStmt);
 
+    case CXCursor_GotoStmt: { // 210
+      // The 'goto' itself does not carry the label, but we can get the
+      // referenced statement, and that has it.
+      CXCursor label = clang_getCursorReferenced(cxStmt);
+      xassert(clang_getCursorKind(label) == CXCursor_LabelStmt);
+      StringRef name = importString(clang_getCursorSpelling(label));
+      return new S_goto(loc, name);
+    }
+
     case CXCursor_ReturnStmt: { // 214
       FullExpression *retval = nullptr;
       if (!children.empty()) {
