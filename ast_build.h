@@ -135,7 +135,7 @@ public:      // methods
   //
   // 'type' is not 'const' because the returned syntax contains a
   // non-const pointer to it.
-  ASTTypeId *makeASTTypeId(Type const *type, PQName *name,
+  ASTTypeId *makeASTTypeId(Type const *type, PQName * NULLABLE name,
     DeclaratorContext context);
 
   // Make an ASTTypeId denoting a SimpleTypeId.

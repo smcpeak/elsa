@@ -332,8 +332,8 @@ std::pair<TypeSpecifier*, Declarator*>
 }
 
 
-ASTTypeId *ElsaASTBuild::makeASTTypeId(Type const *type, PQName *name,
-  DeclaratorContext context)
+ASTTypeId *ElsaASTBuild::makeASTTypeId(Type const *type,
+  PQName * NULLABLE name, DeclaratorContext context)
 {
   // Construct a Variable out of 'type' and 'name'.
   StringRef nameSR = name? name->getName() : NULL;
