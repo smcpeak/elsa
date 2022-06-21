@@ -687,8 +687,27 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
       CXCursor selectorExpr, childStmt;
       getTwoChildren(selectorExpr, childStmt, cxStmt);
 
-      return new S_switch(loc, importCondition(selectorExpr),
+      return new S_switch(loc,
+        importCondition(selectorExpr),
         importStatement(childStmt));
+    }
+
+    case CXCursor_WhileStmt: { // 207
+      CXCursor conditionExpr, childStmt;
+      getTwoChildren(conditionExpr, childStmt, cxStmt);
+
+      return new S_while(loc,
+        importCondition(conditionExpr),
+        importStatement(childStmt));
+    }
+
+    case CXCursor_DoStmt: { // 208
+      CXCursor childStmt, conditionExpr;
+      getTwoChildren(childStmt, conditionExpr, cxStmt);
+
+      return new S_doWhile(loc,
+        importStatement(childStmt),
+        importFullExpression(conditionExpr));
     }
 
     case CXCursor_GotoStmt: { // 210
