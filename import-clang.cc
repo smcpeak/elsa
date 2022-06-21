@@ -453,8 +453,9 @@ Type *ImportClang::importType(CXType cxType)
       xfailure("importType: cxType is invalid");
 
     case CXType_Void: return tfac.getSimpleType(ST_VOID, cv);
-    case CXType_Int:  return tfac.getSimpleType(ST_INT, cv);
     case CXType_UInt: return tfac.getSimpleType(ST_UNSIGNED_INT, cv);
+    case CXType_Int:  return tfac.getSimpleType(ST_INT, cv);
+    case CXType_Long: return tfac.getSimpleType(ST_LONG_INT, cv);
 
     case CXType_Pointer:
       return tfac.makePointerType(cv,
@@ -542,12 +543,12 @@ EnumType *ImportClang::importEnumType(CXCursor cxEnumDefn)
 }
 
 
-S_compound *ImportClang::importCompoundStatement(CXCursor cxFunctionBody)
+S_compound *ImportClang::importCompoundStatement(CXCursor cxCompStmt)
 {
-  SourceLoc loc = cursorLocation(cxFunctionBody);
+  SourceLoc loc = cursorLocation(cxCompStmt);
   S_compound *comp = new S_compound(loc, nullptr /*stmts*/);
 
-  std::vector<CXCursor> children = getChildren(cxFunctionBody);
+  std::vector<CXCursor> children = getChildren(cxCompStmt);
   for (CXCursor const &child : children) {
     comp->stmts.append(importStatement(child));
   }
@@ -567,12 +568,17 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
       xunimp(stringb("Unhandled stmtKind: " << stmtKind));
 
     case CXCursor_CallExpr:         // 103
+    case CXCursor_IntegerLiteral:   // 106
     case CXCursor_ParenExpr:        // 111
     case CXCursor_UnaryOperator:    // 112
-    case CXCursor_BinaryOperator: { // 114
+    case CXCursor_BinaryOperator:   // 114
+    case CXCursor_CStyleCastExpr: { // 117
       FullExpression *fullExpr = importFullExpression(cxStmt);
       return new S_expr(loc, fullExpr);
     }
+
+    case CXCursor_CompoundStmt: // 202
+      return importCompoundStatement(cxStmt);
 
     case CXCursor_ReturnStmt: { // 214
       FullExpression *retval = nullptr;
@@ -841,6 +847,24 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
         binOp,
         importExpression(cxRHS)
       );
+      break;
+    }
+
+    case CXCursor_CStyleCastExpr: { // 117
+      // The destination type is simply the type of this expression.
+      ASTTypeId *castType =
+        makeASTTypeId(type, nullptr /*name*/, DC_E_CAST);
+
+      // Based on -ast-dump output, it seems that a typical C-style cast
+      // has CStyleCastExpr on top of one or more ImplicitCastExpr nodes
+      // (which themselves are conveyed as "unexposed" in libclang).  I
+      // don't think the implicit nodes help me, so I'll skip them.
+      CXCursor child = getOnlyChild(cxExpr);
+      while (clang_getCursorKind(child) == CXCursor_UnexposedExpr) {
+        child = getOnlyChild(child);
+      }
+
+      ret = new E_cast(castType, importExpression(child));
       break;
     }
   }
