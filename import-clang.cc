@@ -567,6 +567,7 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
     default:
       xunimp(stringb("Unhandled stmtKind: " << stmtKind));
 
+    case CXCursor_DeclRefExpr:      // 101
     case CXCursor_CallExpr:         // 103
     case CXCursor_IntegerLiteral:   // 106
     case CXCursor_ParenExpr:        // 111
@@ -575,6 +576,11 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
     case CXCursor_CStyleCastExpr: { // 117
       FullExpression *fullExpr = importFullExpression(cxStmt);
       return new S_expr(loc, fullExpr);
+    }
+
+    case CXCursor_LabelStmt: { // 201
+      StringRef name = importString(clang_getCursorSpelling(cxStmt));
+      return new S_label(loc, name, importStatement(getOnlyChild(cxStmt)));
     }
 
     case CXCursor_CompoundStmt: // 202
