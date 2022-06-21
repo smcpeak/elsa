@@ -418,11 +418,9 @@ Type *ImportClang::importType(CXType cxType)
     case CXType_Invalid:
       xfailure("importType: cxType is invalid");
 
-    case CXType_Int:
-      return tfac.getSimpleType(ST_INT, cv);
-
-    case CXType_UInt:
-      return tfac.getSimpleType(ST_UNSIGNED_INT, cv);
+    case CXType_Void: return tfac.getSimpleType(ST_VOID, cv);
+    case CXType_Int:  return tfac.getSimpleType(ST_INT, cv);
+    case CXType_UInt: return tfac.getSimpleType(ST_UNSIGNED_INT, cv);
 
     case CXType_Pointer:
       return tfac.makePointerType(cv,
@@ -534,16 +532,12 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
     default:
       xunimp(stringb("Unhandled stmtKind: " << stmtKind));
 
-    case CXCursor_DeclStmt: {
-      xassert(children.size() == 1);
-      for (CXCursor const &child : children) {
-        xassert(clang_getCursorKind(child) == CXCursor_VarDecl);
-        Declaration *decl = importVarOrTypedefDecl(child, DC_S_DECL);
-        return new S_decl(loc, decl);
-      }
+    case CXCursor_UnaryOperator: { // 112
+      FullExpression *fullExpr = importFullExpression(cxStmt);
+      return new S_expr(loc, fullExpr);
     }
 
-    case CXCursor_ReturnStmt: {
+    case CXCursor_ReturnStmt: { // 214
       FullExpression *retval = nullptr;
       if (!children.empty()) {
         xassert(children.size() == 1);
@@ -551,15 +545,42 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
       }
       return new S_return(loc, retval);
     }
+
+    case CXCursor_DeclStmt: { // 231
+      xassert(children.size() == 1);
+      for (CXCursor const &child : children) {
+        xassert(clang_getCursorKind(child) == CXCursor_VarDecl);
+        Declaration *decl = importVarOrTypedefDecl(child, DC_S_DECL);
+        return new S_decl(loc, decl);
+      }
+    }
   }
 
   // Not reached.
+  return NULL;
 }
 
 
 FullExpression *ImportClang::importFullExpression(CXCursor cxExpr)
 {
   return new FullExpression(importExpression(cxExpr));
+}
+
+
+static UnaryOp stringToUnaryOp(char const *str)
+{
+  // Should be exactly one character.
+  xassert(str[0] != 0 && str[1] == 0);
+
+  switch (*str) {
+    default:  xfailure("Unexpected unary operator character.");
+    case '+': return UNY_PLUS;
+    case '-': return UNY_MINUS;
+    case '!': return UNY_NOT;
+    case '~': return UNY_BITNOT;
+  }
+
+  // Not reached.
 }
 
 
@@ -620,6 +641,25 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
       }
 
       ret = intLit;
+      break;
+    }
+
+    case CXCursor_UnaryOperator: { // 112
+      // Get the operator.
+      //
+      // It seems that examining the tokens is the only way!
+      UnaryOp unOp;
+      {
+        CXSourceLocation cxLoc = clang_getCursorLocation(cxExpr);
+        CXToken *cxToken = clang_getToken(m_cxTranslationUnit, cxLoc);
+        WrapCXString cxString(clang_getTokenSpelling(m_cxTranslationUnit, *cxToken));
+        unOp = stringToUnaryOp(cxString.c_str());
+        clang_disposeTokens(m_cxTranslationUnit, cxToken, 1 /*numTokens*/);
+      }
+
+      std::vector<CXCursor> children = getChildren(cxExpr);
+      xassert(children.size() == 1);
+      ret = new E_unary(unOp, importExpression(children.front()));
       break;
     }
   }
