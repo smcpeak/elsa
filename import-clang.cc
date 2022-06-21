@@ -855,16 +855,36 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
       ASTTypeId *castType =
         makeASTTypeId(type, nullptr /*name*/, DC_E_CAST);
 
+      // Get the expression under the cast.
+      CXCursor underExpr;
+      {
+        std::vector<CXCursor> children = getChildren(cxExpr);
+        if (children.size() == 1) {
+          // The only child is the underlying expression.
+          underExpr = children[0];
+        }
+        else {
+          xassert(children.size() == 2);
+
+          // The first child is a TypeRef.  This happens when the type is
+          // a typedef.  But I don't need to pay attention to it, since
+          // the 'type' already names the typedef.
+          CXCursor typeRef = children[0];
+          xassert(clang_getCursorKind(typeRef) == CXCursor_TypeRef);
+
+          underExpr = children[1];
+        }
+      }
+
       // Based on -ast-dump output, it seems that a typical C-style cast
       // has CStyleCastExpr on top of one or more ImplicitCastExpr nodes
       // (which themselves are conveyed as "unexposed" in libclang).  I
       // don't think the implicit nodes help me, so I'll skip them.
-      CXCursor child = getOnlyChild(cxExpr);
-      while (clang_getCursorKind(child) == CXCursor_UnexposedExpr) {
-        child = getOnlyChild(child);
+      while (clang_getCursorKind(underExpr) == CXCursor_UnexposedExpr) {
+        underExpr = getOnlyChild(underExpr);
       }
 
-      ret = new E_cast(castType, importExpression(child));
+      ret = new E_cast(castType, importExpression(underExpr));
       break;
     }
   }
