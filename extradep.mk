@@ -22,6 +22,7 @@ elsaparse.o: lexer.yy.h
 gnu.o: cc.ast.gen.h
 implconv.o: cc.ast.gen.h
 implint.o: cc.ast.gen.h
+import-clang.o: cc.ast.gen.h
 integrity.o: cc.ast.gen.h
 iptparse.o: iptparse.yy.h
 kandr.o: cc.ast.gen.h

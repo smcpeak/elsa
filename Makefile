@@ -270,10 +270,10 @@ packedword_test.exe: packedword_test.o $(LIBS)
 
 # ------------------------- import-clang ---------------------
 import-clang.o: import-clang.cc
-	$(CXX) -c -o $@ $(GENDEPS_FLAGS) -I$(CLANG_LLVM_INCLUDE_DIR) $(CXXFLAGS) $<
+	$(CXX) -c -o $@ $(GENDEPS_FLAGS) -isystem$(CLANG_LLVM_INCLUDE_DIR) $(CXXFLAGS) $<
 
 libclang-additions.o: libclang-additions.cc
-	$(CXX) -c -o $@ $(GENDEPS_FLAGS) -I$(CLANG_LLVM_INCLUDE_DIR) $(CXXFLAGS) $<
+	$(CXX) -c -o $@ $(GENDEPS_FLAGS) -isystem$(CLANG_LLVM_INCLUDE_DIR) $(CXXFLAGS) $<
 
 
 # ------------------------- ccparse ---------------------
