@@ -33,7 +33,9 @@ CXX_WARNING_FLAGS =
 
 # Flags for C or C++ standard to use.
 C_STD_FLAGS   = -std=c99
-CXX_STD_FLAGS = -std=c++11
+
+# I need C++14 for the Clang C++ interface.
+CXX_STD_FLAGS = -std=c++14
 
 # -D flags to pass to preprocessor.
 DEFINES =
@@ -270,6 +272,9 @@ packedword_test.exe: packedword_test.o $(LIBS)
 import-clang.o: import-clang.cc
 	$(CXX) -c -o $@ $(GENDEPS_FLAGS) -I$(CLANG_LLVM_INCLUDE_DIR) $(CXXFLAGS) $<
 
+libclang-additions.o: libclang-additions.cc
+	$(CXX) -c -o $@ $(GENDEPS_FLAGS) -I$(CLANG_LLVM_INCLUDE_DIR) $(CXXFLAGS) $<
+
 
 # ------------------------- ccparse ---------------------
 # combine base lexer description and extensions
@@ -373,8 +378,17 @@ CCPARSE_OBJS += main.o
 CCPARSE_OBJS += test-astbuild.o
 
 ifeq ($(USE_CLANG),1)
+
+# Modules for import-clang.
 CCPARSE_OBJS += import-clang.o
+CCPARSE_OBJS += libclang-additions.o
+
+# These are the flags to link with libclang.
 LDFLAGS += -L$(CLANG_LLVM_LIB_DIR) -Wl,-rpath=$(CLANG_LLVM_LIB_DIR) -lclang
+
+# This is also needed for llvm::dyn_cast, I think.
+LDFLAGS += -lLLVMSupport
+
 else
 CCPARSE_OBJS += import-clang-stub.o
 endif

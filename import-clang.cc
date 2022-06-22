@@ -3,6 +3,9 @@
 
 #include "import-clang-internal.h"     // this module
 
+// elsa
+#include "libclang-additions.h"        // clang_getUnaryExpressionOperator, etc.
+
 // smbase
 #include "map-utils.h"                 // insertMapUnique
 #include "exc.h"                       // xfatal
@@ -729,6 +732,22 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
         importFullExpression(conditionExpr));
     }
 
+    case CXCursor_ForStmt: { // 209
+      std::vector<CXCursor> children = getChildren(cxStmt);
+      xassert(children.size() == 4);
+
+      CXCursor initStmt    = children[0];
+      CXCursor condExpr    = children[1];
+      CXCursor incExpr     = children[2];
+      CXCursor bodyStmt    = children[3];
+
+      return new S_for(loc,
+        importStatement(initStmt),
+        importCondition(condExpr),
+        importFullExpression(incExpr),
+        importStatement(bodyStmt));
+    }
+
     case CXCursor_GotoStmt: { // 210
       // The 'goto' itself does not carry the label, but we can get the
       // referenced statement, and that has it.
@@ -786,34 +805,70 @@ void ImportClang::getTwoChildren(CXCursor &c1, CXCursor &c2,
 }
 
 
-static UnaryOp stringToUnaryOp(char const *str)
+static UnaryOp cxUnaryToElsaUnary(CXUnaryOperator op)
 {
-  // Should be exactly one character.
-  xassert(str[0] != 0 && str[1] == 0);
-
-  switch (*str) {
-    default:  xfailure("Unexpected unary operator character.");
-    case '+': return UNY_PLUS;
-    case '-': return UNY_MINUS;
-    case '!': return UNY_NOT;
-    case '~': return UNY_BITNOT;
+  switch (op) {
+    default: xfailure("bad code");
+    case CXUnaryOperator_Plus:  return UNY_PLUS;
+    case CXUnaryOperator_Minus: return UNY_MINUS;
+    case CXUnaryOperator_Not:   return UNY_BITNOT;
+    case CXUnaryOperator_LNot:  return UNY_NOT;
   }
-
-  // Not reached.
 }
 
 
-static BinaryOp stringToBinaryOp(char const *str)
+static EffectOp cxUnaryToElsaEffect(CXUnaryOperator op)
 {
-  // Use the simple and slow method.
-  for (int i=0; i < NUM_BINARYOPS; i++) {
-    if (streq(str, binaryOpNames[i])) {
-      return static_cast<BinaryOp>(i);
-    }
+  switch (op) {
+    default: xfailure("bad code");
+    case CXUnaryOperator_PostInc: return EFF_POSTINC;
+    case CXUnaryOperator_PostDec: return EFF_POSTDEC;
+    case CXUnaryOperator_PreInc:  return EFF_PREINC;
+    case CXUnaryOperator_PreDec:  return EFF_PREDEC;
   }
+}
 
-  xfatal(stringb("Unexpected binary operator: \"" << str << "\"."));
-  return NUM_BINARYOPS; // Not reached.
+
+static BinaryOp cxBinaryToElsaBinary(CXBinaryOperator op)
+{
+  switch (op) {
+    default: xfailure("bad code");
+
+    // Columns: case return
+    case CXBinaryOperator_PtrMemD:   return BIN_DOT_STAR;
+    case CXBinaryOperator_PtrMemI:   return BIN_ARROW_STAR;
+    case CXBinaryOperator_Mul:       return BIN_MULT;
+    case CXBinaryOperator_Div:       return BIN_DIV;
+    case CXBinaryOperator_Rem:       return BIN_MOD;
+    case CXBinaryOperator_Add:       return BIN_PLUS;
+    case CXBinaryOperator_Sub:       return BIN_MINUS;
+    case CXBinaryOperator_Shl:       return BIN_LSHIFT;
+    case CXBinaryOperator_Shr:       return BIN_RSHIFT;
+    case CXBinaryOperator_Cmp:       xunimp("spaceship");
+    case CXBinaryOperator_LT:        return BIN_LESS;
+    case CXBinaryOperator_GT:        return BIN_GREATER;
+    case CXBinaryOperator_LE:        return BIN_LESSEQ;
+    case CXBinaryOperator_GE:        return BIN_GREATEREQ;
+    case CXBinaryOperator_EQ:        return BIN_EQUAL;
+    case CXBinaryOperator_NE:        return BIN_NOTEQUAL;
+    case CXBinaryOperator_And:       return BIN_BITAND;
+    case CXBinaryOperator_Xor:       return BIN_BITXOR;
+    case CXBinaryOperator_Or:        return BIN_BITOR;
+    case CXBinaryOperator_LAnd:      return BIN_AND;
+    case CXBinaryOperator_LOr:       return BIN_OR;
+    case CXBinaryOperator_Assign:    return BIN_ASSIGN;
+    case CXBinaryOperator_MulAssign: return BIN_MULT;
+    case CXBinaryOperator_DivAssign: return BIN_DIV;
+    case CXBinaryOperator_RemAssign: return BIN_MOD;
+    case CXBinaryOperator_AddAssign: return BIN_PLUS;
+    case CXBinaryOperator_SubAssign: return BIN_MINUS;
+    case CXBinaryOperator_ShlAssign: return BIN_LSHIFT;
+    case CXBinaryOperator_ShrAssign: return BIN_RSHIFT;
+    case CXBinaryOperator_AndAssign: return BIN_BITAND;
+    case CXBinaryOperator_XorAssign: return BIN_BITXOR;
+    case CXBinaryOperator_OrAssign:  return BIN_BITOR;
+    case CXBinaryOperator_Comma:     return BIN_COMMA;
+  }
 }
 
 
@@ -958,17 +1013,40 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
     }
 
     case CXCursor_UnaryOperator: { // 112
-      // Get the operator.
-      //
-      // It seems that examining the tokens is the only way!
-      UnaryOp unOp;
-      {
-        CXSourceLocation cxLoc = clang_getCursorLocation(cxExpr);
-        WrapCXTokens cxToken(m_cxTranslationUnit, cxLoc);
-        unOp = stringToUnaryOp(cxToken.stringAt(0).c_str());
-      }
+      CXCursor childCursor = getOnlyChild(cxExpr);
+      Expression *childExpr = importExpression(childCursor);
 
-      ret = new E_unary(unOp, importExpression(getOnlyChild(cxExpr)));
+      CXUnaryOperator cxCode = clang_unaryOperator_operator(cxExpr);
+      switch (cxCode) {
+        default:
+          xunimp(stringb("Unary operator: " << cxCode));
+
+        case CXUnaryOperator_PostInc:
+        case CXUnaryOperator_PostDec:
+        case CXUnaryOperator_PreInc:
+        case CXUnaryOperator_PreDec: {
+          EffectOp effOp = cxUnaryToElsaEffect(cxCode);
+          ret = new E_effect(effOp, childExpr);
+          break;
+        }
+
+        case CXUnaryOperator_AddrOf:
+          ret = new E_addrOf(childExpr);
+          break;
+
+        case CXUnaryOperator_Deref:
+          ret = new E_deref(childExpr);
+          break;
+
+        case CXUnaryOperator_Plus:
+        case CXUnaryOperator_Minus:
+        case CXUnaryOperator_Not:
+        case CXUnaryOperator_LNot: {
+          UnaryOp unOp = cxUnaryToElsaUnary(cxCode);
+          ret = new E_unary(unOp, childExpr);
+          break;
+        }
+      }
       break;
     }
 
@@ -976,24 +1054,22 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
       CXCursor cxLHS, cxRHS;
       getTwoChildren(cxLHS, cxRHS, cxExpr);
 
-      // Get the operator.
-      BinaryOp binOp;
-      {
-        // Tokens in 'cxExpr' and 'cxLHS'.
-        WrapCXTokens cxExprTokens(m_cxTranslationUnit,
-          clang_getCursorExtent(cxExpr));
-        WrapCXTokens cxLHSTokens(m_cxTranslationUnit,
-          clang_getCursorExtent(cxLHS));
-        xassert(cxLHSTokens.size() < cxExprTokens.size());
-
-        // We will simply assume that the first token beyond the number
-        // in 'cxLHS' is the operator.
-        //
-        // NOTE: This does not work when the operator results from a
-        // macro expansion, and possibly in other cases.  I will need to
-        // continue to explicitly preprocess before parsing.
-        binOp = stringToBinaryOp(
-          cxExprTokens.stringAt(cxLHSTokens.size()).c_str());
+      CXBinaryOperator cxCode = clang_binaryOperator_operator(cxExpr);
+      BinaryOp binOp = cxBinaryToElsaBinary(cxCode);
+      if (CXBinaryOperator_Assign <= cxCode &&
+                                     cxCode <= CXBinaryOperator_OrAssign) {
+        ret = new E_assign(
+          importExpression(cxLHS),
+          binOp,
+          importExpression(cxRHS)
+        );
+      }
+      else {
+        ret = new E_binary(
+          importExpression(cxLHS),
+          binOp,
+          importExpression(cxRHS)
+        );
       }
 
       // Leaving this here for a while to test my code above.
@@ -1001,11 +1077,6 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
         getBinaryOperator(m_cxTranslationUnit, cxExpr);
       xassert(binOpString == toString(binOp));
 
-      ret = new E_binary(
-        importExpression(cxLHS),
-        binOp,
-        importExpression(cxRHS)
-      );
       break;
     }
 
