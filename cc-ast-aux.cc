@@ -1133,6 +1133,14 @@ bool Handler::isEllipsis() const
 }
 
 
+/*static*/ ASTTypeId *Handler::makeEllipsisTypeId(SourceLoc loc)
+{
+  return new ASTTypeId(new TS_simple(loc, ST_ELLIPSIS),
+                       new Declarator(new D_name(loc, NULL /*name*/),
+                                      NULL /*init*/));
+}
+
+
 // --------------------- Expression ---------------------
 void Expression::printAmbiguities(ostream &os, int indent) const
 {

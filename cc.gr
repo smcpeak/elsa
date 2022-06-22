@@ -2559,11 +2559,7 @@ nonterm(Handler*) Handler {
        { return new Handler(d, s); }
 
   -> "catch" "(" "..." ")" s:CompoundStatement
-       { return new Handler(
-           new ASTTypeId(new TS_simple(loc, ST_ELLIPSIS),
-                         new Declarator(new D_name(loc, NULL /*name*/),
-                                        NULL /*init*/)),
-           s); }
+       { return new Handler(Handler::makeEllipsisTypeId(loc), s); }
 }
 
 nonterm(ASTTypeId*) HandlerParameter {

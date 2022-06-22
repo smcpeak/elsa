@@ -599,6 +599,9 @@ class Handler (
   // check and handle 'isEllipsis' directly without looking further
   // at 'typeId' (because ST_ELLIPSIS is a hack)
   public bool isEllipsis() const;
+
+  // Build the ASTTypeId that I use to represent "...".
+  public static ASTTypeId *makeEllipsisTypeId(SourceLoc loc);
 }
 
 // Assembly-language declaration (but called a "definition" by the C++
