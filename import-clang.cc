@@ -110,6 +110,25 @@ WrapCXTokens::~WrapCXTokens()
 }
 
 
+CXToken WrapCXTokens::operator[] (unsigned i) const
+{
+  xassert(i < m_numTokens);
+  return m_cxTokens[i];
+}
+
+
+CXToken WrapCXTokens::front() const
+{
+  return (*this)[0];
+}
+
+
+CXToken WrapCXTokens::back() const
+{
+  return (*this)[size()-1];
+}
+
+
 WrapCXString WrapCXTokens::stringAt(unsigned index)
 {
   xassert(index < m_numTokens);

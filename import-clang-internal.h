@@ -124,7 +124,11 @@ public:
 
   ~WrapCXTokens();
 
+  // Vector-like access.
   unsigned size() const { return m_numTokens; }
+  CXToken operator[] (unsigned i) const;
+  CXToken front() const;
+  CXToken back() const;
 
   // Return the string form of token 'index'.
   WrapCXString stringAt(unsigned index);
