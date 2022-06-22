@@ -501,6 +501,10 @@ Type *ImportClang::importType(CXType cxType)
       return tfac.makePointerType(cv,
         importType(clang_getPointeeType(cxType)));
 
+    case CXType_LValueReference: // 103
+      return tfac.makeReferenceType(
+        importType(clang_getPointeeType(cxType)));
+
     case CXType_Enum: { // 106
       CXCursor cxTypeDecl = clang_getTypeDeclaration(cxType);
       Variable *typedefVar = variableForDeclaration(cxTypeDecl);
@@ -609,20 +613,17 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
   CXCursorKind stmtKind = clang_getCursorKind(cxStmt);
   std::vector<CXCursor> children = getChildren(cxStmt);
 
+  // Codes 100 through 199.
+  if (CXCursor_FirstExpr <= stmtKind && stmtKind < CXCursor_FirstStmt) {
+    FullExpression *fullExpr = importFullExpression(cxStmt);
+    return new S_expr(loc, fullExpr);
+  }
+
   switch (stmtKind) {
     default:
       xunimp(stringb("Unhandled stmtKind: " << stmtKind));
 
-    case CXCursor_DeclRefExpr:      // 101
-    case CXCursor_CallExpr:         // 103
-    case CXCursor_IntegerLiteral:   // 106
-    case CXCursor_ParenExpr:        // 111
-    case CXCursor_UnaryOperator:    // 112
-    case CXCursor_BinaryOperator:   // 114
-    case CXCursor_CStyleCastExpr: { // 117
-      FullExpression *fullExpr = importFullExpression(cxStmt);
-      return new S_expr(loc, fullExpr);
-    }
+    // Codes 100 through 199 handled above.
 
     case CXCursor_LabelStmt: { // 201
       StringRef name = importString(clang_getCursorSpelling(cxStmt));
@@ -1049,6 +1050,21 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
       ret = new E_cast(castType, importExpression(underExpr));
       break;
     }
+
+    case CXCursor_CXXThrowExpr: { // 133
+      Expression *expr = nullptr;
+
+      std::vector<CXCursor> children = getChildren(cxExpr);
+      if (children.size() == 1) {
+        expr = importExpression(children.front());
+      }
+      else {
+        xassert(children.empty());
+      }
+
+      ret = new E_throw(expr);
+      break;
+    }
   }
 
   ret->type = legacyTypeNC(type);
@@ -1111,12 +1127,20 @@ ASTTypeId *ImportClang::importASTTypeId(CXCursor cxDecl,
   ASTTypeId *typeId =
     makeASTTypeId(var->type, makePQName(var), context);
 
-  std::vector<CXCursor> children = getChildren(cxDecl);
-  if (children.size() == 1) {
-    typeId->decl->init = importInitializer(children.front());
+  if (context == DC_HANDLER) {
+    // There is no initializer for a handler parameter, but Clang will
+    // have a child here if the type is a typedef.  Skip it.
+    //
+    // TODO: That's certainly going to cause problems elsewhere.
   }
   else {
-    xassert(children.empty());
+    std::vector<CXCursor> children = getChildren(cxDecl);
+    if (children.size() == 1) {
+      typeId->decl->init = importInitializer(children.front());
+    }
+    else {
+      xassert(children.empty());
+    }
   }
 
   return typeId;

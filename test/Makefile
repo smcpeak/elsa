@@ -378,6 +378,7 @@ check-clang: out/clang/in/t0002.cc
 check-clang: out/clang/in/t0003.cc
 check-clang: out/clang/in/t0004.cc
 check-clang: out/clang/in/t0005.cc
+check-clang: out/clang/in/t0006.cc
 
 
 # Run a C++ pretty-print test with --clang.
