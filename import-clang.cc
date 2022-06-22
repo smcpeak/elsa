@@ -407,6 +407,7 @@ Variable *ImportClang::variableForDeclaration(CXCursor cxDecl,
 Declaration *ImportClang::importVarOrTypedefDecl(CXCursor cxVarDecl,
   DeclaratorContext context)
 {
+  // TODO: Get the initializer, if there is one.
   Variable *var = variableForDeclaration(cxVarDecl);
   return makeDeclaration(var, context);
 }
@@ -669,8 +670,19 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
     }
 
     case CXCursor_WhileStmt: { // 207
-      CXCursor conditionExpr, childStmt;
-      getTwoChildren(conditionExpr, childStmt, cxStmt);
+      std::vector<CXCursor> children = getChildren(cxStmt);
+
+      // If two children, they are [cond,body].  If three, the first is
+      // a variable declaration, the second is an expression using the
+      // declared variable that acts as the loop condition, and the
+      // third is the body.
+      xassert(children.size() == 2 || children.size() == 3);
+
+      // Elsa does not currently have any way to represent the implicit
+      // conversion that can appear in the condition when there are
+      // three children, so I'll just ignore it.
+      CXCursor conditionExpr = children.front();
+      CXCursor childStmt = children.back();
 
       return new S_while(loc,
         importCondition(conditionExpr),
@@ -704,6 +716,14 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
       return new S_goto(loc, name);
     }
 
+    // TODO: CXCursor_IndirectGotoStmt: // 211
+
+    case CXCursor_ContinueStmt: // 212
+      return new S_continue(loc);
+
+    case CXCursor_BreakStmt: // 213
+      return new S_break(loc);
+
     case CXCursor_ReturnStmt: { // 214
       FullExpression *retval = nullptr;
       if (!children.empty()) {
@@ -712,6 +732,9 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
       }
       return new S_return(loc, retval);
     }
+
+    case CXCursor_NullStmt: // 230
+      return new S_skip(loc, MI_EXPLICIT);
 
     case CXCursor_DeclStmt: { // 231
       xassert(children.size() == 1);
@@ -1049,8 +1072,25 @@ StandardConversion ImportClang::describeAsStandardConversion(
 
 Condition *ImportClang::importCondition(CXCursor cxCond)
 {
-  // For now, assume it is always an expression.
-  return new CN_expr(importFullExpression(cxCond));
+  CXCursorKind kind = clang_getCursorKind(cxCond);
+
+  if (kind == CXCursor_VarDecl) {
+    Variable *var = variableForDeclaration(cxCond);
+    ASTTypeId *typeId =
+      makeASTTypeId(var->type, makePQName(var), DC_CN_DECL);
+    typeId->decl->init = importInitializer(getOnlyChild(cxCond));
+    return new CN_decl(typeId);
+  }
+  else {
+    return new CN_expr(importFullExpression(cxCond));
+  }
+}
+
+
+Initializer *ImportClang::importInitializer(CXCursor cxInit)
+{
+  // TODO: Handle IN_compound cases.
+  return new IN_expr(cursorLocation(cxInit), importExpression(cxInit));
 }
 
 

@@ -197,6 +197,8 @@ public:      // methods
 
   Condition *importCondition(CXCursor cxCond);
 
+  Initializer *importInitializer(CXCursor cxInit);
+
   // Make a Variable, and set its 'm_containingScope' according to
   // 'cxDecl'.
   Variable *makeVariable_setScope(SourceLoc loc,
