@@ -11,9 +11,6 @@
 #include "exc.h"                       // xfatal
 #include "str.h"                       // string
 
-// libc
-#include <assert.h>                    // assert (temporary!)
-
 
 // This is a candidate to go into smbase.
 template <class DEST, class SRC>
@@ -872,62 +869,6 @@ static BinaryOp cxBinaryToElsaBinary(CXBinaryOperator op)
 }
 
 
-// For Stack Overflow question.
-// https://stackoverflow.com/questions/23227812/get-operator-type-for-cxcursor-binaryoperator/72706506#72706506
-
-// Get the first child of 'cxNode'.
-static CXCursor getFirstChild(CXCursor cxNode)
-{
-  struct Result {
-    CXCursor child;
-    bool found;
-  } result;
-  result.found = false;
-
-  clang_visitChildren(cxNode,
-    [](CXCursor c, CXCursor parent, CXClientData client_data) {
-      Result *r = (Result*)client_data;
-      r->found = true;
-      r->child = c;
-      return CXChildVisit_Break;
-    },
-    &result);
-
-  assert(result.found);
-  return result.child;
-}
-
-// Get the operator of binary expression 'cxExpr' as a string.
-static std::string getBinaryOperator(CXTranslationUnit cxTU, CXCursor cxExpr)
-{
-  // Get tokens in 'cxExpr'.
-  CXToken *exprTokens;
-  unsigned numExprTokens;
-  clang_tokenize(cxTU, clang_getCursorExtent(cxExpr),
-    &exprTokens, &numExprTokens);
-
-  // Get tokens in its left-hand side.
-  CXCursor cxLHS = getFirstChild(cxExpr);
-  CXToken *lhsTokens;
-  unsigned numLHSTokens;
-  clang_tokenize(cxTU, clang_getCursorExtent(cxLHS),
-    &lhsTokens, &numLHSTokens);
-
-  // Get the spelling of the first token not in the LHS.
-  assert(numLHSTokens < numExprTokens);
-  CXString cxString = clang_getTokenSpelling(cxTU,
-    exprTokens[numLHSTokens]);
-  std::string ret(clang_getCString(cxString));
-
-  // Clean up.
-  clang_disposeString(cxString);
-  clang_disposeTokens(cxTU, lhsTokens, numLHSTokens);
-  clang_disposeTokens(cxTU, exprTokens, numExprTokens);
-
-  return ret;
-}
-
-
 long long ImportClang::evalAsLongLong(CXCursor cxExpr)
 {
   CXEvalResult cxEvalResult = clang_Cursor_Evaluate(cxExpr);
@@ -1071,12 +1012,6 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
           importExpression(cxRHS)
         );
       }
-
-      // Leaving this here for a while to test my code above.
-      std::string binOpString =
-        getBinaryOperator(m_cxTranslationUnit, cxExpr);
-      xassert(binOpString == toString(binOp));
-
       break;
     }
 
