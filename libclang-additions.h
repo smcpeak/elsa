@@ -80,6 +80,23 @@ enum CXBinaryOperator {
 enum CXBinaryOperator clang_binaryOperator_operator(CXCursor cursor);
 
 
+// Selector for 'clang_forStmtElement'.
+enum CXForStmtElement {
+  CXForStmtElement_init = 0,
+  CXForStmtElement_cond = 1,
+  CXForStmtElement_inc  = 2,
+  CXForStmtElement_body = 3,
+};
+
+
+// Get the specified element of a 'for' loop.  Returns
+// 'clang_getNullCursor()' for a missing element.
+//
+// The existing 'clang_visitChildren' API is insufficient because you
+// can't tell which is which if one or more are missing.
+CXCursor clang_forStmtElement(CXCursor forStmt, CXForStmtElement element);
+
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

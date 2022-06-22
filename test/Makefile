@@ -96,6 +96,7 @@ TESTS += pprint/compound-after-label.c
 TESTS += pprint/const-enum.c
 TESTS += pprint/const-struct.c
 TESTS += pprint/deref-array.c
+TESTS += pprint/for-loop-missing-elts.c
 TESTS += pprint/for-loop-no-init.c
 TESTS += pprint/func.c
 TESTS += pprint/func-symbol.c
@@ -376,6 +377,21 @@ check-clang: out/clang/in/t0002.cc
 check-clang: out/clang/in/t0003.cc
 check-clang: out/clang/in/t0004.cc
 check-clang: out/clang/in/t0005.cc
+
+
+# Run a C++ pretty-print test with --clang.
+#
+# This uses the same expected output as when not using --clang to
+# ensure that Elsa and Clang modes agree.
+out/clang-pprint/%: pprint/% pprint/%.expect $(CCPARSE)
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/clang-pprint/$*.actual \
+	  --expect pprint/$*.expect \
+	  $(CCPARSE) --pretty-print --clang $<
+	touch $@
+
+check-clang: out/clang-pprint/for-loop-missing-elts.c
 
 
 # ---------------------------- unit tests ------------------------------

@@ -644,6 +644,12 @@ S_compound *ImportClang::importCompoundStatement(CXCursor cxCompStmt)
 
 Statement *ImportClang::importStatement(CXCursor cxStmt)
 {
+  if (clang_Cursor_isNull(cxStmt)) {
+    // This is for a case like a missing initializer in a 'for'
+    // statement.
+    return new S_skip(SL_UNKNOWN, MI_IMPLICIT);
+  }
+
   SourceLoc loc = cursorLocation(cxStmt);
   CXCursorKind stmtKind = clang_getCursorKind(cxStmt);
   std::vector<CXCursor> children = getChildren(cxStmt);
@@ -730,19 +736,12 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
     }
 
     case CXCursor_ForStmt: { // 209
-      std::vector<CXCursor> children = getChildren(cxStmt);
-      xassert(children.size() == 4);
-
-      CXCursor initStmt    = children[0];
-      CXCursor condExpr    = children[1];
-      CXCursor incExpr     = children[2];
-      CXCursor bodyStmt    = children[3];
-
       return new S_for(loc,
-        importStatement(initStmt),
-        importCondition(condExpr),
-        importFullExpression(incExpr),
-        importStatement(bodyStmt));
+        importStatement(     clang_forStmtElement(cxStmt, CXForStmtElement_init)),
+        importCondition(     clang_forStmtElement(cxStmt, CXForStmtElement_cond)),
+        importFullExpression(clang_forStmtElement(cxStmt, CXForStmtElement_inc )),
+        importStatement(     clang_forStmtElement(cxStmt, CXForStmtElement_body))
+      );
     }
 
     case CXCursor_GotoStmt: { // 210
@@ -882,6 +881,11 @@ long long ImportClang::evalAsLongLong(CXCursor cxExpr)
 
 Expression *ImportClang::importExpression(CXCursor cxExpr)
 {
+  if (clang_Cursor_isNull(cxExpr)) {
+    // This is used for a missing 'for' condition or increment.
+    return new E_boolLit(true);
+  }
+
   CXCursorKind exprKind = clang_getCursorKind(cxExpr);
   Type const *type = importType(clang_getCursorType(cxExpr));
 

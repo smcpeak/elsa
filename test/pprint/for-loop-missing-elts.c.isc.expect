@@ -1,0 +1,27 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+void f(int a)
+{
+  for (a = 0; ISC(SC_LVAL_TO_RVAL, int, a) < 10; a++) {
+  }
+  for (; ISC(SC_LVAL_TO_RVAL, int, a) < 10; a++) {
+  }
+  for (a = 0; 1; a++) {
+  }
+  for (a = 0; ISC(SC_LVAL_TO_RVAL, int, a) < 10; 1) {
+  }
+  for (; 1; a++) {
+  }
+  for (; ISC(SC_LVAL_TO_RVAL, int, a) < 10; 1) {
+  }
+  for (; 1; a++) {
+  }
+  for (; 1; 1) {
+  }
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0
