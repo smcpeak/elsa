@@ -87,55 +87,6 @@ void clangParseTranslationUnit(
 }
 
 
-// --------------------------- WrapCXTokens ----------------------------
-WrapCXTokens::WrapCXTokens(CXTranslationUnit cxTU, CXSourceLocation cxLoc)
-  : m_cxTU(cxTU),
-    m_cxTokens(clang_getToken(cxTU, cxLoc)),
-    m_numTokens(1)
-{}
-
-
-WrapCXTokens::WrapCXTokens(CXTranslationUnit cxTU, CXSourceRange cxRange)
-  : m_cxTU(cxTU),
-    m_cxTokens(nullptr),
-    m_numTokens(0)
-{
-  clang_tokenize(cxTU, cxRange, &m_cxTokens, &m_numTokens);
-}
-
-
-WrapCXTokens::~WrapCXTokens()
-{
-  clang_disposeTokens(m_cxTU, m_cxTokens, m_numTokens);
-}
-
-
-CXToken WrapCXTokens::operator[] (unsigned i) const
-{
-  xassert(i < m_numTokens);
-  return m_cxTokens[i];
-}
-
-
-CXToken WrapCXTokens::front() const
-{
-  return (*this)[0];
-}
-
-
-CXToken WrapCXTokens::back() const
-{
-  return (*this)[size()-1];
-}
-
-
-WrapCXString WrapCXTokens::stringAt(unsigned index)
-{
-  xassert(index < m_numTokens);
-  return WrapCXString(clang_getTokenSpelling(m_cxTU, m_cxTokens[index]));
-}
-
-
 // --------------------------- ImportClang -----------------------------
 ImportClang::ImportClang(CXIndex cxIndex,
                          CXTranslationUnit cxTranslationUnit,

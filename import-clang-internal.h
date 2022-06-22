@@ -102,39 +102,6 @@ public:      // methods
 };
 
 
-class WrapCXTokens {
-  NO_OBJECT_COPIES(WrapCXTokens);
-
-public:
-  // The TU, since that is needed to dispose and to get the string.
-  CXTranslationUnit m_cxTU;
-
-  // Pointer to an array of 'm_numTokens' tokens.
-  CXToken *m_cxTokens;
-
-  // Number of tokens in 'm_cxTokens'.
-  unsigned m_numTokens;
-
-public:
-  // Use 'clang_getToken' to get one token.
-  WrapCXTokens(CXTranslationUnit cxTU, CXSourceLocation cxLoc);
-
-  // Use 'clang_tokenize' to get a sequence of tokens.
-  WrapCXTokens(CXTranslationUnit cxTU, CXSourceRange cxRange);
-
-  ~WrapCXTokens();
-
-  // Vector-like access.
-  unsigned size() const { return m_numTokens; }
-  CXToken operator[] (unsigned i) const;
-  CXToken front() const;
-  CXToken back() const;
-
-  // Return the string form of token 'index'.
-  WrapCXString stringAt(unsigned index);
-};
-
-
 // Manage the process of importing.
 class ImportClang : public SourceLocProvider, ElsaASTBuild {
 public:      // data
