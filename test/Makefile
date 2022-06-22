@@ -393,6 +393,7 @@ out/clang-pprint/%: pprint/% pprint/%.expect $(CCPARSE)
 	touch $@
 
 check-clang: out/clang-pprint/for-loop-missing-elts.c
+check-clang: out/clang-pprint/try-catch.cc
 
 
 # ---------------------------- unit tests ------------------------------

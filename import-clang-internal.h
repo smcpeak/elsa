@@ -197,7 +197,14 @@ public:      // methods
 
   Condition *importCondition(CXCursor cxCond);
 
+  // Import a variable declaration in a context where the Elsa AST
+  // represents it as an ASTTypeId.
+  ASTTypeId *importASTTypeId(CXCursor cxDecl,
+    DeclaratorContext context);
+
   Initializer *importInitializer(CXCursor cxInit);
+
+  Handler *importHandler(CXCursor cxHandler);
 
   // Make a Variable, and set its 'm_containingScope' according to
   // 'cxDecl'.

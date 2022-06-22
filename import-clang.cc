@@ -733,6 +733,22 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
       return new S_return(loc, retval);
     }
 
+    case CXCursor_CXXTryStmt: { // 224
+      // The first child is the body, and the rest are handlers.
+      std::vector<CXCursor> children = getChildren(cxStmt);
+      xassert(children.size() >= 2);
+
+      Statement *body = importStatement(children.front());
+
+      FakeList<Handler> *handlers = FakeList<Handler>::emptyList();
+      for (unsigned i=1; i < children.size(); i++) {
+        handlers = fl_prepend(handlers, importHandler(children[i]));
+      }
+      handlers = fl_reverse(handlers);
+
+      return new S_try(loc, body, handlers);
+    }
+
     case CXCursor_NullStmt: // 230
       return new S_skip(loc, MI_EXPLICIT);
 
@@ -1075,11 +1091,7 @@ Condition *ImportClang::importCondition(CXCursor cxCond)
   CXCursorKind kind = clang_getCursorKind(cxCond);
 
   if (kind == CXCursor_VarDecl) {
-    Variable *var = variableForDeclaration(cxCond);
-    ASTTypeId *typeId =
-      makeASTTypeId(var->type, makePQName(var), DC_CN_DECL);
-    typeId->decl->init = importInitializer(getOnlyChild(cxCond));
-    return new CN_decl(typeId);
+    return new CN_decl(importASTTypeId(cxCond, DC_CN_DECL));
   }
   else {
     return new CN_expr(importFullExpression(cxCond));
@@ -1087,10 +1099,58 @@ Condition *ImportClang::importCondition(CXCursor cxCond)
 }
 
 
+ASTTypeId *ImportClang::importASTTypeId(CXCursor cxDecl,
+  DeclaratorContext context)
+{
+  xassert(clang_getCursorKind(cxDecl) == CXCursor_VarDecl);
+
+  Variable *var = variableForDeclaration(cxDecl);
+  ASTTypeId *typeId =
+    makeASTTypeId(var->type, makePQName(var), context);
+
+  std::vector<CXCursor> children = getChildren(cxDecl);
+  if (children.size() == 1) {
+    typeId->decl->init = importInitializer(children.front());
+  }
+  else {
+    xassert(children.empty());
+  }
+
+  return typeId;
+}
+
+
 Initializer *ImportClang::importInitializer(CXCursor cxInit)
 {
   // TODO: Handle IN_compound cases.
   return new IN_expr(cursorLocation(cxInit), importExpression(cxInit));
+}
+
+
+Handler *ImportClang::importHandler(CXCursor cxHandler)
+{
+  xassert(clang_getCursorKind(cxHandler) == CXCursor_CXXCatchStmt);
+
+  std::vector<CXCursor> children = getChildren(cxHandler);
+  xassert(children.size() == 1 || children.size() == 2);
+
+  ASTTypeId *typeId;
+  if (children.size() == 1) {
+    typeId = Handler::makeEllipsisTypeId(cursorLocation(cxHandler));
+
+    // Fill in the declarator 'type' and 'var' fields similar to how the
+    // Elsa type checker does, in order to pacify the integrity checker.
+    typeId->decl->type = m_elsaParse.m_typeFactory.getSimpleType(ST_ELLIPSIS);
+    typeId->decl->var = makeVariable(SL_UNKNOWN, nullptr /*name*/,
+      typeId->decl->type, DF_NONE);
+  }
+  else {
+    typeId = importASTTypeId(children.front(), DC_HANDLER);
+  }
+
+  Statement *body = importStatement(children.back());
+
+  return new Handler(typeId, body);
 }
 
 
