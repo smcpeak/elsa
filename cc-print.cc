@@ -434,11 +434,8 @@ void Function::print(PrintEnv &env, DeclFlags declFlagsMask) const
   }
 
   if (handlers) {
+    env << env.br;
     FAKELIST_FOREACH_NC(Handler, handlers, iter) {
-      // We put a break after the body, and after each handler.  The
-      // containing context is responsible for the break after the
-      // last handler.
-      env << env.br;
       iter->print(env);
     }
   }
@@ -1187,8 +1184,13 @@ void S_decl::iprint(PrintEnv &env, StatementContext) const
 
 void S_try::iprint(PrintEnv &env, StatementContext) const
 {
-  env << "try";
-  body->print(env, SC_TRY);
+  {
+    TPSEQUENCE;
+    env << "try ";
+    body->print(env, SC_TRY);
+    env << env.br;
+  }
+
   FAKELIST_FOREACH_NC(Handler, handlers, iter) {
     iter->print(env);
   }
@@ -1235,6 +1237,7 @@ void Handler::print(PrintEnv &env) const
   }
   env << ") ";
   body->print(env, SC_HANDLER);
+  env << env.br;
 }
 
 

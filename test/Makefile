@@ -67,6 +67,7 @@ TESTS += pprint/pp-syntax.cc
 TESTS += pprint/precedence.cc
 TESTS += pprint/template1.cc
 TESTS += pprint/throwspec.cc
+TESTS += pprint/try-catch.cc
 TESTS += pprint/vararg-promote.cc
 
 # Run a C++ pretty-print test.
