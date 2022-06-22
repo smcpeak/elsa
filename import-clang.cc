@@ -483,6 +483,7 @@ Type *ImportClang::importType(CXType cxType)
     cv |= CV_RESTRICT;
   }
 
+  // Codes 2 through 23.
   if (CXType_Void <= cxType.kind && cxType.kind <= CXType_LongDouble) {
     return tfac.getSimpleType(cxTypeKindToSimpleTypeId(cxType.kind));
   }
@@ -491,20 +492,28 @@ Type *ImportClang::importType(CXType cxType)
     default:
       xfailure(stringb("Unknown cxType kind: " << cxType.kind));
 
-    case CXType_Invalid:
+    case CXType_Invalid: // 0
       xfailure("importType: cxType is invalid");
 
-    case CXType_Pointer:
+    // Codes 2 through 23 are handled above.
+
+    case CXType_Pointer: // 101
       return tfac.makePointerType(cv,
         importType(clang_getPointeeType(cxType)));
 
-    case CXType_Typedef: {
+    case CXType_Enum: { // 106
+      CXCursor cxTypeDecl = clang_getTypeDeclaration(cxType);
+      Variable *typedefVar = variableForDeclaration(cxTypeDecl);
+      return typedefVar->type;
+    }
+
+    case CXType_Typedef: { // 107
       CXCursor cxTypeDecl = clang_getTypeDeclaration(cxType);
       Variable *typedefVar = variableForDeclaration(cxTypeDecl);
       return tfac.makeTypedefType(typedefVar, cv);
     }
 
-    case CXType_FunctionProto: {
+    case CXType_FunctionProto: { // 110
       xassert(cv == CV_NONE);
       Type *retType = importType(clang_getResultType(cxType));
 
@@ -529,12 +538,6 @@ Type *ImportClang::importType(CXType cxType)
 
       tfac.doneParams(ft);
       return ft;
-    }
-
-    case CXType_Enum: {
-      CXCursor cxTypeDecl = clang_getTypeDeclaration(cxType);
-      Variable *typedefVar = variableForDeclaration(cxTypeDecl);
-      return typedefVar->type;
     }
   }
 
