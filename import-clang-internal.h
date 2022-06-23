@@ -229,6 +229,9 @@ public:      // methods
 
   DeclFlags importStorageClass(CX_StorageClass storageClass);
 
+  AccessKeyword importAccessKeyword(
+    CX_CXXAccessSpecifier accessSpecifier);
+
   // Debug print.
   void printSubtree(CXCursor cursor, int indent);
 };

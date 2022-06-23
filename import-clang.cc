@@ -203,7 +203,9 @@ TopForm *ImportClang::importTopForm(CXCursor cxTopForm)
     default:
       xfailure(stringb("Unknown cxKind: " << cxKind));
 
-    case CXCursor_StructDecl: {
+    case CXCursor_StructDecl: // 2
+    case CXCursor_UnionDecl: // 3
+    case CXCursor_ClassDecl: { // 4
       if (clang_isCursorDefinition(cxTopForm)) {
         Declaration *decl = importCompoundTypeDefinition(cxTopForm);
         return new TF_decl(loc, decl);
@@ -213,7 +215,7 @@ TopForm *ImportClang::importTopForm(CXCursor cxTopForm)
       }
     }
 
-    case CXCursor_EnumDecl: {
+    case CXCursor_EnumDecl: { // 5
       if (clang_isCursorDefinition(cxTopForm)) {
         Declaration *decl = importEnumDefinition(cxTopForm);
         return new TF_decl(loc, decl);
@@ -223,14 +225,8 @@ TopForm *ImportClang::importTopForm(CXCursor cxTopForm)
       }
     }
 
-    importDecl:
-    case CXCursor_TypedefDecl:
-    case CXCursor_VarDecl: {
-      Declaration *decl = importVarOrTypedefDecl(cxTopForm, DC_TF_DECL);
-      return new TF_decl(loc, decl);
-    }
-
-    case CXCursor_FunctionDecl: {
+    case CXCursor_FunctionDecl: // 8
+    case CXCursor_CXXMethod: { // 21
       if (clang_isCursorDefinition(cxTopForm)) {
         Function *func = importFunctionDefinition(cxTopForm);
         return new TF_func(loc, func);
@@ -238,6 +234,13 @@ TopForm *ImportClang::importTopForm(CXCursor cxTopForm)
       else {
         goto importDecl;
       }
+    }
+
+    importDecl:
+    case CXCursor_VarDecl: // 9
+    case CXCursor_TypedefDecl: { // 20
+      Declaration *decl = importVarOrTypedefDecl(cxTopForm, DC_TF_DECL);
+      return new TF_decl(loc, decl);
     }
   }
 
@@ -384,11 +387,16 @@ Declaration *ImportClang::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
   // Process the children of the definition.
   for (CXCursor const &child : getChildren(cxCompoundDefn)) {
     CXCursorKind childKind = clang_getCursorKind(child);
+    SourceLoc childLoc = cursorLocation(child);
+
+    Member *newMember = nullptr;
     switch (childKind) {
       default:
         xunimp(stringb("compound defn child kind: " << childKind));
 
-      case CXCursor_FieldDecl: {
+      importDecl:
+      case CXCursor_FieldDecl: // 6: non-static data
+      case CXCursor_VarDecl: { // 9: static data
         // Associate the Variable we will create with the declaration of
         // the field.
         Variable *&fieldVar = variableRefForDeclaration(child);
@@ -403,12 +411,31 @@ Declaration *ImportClang::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
 
         ct->addField(fieldVar);
 
-        memberList->list.append(new MR_decl(fieldVar->loc,
-          makeDeclaration(fieldVar, DC_MR_DECL)));
+        newMember = new MR_decl(childLoc,
+          makeDeclaration(fieldVar, DC_MR_DECL));
+        break;
+      }
 
+      case CXCursor_CXXMethod: { // 21
+        if (clang_isCursorDefinition(child)) {
+          Function *func = importFunctionDefinition(child);
+          newMember = new MR_func(childLoc, func);
+        }
+        else {
+          goto importDecl;
+        }
+        break;
+      }
+
+      case CXCursor_CXXAccessSpecifier: { // 39
+        newMember = new MR_access(childLoc,
+          importAccessKeyword(clang_getCXXAccessSpecifier(child)));
         break;
       }
     }
+
+    xassert(newMember);
+    memberList->list.append(newMember);
   }
 
   // Now that the members have been populated, 'ct' is no longer forward.
@@ -450,18 +477,36 @@ Function *ImportClang::importFunctionDefinition(CXCursor cxFuncDefn)
     std::vector<CXCursor> children = getChildren(cxFuncDefn);
     for (CXCursor const &child : children) {
       CXCursorKind childKind = clang_getCursorKind(child);
-      if (childKind == CXCursor_ParmDecl) {
-        Variable *paramVar = variableForDeclaration(child, DF_PARAMETER);
-        defnFuncType->addParam(paramVar);
-      }
-      else if (childKind == CXCursor_CompoundStmt) {
-        // The final child is the function body.
-        xassert(!foundBody);
-        foundBody = true;
-        cxFunctionBody = child;
-      }
-      else {
-        xfailure(stringb("Unexpected childKind: " << childKind));
+      switch (childKind) {
+        case CXCursor_ParmDecl: { // 10
+          Variable *paramVar = variableForDeclaration(child, DF_PARAMETER);
+          defnFuncType->addParam(paramVar);
+          break;
+        }
+
+        case CXCursor_TypeRef: { // 43
+          // A TypeRef child indicates the receiver object type.
+          Type *receiverType = importType(clang_getCursorType(child));
+          receiverType =
+            m_elsaParse.m_typeFactory.makeReferenceType(receiverType);
+          defnFuncType->addReceiver(makeVariable(
+            cursorLocation(child),
+            m_elsaParse.m_stringTable.add("__receiver"), // Like Env::receiverName.
+            receiverType,
+            DF_PARAMETER));
+          break;
+        }
+
+        case CXCursor_CompoundStmt: { // 202
+          // The final child is the function body.
+          xassert(!foundBody);
+          foundBody = true;
+          cxFunctionBody = child;
+          break;
+        }
+
+        default:
+          xfailure(stringb("Unexpected childKind: " << childKind));
       }
     }
 
@@ -1409,6 +1454,18 @@ static char const *toString(CX_StorageClass storageClass)
   }
 
   return "(invalid storage class)";
+}
+
+
+AccessKeyword ImportClang::importAccessKeyword(
+  CX_CXXAccessSpecifier accessSpecifier)
+{
+  switch (accessSpecifier) {
+    case CX_CXXPublic:    return AK_PUBLIC;
+    case CX_CXXProtected: return AK_PROTECTED;
+    case CX_CXXPrivate:   return AK_PRIVATE;
+    default:              return AK_UNSPECIFIED;
+  }
 }
 
 

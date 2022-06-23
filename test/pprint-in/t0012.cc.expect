@@ -1,0 +1,33 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+class Foo {
+public:
+  int x;
+  int y;
+  int func();
+  int func2();
+  int func3();
+};
+
+int x = 5;
+
+int main()
+{
+  return x;
+}
+
+int func(class Foo &__receiver)
+{
+  return x;
+}
+
+int foo(class Foo * const );
+
+class Foo * const arf;
+
+// ---- STOP ----
+---- stderr ----
+../in/t0012.cc:46:13: error: default initialization of an object of const type 'Foo *const'
+---- exit status ----
+Exit 0
