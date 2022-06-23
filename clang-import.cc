@@ -1,7 +1,7 @@
-// import-clang.cc
-// Code for import-clang.h.
+// clang-import.cc
+// Code for clang-import.h.
 
-#include "import-clang-internal.h"     // this module
+#include "clang-import-internal.h"     // this module
 
 // elsa
 #include "clang-print.h"               // toString(CXCursorKind), etc.

@@ -1,7 +1,7 @@
-// import-clang-stub.cc
-// Non-functional stub replacement for import-clang.cc.
+// clang-import-stub.cc
+// Non-functional stub replacement for clang-import.cc.
 
-#include "import-clang.h"              // this module
+#include "clang-import.h"              // this module
 
 #include "exc.h"                       // xfatal
 

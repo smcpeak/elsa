@@ -1,8 +1,8 @@
-// import-clang.h
+// clang-import.h
 // Read the Clang AST and create Elsa AST.
 
-#ifndef ELSA_IMPORT_CLANG_H
-#define ELSA_IMPORT_CLANG_H
+#ifndef ELSA_CLANG_IMPORT_H
+#define ELSA_CLANG_IMPORT_H
 
 #include "cc-ast-fwd.h"                // TranslationUnit
 #include "elsaparse-fwd.h"             // ElsaParse
@@ -24,4 +24,4 @@ void clangParseTranslationUnit(
   std::vector<std::string> const &gccOptions);
 
 
-#endif // ELSA_IMPORT_CLANG_H
+#endif // ELSA_CLANG_IMPORT_H

@@ -268,11 +268,11 @@ packedword_test.exe: packedword_test.o $(LIBS)
 
 
 
-# ------------------------- import-clang ---------------------
+# ------------------------- clang-import ---------------------
 clang-print.o: clang-print.cc
 	$(CXX) -c -o $@ $(GENDEPS_FLAGS) -isystem$(CLANG_LLVM_INCLUDE_DIR) $(CXXFLAGS) $<
 
-import-clang.o: import-clang.cc
+clang-import.o: clang-import.cc
 	$(CXX) -c -o $@ $(GENDEPS_FLAGS) -isystem$(CLANG_LLVM_INCLUDE_DIR) $(CXXFLAGS) $<
 
 libclang-additions.o: libclang-additions.cc
@@ -382,9 +382,9 @@ CCPARSE_OBJS += test-astbuild.o
 
 ifeq ($(USE_CLANG),1)
 
-# Modules for import-clang.
+# Modules for clang-import.
 CCPARSE_OBJS += clang-print.o
-CCPARSE_OBJS += import-clang.o
+CCPARSE_OBJS += clang-import.o
 CCPARSE_OBJS += libclang-additions.o
 
 # These are the flags to link with libclang.
@@ -394,7 +394,7 @@ LDFLAGS += -L$(CLANG_LLVM_LIB_DIR) -Wl,-rpath=$(CLANG_LLVM_LIB_DIR) -lclang
 LDFLAGS += -lLLVMSupport
 
 else
-CCPARSE_OBJS += import-clang-stub.o
+CCPARSE_OBJS += clang-import-stub.o
 endif
 
 # parser binary

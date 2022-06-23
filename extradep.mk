@@ -14,6 +14,7 @@ cc.gr.gen.o: cc-tokens.h
 cc.gr.gen.o: cc.ast.gen.h
 ccparse.o: cc.ast.gen.h
 cfg.o: cc.ast.gen.h
+clang-import.o: cc.ast.gen.h
 const-eval.o: cc.ast.gen.h
 elsaparse.o: cc-tokens.h
 elsaparse.o: cc.ast.gen.h
@@ -22,7 +23,6 @@ elsaparse.o: lexer.yy.h
 gnu.o: cc.ast.gen.h
 implconv.o: cc.ast.gen.h
 implint.o: cc.ast.gen.h
-import-clang.o: cc.ast.gen.h
 integrity.o: cc.ast.gen.h
 iptparse.o: iptparse.yy.h
 kandr.o: cc.ast.gen.h

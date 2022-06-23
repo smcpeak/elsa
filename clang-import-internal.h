@@ -1,10 +1,10 @@
-// import-clang-internal.h
-// Class definitions for import-clang.cc.
+// clang-import-internal.h
+// Class definitions for clang-import.cc.
 
-#ifndef ELSA_IMPORT_CLANG_INTERNAL_H
-#define ELSA_IMPORT_CLANG_INTERNAL_H
+#ifndef ELSA_CLANG_IMPORT_INTERNAL_H
+#define ELSA_CLANG_IMPORT_INTERNAL_H
 
-#include "import-clang.h"              // this module
+#include "clang-import.h"              // this module
 
 // smbase
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
@@ -251,4 +251,4 @@ public:      // methods
 };
 
 
-#endif // ELSA_IMPORT_CLANG_INTERNAL_H
+#endif // ELSA_CLANG_IMPORT_INTERNAL_H

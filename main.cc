@@ -4,7 +4,7 @@
 // elsa
 #include "ast_build.h"                 // test_astbuild
 #include "elsaparse.h"                 // ElsaParse
-#include "import-clang.h"              // clangParseTranslationUnit
+#include "clang-import.h"              // clangParseTranslationUnit
 #include "integrity.h"                 // integrityCheckTU
 #include "strip-comments.h"            // strip_comments_unit_tests
 
