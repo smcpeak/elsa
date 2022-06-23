@@ -154,10 +154,9 @@ public:      // methods
 
   TopForm *importTopForm(CXCursor cxTopForm);
 
-  Declaration *importEnumDefinition(CXCursor cxEnumDefn);
+  Variable *importEnumTypeAsForward(CXCursor cxEnumDecl);
 
-  Enumerator *importEnumerator(CXCursor cxEnumerator,
-    EnumType const *enumType);
+  Declaration *importEnumDefinition(CXCursor cxEnumDefn);
 
   // Import the CompoundType declared by 'cxCompoundDecl', yielding its
   // typedefVar.  If it has not already been imported, create it as a
@@ -183,8 +182,6 @@ public:      // methods
     DeclaratorContext context);
 
   Type *importType(CXType cxType);
-
-  EnumType *importEnumType(CXCursor cxEnumDefn);
 
   S_compound *importCompoundStatement(CXCursor cxFunctionBody);
 

@@ -235,66 +235,92 @@ TopForm *ImportClang::importTopForm(CXCursor cxTopForm)
 }
 
 
+Variable *ImportClang::importEnumTypeAsForward(CXCursor cxEnumDecl)
+{
+  StringRef enumName = cursorSpelling(cxEnumDecl);
+
+  // Have we already created a record for it?
+  Variable *&var = variableRefForDeclaration(cxEnumDecl);
+  if (!var) {
+    // Conceptually, we would like to make a forward-declared enum, but
+    // the Elsa type system cannot explicitly do that.  So we just make
+    // a regular EnumType without any values.
+    SourceLoc loc = cursorLocation(cxEnumDecl);
+    TypeFactory &tfac = m_elsaParse.m_typeFactory;
+
+    EnumType *enumType = tfac.makeEnumType(enumName);
+    Type *type = tfac.makeCVAtomicType(enumType, CV_NONE);
+    var = enumType->typedefVar =
+      makeVariable_setScope(loc, enumName, type, DF_NONE, cxEnumDecl);
+  }
+
+  else {
+    // Verify the existing type matches.
+    xassert(var->name == enumName);
+    xassert(var->type->isEnumType());
+  }
+
+  return var;
+}
+
+
 Declaration *ImportClang::importEnumDefinition(CXCursor cxEnumDefn)
 {
-  SourceLoc loc = cursorLocation(cxEnumDefn);
+  Variable *enumVar = importEnumTypeAsForward(cxEnumDefn);
+  EnumType *enumType = enumVar->type->asNamedAtomicType()->asEnumType();
 
-  // This call creates the EnumType.
-  Variable *enumVar = variableForDeclaration(cxEnumDefn);
-  EnumType const *enumType = enumVar->type->asNamedAtomicType()->asEnumType();
-
-  // Add the enumerators to 'enumerators'.
+  // Begin the syntactic list.
   FakeList<Enumerator> *enumerators = FakeList<Enumerator>::emptyList();
+
+  // Get all of the enumerators and add them to 'enumType' and
+  // 'enumerators'.
   for (CXCursor const &cxEnumerator : getChildren(cxEnumDefn)) {
     xassert(clang_getCursorKind(cxEnumerator) == CXCursor_EnumConstantDecl);
 
-    Enumerator *enumerator = importEnumerator(cxEnumerator, enumType);
+    // Get the enumerator name and value.
+    StringRef enumeratorName = cursorSpelling(cxEnumerator);
+    long long llValue = clang_getEnumConstantDeclValue(cxEnumerator);
+    int intValue = (int)llValue;
+    checkedAssignment(intValue, llValue);
 
+    // Add it to the semantic type.
+    SourceLoc enumeratorLoc = cursorLocation(cxEnumerator);
+    Variable *enumeratorVar = makeVariable_setScope(
+      enumeratorLoc,
+      enumeratorName,
+      enumVar->type,
+      DF_ENUMERATOR,
+      cxEnumerator);
+
+    enumType->addValue(enumeratorName, intValue, enumeratorVar);
+
+    // Get the expression that specifies the value, if any.
+    Expression * NULLABLE expr = nullptr;
+    std::vector<CXCursor> children = getChildren(cxEnumerator);
+    if (!children.empty()) {
+      xassert(children.size() == 1);
+      expr = importExpression(children.front());
+    }
+
+    // Build the enumerator syntax.
+    Enumerator *enumerator =
+      new Enumerator(enumeratorLoc, enumeratorName, expr);
+    enumerator->var = enumeratorVar;
+    enumerator->enumValue = intValue;
     enumerators = fl_prepend(enumerators, enumerator);
   }
 
   // The list was built in reverse order due to prepending.
   enumerators = fl_reverse(enumerators);
 
-  TS_enumSpec *enumTS = new TS_enumSpec(loc, enumVar->name, enumerators);
+  TS_enumSpec *enumTS = new TS_enumSpec(
+    cursorLocation(cxEnumDefn),
+    enumVar->name,
+    enumerators);
   enumTS->etype = legacyTypeNC(enumType);
 
   // Wrap up the type specifier in a declaration with no declarators.
   return new Declaration(DF_NONE, enumTS, nullptr /*decllist*/);
-}
-
-
-Enumerator *ImportClang::importEnumerator(CXCursor cxEnumerator,
-  EnumType const *enumType)
-{
-  // Get the enumerator name and value.
-  //
-  // This duplicates work done in 'importEnumType'.  I'm not sure how
-  // best to avoid that; the possibility of forward-declared enums
-  // means I might need the semantics before I see the syntax.
-  StringRef name = cursorSpelling(cxEnumerator);
-  long long llValue = clang_getEnumConstantDeclValue(cxEnumerator);
-  int intValue;
-  checkedAssignment(intValue, llValue);
-
-  // Get the expression that specifies the value, if any.
-  Expression * NULLABLE expr = nullptr;
-  std::vector<CXCursor> children = getChildren(cxEnumerator);
-  if (!children.empty()) {
-    xassert(children.size() == 1);
-    expr = importExpression(children.front());
-  }
-
-  // Get the EnumType::Value for this enumerator.
-  EnumType::Value const *valueObject = enumType->getValue(name);
-  xassert(valueObject);
-
-  // Build the enumerator.
-  SourceLoc loc = cursorLocation(cxEnumerator);
-  Enumerator *enumerator = new Enumerator(loc, name, expr);
-  enumerator->var = valueObject->decl;
-  enumerator->enumValue = intValue;
-  return enumerator;
 }
 
 
@@ -476,22 +502,6 @@ Variable *ImportClang::variableForDeclaration(CXCursor cxDecl,
       type = importType(clang_getTypedefDeclUnderlyingType(cxDecl));
     }
 
-    else if (declKind == CXCursor_EnumDecl) {
-      declFlags |= DF_TYPEDEF;
-
-      // Use the definition if it is available.
-      CXCursor cxDefn = clang_getCursorDefinition(cxDecl);
-      if (!clang_Cursor_isNull(cxDefn)) {
-        cxDecl = cxDefn;
-      }
-
-      NamedAtomicType *nat = importEnumType(cxDecl);
-
-      xassert(!var);
-      var = nat->typedefVar;
-      return var;
-    }
-
     else {
       // For anything else, the type is what the declaration says.
       type = importType(clang_getCursorType(cxDecl));
@@ -654,44 +664,6 @@ Type *ImportClang::importType(CXType cxType)
   }
 
   // Not reached.
-}
-
-
-EnumType *ImportClang::importEnumType(CXCursor cxEnumDefn)
-{
-  SourceLoc loc = cursorLocation(cxEnumDefn);
-  StringRef enumName = cursorSpelling(cxEnumDefn);
-  TypeFactory &tfac = m_elsaParse.m_typeFactory;
-
-  // Set up the initially empty EnumType.
-  EnumType *enumType = tfac.makeEnumType(enumName);
-  Type *type = tfac.makeCVAtomicType(enumType, CV_NONE);
-  enumType->typedefVar =
-    makeVariable_setScope(loc, enumName, type, DF_NONE, cxEnumDefn);
-
-  // Get all of the enumerators and add them to 'enumType'.
-  for (CXCursor const &cxEnumerator : getChildren(cxEnumDefn)) {
-    xassert(clang_getCursorKind(cxEnumerator) == CXCursor_EnumConstantDecl);
-
-    // Get the enumerator name and value.
-    StringRef enumeratorName = cursorSpelling(cxEnumerator);
-    long long llValue = clang_getEnumConstantDeclValue(cxEnumerator);
-    int intValue = (int)llValue;
-    if (intValue != llValue) {
-      xunimp(stringb("Enumerator value out of representation range: " << llValue));
-    }
-
-    Variable *enumeratorVar = makeVariable_setScope(
-      cursorLocation(cxEnumerator),
-      enumeratorName,
-      type,
-      DF_ENUMERATOR,
-      cxEnumerator);
-
-    enumType->addValue(enumeratorName, intValue, enumeratorVar);
-  }
-
-  return enumType;
 }
 
 
