@@ -3,14 +3,14 @@
 // -*- c++ -*-
 class Foo {
 public:
-  int x;
+  static int x;
   int y;
   int func();
   int func2();
   int func3();
 };
 
-int x = 5;
+static int x = 5;
 
 int main()
 {

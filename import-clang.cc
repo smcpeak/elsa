@@ -402,11 +402,14 @@ Declaration *ImportClang::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
         Variable *&fieldVar = variableRefForDeclaration(child);
         xassert(!fieldVar);
 
+        DeclFlags dflags = importStorageClass(
+          clang_Cursor_getStorageClass(child));
+
         fieldVar = makeVariable_setScope(
           cursorLocation(child),
           cursorSpelling(child),
           importType(clang_getCursorType(child)),
-          DF_NONE,
+          dflags,
           child);
 
         ct->addField(fieldVar);
