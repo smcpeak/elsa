@@ -7,7 +7,7 @@ public:
   int y;
   int func();
   int func2();
-  int func3();
+  int func3() const;
 };
 
 static int x = 5;
@@ -17,7 +17,7 @@ int main()
   return x;
 }
 
-int func(class Foo &__receiver)
+int func()
 {
   return x;
 }

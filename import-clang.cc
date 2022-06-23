@@ -390,6 +390,8 @@ Declaration *ImportClang::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
     CXCursorKind childKind = clang_getCursorKind(child);
     SourceLoc childLoc = cursorLocation(child);
 
+    CVFlags methodCV = CV_NONE;
+
     Member *newMember = nullptr;
     switch (childKind) {
       default:
@@ -403,13 +405,16 @@ Declaration *ImportClang::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
         Variable *&fieldVar = variableRefForDeclaration(child);
         xassert(!fieldVar);
 
+        Type *fieldType = importType_maybeMethod(
+          clang_getCursorType(child), ct, methodCV);
+
         DeclFlags dflags = importStorageClass(
           clang_Cursor_getStorageClass(child));
 
         fieldVar = makeVariable_setScope(
           cursorLocation(child),
           cursorSpelling(child),
-          importType(clang_getCursorType(child)),
+          fieldType,
           dflags,
           child);
 
@@ -426,6 +431,7 @@ Declaration *ImportClang::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
           newMember = new MR_func(childLoc, func);
         }
         else {
+          methodCV = importMethodCVFlags(child);
           goto importDecl;
         }
         break;
@@ -456,6 +462,15 @@ Declaration *ImportClang::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
 
   // Wrap up the type specifier in a declaration with no declarators.
   return new Declaration(DF_NONE, specifier, nullptr /*decllist*/);
+}
+
+
+CVFlags ImportClang::importMethodCVFlags(CXCursor cxMethodDecl)
+{
+  // libclang does not expose an 'isVolatile' bit for methods.
+  // Fortunately, volatile methods are virtually non-existent in
+  // practice.
+  return clang_CXXMethod_isConst(cxMethodDecl)? CV_CONST : CV_NONE;
 }
 
 
@@ -490,14 +505,15 @@ Function *ImportClang::importFunctionDefinition(CXCursor cxFuncDefn)
 
         case CXCursor_TypeRef: { // 43
           // A TypeRef child indicates the receiver object type.
-          Type *receiverType = importType(clang_getCursorType(child));
-          receiverType =
-            m_elsaParse.m_typeFactory.makeReferenceType(receiverType);
-          defnFuncType->addReceiver(makeVariable(
-            cursorLocation(child),
-            m_elsaParse.m_stringTable.add("__receiver"), // Like Env::receiverName.
-            receiverType,
-            DF_PARAMETER));
+          //
+          // TODO: I believe it could also indicate that the return type
+          // (or maybe any parameter type?) is named with a typedef.
+          Type const *receiverType = importType(clang_getCursorType(child));
+
+          CVFlags cv = importMethodCVFlags(child);
+
+          addReceiver(defnFuncType, cursorLocation(child),
+                      receiverType->asCompoundTypeC(), cv);
           break;
         }
 
@@ -695,6 +711,13 @@ static SimpleTypeId cxTypeKindToSimpleTypeId(CXTypeKind kind)
 
 Type *ImportClang::importType(CXType cxType)
 {
+  return importType_maybeMethod(cxType, nullptr /*methodCV*/, CV_NONE);
+}
+
+
+Type *ImportClang::importType_maybeMethod(CXType cxType,
+  CompoundType const * NULLABLE methodClass, CVFlags methodCV)
+{
   TypeFactory &tfac = m_elsaParse.m_typeFactory;
 
   CVFlags cv = CV_NONE;
@@ -752,6 +775,15 @@ Type *ImportClang::importType(CXType cxType)
 
       FunctionType *ft = tfac.makeFunctionType(retType);
 
+      if (methodClass) {
+        // Note: Even if 'cxType' refers to a method type, libclang does
+        // *not* report it as cv-qualified, even though
+        // 'clang_getTypeSpelling' will include the 'const'.  Instead,
+        // the declaration itself can be 'clang_CXXMethod_isConst'.
+        // Consequently, 'methodCV' must be passed in by the caller.
+        addReceiver(ft, SL_UNKNOWN, methodClass, methodCV);
+      }
+
       int numParams = clang_getNumArgTypes(cxType);
       for (int i=0; i < numParams; i++) {
         Type *paramType = importType(clang_getArgType(cxType, i));
@@ -775,6 +807,22 @@ Type *ImportClang::importType(CXType cxType)
   }
 
   // Not reached.
+}
+
+
+void ImportClang::addReceiver(FunctionType *methodType,
+  SourceLoc loc, CompoundType const *containingClass, CVFlags cv)
+{
+  TypeFactory &tfac = m_elsaParse.m_typeFactory;
+
+  Type *qualifiedCT =
+    tfac.makeCVAtomicType(legacyTypeNC(containingClass), cv);
+  Type *recvRefType = tfac.makeReferenceType(qualifiedCT);
+  methodType->addReceiver(makeVariable(
+    loc,
+    m_elsaParse.m_stringTable.add("__receiver"), // Like Env::receiverName.
+    recvRefType,
+    DF_PARAMETER));
 }
 
 

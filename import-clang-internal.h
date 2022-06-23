@@ -165,6 +165,9 @@ public:      // methods
 
   Declaration *importCompoundTypeDefinition(CXCursor cxCompoundDefn);
 
+  // Return the CV flags applied to the receiver for 'cxMethodDecl'.
+  CVFlags importMethodCVFlags(CXCursor cxMethodDecl);
+
   Function *importFunctionDefinition(CXCursor cxFuncDefn);
 
   // Get a reference to the Variable pointer for 'cxDecl'.  If the
@@ -185,6 +188,16 @@ public:      // methods
     DeclaratorContext context);
 
   Type *importType(CXType cxType);
+
+  // Import 'cxType' as a type.  If 'methodClass' is not NULL, and
+  // 'cxType' is a function type, then return a method type with a
+  // receiver that is a 'methodCV' reference to 'methodClass'.
+  Type *importType_maybeMethod(CXType cxType,
+    CompoundType const * NULLABLE methodClass, CVFlags methodCV);
+
+  // Add the receiver parameter to 'methodType'.
+  void addReceiver(FunctionType *methodType,
+    SourceLoc loc, CompoundType const *containingClass, CVFlags cv);
 
   S_compound *importCompoundStatement(CXCursor cxFunctionBody);
 
