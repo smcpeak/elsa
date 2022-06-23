@@ -269,13 +269,9 @@ packedword_test.exe: packedword_test.o $(LIBS)
 
 
 # ------------------------- clang-import ---------------------
-clang-print.o: clang-print.cc
-	$(CXX) -c -o $@ $(GENDEPS_FLAGS) -isystem$(CLANG_LLVM_INCLUDE_DIR) $(CXXFLAGS) $<
-
-clang-import.o: clang-import.cc
-	$(CXX) -c -o $@ $(GENDEPS_FLAGS) -isystem$(CLANG_LLVM_INCLUDE_DIR) $(CXXFLAGS) $<
-
-clang-additions.o: clang-additions.cc
+# All the clang-related files need to have an additional include
+# directory.
+clang-%.o: clang-%.cc
 	$(CXX) -c -o $@ $(GENDEPS_FLAGS) -isystem$(CLANG_LLVM_INCLUDE_DIR) $(CXXFLAGS) $<
 
 
