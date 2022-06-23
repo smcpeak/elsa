@@ -4,6 +4,7 @@
 #include "import-clang-internal.h"     // this module
 
 // elsa
+#include "clang-print.h"               // toString(CXCursorKind), etc.
 #include "libclang-additions.h"        // clang_getUnaryExpressionOperator, etc.
 
 // ast
@@ -1472,13 +1473,24 @@ AccessKeyword ImportClang::importAccessKeyword(
 }
 
 
+void ImportClang::maybePrintType(char const *label, CXType cxType)
+{
+  if (cxType.kind != CXType_Invalid) {
+    cout << " " << label << "=\""
+         << importString(clang_getTypeSpelling(cxType)) << "\"";
+  }
+}
+
+
 void ImportClang::printSubtree(CXCursor cursor, int indent)
 {
   StringRef spelling = cursorSpelling(cursor);
   StringRef display = importString(clang_getCursorDisplayName(cursor));
 
+  CXCursorKind cursorKind = clang_getCursorKind(cursor);
   ind(cout, indent)
-    << "kind=" << clang_getCursorKind(cursor)
+    << "kind=" << toString(cursorKind)
+    << "(" << cursorKindClassificationsString(cursorKind) << ")"
     << " loc=" << toLCString(cursorLocation(cursor))
     << " spelling=\"" << spelling << "\"";
 
@@ -1486,9 +1498,11 @@ void ImportClang::printSubtree(CXCursor cursor, int indent)
     cout << " display=\"" << display << "\"";
   }
 
-  CXType cxType = clang_getCursorType(cursor);
-  if (cxType.kind != CXType_Invalid) {
-    cout << " type=\"" << importString(clang_getTypeSpelling(cxType)) << "\"";
+  maybePrintType("type", clang_getCursorType(cursor));
+
+  if (clang_isExpression(cursorKind)) {
+    // 'getReceiverType' crashes if passed a non-expression.
+    maybePrintType("receiverType", clang_Cursor_getReceiverType(cursor));
   }
 
   CXCursor decl = clang_getCursorReferenced(cursor);

@@ -269,6 +269,9 @@ packedword_test.exe: packedword_test.o $(LIBS)
 
 
 # ------------------------- import-clang ---------------------
+clang-print.o: clang-print.cc
+	$(CXX) -c -o $@ $(GENDEPS_FLAGS) -isystem$(CLANG_LLVM_INCLUDE_DIR) $(CXXFLAGS) $<
+
 import-clang.o: import-clang.cc
 	$(CXX) -c -o $@ $(GENDEPS_FLAGS) -isystem$(CLANG_LLVM_INCLUDE_DIR) $(CXXFLAGS) $<
 
@@ -380,6 +383,7 @@ CCPARSE_OBJS += test-astbuild.o
 ifeq ($(USE_CLANG),1)
 
 # Modules for import-clang.
+CCPARSE_OBJS += clang-print.o
 CCPARSE_OBJS += import-clang.o
 CCPARSE_OBJS += libclang-additions.o
 
