@@ -265,7 +265,7 @@ Variable *ClangImport::importEnumTypeAsForward(CXCursor cxEnumDecl)
     EnumType *enumType = tfac.makeEnumType(enumName);
     Type *type = tfac.makeCVAtomicType(enumType, CV_NONE);
     var = enumType->typedefVar =
-      makeVariable_setScope(loc, enumName, type, DF_NONE, cxEnumDecl);
+      makeVariable_setScope(loc, enumName, type, DF_TYPEDEF, cxEnumDecl);
   }
 
   else {
@@ -362,7 +362,7 @@ Variable *ClangImport::importCompoundTypeAsForward(CXCursor cxCompoundDecl)
     CompoundType *compoundType = tfac.makeCompoundType(keyword, compoundName);
     Type *type = tfac.makeCVAtomicType(compoundType, CV_NONE);
     var = compoundType->typedefVar =
-      makeVariable_setScope(loc, compoundName, type, DF_NONE, cxCompoundDecl);
+      makeVariable_setScope(loc, compoundName, type, DF_TYPEDEF, cxCompoundDecl);
   }
 
   else {
@@ -811,12 +811,17 @@ Type *ClangImport::importType_maybeMethod(CXType cxType,
 
     case CXType_Record: // 105
     case CXType_Enum: // 106
+      // For a Record or Enum that does not go through Elaborated,
+      // create a TypedefType, the same as the Typedef case.
+      goto handleTypedef;
+
     case CXType_Elaborated: { // 119
       CXCursor cxTypeDecl = clang_getTypeDeclaration(cxType);
       Variable *typedefVar = existingVariableForDeclaration(cxTypeDecl);
       return typedefVar->type;
     }
 
+    handleTypedef:
     case CXType_Typedef: { // 107
       CXCursor cxTypeDecl = clang_getTypeDeclaration(cxType);
       Variable *typedefVar = existingVariableForDeclaration(cxTypeDecl);

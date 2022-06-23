@@ -387,8 +387,6 @@ check-clang: out/clang-pprint-in/in/t0008.cc
 check-clang: out/clang-pprint-in/in/t0009.cc
 check-clang: out/clang-pprint-in/in/t0010.cc
 check-clang: out/clang-pprint-in/in/t0011.cc
-
-# This isn't right yet, but I want to check in what I have.
 check-clang: out/clang-pprint-in/in/t0012.cc
 
 

@@ -8,7 +8,7 @@ struct Foo {
 
 int main()
 {
-  struct Foo f;
+  Foo f;
   return f.x;
 }
 

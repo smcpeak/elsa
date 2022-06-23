@@ -22,9 +22,9 @@ int Foo::func()
   return x;
 }
 
-int foo(class Foo * const );
+int foo(Foo * const );
 
-class Foo * const arf;
+Foo * const arf;
 
 // ---- STOP ----
 ---- stderr ----
