@@ -379,7 +379,12 @@ Declaration *ImportClang::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
         xunimp(stringb("compound defn child kind: " << childKind));
 
       case CXCursor_FieldDecl: {
-        Variable *fieldVar = makeVariable_setScope(
+        // Associate the Variable we will create with the declaration of
+        // the field.
+        Variable *&fieldVar = variableRefForDeclaration(child);
+        xassert(!fieldVar);
+
+        fieldVar = makeVariable_setScope(
           cursorLocation(child),
           cursorSpelling(child),
           importType(clang_getCursorType(child)),
@@ -522,6 +527,14 @@ Variable *ImportClang::variableForDeclaration(CXCursor cxDecl,
 }
 
 
+Variable *ImportClang::existingVariableForDeclaration(CXCursor cxDecl)
+{
+  Variable *&var = variableRefForDeclaration(cxDecl);
+  xassert(var);
+  return var;
+}
+
+
 Declaration *ImportClang::importVarOrTypedefDecl(CXCursor cxVarDecl,
   DeclaratorContext context)
 {
@@ -623,6 +636,9 @@ Type *ImportClang::importType(CXType cxType)
       return tfac.makeReferenceType(
         importType(clang_getPointeeType(cxType)));
 
+    // TODO: CXType_RValueReference = 104
+
+    case CXType_Record: // 105
     case CXType_Enum: { // 106
       CXCursor cxTypeDecl = clang_getTypeDeclaration(cxType);
       Variable *typedefVar = variableForDeclaration(cxTypeDecl);
@@ -991,8 +1007,20 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
 
     case CXCursor_DeclRefExpr: { // 101
       CXCursor decl = clang_getCursorReferenced(cxExpr);
-      Variable *var = variableForDeclaration(decl);
+      Variable *var = existingVariableForDeclaration(decl);
       ret = makeE_variable(var);
+      break;
+    }
+
+    case CXCursor_MemberRefExpr: { // 102
+      Expression *object = importExpression(getOnlyChild(cxExpr));
+
+      CXCursor decl = clang_getCursorReferenced(cxExpr);
+      Variable *field = existingVariableForDeclaration(decl);
+
+      E_fieldAcc *acc = new E_fieldAcc(object, makePQName(field));
+      acc->field = field;
+      ret = acc;
       break;
     }
 
@@ -1293,6 +1321,11 @@ void ImportClang::printSubtree(CXCursor cursor, int indent)
   CXType cxType = clang_getCursorType(cursor);
   if (cxType.kind != CXType_Invalid) {
     cout << " type=\"" << importString(clang_getTypeSpelling(cxType)) << "\"";
+  }
+
+  CXCursor decl = clang_getCursorReferenced(cursor);
+  if (!clang_Cursor_isNull(decl)) {
+    cout << " references=" << toLCString(cursorLocation(decl));
   }
 
   cout << "\n";

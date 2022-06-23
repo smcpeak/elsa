@@ -178,6 +178,9 @@ public:      // methods
   Variable *variableForDeclaration(CXCursor cxDecl,
     DeclFlags declFlags = DF_NONE);
 
+  // Get the associated Variable, asserting that it exists.
+  Variable *existingVariableForDeclaration(CXCursor cxDecl);
+
   Declaration *importVarOrTypedefDecl(CXCursor cxVarDecl,
     DeclaratorContext context);
 
