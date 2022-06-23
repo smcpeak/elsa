@@ -87,13 +87,13 @@ void clangParseTranslationUnit(
 
   DisposeCXTranslationUnit disposeTU(cxTU);
 
-  ImportClang importClang(cxIndex, cxTU, elsaParse);
+  ClangImport importClang(cxIndex, cxTU, elsaParse);
   importClang.importTranslationUnit();
 }
 
 
-// --------------------------- ImportClang -----------------------------
-ImportClang::ImportClang(CXIndex cxIndex,
+// --------------------------- ClangImport -----------------------------
+ClangImport::ClangImport(CXIndex cxIndex,
                          CXTranslationUnit cxTranslationUnit,
                          ElsaParse &elsaParse)
   : ElsaASTBuild(elsaParse.m_stringTable,
@@ -109,7 +109,7 @@ ImportClang::ImportClang(CXIndex cxIndex,
 {}
 
 
-void ImportClang::importTranslationUnit()
+void ClangImport::importTranslationUnit()
 {
   CXCursor cursor = clang_getTranslationUnitCursor(m_cxTranslationUnit);
   if (tracingSys("dumpClang")) {
@@ -136,7 +136,7 @@ static CXChildVisitResult childCollector(CXCursor cursor,
 }
 
 
-std::vector<CXCursor> ImportClang::getChildren(CXCursor cursor)
+std::vector<CXCursor> ClangImport::getChildren(CXCursor cursor)
 {
   std::vector<CXCursor> children;
   clang_visitChildren(cursor, childCollector, &children);
@@ -144,14 +144,14 @@ std::vector<CXCursor> ImportClang::getChildren(CXCursor cursor)
 }
 
 
-StringRef ImportClang::importString(CXString cxString)
+StringRef ClangImport::importString(CXString cxString)
 {
   WrapCXString wcxString(cxString);
   return m_elsaParse.m_stringTable.add(wcxString.c_str());
 }
 
 
-StringRef ImportClang::importFileName(CXFile cxFile)
+StringRef ClangImport::importFileName(CXFile cxFile)
 {
   auto it = m_cxFileToName.find(cxFile);
   if (it == m_cxFileToName.end()) {
@@ -165,7 +165,7 @@ StringRef ImportClang::importFileName(CXFile cxFile)
 }
 
 
-SourceLoc ImportClang::importSourceLocation(CXSourceLocation cxLoc)
+SourceLoc ClangImport::importSourceLocation(CXSourceLocation cxLoc)
 {
   // TODO: It would probably be more efficient to use the offset.
   CXFile cxFile;
@@ -183,19 +183,19 @@ SourceLoc ImportClang::importSourceLocation(CXSourceLocation cxLoc)
 }
 
 
-SourceLoc ImportClang::cursorLocation(CXCursor cxCursor)
+SourceLoc ClangImport::cursorLocation(CXCursor cxCursor)
 {
   return importSourceLocation(clang_getCursorLocation(cxCursor));
 }
 
 
-StringRef ImportClang::cursorSpelling(CXCursor cxCursor)
+StringRef ClangImport::cursorSpelling(CXCursor cxCursor)
 {
   return importString(clang_getCursorSpelling(cxCursor));
 }
 
 
-TopForm *ImportClang::importTopForm(CXCursor cxTopForm)
+TopForm *ClangImport::importTopForm(CXCursor cxTopForm)
 {
   SourceLoc loc = cursorLocation(cxTopForm);
 
@@ -249,7 +249,7 @@ TopForm *ImportClang::importTopForm(CXCursor cxTopForm)
 }
 
 
-Variable *ImportClang::importEnumTypeAsForward(CXCursor cxEnumDecl)
+Variable *ClangImport::importEnumTypeAsForward(CXCursor cxEnumDecl)
 {
   StringRef enumName = cursorSpelling(cxEnumDecl);
 
@@ -278,7 +278,7 @@ Variable *ImportClang::importEnumTypeAsForward(CXCursor cxEnumDecl)
 }
 
 
-Declaration *ImportClang::importEnumDefinition(CXCursor cxEnumDefn)
+Declaration *ClangImport::importEnumDefinition(CXCursor cxEnumDefn)
 {
   Variable *enumVar = importEnumTypeAsForward(cxEnumDefn);
   EnumType *enumType = enumVar->type->asNamedAtomicType()->asEnumType();
@@ -338,7 +338,7 @@ Declaration *ImportClang::importEnumDefinition(CXCursor cxEnumDefn)
 }
 
 
-Variable *ImportClang::importCompoundTypeAsForward(CXCursor cxCompoundDecl)
+Variable *ClangImport::importCompoundTypeAsForward(CXCursor cxCompoundDecl)
 {
   StringRef compoundName = cursorSpelling(cxCompoundDecl);
 
@@ -376,7 +376,7 @@ Variable *ImportClang::importCompoundTypeAsForward(CXCursor cxCompoundDecl)
 }
 
 
-Declaration *ImportClang::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
+Declaration *ClangImport::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
 {
   Variable *var = importCompoundTypeAsForward(cxCompoundDefn);
   CompoundType *ct = var->type->asCompoundType();
@@ -465,7 +465,7 @@ Declaration *ImportClang::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
 }
 
 
-CVFlags ImportClang::importMethodCVFlags(CXCursor cxMethodDecl)
+CVFlags ClangImport::importMethodCVFlags(CXCursor cxMethodDecl)
 {
   // libclang does not expose an 'isVolatile' bit for methods.
   // Fortunately, volatile methods are virtually non-existent in
@@ -474,7 +474,7 @@ CVFlags ImportClang::importMethodCVFlags(CXCursor cxMethodDecl)
 }
 
 
-Function *ImportClang::importFunctionDefinition(CXCursor cxFuncDefn)
+Function *ClangImport::importFunctionDefinition(CXCursor cxFuncDefn)
 {
   TypeFactory &tfac = m_elsaParse.m_typeFactory;
 
@@ -551,7 +551,7 @@ Function *ImportClang::importFunctionDefinition(CXCursor cxFuncDefn)
 }
 
 
-Variable *&ImportClang::variableRefForDeclaration(CXCursor cxDecl)
+Variable *&ClangImport::variableRefForDeclaration(CXCursor cxDecl)
 {
   // Go to the canonical cursor to handle the case of an entity that is
   // declared multiple times.
@@ -565,7 +565,7 @@ Variable *&ImportClang::variableRefForDeclaration(CXCursor cxDecl)
 }
 
 
-Variable *ImportClang::variableForDeclaration(CXCursor cxDecl,
+Variable *ClangImport::variableForDeclaration(CXCursor cxDecl,
   DeclFlags declFlags)
 {
   StringRef name = cursorSpelling(cxDecl);
@@ -602,7 +602,7 @@ Variable *ImportClang::variableForDeclaration(CXCursor cxDecl,
 }
 
 
-Variable *ImportClang::existingVariableForDeclaration(CXCursor cxDecl)
+Variable *ClangImport::existingVariableForDeclaration(CXCursor cxDecl)
 {
   Variable *&var = variableRefForDeclaration(cxDecl);
   xassert(var);
@@ -610,7 +610,7 @@ Variable *ImportClang::existingVariableForDeclaration(CXCursor cxDecl)
 }
 
 
-Declaration *ImportClang::importVarOrTypedefDecl(CXCursor cxVarDecl,
+Declaration *ClangImport::importVarOrTypedefDecl(CXCursor cxVarDecl,
   DeclaratorContext context)
 {
   Variable *var = variableForDeclaration(cxVarDecl);
@@ -709,13 +709,13 @@ static SimpleTypeId cxTypeKindToSimpleTypeId(CXTypeKind kind)
 }
 
 
-Type *ImportClang::importType(CXType cxType)
+Type *ClangImport::importType(CXType cxType)
 {
   return importType_maybeMethod(cxType, nullptr /*methodCV*/, CV_NONE);
 }
 
 
-Type *ImportClang::importType_maybeMethod(CXType cxType,
+Type *ClangImport::importType_maybeMethod(CXType cxType,
   CompoundType const * NULLABLE methodClass, CVFlags methodCV)
 {
   TypeFactory &tfac = m_elsaParse.m_typeFactory;
@@ -810,7 +810,7 @@ Type *ImportClang::importType_maybeMethod(CXType cxType,
 }
 
 
-void ImportClang::addReceiver(FunctionType *methodType,
+void ClangImport::addReceiver(FunctionType *methodType,
   SourceLoc loc, CompoundType const *containingClass, CVFlags cv)
 {
   TypeFactory &tfac = m_elsaParse.m_typeFactory;
@@ -826,7 +826,7 @@ void ImportClang::addReceiver(FunctionType *methodType,
 }
 
 
-S_compound *ImportClang::importCompoundStatement(CXCursor cxCompStmt)
+S_compound *ClangImport::importCompoundStatement(CXCursor cxCompStmt)
 {
   SourceLoc loc = cursorLocation(cxCompStmt);
   S_compound *comp = new S_compound(loc, nullptr /*stmts*/);
@@ -840,7 +840,7 @@ S_compound *ImportClang::importCompoundStatement(CXCursor cxCompStmt)
 }
 
 
-Statement *ImportClang::importStatement(CXCursor cxStmt)
+Statement *ClangImport::importStatement(CXCursor cxStmt)
 {
   if (clang_Cursor_isNull(cxStmt)) {
     // This is for a case like a missing initializer in a 'for'
@@ -1010,13 +1010,13 @@ Statement *ImportClang::importStatement(CXCursor cxStmt)
 }
 
 
-FullExpression *ImportClang::importFullExpression(CXCursor cxExpr)
+FullExpression *ClangImport::importFullExpression(CXCursor cxExpr)
 {
   return new FullExpression(importExpression(cxExpr));
 }
 
 
-CXCursor ImportClang::getOnlyChild(CXCursor cxNode)
+CXCursor ClangImport::getOnlyChild(CXCursor cxNode)
 {
   std::vector<CXCursor> children = getChildren(cxNode);
   xassert(children.size() == 1);
@@ -1024,7 +1024,7 @@ CXCursor ImportClang::getOnlyChild(CXCursor cxNode)
 }
 
 
-void ImportClang::getTwoChildren(CXCursor &c1, CXCursor &c2,
+void ClangImport::getTwoChildren(CXCursor &c1, CXCursor &c2,
   CXCursor cxNode)
 {
   std::vector<CXCursor> children = getChildren(cxNode);
@@ -1101,7 +1101,7 @@ static BinaryOp cxBinaryToElsaBinary(CXBinaryOperator op)
 }
 
 
-long long ImportClang::evalAsLongLong(CXCursor cxExpr)
+long long ClangImport::evalAsLongLong(CXCursor cxExpr)
 {
   CXEvalResult cxEvalResult = clang_Cursor_Evaluate(cxExpr);
   xassert(clang_EvalResult_getKind(cxEvalResult) == CXEval_Int);
@@ -1112,7 +1112,7 @@ long long ImportClang::evalAsLongLong(CXCursor cxExpr)
 }
 
 
-Expression *ImportClang::importExpression(CXCursor cxExpr)
+Expression *ClangImport::importExpression(CXCursor cxExpr)
 {
   if (clang_Cursor_isNull(cxExpr)) {
     // This is used for a missing 'for' condition or increment.
@@ -1323,7 +1323,7 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
 }
 
 
-StandardConversion ImportClang::describeAsStandardConversion(
+StandardConversion ClangImport::describeAsStandardConversion(
   Type const *destType, Type const *srcType)
 {
   CVAtomicType const *destCVAT = destType->ifCVAtomicTypeC();
@@ -1356,7 +1356,7 @@ StandardConversion ImportClang::describeAsStandardConversion(
 }
 
 
-Condition *ImportClang::importCondition(CXCursor cxCond)
+Condition *ClangImport::importCondition(CXCursor cxCond)
 {
   CXCursorKind kind = clang_getCursorKind(cxCond);
 
@@ -1369,7 +1369,7 @@ Condition *ImportClang::importCondition(CXCursor cxCond)
 }
 
 
-ASTTypeId *ImportClang::importASTTypeId(CXCursor cxDecl,
+ASTTypeId *ClangImport::importASTTypeId(CXCursor cxDecl,
   DeclaratorContext context)
 {
   xassert(clang_getCursorKind(cxDecl) == CXCursor_VarDecl);
@@ -1398,7 +1398,7 @@ ASTTypeId *ImportClang::importASTTypeId(CXCursor cxDecl,
 }
 
 
-Initializer *ImportClang::importInitializer(CXCursor cxInit)
+Initializer *ClangImport::importInitializer(CXCursor cxInit)
 {
   if (clang_getCursorKind(cxInit) == CXCursor_UnexposedExpr &&
       getChildren(cxInit).empty()) {
@@ -1419,7 +1419,7 @@ Initializer *ImportClang::importInitializer(CXCursor cxInit)
 }
 
 
-Handler *ImportClang::importHandler(CXCursor cxHandler)
+Handler *ClangImport::importHandler(CXCursor cxHandler)
 {
   xassert(clang_getCursorKind(cxHandler) == CXCursor_CXXCatchStmt);
 
@@ -1446,7 +1446,7 @@ Handler *ImportClang::importHandler(CXCursor cxHandler)
 }
 
 
-Variable *ImportClang::makeVariable_setScope(SourceLoc loc,
+Variable *ClangImport::makeVariable_setScope(SourceLoc loc,
   StringRef name, Type *type, DeclFlags flags, CXCursor cxDecl)
 {
   Variable *var = makeVariable(loc, name, type, flags);
@@ -1460,14 +1460,14 @@ Variable *ImportClang::makeVariable_setScope(SourceLoc loc,
 }
 
 
-Variable *ImportClang::makeVariable(SourceLoc loc, StringRef name,
+Variable *ClangImport::makeVariable(SourceLoc loc, StringRef name,
   Type *type, DeclFlags flags)
 {
   return m_elsaParse.m_typeFactory.makeVariable(loc, name, type, flags);
 }
 
 
-DeclFlags ImportClang::importStorageClass(CX_StorageClass storageClass)
+DeclFlags ClangImport::importStorageClass(CX_StorageClass storageClass)
 {
   switch (storageClass) {
     case CX_SC_Extern:   return DF_EXTERN;
@@ -1509,7 +1509,7 @@ static char const *toString(CX_StorageClass storageClass)
 }
 
 
-AccessKeyword ImportClang::importAccessKeyword(
+AccessKeyword ClangImport::importAccessKeyword(
   CX_CXXAccessSpecifier accessSpecifier)
 {
   switch (accessSpecifier) {
@@ -1521,7 +1521,7 @@ AccessKeyword ImportClang::importAccessKeyword(
 }
 
 
-void ImportClang::maybePrintType(char const *label, CXType cxType)
+void ClangImport::maybePrintType(char const *label, CXType cxType)
 {
   if (cxType.kind != CXType_Invalid) {
     cout << " " << label << "=\""
@@ -1530,7 +1530,7 @@ void ImportClang::maybePrintType(char const *label, CXType cxType)
 }
 
 
-void ImportClang::printSubtree(CXCursor cursor, int indent)
+void ClangImport::printSubtree(CXCursor cursor, int indent)
 {
   StringRef spelling = cursorSpelling(cursor);
   StringRef display = importString(clang_getCursorDisplayName(cursor));

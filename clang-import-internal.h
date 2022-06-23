@@ -103,7 +103,7 @@ public:      // methods
 
 
 // Manage the process of importing.
-class ImportClang : public SourceLocProvider, ElsaASTBuild {
+class ClangImport : public SourceLocProvider, ElsaASTBuild {
 public:      // data
   // ---- Clang AST ----
   // Container for Clang translation-wide data.
@@ -128,7 +128,7 @@ public:      // data
   std::map<SourceLoc, Variable *> m_locToVariable;
 
 public:      // methods
-  ImportClang(CXIndex cxIndex,
+  ClangImport(CXIndex cxIndex,
               CXTranslationUnit cxTranslationUnit,
               ElsaParse &elsaParse);
 
