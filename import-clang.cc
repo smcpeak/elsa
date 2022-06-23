@@ -167,6 +167,11 @@ SourceLoc ImportClang::importSourceLocation(CXSourceLocation cxLoc)
   unsigned column;
   clang_getFileLocation(cxLoc, &cxFile, &line, &column, nullptr /*offset*/);
 
+  if (!cxFile) {
+    // This happens for the null location.
+    return SL_UNKNOWN;
+  }
+
   StringRef fname = importFileName(cxFile);
   return sourceLocManager->encodeLineCol(fname, line, column);
 }
@@ -538,9 +543,40 @@ Variable *ImportClang::existingVariableForDeclaration(CXCursor cxDecl)
 Declaration *ImportClang::importVarOrTypedefDecl(CXCursor cxVarDecl,
   DeclaratorContext context)
 {
-  // TODO: Get the initializer, if there is one.
   Variable *var = variableForDeclaration(cxVarDecl);
-  return makeDeclaration(var, context);
+  Declaration *decl = makeDeclaration(var, context);
+  Declarator *declarator = fl_first(decl->decllist);
+
+  CXCursorKind declKind = clang_getCursorKind(cxVarDecl);
+  if (declKind == CXCursor_VarDecl) {
+    // Import the initializer, if any.
+    std::vector<CXCursor> children = getChildren(cxVarDecl);
+
+    if (children.size() == 2) {
+      // The first child is a TypeRef node indicating that the type of
+      // the variable was specified with a typedef.
+      xassert(clang_getCursorKind(children[0]) == CXCursor_TypeRef);
+
+      // The next is the initializer.
+      declarator->init = importInitializer(children[1]);
+    }
+
+    else if (children.size() == 1) {
+      // The child could be either a TypeRef or an initializer.
+      if (clang_getCursorKind(children[0]) == CXCursor_TypeRef) {
+        // TypeRef, ignore.
+      }
+      else {
+        declarator->init = importInitializer(children[0]);
+      }
+    }
+
+    else {
+      xassert(children.empty());
+    }
+  }
+
+  return decl;
 }
 
 
@@ -616,7 +652,7 @@ Type *ImportClang::importType(CXType cxType)
 
   // Codes 2 through 23.
   if (CXType_Void <= cxType.kind && cxType.kind <= CXType_LongDouble) {
-    return tfac.getSimpleType(cxTypeKindToSimpleTypeId(cxType.kind));
+    return tfac.getSimpleType(cxTypeKindToSimpleTypeId(cxType.kind), cv);
   }
 
   switch (cxType.kind) {
@@ -639,15 +675,16 @@ Type *ImportClang::importType(CXType cxType)
     // TODO: CXType_RValueReference = 104
 
     case CXType_Record: // 105
-    case CXType_Enum: { // 106
+    case CXType_Enum: // 106
+    case CXType_Elaborated: { // 119
       CXCursor cxTypeDecl = clang_getTypeDeclaration(cxType);
-      Variable *typedefVar = variableForDeclaration(cxTypeDecl);
+      Variable *typedefVar = existingVariableForDeclaration(cxTypeDecl);
       return typedefVar->type;
     }
 
     case CXType_Typedef: { // 107
       CXCursor cxTypeDecl = clang_getTypeDeclaration(cxType);
-      Variable *typedefVar = variableForDeclaration(cxTypeDecl);
+      Variable *typedefVar = existingVariableForDeclaration(cxTypeDecl);
       return tfac.makeTypedefType(typedefVar, cv);
     }
 
@@ -985,7 +1022,7 @@ Expression *ImportClang::importExpression(CXCursor cxExpr)
     default:
       xunimp(stringb("Unhandled exprKind: " << exprKind));
 
-    case CXCursor_UnexposedExpr: { // 1
+    case CXCursor_UnexposedExpr: { // 100
       // This is used for implicit conversions (perhaps among other
       // things).
       CXCursor child = getOnlyChild(cxExpr);
@@ -1257,6 +1294,20 @@ ASTTypeId *ImportClang::importASTTypeId(CXCursor cxDecl,
 
 Initializer *ImportClang::importInitializer(CXCursor cxInit)
 {
+  if (clang_getCursorKind(cxInit) == CXCursor_UnexposedExpr &&
+      getChildren(cxInit).empty()) {
+    // This is an 'ImplicitValueInitExpr', which in Elsa is represented
+    // with a NULL initialzer.
+    return nullptr;
+  }
+
+  if (clang_getCursorKind(cxInit) == CXCursor_CallExpr &&
+      getChildren(cxInit).empty()) {
+    // This is a 'CXXConstructExpr', which in Elsa is also represented
+    // with a NULL initialzer.
+    return nullptr;
+  }
+
   // TODO: Handle IN_compound cases.
   return new IN_expr(cursorLocation(cxInit), importExpression(cxInit));
 }
@@ -1312,11 +1363,17 @@ Variable *ImportClang::makeVariable(SourceLoc loc, StringRef name,
 
 void ImportClang::printSubtree(CXCursor cursor, int indent)
 {
+  StringRef spelling = cursorSpelling(cursor);
+  StringRef display = importString(clang_getCursorDisplayName(cursor));
+
   ind(cout, indent)
     << "kind=" << clang_getCursorKind(cursor)
     << " loc=" << toLCString(cursorLocation(cursor))
-    << " spelling=\"" << cursorSpelling(cursor) << "\""
-    << " display=\"" << importString(clang_getCursorSpelling(cursor)) << "\"";
+    << " spelling=\"" << spelling << "\"";
+
+  if (spelling != display) {
+    cout << " display=\"" << display << "\"";
+  }
 
   CXType cxType = clang_getCursorType(cursor);
   if (cxType.kind != CXType_Invalid) {

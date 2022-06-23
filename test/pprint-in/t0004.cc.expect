@@ -1,0 +1,18 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+typedef int x;
+
+int z;
+
+typedef int t;
+
+int main()
+{
+  x *y = (t *)z;
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

@@ -1,0 +1,20 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+struct pte_t {
+  int y;
+};
+
+typedef struct pte_t pte_t;
+
+int get_pte_fast();
+
+int foo()
+{
+  pte_t *page = (pte_t *)get_pte_fast();
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

@@ -1,0 +1,9 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+int x;
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

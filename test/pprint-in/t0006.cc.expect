@@ -1,0 +1,69 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+int something;
+
+int a;
+
+int whatever;
+
+int something_else;
+
+int x;
+
+typedef int X;
+
+int main()
+{
+  3+4;
+mylabel:
+  switch (something) {
+    case 5:
+      {
+        6;
+        7;
+      }
+      break;
+    default:
+      ;
+  }
+  if (a) 8;
+  else 9;
+  if (a) 10;
+  {
+    if (a) 11;
+    if (a) 12;
+    else 13;
+  }
+  while (whatever) 14;
+  while (bool cond = whatever) 15;
+  do 16; while (something_else);
+  int i;
+  for (i = 0; i < 4; i++) 17;
+  for (int j = 9; j > 0; j--) 18;
+  if (a) return x;
+  goto mylabel;
+  try {
+    19;
+  }
+  catch (X &x) {
+    throw 20;
+  }
+  catch (...) {
+    21;
+    throw;
+  }
+
+  4;
+}
+
+void other()
+{
+  if (a) return;
+  return;
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

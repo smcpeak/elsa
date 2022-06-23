@@ -1,0 +1,15 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+typedef int x;
+
+int main()
+{
+  x y;
+  return y;
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

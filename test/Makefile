@@ -362,10 +362,13 @@ check: check-errmsg
 
 
 # --------------------------- clang tests ------------------------------
-# Run ccparse --clang.
-out/clang/in/%: ../in/% $(CCPARSE)
+# Run ccparse --clang and check the results with pprint.
+out/clang-pprint-in/in/%: ../in/% pprint-in/%.expect $(CCPARSE)
 	$(CREATE_OUTPUT_DIRECTORY)
-	$(CCPARSE) --clang $<
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/clang-pprint-in/$*.actual \
+	  --expect pprint-in/$*.expect \
+	  $(CCPARSE) --pretty-print --clang $<
 	touch $@
 
 .PHONY: check-clang
@@ -373,15 +376,16 @@ ifeq ($(USE_CLANG),1)
 check: check-clang
 endif
 
-check-clang: out/clang/in/t0001.cc
-check-clang: out/clang/in/t0002.cc
-check-clang: out/clang/in/t0003.cc
-check-clang: out/clang/in/t0004.cc
-check-clang: out/clang/in/t0005.cc
-check-clang: out/clang/in/t0006.cc
-check-clang: out/clang/in/t0007.cc
-check-clang: out/clang/in/t0008.cc
-check-clang: out/clang/in/t0009.cc
+check-clang: out/clang-pprint-in/in/t0001.cc
+check-clang: out/clang-pprint-in/in/t0002.cc
+check-clang: out/clang-pprint-in/in/t0003.cc
+check-clang: out/clang-pprint-in/in/t0004.cc
+check-clang: out/clang-pprint-in/in/t0005.cc
+check-clang: out/clang-pprint-in/in/t0006.cc
+check-clang: out/clang-pprint-in/in/t0007.cc
+check-clang: out/clang-pprint-in/in/t0008.cc
+check-clang: out/clang-pprint-in/in/t0009.cc
+check-clang: out/clang-pprint-in/in/t0010.cc
 
 
 # Run a C++ pretty-print test with --clang.

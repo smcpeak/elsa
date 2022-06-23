@@ -1,0 +1,18 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+struct Foo {
+  int x;
+  int y;
+};
+
+int main()
+{
+  struct Foo f;
+  return f.x;
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

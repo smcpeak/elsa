@@ -1,0 +1,14 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+int main()
+{
+  int a;
+  int b;
+  a & b;
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0
