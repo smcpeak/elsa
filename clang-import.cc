@@ -5,7 +5,7 @@
 
 // elsa
 #include "clang-print.h"               // toString(CXCursorKind), etc.
-#include "libclang-additions.h"        // clang_getUnaryExpressionOperator, etc.
+#include "clang-additions.h"           // clang_getUnaryExpressionOperator, etc.
 
 // ast
 #include "asthelp.h"                   // ind

@@ -1,8 +1,8 @@
-// libclang-additions.h
+// clang-additions.h
 // Functions that libclang should have but doesn't.
 
-#ifndef ELSA_LIBCLANG_ADDITIONS_H
-#define ELSA_LIBCLANG_ADDITIONS_H
+#ifndef ELSA_CLANG_ADDITIONS_H
+#define ELSA_CLANG_ADDITIONS_H
 
 #include "clang-c/Index.h"             // CXCursor
 
@@ -101,4 +101,4 @@ CXCursor clang_forStmtElement(CXCursor forStmt, CXForStmtElement element);
 }
 #endif // __cplusplus
 
-#endif // ELSA_LIBCLANG_ADDITIONS_H
+#endif // ELSA_CLANG_ADDITIONS_H

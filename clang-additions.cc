@@ -1,7 +1,7 @@
-// libclang-additions.cc
-// Code for libclang-additions.h.
+// clang-additions.cc
+// Code for clang-additions.h.
 
-#include "libclang-additions.h"                  // this module
+#include "clang-additions.h"                     // this module
 
 //#include "clang/AST/DeclObjC.h"                  // ObjCMethodDecl
 #include "clang/AST/Expr.h"                      // UnaryOperator, etc.

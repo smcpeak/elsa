@@ -275,7 +275,7 @@ clang-print.o: clang-print.cc
 clang-import.o: clang-import.cc
 	$(CXX) -c -o $@ $(GENDEPS_FLAGS) -isystem$(CLANG_LLVM_INCLUDE_DIR) $(CXXFLAGS) $<
 
-libclang-additions.o: libclang-additions.cc
+clang-additions.o: clang-additions.cc
 	$(CXX) -c -o $@ $(GENDEPS_FLAGS) -isystem$(CLANG_LLVM_INCLUDE_DIR) $(CXXFLAGS) $<
 
 
@@ -385,7 +385,7 @@ ifeq ($(USE_CLANG),1)
 # Modules for clang-import.
 CCPARSE_OBJS += clang-print.o
 CCPARSE_OBJS += clang-import.o
-CCPARSE_OBJS += libclang-additions.o
+CCPARSE_OBJS += clang-additions.o
 
 # These are the flags to link with libclang.
 LDFLAGS += -L$(CLANG_LLVM_LIB_DIR) -Wl,-rpath=$(CLANG_LLVM_LIB_DIR) -lclang
