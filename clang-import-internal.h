@@ -258,8 +258,9 @@ public:      // methods
     CX_CXXAccessSpecifier accessSpecifier);
 
   // Debug print.
-  void maybePrintType(char const *label, CXType cxType);
+  bool maybePrintType(char const *label, CXType cxType);
   void printSubtree(CXCursor cursor, int indent);
+  void printTypeTree(CXType cxType, int indent);
 };
 
 

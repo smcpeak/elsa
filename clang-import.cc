@@ -1575,12 +1575,14 @@ AccessKeyword ClangImport::importAccessKeyword(
 }
 
 
-void ClangImport::maybePrintType(char const *label, CXType cxType)
+bool ClangImport::maybePrintType(char const *label, CXType cxType)
 {
   if (cxType.kind != CXType_Invalid) {
     cout << " " << label << "=\""
          << importString(clang_getTypeSpelling(cxType)) << "\"";
+    return true;
   }
+  return false;
 }
 
 
@@ -1591,7 +1593,7 @@ void ClangImport::printSubtree(CXCursor cursor, int indent)
 
   CXCursorKind cursorKind = clang_getCursorKind(cursor);
   ind(cout, indent)
-    << "kind=" << toString(cursorKind)
+    << "ckind=" << toString(cursorKind)
     << "(" << cursorKindClassificationsString(cursorKind) << ")"
     << " loc=" << toLCString(cursorLocation(cursor))
     << " spelling=\"" << spelling << "\"";
@@ -1600,7 +1602,7 @@ void ClangImport::printSubtree(CXCursor cursor, int indent)
     cout << " display=\"" << display << "\"";
   }
 
-  maybePrintType("type", clang_getCursorType(cursor));
+  bool hasType = maybePrintType("type", clang_getCursorType(cursor));
 
   if (clang_isExpression(cursorKind)) {
     // 'getReceiverType' crashes if passed a non-expression.
@@ -1619,8 +1621,152 @@ void ClangImport::printSubtree(CXCursor cursor, int indent)
 
   cout << "\n";
 
+  if (hasType && tracingSys("dumpClangTypes")) {
+    printTypeTree(clang_getCursorType(cursor), indent+2);
+  }
+
   for (CXCursor const &child : getChildren(cursor)) {
     printSubtree(child, indent+2);
+  }
+}
+
+
+void ClangImport::printTypeTree(CXType cxType, int indent)
+{
+  CXTypeKind typeKind = cxType.kind;
+  StringRef kindName = importString(clang_getTypeKindSpelling(typeKind));
+
+  ind(cout, indent) << "tkind=" << kindName;
+
+  CXCursor cxDecl = clang_getTypeDeclaration(cxType);
+  if (!clang_Cursor_isNull(cxDecl)) {
+    cout << " declLoc=" << toLCString(cursorLocation(cxDecl));
+  }
+
+  cout << " spelling=\"" << importString(clang_getTypeSpelling(cxType)) << "\"";
+
+  CXType canonical = clang_getCanonicalType(cxType);
+  if (!clang_equalTypes(cxType, canonical)) {
+    cout << " canonical=\"" << importString(clang_getTypeSpelling(canonical)) << "\"";
+  }
+
+  if (clang_isConstQualifiedType(cxType)) {
+    cout << " const";
+  }
+
+  if (clang_isVolatileQualifiedType(cxType)) {
+    cout << " volatile";
+  }
+
+  if (clang_isRestrictQualifiedType(cxType)) {
+    cout << " restrict";
+  }
+
+  cout << " size=" << clang_Type_getSizeOf(cxType);
+  cout << " align=" << clang_Type_getAlignOf(cxType);
+
+  // Inline attributes of certain types.
+  switch (typeKind) {
+    default:
+      break;
+
+    case CXType_Pointer:
+    case CXType_LValueReference:
+    case CXType_RValueReference:
+      break;
+
+    case CXType_Record:
+      if (clang_isPODType(cxType)) {
+        cout << " pod";
+      }
+      break;
+
+    case CXType_Enum:
+      break;
+
+    case CXType_Typedef:
+      cout << " typedefName=\"" << importString(clang_getTypedefName(cxType)) << "\"";
+      if (clang_Type_isTransparentTagTypedef(cxType)) {
+        cout << " transparent";
+      }
+      break;
+
+    case CXType_FunctionNoProto:
+    case CXType_FunctionProto:
+      // TODO: Calling convention.
+      // TODO: Exception specification.
+      cout << " args=" << clang_getNumArgTypes(cxType);
+      if (clang_isFunctionTypeVariadic(cxType)) {
+        cout << " variadic";
+      }
+      if (CXRefQualifierKind rq = clang_Type_getCXXRefQualifier(cxType)) {
+        cout << " refqual=" << rq;
+      }
+      break;
+
+    case CXType_ConstantArray:
+    case CXType_IncompleteArray:
+    case CXType_VariableArray:
+    case CXType_DependentSizedArray:
+      cout << " size=" << clang_getArraySize(cxType);
+      break;
+
+    case CXType_MemberPointer:
+      break;
+
+    case CXType_Elaborated:
+      break;
+  }
+
+  cout << "\n";
+  indent += 2;
+
+  // Child types.
+  switch (typeKind) {
+    default:
+      break;
+
+    case CXType_Pointer:
+      printTypeTree(clang_getPointeeType(cxType), indent);
+      break;
+
+    case CXType_LValueReference:
+    case CXType_RValueReference:
+      break;
+
+    case CXType_Record:
+      // TODO: Use 'clang_Type_visitFields' to print fields.
+      break;
+
+    case CXType_Enum:
+    case CXType_Typedef:
+      break;
+
+    case CXType_FunctionNoProto:
+    case CXType_FunctionProto: {
+      printTypeTree(clang_getResultType(cxType), indent);
+      int numArgs = clang_getNumArgTypes(cxType);
+      for (int i=0; i < numArgs; i++) {
+        printTypeTree(clang_getArgType(cxType, i), indent);
+      }
+      break;
+    }
+
+    case CXType_Complex:
+    case CXType_ConstantArray:
+    case CXType_IncompleteArray:
+    case CXType_VariableArray:
+    case CXType_DependentSizedArray:
+      printTypeTree(clang_getElementType(cxType), indent);
+      break;
+
+    case CXType_MemberPointer:
+      printTypeTree(clang_Type_getClassType(cxType), indent);
+      break;
+
+    case CXType_Elaborated:
+      printTypeTree(clang_Type_getNamedType(cxType), indent);
+      break;
   }
 }
 
