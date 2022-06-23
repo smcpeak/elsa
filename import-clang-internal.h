@@ -159,10 +159,23 @@ public:      // methods
   Enumerator *importEnumerator(CXCursor cxEnumerator,
     EnumType const *enumType);
 
+  // Import the CompoundType declared by 'cxCompoundDecl', yielding its
+  // typedefVar.  If it has not already been imported, create it as a
+  // forward declaration.
+  Variable *importCompoundTypeAsForward(CXCursor cxCompoundDecl);
+
+  Declaration *importCompoundTypeDefinition(CXCursor cxCompoundDefn);
+
   Function *importFunctionDefinition(CXCursor cxFuncDefn);
 
-  // Get the Variable that represents the entity declared at 'cxDecl'.
-  // 'declFlags' is added to whatever is derived from the Clang AST.
+  // Get a reference to the Variable pointer for 'cxDecl'.  If the
+  // Variable has not yet been created, this returns a reference to a
+  // NULL pointer, which the caller is obliged to fill in immediately.
+  Variable *&variableRefForDeclaration(CXCursor cxDecl);
+
+  // Get or create the Variable that represents the entity declared at
+  // 'cxDecl'.  'declFlags' is added to whatever is derived from the
+  // Clang AST.
   Variable *variableForDeclaration(CXCursor cxDecl,
     DeclFlags declFlags = DF_NONE);
 
@@ -213,6 +226,9 @@ public:      // methods
 
   Variable *makeVariable(SourceLoc loc, StringRef name,
     Type *type, DeclFlags flags);
+
+  // Debug print.
+  void printSubtree(CXCursor cursor, int indent);
 };
 
 

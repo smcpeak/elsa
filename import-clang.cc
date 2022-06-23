@@ -6,6 +6,9 @@
 // elsa
 #include "libclang-additions.h"        // clang_getUnaryExpressionOperator, etc.
 
+// ast
+#include "asthelp.h"                   // ind
+
 // smbase
 #include "map-utils.h"                 // insertMapUnique
 #include "exc.h"                       // xfatal
@@ -190,6 +193,16 @@ TopForm *ImportClang::importTopForm(CXCursor cxTopForm)
     default:
       xfailure(stringb("Unknown cxKind: " << cxKind));
 
+    case CXCursor_StructDecl: {
+      if (clang_isCursorDefinition(cxTopForm)) {
+        Declaration *decl = importCompoundTypeDefinition(cxTopForm);
+        return new TF_decl(loc, decl);
+      }
+      else {
+        xunimp("struct forward declaration");
+      }
+    }
+
     case CXCursor_EnumDecl: {
       if (clang_isCursorDefinition(cxTopForm)) {
         Declaration *decl = importEnumDefinition(cxTopForm);
@@ -261,10 +274,8 @@ Enumerator *ImportClang::importEnumerator(CXCursor cxEnumerator,
   // means I might need the semantics before I see the syntax.
   StringRef name = cursorSpelling(cxEnumerator);
   long long llValue = clang_getEnumConstantDeclValue(cxEnumerator);
-  int intValue = (int)llValue;
-  if (intValue != llValue) {
-    xunimp(stringb("Enumerator value out of representation range: " << llValue));
-  }
+  int intValue;
+  checkedAssignment(intValue, llValue);
 
   // Get the expression that specifies the value, if any.
   Expression * NULLABLE expr = nullptr;
@@ -284,6 +295,95 @@ Enumerator *ImportClang::importEnumerator(CXCursor cxEnumerator,
   enumerator->var = valueObject->decl;
   enumerator->enumValue = intValue;
   return enumerator;
+}
+
+
+Variable *ImportClang::importCompoundTypeAsForward(CXCursor cxCompoundDecl)
+{
+  StringRef compoundName = cursorSpelling(cxCompoundDecl);
+
+  // What kind of compound is this?
+  CompoundType::Keyword keyword;
+  switch (clang_getCursorKind(cxCompoundDecl)) {
+    default: xfailure("bad kind");
+    case CXCursor_StructDecl: keyword = CompoundType::K_STRUCT; break;
+    case CXCursor_UnionDecl:  keyword = CompoundType::K_UNION;  break;
+    case CXCursor_ClassDecl:  keyword = CompoundType::K_CLASS;  break;
+  }
+
+  // Have we already created a record for it?
+  Variable *&var = variableRefForDeclaration(cxCompoundDecl);
+  if (!var) {
+    // Make a forward-declared one.
+    SourceLoc loc = cursorLocation(cxCompoundDecl);
+    TypeFactory &tfac = m_elsaParse.m_typeFactory;
+
+    // This makes a CompoundType with 'm_isForwardDeclared==true'.
+    CompoundType *compoundType = tfac.makeCompoundType(keyword, compoundName);
+    Type *type = tfac.makeCVAtomicType(compoundType, CV_NONE);
+    var = compoundType->typedefVar =
+      makeVariable_setScope(loc, compoundName, type, DF_NONE, cxCompoundDecl);
+  }
+
+  else {
+    // Verify the existing type matches.
+    xassert(var->name == compoundName);
+    CompoundType const *ct = var->type->asCompoundTypeC();
+    xassert(ct->keyword == keyword);
+  }
+
+  return var;
+}
+
+
+Declaration *ImportClang::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
+{
+  Variable *var = importCompoundTypeAsForward(cxCompoundDefn);
+  CompoundType *ct = var->type->asCompoundType();
+
+  // Begin the syntactic lists.
+  FakeList<BaseClassSpec> *bases = FakeList<BaseClassSpec>::emptyList();
+  MemberList *memberList = new MemberList(nullptr /*list*/);
+
+  // Process the children of the definition.
+  for (CXCursor const &child : getChildren(cxCompoundDefn)) {
+    CXCursorKind childKind = clang_getCursorKind(child);
+    switch (childKind) {
+      default:
+        xunimp(stringb("compound defn child kind: " << childKind));
+
+      case CXCursor_FieldDecl: {
+        Variable *fieldVar = makeVariable_setScope(
+          cursorLocation(child),
+          cursorSpelling(child),
+          importType(clang_getCursorType(child)),
+          DF_NONE,
+          child);
+
+        ct->addField(fieldVar);
+
+        memberList->list.append(new MR_decl(fieldVar->loc,
+          makeDeclaration(fieldVar, DC_MR_DECL)));
+
+        break;
+      }
+    }
+  }
+
+  // Now that the members have been populated, 'ct' is no longer forward.
+  ct->m_isForwardDeclared = false;
+
+  // Finish making the definition syntax.
+  TS_classSpec *specifier = new TS_classSpec(
+    cursorLocation(cxCompoundDefn),
+    CompoundType::toTypeIntr(ct->keyword),
+    makePQName(var),
+    bases,
+    memberList);
+  specifier->ctype = ct;
+
+  // Wrap up the type specifier in a declaration with no declarators.
+  return new Declaration(DF_NONE, specifier, nullptr /*decllist*/);
 }
 
 
@@ -345,8 +445,7 @@ Function *ImportClang::importFunctionDefinition(CXCursor cxFuncDefn)
 }
 
 
-Variable *ImportClang::variableForDeclaration(CXCursor cxDecl,
-  DeclFlags declFlags)
+Variable *&ImportClang::variableRefForDeclaration(CXCursor cxDecl)
 {
   // Go to the canonical cursor to handle the case of an entity that is
   // declared multiple times.
@@ -356,9 +455,16 @@ Variable *ImportClang::variableForDeclaration(CXCursor cxDecl,
   // usable as a map key.  Use the location instead.
   SourceLoc loc = cursorLocation(cxDecl);
 
+  return m_locToVariable[loc];
+}
+
+
+Variable *ImportClang::variableForDeclaration(CXCursor cxDecl,
+  DeclFlags declFlags)
+{
   StringRef name = cursorSpelling(cxDecl);
 
-  Variable *&var = m_locToVariable[loc];
+  Variable *&var = variableRefForDeclaration(cxDecl);
   if (!var) {
     Type *type;
 
@@ -379,10 +485,10 @@ Variable *ImportClang::variableForDeclaration(CXCursor cxDecl,
         cxDecl = cxDefn;
       }
 
-      EnumType *enumType = importEnumType(cxDecl);
+      NamedAtomicType *nat = importEnumType(cxDecl);
 
       xassert(!var);
-      var = enumType->typedefVar;
+      var = nat->typedefVar;
       return var;
     }
 
@@ -390,6 +496,8 @@ Variable *ImportClang::variableForDeclaration(CXCursor cxDecl,
       // For anything else, the type is what the declaration says.
       type = importType(clang_getCursorType(cxDecl));
     }
+
+    SourceLoc loc = cursorLocation(cxDecl);
 
     xassert(!var);
     var = makeVariable_setScope(loc, name, type, declFlags, cxDecl);
@@ -1199,6 +1307,27 @@ Variable *ImportClang::makeVariable(SourceLoc loc, StringRef name,
   Type *type, DeclFlags flags)
 {
   return m_elsaParse.m_typeFactory.makeVariable(loc, name, type, flags);
+}
+
+
+void ImportClang::printSubtree(CXCursor cursor, int indent)
+{
+  ind(cout, indent)
+    << "kind=" << clang_getCursorKind(cursor)
+    << " loc=" << toLCString(cursorLocation(cursor))
+    << " spelling=\"" << cursorSpelling(cursor) << "\""
+    << " display=\"" << importString(clang_getCursorSpelling(cursor)) << "\"";
+
+  CXType cxType = clang_getCursorType(cursor);
+  if (cxType.kind != CXType_Invalid) {
+    cout << " type=\"" << importString(clang_getTypeSpelling(cxType)) << "\"";
+  }
+
+  cout << "\n";
+
+  for (CXCursor const &child : getChildren(cursor)) {
+    printSubtree(child, indent+2);
+  }
 }
 
 
