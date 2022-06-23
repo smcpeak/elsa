@@ -13,6 +13,7 @@
 #include "map-utils.h"                 // insertMapUnique
 #include "exc.h"                       // xfatal
 #include "str.h"                       // string
+#include "trace.h"                     // tracingSys
 
 
 // This is a candidate to go into smbase.
@@ -110,6 +111,10 @@ ImportClang::ImportClang(CXIndex cxIndex,
 void ImportClang::importTranslationUnit()
 {
   CXCursor cursor = clang_getTranslationUnitCursor(m_cxTranslationUnit);
+  if (tracingSys("dumpClang")) {
+    printSubtree(cursor, 0);
+  }
+
   std::vector<CXCursor> decls = getChildren(cursor);
 
   m_elsaParse.m_translationUnit = new TranslationUnit(nullptr);
@@ -545,6 +550,10 @@ Declaration *ImportClang::importVarOrTypedefDecl(CXCursor cxVarDecl,
 {
   Variable *var = variableForDeclaration(cxVarDecl);
   Declaration *decl = makeDeclaration(var, context);
+
+  decl->dflags |= importStorageClass(
+    clang_Cursor_getStorageClass(cxVarDecl));
+
   Declarator *declarator = fl_first(decl->decllist);
 
   CXCursorKind declKind = clang_getCursorKind(cxVarDecl);
@@ -593,7 +602,7 @@ static SimpleTypeId cxTypeKindToSimpleTypeId(CXTypeKind kind)
     SimpleTypeId m_id;
   };
 
-  Entry const table[] = {
+  static Entry const table[] = {
     #define ENTRY(kind, id) { kind, id }
 
     // Columns: \S+ \S+
@@ -1361,6 +1370,48 @@ Variable *ImportClang::makeVariable(SourceLoc loc, StringRef name,
 }
 
 
+DeclFlags ImportClang::importStorageClass(CX_StorageClass storageClass)
+{
+  switch (storageClass) {
+    case CX_SC_Extern:   return DF_EXTERN;
+    case CX_SC_Static:   return DF_STATIC;
+    case CX_SC_Auto:     return DF_AUTO;
+    case CX_SC_Register: return DF_REGISTER;
+    default:             return DF_NONE;
+  }
+}
+
+
+static char const *toString(CX_StorageClass storageClass)
+{
+  struct Entry {
+    CX_StorageClass m_storageClass;
+    char const *m_name;
+  };
+
+  static Entry const table[] = {
+    #define ENTRY(name) { CX_SC_##name, #name }
+    ENTRY(Invalid),
+    ENTRY(None),
+    ENTRY(Extern),
+    ENTRY(Static),
+    ENTRY(PrivateExtern),
+    ENTRY(OpenCLWorkGroupLocal),
+    ENTRY(Auto),
+    ENTRY(Register),
+    #undef ENTRY
+  };
+
+  for (Entry const &e : table) {
+    if (e.m_storageClass == storageClass) {
+      return e.m_name;
+    }
+  }
+
+  return "(invalid storage class)";
+}
+
+
 void ImportClang::printSubtree(CXCursor cursor, int indent)
 {
   StringRef spelling = cursorSpelling(cursor);
@@ -1383,6 +1434,11 @@ void ImportClang::printSubtree(CXCursor cursor, int indent)
   CXCursor decl = clang_getCursorReferenced(cursor);
   if (!clang_Cursor_isNull(decl)) {
     cout << " references=" << toLCString(cursorLocation(decl));
+  }
+
+  CX_StorageClass storageClass = clang_Cursor_getStorageClass(cursor);
+  if (storageClass != CX_SC_Invalid && storageClass != CX_SC_None) {
+    cout << " storage=" << toString(storageClass);
   }
 
   cout << "\n";

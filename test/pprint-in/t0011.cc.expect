@@ -1,0 +1,35 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+extern int x;
+
+int x;
+
+int y;
+
+extern int y;
+
+extern int x;
+
+int foo();
+
+int foo();
+
+int foo()
+{
+  return 4;
+}
+
+int foo();
+
+int foo2(int);
+
+int foo2(int z)
+{
+  return z;
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

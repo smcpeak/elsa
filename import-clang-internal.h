@@ -227,6 +227,8 @@ public:      // methods
   Variable *makeVariable(SourceLoc loc, StringRef name,
     Type *type, DeclFlags flags);
 
+  DeclFlags importStorageClass(CX_StorageClass storageClass);
+
   // Debug print.
   void printSubtree(CXCursor cursor, int indent);
 };
