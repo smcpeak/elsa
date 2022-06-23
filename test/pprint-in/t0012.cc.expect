@@ -10,14 +10,14 @@ public:
   int func3() const;
 };
 
-static int x = 5;
+static int Foo::x = 5;
 
 int main()
 {
   return x;
 }
 
-int func()
+int Foo::func()
 {
   return x;
 }

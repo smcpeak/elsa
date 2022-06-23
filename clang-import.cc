@@ -539,10 +539,13 @@ Function *ClangImport::importFunctionDefinition(CXCursor cxFuncDefn)
   std::pair<TypeSpecifier*, Declarator*> tsAndDeclarator =
     makeTSandDeclaratorForType(funcVar, defnFuncType, DC_FUNCTION);
 
+  DeclFlags declFlags = possiblyAddNameQualifiers_and_getStorageClass(
+    tsAndDeclarator.second, cxFuncDefn);
+
   S_compound *body = importCompoundStatement(cxFunctionBody);
 
   return new Function(
-    DF_NONE,       // TODO: Refine.
+    declFlags,
     tsAndDeclarator.first,
     tsAndDeclarator.second,
     nullptr,       // inits
@@ -615,11 +618,11 @@ Declaration *ClangImport::importVarOrTypedefDecl(CXCursor cxVarDecl,
 {
   Variable *var = variableForDeclaration(cxVarDecl);
   Declaration *decl = makeDeclaration(var, context);
-
-  decl->dflags |= importStorageClass(
-    clang_Cursor_getStorageClass(cxVarDecl));
-
   Declarator *declarator = fl_first(decl->decllist);
+
+  // Add qualifiers if needed.
+  decl->dflags |= possiblyAddNameQualifiers_and_getStorageClass(
+    declarator, cxVarDecl);
 
   CXCursorKind declKind = clang_getCursorKind(cxVarDecl);
   if (declKind == CXCursor_VarDecl) {
@@ -651,6 +654,57 @@ Declaration *ClangImport::importVarOrTypedefDecl(CXCursor cxVarDecl,
   }
 
   return decl;
+}
+
+
+DeclFlags ClangImport::possiblyAddNameQualifiers_and_getStorageClass(
+  Declarator *declarator, CXCursor cxVarDecl)
+{
+  // Add qualifiers if needed.
+  bool qualified = possiblyAddNameQualifiers(declarator, cxVarDecl);
+
+  DeclFlags declFlags = importStorageClass(
+    clang_Cursor_getStorageClass(cxVarDecl));
+
+  if (qualified) {
+    // If a declaration uses a qualifier, it is not allowed to also
+    // say 'static'.
+    declFlags &= ~DF_STATIC;
+  }
+
+  return declFlags;
+}
+
+
+bool ClangImport::possiblyAddNameQualifiers(Declarator *declarator,
+  CXCursor cxVarDecl)
+{
+  SourceLoc loc = cursorLocation(cxVarDecl);
+  PQName *declaratorName = declarator->getDeclaratorId();
+  bool ret = false;
+
+  CXCursor semParent = clang_getCursorSemanticParent(cxVarDecl);
+  CXCursor lexParent = clang_getCursorLexicalParent(cxVarDecl);
+  while (!clang_equalCursors(semParent, lexParent)) {
+    ret = true;
+    StringRef semParentName = cursorSpelling(semParent);
+
+    // TODO: Handle template arguments.
+    TemplateArgument *templArgs = nullptr;
+
+    declaratorName = new PQ_qualifier(loc,
+      semParentName, templArgs, declaratorName);
+
+    semParent = clang_getCursorSemanticParent(semParent);
+
+    // Safeguard against missing the lexical parent.
+    if (clang_getCursorKind(semParent) == CXCursor_TranslationUnit) {
+      break;
+    }
+  }
+
+  declarator->setDeclaratorId(declaratorName);
+  return ret;
 }
 
 

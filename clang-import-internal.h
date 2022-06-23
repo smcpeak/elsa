@@ -187,6 +187,18 @@ public:      // methods
   Declaration *importVarOrTypedefDecl(CXCursor cxVarDecl,
     DeclaratorContext context);
 
+  // Possibly add qualifiers to 'declarator', and also get the storage
+  // class for 'cxVarDecl' as would be used at its declaration site
+  // (which depends on the presence of qualifiers).
+  DeclFlags possiblyAddNameQualifiers_and_getStorageClass(
+    Declarator *declarator, CXCursor cxVarDecl);
+
+  // If 'cxVarDecl' requires qualifiers, add them to 'declarator', which
+  // already has an unqualified name.  Return true if any qualifiers
+  // were added.
+  bool possiblyAddNameQualifiers(Declarator *declarator,
+    CXCursor cxVarDecl);
+
   Type *importType(CXType cxType);
 
   // Import 'cxType' as a type.  If 'methodClass' is not NULL, and
