@@ -363,7 +363,7 @@ check: check-errmsg
 
 # --------------------------- clang tests ------------------------------
 # Run ccparse --clang and check the results with pprint.
-out/clang-pprint-in/in/%: ../in/% pprint-in/%.expect $(CCPARSE)
+out/clang-pprint-in/%: ../in/% pprint-in/%.expect $(CCPARSE)
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/clang-pprint-in/$*.actual \
@@ -376,18 +376,18 @@ ifeq ($(USE_CLANG),1)
 check: check-clang
 endif
 
-check-clang: out/clang-pprint-in/in/t0001.cc
-check-clang: out/clang-pprint-in/in/t0002.cc
-check-clang: out/clang-pprint-in/in/t0003.cc
-check-clang: out/clang-pprint-in/in/t0004.cc
-check-clang: out/clang-pprint-in/in/t0005.cc
-check-clang: out/clang-pprint-in/in/t0006.cc
-check-clang: out/clang-pprint-in/in/t0007.cc
-check-clang: out/clang-pprint-in/in/t0008.cc
-check-clang: out/clang-pprint-in/in/t0009.cc
-check-clang: out/clang-pprint-in/in/t0010.cc
-check-clang: out/clang-pprint-in/in/t0011.cc
-check-clang: out/clang-pprint-in/in/t0012.cc
+check-clang: out/clang-pprint-in/t0001.cc
+check-clang: out/clang-pprint-in/t0002.cc
+check-clang: out/clang-pprint-in/t0003.cc
+check-clang: out/clang-pprint-in/t0004.cc
+check-clang: out/clang-pprint-in/t0005.cc
+check-clang: out/clang-pprint-in/t0006.cc
+check-clang: out/clang-pprint-in/t0007.cc
+check-clang: out/clang-pprint-in/t0008.cc
+check-clang: out/clang-pprint-in/t0009.cc
+check-clang: out/clang-pprint-in/t0010.cc
+check-clang: out/clang-pprint-in/t0011.cc
+check-clang: out/clang-pprint-in/t0012.cc
 
 
 # Run a C++ pretty-print test with --clang.
