@@ -6,6 +6,14 @@
 #include <sstream>                     // std::ostringstream
 
 
+std::string toString(CXString cxString)
+{
+  std::string ret(clang_getCString(cxString));
+  clang_disposeString(cxString);
+  return ret;
+}
+
+
 std::string toString(CXCursorKind cursorKind)
 {
   struct Entry {
@@ -314,6 +322,12 @@ std::string cursorKindClassificationsString(CXCursorKind cursorKind)
   #undef KIND_FLAG
 
   return oss.str();
+}
+
+
+std::string toString(CXTypeKind typeKind)
+{
+  return toString(clang_getTypeKindSpelling(typeKind));
 }
 
 

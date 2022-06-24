@@ -202,7 +202,7 @@ TopForm *ClangImport::importTopForm(CXCursor cxTopForm)
   CXCursorKind cxKind = clang_getCursorKind(cxTopForm);
   switch (cxKind) {
     default:
-      xfailure(stringb("Unknown cxKind: " << cxKind));
+      xfailure(stringb("Unknown cxKind: " << toString(cxKind)));
 
     case CXCursor_StructDecl: // 2
     case CXCursor_UnionDecl: // 3
@@ -399,7 +399,7 @@ Declaration *ClangImport::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
     Member *newMember = nullptr;
     switch (childKind) {
       default:
-        xunimp(stringb("compound defn child kind: " << childKind));
+        xunimp(stringb("compound defn child kind: " << toString(childKind)));
 
       importDecl:
       case CXCursor_FieldDecl: // 6: non-static data
@@ -530,7 +530,7 @@ Function *ClangImport::importFunctionDefinition(CXCursor cxFuncDefn)
         }
 
         default:
-          xfailure(stringb("Unexpected childKind: " << childKind));
+          xfailure(stringb("Unexpected childKind: " << toString(childKind)));
       }
     }
 
@@ -796,7 +796,7 @@ Type *ClangImport::importType_maybeMethod(CXType cxType,
 
   switch (cxType.kind) {
     default:
-      xfailure(stringb("Unknown cxType kind: " << cxType.kind));
+      xfailure(stringb("Unknown cxType kind: " << toString(cxType.kind)));
 
     case CXType_Invalid: // 0
       xfailure("importType: cxType is invalid");
@@ -1643,7 +1643,7 @@ void ClangImport::printSubtree(CXCursor cursor, int indent)
 void ClangImport::printTypeTree(CXType cxType, int indent)
 {
   CXTypeKind typeKind = cxType.kind;
-  StringRef kindName = importString(clang_getTypeKindSpelling(typeKind));
+  std::string kindName = toString(typeKind);
 
   ind(cout, indent) << "tkind=" << kindName;
 
