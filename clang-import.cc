@@ -103,6 +103,7 @@ ClangImport::ClangImport(CXIndex cxIndex,
     m_cxIndex(cxIndex),
     m_cxTranslationUnit(cxTranslationUnit),
     m_elsaParse(elsaParse),
+    m_tfac(elsaParse.m_typeFactory),
     m_globalScope(new Scope(SK_GLOBAL, 0 /*changeCount*/, SL_INIT)),
     m_cxFileToName(),
     m_locToVariable()
@@ -260,10 +261,9 @@ Variable *ClangImport::importEnumTypeAsForward(CXCursor cxEnumDecl)
     // the Elsa type system cannot explicitly do that.  So we just make
     // a regular EnumType without any values.
     SourceLoc loc = cursorLocation(cxEnumDecl);
-    TypeFactory &tfac = m_elsaParse.m_typeFactory;
 
-    EnumType *enumType = tfac.makeEnumType(enumName);
-    Type *type = tfac.makeCVAtomicType(enumType, CV_NONE);
+    EnumType *enumType = m_tfac.makeEnumType(enumName);
+    Type *type = m_tfac.makeCVAtomicType(enumType, CV_NONE);
     var = enumType->typedefVar =
       makeVariable_setScope(loc, enumName, type, DF_TYPEDEF, cxEnumDecl);
   }
@@ -360,11 +360,10 @@ Variable *ClangImport::importCompoundTypeAsForward(CXCursor cxCompoundDecl)
   if (!var) {
     // Make a forward-declared one.
     SourceLoc loc = cursorLocation(cxCompoundDecl);
-    TypeFactory &tfac = m_elsaParse.m_typeFactory;
 
     // This makes a CompoundType with 'm_isForwardDeclared==true'.
-    CompoundType *compoundType = tfac.makeCompoundType(keyword, compoundName);
-    Type *type = tfac.makeCVAtomicType(compoundType, CV_NONE);
+    CompoundType *compoundType = m_tfac.makeCompoundType(keyword, compoundName);
+    Type *type = m_tfac.makeCVAtomicType(compoundType, CV_NONE);
     var = compoundType->typedefVar =
       makeVariable_setScope(loc, compoundName, type, DF_TYPEDEF, cxCompoundDecl);
   }
@@ -480,8 +479,6 @@ CVFlags ClangImport::importMethodCVFlags(CXCursor cxMethodDecl)
 
 Function *ClangImport::importFunctionDefinition(CXCursor cxFuncDefn)
 {
-  TypeFactory &tfac = m_elsaParse.m_typeFactory;
-
   // Build a representative for the function.  This will have an
   // associated FunctionType, but without parameter names.
   Variable *funcVar = variableForDeclaration(cxFuncDefn);
@@ -492,7 +489,7 @@ Function *ClangImport::importFunctionDefinition(CXCursor cxFuncDefn)
 
   // Build a FunctionType specific to this definition, containing the
   // parameter names.
-  FunctionType *defnFuncType = tfac.makeFunctionType(declFuncType->retType);
+  FunctionType *defnFuncType = m_tfac.makeFunctionType(declFuncType->retType);
   {
     bool foundBody = false;
 
@@ -536,7 +533,7 @@ Function *ClangImport::importFunctionDefinition(CXCursor cxFuncDefn)
 
     defnFuncType->flags = declFuncType->flags;
 
-    tfac.doneParams(defnFuncType);
+    m_tfac.doneParams(defnFuncType);
     xassert(foundBody);
   }
 
@@ -776,8 +773,6 @@ Type *ClangImport::importType(CXType cxType)
 Type *ClangImport::importType_maybeMethod(CXType cxType,
   CompoundType const * NULLABLE methodClass, CVFlags methodCV)
 {
-  TypeFactory &tfac = m_elsaParse.m_typeFactory;
-
   CVFlags cv = CV_NONE;
   if (clang_isConstQualifiedType(cxType)) {
     cv |= CV_CONST;
@@ -791,7 +786,7 @@ Type *ClangImport::importType_maybeMethod(CXType cxType,
 
   // Codes 2 through 23.
   if (CXType_Void <= cxType.kind && cxType.kind <= CXType_LongDouble) {
-    return tfac.getSimpleType(cxTypeKindToSimpleTypeId(cxType.kind), cv);
+    return m_tfac.getSimpleType(cxTypeKindToSimpleTypeId(cxType.kind), cv);
   }
 
   switch (cxType.kind) {
@@ -804,11 +799,11 @@ Type *ClangImport::importType_maybeMethod(CXType cxType,
     // Codes 2 through 23 are handled above.
 
     case CXType_Pointer: // 101
-      return tfac.makePointerType(cv,
+      return m_tfac.makePointerType(cv,
         importType(clang_getPointeeType(cxType)));
 
     case CXType_LValueReference: // 103
-      return tfac.makeReferenceType(
+      return m_tfac.makeReferenceType(
         importType(clang_getPointeeType(cxType)));
 
     // TODO: CXType_RValueReference = 104
@@ -829,7 +824,7 @@ Type *ClangImport::importType_maybeMethod(CXType cxType,
     case CXType_Typedef: { // 107
       CXCursor cxTypeDecl = clang_getTypeDeclaration(cxType);
       Variable *typedefVar = existingVariableForDeclaration(cxTypeDecl);
-      return tfac.makeTypedefType(typedefVar, cv);
+      return m_tfac.makeTypedefType(typedefVar, cv);
     }
 
     case CXType_FunctionNoProto: // 110
@@ -847,8 +842,7 @@ FunctionType *ClangImport::importFunctionType(CXType cxFunctionType,
 {
   Type *retType = importType(clang_getResultType(cxFunctionType));
 
-  TypeFactory &tfac = m_elsaParse.m_typeFactory;
-  FunctionType *ft = tfac.makeFunctionType(retType);
+  FunctionType *ft = m_tfac.makeFunctionType(retType);
 
   if (methodClass) {
     // Note: Even if 'cxFunctionType' refers to a method type, libclang
@@ -885,7 +879,7 @@ FunctionType *ClangImport::importFunctionType(CXType cxFunctionType,
     ft->setFlag(FF_VARARGS);
   }
 
-  tfac.doneParams(ft);
+  m_tfac.doneParams(ft);
   return ft;
 }
 
@@ -893,11 +887,9 @@ FunctionType *ClangImport::importFunctionType(CXType cxFunctionType,
 void ClangImport::addReceiver(FunctionType *methodType,
   SourceLoc loc, CompoundType const *containingClass, CVFlags cv)
 {
-  TypeFactory &tfac = m_elsaParse.m_typeFactory;
-
   Type *qualifiedCT =
-    tfac.makeCVAtomicType(legacyTypeNC(containingClass), cv);
-  Type *recvRefType = tfac.makeReferenceType(qualifiedCT);
+    m_tfac.makeCVAtomicType(legacyTypeNC(containingClass), cv);
+  Type *recvRefType = m_tfac.makeReferenceType(qualifiedCT);
   methodType->addReceiver(makeVariable(
     loc,
     m_elsaParse.m_stringTable.add("__receiver"), // Like Env::receiverName.
@@ -1512,7 +1504,7 @@ Handler *ClangImport::importHandler(CXCursor cxHandler)
 
     // Fill in the declarator 'type' and 'var' fields similar to how the
     // Elsa type checker does, in order to pacify the integrity checker.
-    typeId->decl->type = m_elsaParse.m_typeFactory.getSimpleType(ST_ELLIPSIS);
+    typeId->decl->type = m_tfac.getSimpleType(ST_ELLIPSIS);
     typeId->decl->var = makeVariable(SL_UNKNOWN, nullptr /*name*/,
       typeId->decl->type, DF_NONE);
   }
@@ -1543,7 +1535,7 @@ Variable *ClangImport::makeVariable_setScope(SourceLoc loc,
 Variable *ClangImport::makeVariable(SourceLoc loc, StringRef name,
   Type *type, DeclFlags flags)
 {
-  return m_elsaParse.m_typeFactory.makeVariable(loc, name, type, flags);
+  return m_tfac.makeVariable(loc, name, type, flags);
 }
 
 

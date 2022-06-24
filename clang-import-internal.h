@@ -116,6 +116,9 @@ public:      // data
   // Container for Elsa translation-wide data.
   ElsaParse &m_elsaParse;
 
+  // Convenient access to the type factory 'm_elsaParse.m_typeFactory'.
+  TypeFactory &m_tfac;
+
   // Object representing the global scope.  Variables that have global
   // scope will have their 'm_containingScope' set to this.
   Scope *m_globalScope;
