@@ -290,6 +290,7 @@ Declaration *ClangImport::importEnumDefinition(CXCursor cxEnumDefn)
   // 'enumerators'.
   for (CXCursor const &cxEnumerator : getChildren(cxEnumDefn)) {
     xassert(clang_getCursorKind(cxEnumerator) == CXCursor_EnumConstantDecl);
+    SourceLoc enumeratorLoc = cursorLocation(cxEnumerator);
 
     // Get the enumerator name and value.
     StringRef enumeratorName = cursorSpelling(cxEnumerator);
@@ -297,15 +298,18 @@ Declaration *ClangImport::importEnumDefinition(CXCursor cxEnumDefn)
     int intValue = (int)llValue;
     checkedAssignment(intValue, llValue);
 
-    // Add it to the semantic type.
-    SourceLoc enumeratorLoc = cursorLocation(cxEnumerator);
-    Variable *enumeratorVar = makeVariable_setScope(
+    // Create a Variable to represent the enumerator, associated with
+    // its declaration.
+    Variable *&enumeratorVar = variableRefForDeclaration(cxEnumerator);
+    xassert(!enumeratorVar);
+    enumeratorVar = makeVariable_setScope(
       enumeratorLoc,
       enumeratorName,
       enumVar->type,
       DF_ENUMERATOR,
       cxEnumerator);
 
+    // Add it to the semantic type.
     enumType->addValue(enumeratorName, intValue, enumeratorVar);
 
     // Get the expression that specifies the value, if any.

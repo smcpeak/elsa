@@ -1,0 +1,16 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+typedef int wchar_t;
+
+int mbtowc(int, wchar_t *);
+
+enum  {
+  A,
+  B = A
+};
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

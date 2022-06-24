@@ -1,0 +1,9 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+int template = 1;
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0
