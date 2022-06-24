@@ -832,7 +832,8 @@ Type *ClangImport::importType_maybeMethod(CXType cxType,
       return tfac.makeTypedefType(typedefVar, cv);
     }
 
-    case CXType_FunctionProto: { // 110
+    case CXType_FunctionNoProto: // 110
+    case CXType_FunctionProto: { // 111
       xassert(cv == CV_NONE);
       Type *retType = importType(clang_getResultType(cxType));
 
@@ -860,7 +861,16 @@ Type *ClangImport::importType_maybeMethod(CXType cxType,
         ft->addParam(paramVar);
       }
 
-      if (clang_isFunctionTypeVariadic(cxType)) {
+      if (cxType.kind == CXType_FunctionNoProto) {
+        // Note: If this declaration is also a definition, then C11
+        // 6.7.6.3p14 says it accepts no parameters.  But the response
+        // to Defect Report 317 says that, even so, the function type
+        // still has no parameter info.
+        //
+        // https://www.open-std.org/jtc1/sc22/wg14/www/docs/dr_317.htm
+        ft->setFlag(FF_NO_PARAM_INFO);
+      }
+      else if (clang_isFunctionTypeVariadic(cxType)) {
         ft->setFlag(FF_VARARGS);
       }
 
