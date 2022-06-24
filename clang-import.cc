@@ -833,53 +833,60 @@ Type *ClangImport::importType_maybeMethod(CXType cxType,
     }
 
     case CXType_FunctionNoProto: // 110
-    case CXType_FunctionProto: { // 111
+    case CXType_FunctionProto: // 111
       xassert(cv == CV_NONE);
-      Type *retType = importType(clang_getResultType(cxType));
-
-      FunctionType *ft = tfac.makeFunctionType(retType);
-
-      if (methodClass) {
-        // Note: Even if 'cxType' refers to a method type, libclang does
-        // *not* report it as cv-qualified, even though
-        // 'clang_getTypeSpelling' will include the 'const'.  Instead,
-        // the declaration itself can be 'clang_CXXMethod_isConst'.
-        // Consequently, 'methodCV' must be passed in by the caller.
-        addReceiver(ft, SL_UNKNOWN, methodClass, methodCV);
-      }
-
-      int numParams = clang_getNumArgTypes(cxType);
-      for (int i=0; i < numParams; i++) {
-        Type *paramType = importType(clang_getArgType(cxType, i));
-
-        // The Clang AST does not appear to record the names of function
-        // parameters for non-definitions anywhere other than as tokens
-        // that would have to be parsed.
-        Variable *paramVar = makeVariable(SL_UNKNOWN, nullptr /*name*/,
-          paramType, DF_PARAMETER);
-
-        ft->addParam(paramVar);
-      }
-
-      if (cxType.kind == CXType_FunctionNoProto) {
-        // Note: If this declaration is also a definition, then C11
-        // 6.7.6.3p14 says it accepts no parameters.  But the response
-        // to Defect Report 317 says that, even so, the function type
-        // still has no parameter info.
-        //
-        // https://www.open-std.org/jtc1/sc22/wg14/www/docs/dr_317.htm
-        ft->setFlag(FF_NO_PARAM_INFO);
-      }
-      else if (clang_isFunctionTypeVariadic(cxType)) {
-        ft->setFlag(FF_VARARGS);
-      }
-
-      tfac.doneParams(ft);
-      return ft;
-    }
+      return importFunctionType(cxType, methodClass, methodCV);
   }
 
   // Not reached.
+}
+
+
+FunctionType *ClangImport::importFunctionType(CXType cxFunctionType,
+  CompoundType const * NULLABLE methodClass, CVFlags methodCV)
+{
+  Type *retType = importType(clang_getResultType(cxFunctionType));
+
+  TypeFactory &tfac = m_elsaParse.m_typeFactory;
+  FunctionType *ft = tfac.makeFunctionType(retType);
+
+  if (methodClass) {
+    // Note: Even if 'cxFunctionType' refers to a method type, libclang
+    // does *not* report it as cv-qualified, even though
+    // 'clang_getTypeSpelling' will include the 'const'.  Instead, the
+    // declaration itself can be 'clang_CXXMethod_isConst'.
+    // Consequently, 'methodCV' must be passed in by the caller.
+    addReceiver(ft, SL_UNKNOWN, methodClass, methodCV);
+  }
+
+  int numParams = clang_getNumArgTypes(cxFunctionType);
+  for (int i=0; i < numParams; i++) {
+    Type *paramType = importType(clang_getArgType(cxFunctionType, i));
+
+    // The Clang AST does not appear to record the names of function
+    // parameters for non-definitions anywhere other than as tokens
+    // that would have to be parsed.
+    Variable *paramVar = makeVariable(SL_UNKNOWN, nullptr /*name*/,
+      paramType, DF_PARAMETER);
+
+    ft->addParam(paramVar);
+  }
+
+  if (cxFunctionType.kind == CXType_FunctionNoProto) {
+    // Note: If this declaration is also a definition, then C11
+    // 6.7.6.3p14 says it accepts no parameters.  But the response
+    // to Defect Report 317 says that, even so, the function type
+    // still has no parameter info.
+    //
+    // https://www.open-std.org/jtc1/sc22/wg14/www/docs/dr_317.htm
+    ft->setFlag(FF_NO_PARAM_INFO);
+  }
+  else if (clang_isFunctionTypeVariadic(cxFunctionType)) {
+    ft->setFlag(FF_VARARGS);
+  }
+
+  tfac.doneParams(ft);
+  return ft;
 }
 
 

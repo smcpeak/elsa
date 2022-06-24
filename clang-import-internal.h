@@ -207,6 +207,10 @@ public:      // methods
   Type *importType_maybeMethod(CXType cxType,
     CompoundType const * NULLABLE methodClass, CVFlags methodCV);
 
+  // Like above, but specific to the function type case.
+  FunctionType *importFunctionType(CXType cxFunctionType,
+    CompoundType const * NULLABLE methodClass, CVFlags methodCV);
+
   // Add the receiver parameter to 'methodType'.
   void addReceiver(FunctionType *methodType,
     SourceLoc loc, CompoundType const *containingClass, CVFlags cv);
