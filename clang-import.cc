@@ -1328,7 +1328,12 @@ Expression *ClangImport::importExpression(CXCursor cxExpr)
 
     case CXCursor_DeclRefExpr: { // 101
       CXCursor decl = clang_getCursorReferenced(cxExpr);
-      Variable *var = existingVariableForDeclaration(decl);
+
+      // The expression might be referring to an implicitly declared
+      // function in C, so we need to allow for the possibility that the
+      // declaration has not yet been seen.
+      Variable *var = variableForDeclaration(decl);
+
       ret = makeE_variable(var);
       break;
     }
