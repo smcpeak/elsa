@@ -647,12 +647,12 @@ Variable *ClangImport::variableForDeclaration(CXCursor cxDecl,
   DeclFlags declFlags)
 {
   StringRef name = cursorSpelling(cxDecl);
+  CXCursorKind declKind = clang_getCursorKind(cxDecl);
 
   Variable *&var = variableRefForDeclaration(cxDecl);
   if (!var) {
     Type *type;
 
-    CXCursorKind declKind = clang_getCursorKind(cxDecl);
     if (declKind == CXCursor_TypedefDecl) {
       declFlags |= DF_TYPEDEF;
 
@@ -674,6 +674,21 @@ Variable *ClangImport::variableForDeclaration(CXCursor cxDecl,
   else {
     // Detect location collisions.
     xassert(var->name == name);
+
+    if (declKind == CXCursor_FunctionDecl) {
+      FunctionType const *ft = var->type->asFunctionTypeC();
+      if (ft->hasFlag(FF_NO_PARAM_INFO)) {
+        // This is another declaration of a function for which we, so
+        // far, do not have parameter info.  Import the type at this
+        // location to see if it has parameter info.
+        FunctionType const *ft2 =
+          importType(clang_getCursorType(cxDecl))->asFunctionTypeC();
+        if (!ft2->hasFlag(FF_NO_PARAM_INFO)) {
+          // Update the Variable accordingly.
+          var->type = legacyTypeNC(ft2);
+        }
+      }
+    }
   }
 
   return var;
@@ -969,6 +984,9 @@ FunctionType *ClangImport::importFunctionType(CXType cxFunctionType,
     // The Clang AST does not appear to record the names of function
     // parameters for non-definitions anywhere other than as tokens
     // that would have to be parsed.
+    //
+    // TODO: That is wrong; non-definition FunctionProto nodes have
+    // ParmDecl children.  I should get the names from them.
     Variable *paramVar = makeVariable(SL_UNKNOWN, nullptr /*name*/,
       paramType, DF_PARAMETER);
 
