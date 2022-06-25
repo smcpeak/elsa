@@ -183,6 +183,9 @@ public:      // methods
 
   Declaration *importCompoundTypeDefinition(CXCursor cxCompoundDefn);
 
+  Declaration *importCompoundTypeForwardDeclaration(
+    CXCursor cxCompoundDecl);
+
   // Return the CV flags applied to the receiver for 'cxMethodDecl'.
   CVFlags importMethodCVFlags(CXCursor cxMethodDecl);
 

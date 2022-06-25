@@ -407,6 +407,7 @@ check-clang: out/clang-pprint-in/c/t0013.c
 check-clang: out/clang-pprint-in/c/t0014.c
 check-clang: out/clang-pprint-in/c/t0015.c
 check-clang: out/clang-pprint-in/c/t0016.c
+check-clang: out/clang-pprint-in/c/t0017.c
 
 
 # Run a C++ pretty-print test with --clang.

@@ -285,7 +285,7 @@ Declaration *ClangImport::importDeclaration(CXCursor cxDecl,
         return importCompoundTypeDefinition(cxDecl);
       }
       else {
-        xunimp("struct forward declaration");
+        return importCompoundTypeForwardDeclaration(cxDecl);
       }
 
     case CXCursor_EnumDecl: // 5
@@ -533,6 +533,22 @@ Declaration *ClangImport::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
   specifier->ctype = ct;
 
   // Wrap up the type specifier in a declaration with no declarators.
+  return new Declaration(DF_NONE, specifier, nullptr /*decllist*/);
+}
+
+
+Declaration *ClangImport::importCompoundTypeForwardDeclaration(
+  CXCursor cxCompoundDecl)
+{
+  Variable *var = importCompoundTypeAsForward(cxCompoundDecl);
+  CompoundType *ct = var->type->asCompoundType();
+
+  TS_elaborated *specifier = new TS_elaborated(
+    cursorLocation(cxCompoundDecl),
+    CompoundType::toTypeIntr(ct->keyword),
+    makePQName(var));
+  specifier->atype = ct;
+
   return new Declaration(DF_NONE, specifier, nullptr /*decllist*/);
 }
 
