@@ -1262,8 +1262,8 @@ Expression *ClangImport::importExpression(CXCursor cxExpr)
         return importExpression(child);
       }
       else {
-        StandardConversion conv =
-          describeAsStandardConversion(type, childType);
+        StandardConversion conv = describeAsStandardConversion(
+          /*dest*/ type, /*src*/ childType, getSpecialExpr(child));
         ret = new E_implicitStandardConversion(conv,
           importExpression(child));
       }
@@ -1480,36 +1480,47 @@ E_stringLit *ClangImport::importStringLiteral(CXCursor cxExpr)
 }
 
 
-StandardConversion ClangImport::describeAsStandardConversion(
-  Type const *destType, Type const *srcType)
+SpecialExpr ClangImport::getSpecialExpr(CXCursor cxExpr)
 {
-  CVAtomicType const *destCVAT = destType->ifCVAtomicTypeC();
-  CVAtomicType const *srcCVAT  = srcType ->ifCVAtomicTypeC();
-  if (destCVAT && srcCVAT) {
-    SimpleType const *destSimpleType = destCVAT->atomic->ifSimpleTypeC();
-    SimpleType const *srcSimpleType  = srcCVAT ->atomic->ifSimpleTypeC();
-    if (destSimpleType && srcSimpleType) {
-      if (isIntegerType(destSimpleType->type) &&
-          isIntegerType(srcSimpleType->type)) {
-        // TODO: This could also be SC_INT_PROM.
-        return SC_INT_CONV;
+  switch (clang_getCursorKind(cxExpr)) {
+    default:
+      break;
+
+    case CXCursor_IntegerLiteral:
+      if (evalAsLongLong(cxExpr) == 0) {
+        return SE_ZERO;
       }
-    }
+      break;
+
+    case CXCursor_StringLiteral:
+      return SE_STRINGLIT;
   }
 
-  if (destType->isPointerType()) {
-    if (srcType->isFunctionType()) {
-      return SC_FUNC_TO_PTR;
-    }
-    if (srcType->isArrayType()) {
-      return SC_ARRAY_TO_PTR;
-    }
+  return SE_NONE;
+}
+
+
+StandardConversion ClangImport::describeAsStandardConversion(
+  Type const *destType, Type const *srcType, SpecialExpr srcSpecial)
+{
+  // Use the Elsa type checker rules.
+  string errorMsg;
+  StandardConversion sc = getStandardConversion(
+    &errorMsg,
+    m_elsaParse.m_lang,
+    srcSpecial,
+    srcType,
+    destType);
+
+  if (sc == SC_ERROR) {
+    xfatal(stringb(
+      "describeAsStandardConversion: destType='" << destType->toString() <<
+      "' srcType='" << srcType->toString() <<
+      "' srcSpecial=" << toString(srcSpecial) <<
+      " error=\"" << errorMsg << "\""));
   }
 
-  xunimp(stringb(
-    "describeAsStandardConversion: destType='" << destType->toString() <<
-    "' srcType='" << srcType->toString() << "'"));
-  return SC_IDENTITY;
+  return sc;
 }
 
 

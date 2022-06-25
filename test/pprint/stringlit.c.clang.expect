@@ -1,0 +1,17 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+void g(char const *);
+
+void f()
+{
+  char const *p = "init";
+  char *q = "init2";
+  p = "assign";
+  g("arg");
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

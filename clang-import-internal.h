@@ -241,10 +241,14 @@ public:      // methods
 
   E_stringLit *importStringLiteral(CXCursor cxExpr);
 
+  // Determine if 'cxExpr' is any of the special forms described by the
+  // 'SpecialExpr' enumeration.
+  SpecialExpr getSpecialExpr(CXCursor cxExpr);
+
   // Describe the conversion from 'srcType' to 'destType' as a
   // standard conversion.
   StandardConversion describeAsStandardConversion(
-    Type const *destType, Type const *srcType);
+    Type const *destType, Type const *srcType, SpecialExpr srcSpecial);
 
   Condition *importCondition(CXCursor cxCond);
 
