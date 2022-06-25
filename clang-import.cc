@@ -738,12 +738,22 @@ bool ClangImport::possiblyAddNameQualifiers(Declarator *declarator,
 {
   SourceLoc loc = cursorLocation(cxVarDecl);
   PQName *declaratorName = declarator->getDeclaratorId();
-  bool ret = false;
+  int loopCounter = 0;
+
+  CXCursor lexParent = clang_getCursorLexicalParent(cxVarDecl);
+  if (clang_getCursorKind(lexParent) == CXCursor_FunctionDecl) {
+    // A qualified name cannot be declared local to a function.
+    return false;
+  }
 
   CXCursor semParent = clang_getCursorSemanticParent(cxVarDecl);
-  CXCursor lexParent = clang_getCursorLexicalParent(cxVarDecl);
-  while (!clang_equalCursors(semParent, lexParent)) {
-    ret = true;
+  while (!( clang_equalCursors(semParent, lexParent) ||
+            clang_getCursorKind(semParent) == CXCursor_TranslationUnit )) {
+    if (++loopCounter > 100) {
+      // Guard against an infinite loop.
+      xfatal("possiblyAddNameQualifiers: hit loop counter limit");
+    }
+
     StringRef semParentName = cursorSpelling(semParent);
 
     // TODO: Handle template arguments.
@@ -753,15 +763,11 @@ bool ClangImport::possiblyAddNameQualifiers(Declarator *declarator,
       semParentName, templArgs, declaratorName);
 
     semParent = clang_getCursorSemanticParent(semParent);
-
-    // Safeguard against missing the lexical parent.
-    if (clang_getCursorKind(semParent) == CXCursor_TranslationUnit) {
-      break;
-    }
+    xassert(!clang_isInvalid(clang_getCursorKind(semParent)));
   }
 
   declarator->setDeclaratorId(declaratorName);
-  return ret;
+  return loopCounter > 0;
 }
 
 
