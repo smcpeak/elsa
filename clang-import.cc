@@ -87,6 +87,19 @@ void clangParseTranslationUnit(
 
   DisposeCXTranslationUnit disposeTU(cxTU);
 
+  // Check for errors.
+  unsigned numDiagnostics = clang_getNumDiagnostics(cxTU);
+  for (unsigned i=0; i < numDiagnostics; i++) {
+    CXDiagnostic diag = clang_getDiagnostic(cxTU, i);
+    CXDiagnosticSeverity sev = clang_getDiagnosticSeverity(diag);
+    clang_disposeDiagnostic(diag);
+
+    if (sev >= CXDiagnostic_Error) {
+      // The diagnostics should already be printed.
+      xfatal("clang parse produced error diagnostics");
+    }
+  }
+
   ClangImport importClang(cxIndex, cxTU, elsaParse);
   importClang.importTranslationUnit();
 }

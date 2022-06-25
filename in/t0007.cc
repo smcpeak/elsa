@@ -8,7 +8,7 @@
 // the declarator is missing, and it thinks of "x;" the
 // same way potentially..
 
-int const c;
+extern int const c;
 
 // With the 'typedef', the code is illegal; gcc says
 // "declaration does not declare anything".  It's messing

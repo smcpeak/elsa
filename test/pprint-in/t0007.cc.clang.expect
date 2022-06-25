@@ -1,7 +1,7 @@
 ---- stdout ----
 // ---- START ----
 // -*- c++ -*-
-int const c;
+extern int const c;
 
 int x;
 
@@ -14,7 +14,5 @@ int strcmp(char const *, char const *);
 
 // ---- STOP ----
 ---- stderr ----
-../in/t0007.cc:11:11: error: default initialization of an object of const type 'const int'
-../in/t0007.cc:20:3: warning: expression result unused [-Wunused-value]
 ---- exit status ----
 Exit 0

@@ -43,4 +43,4 @@ int Foo::func()
 int foo(Foo * const ths);
 
 // what about this?
-Foo * const arf;
+extern Foo * const arf;

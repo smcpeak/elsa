@@ -24,10 +24,9 @@ int Foo::func()
 
 int foo(Foo * const );
 
-Foo * const arf;
+extern Foo * const arf;
 
 // ---- STOP ----
 ---- stderr ----
-../in/t0012.cc:46:13: error: default initialization of an object of const type 'Foo *const'
 ---- exit status ----
 Exit 0
