@@ -1,0 +1,12 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+char const *foo()
+{
+  return "foo";
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

@@ -391,9 +391,9 @@ check-clang: out/clang-pprint-in/t0012.cc
 
 check-clang: out/clang-pprint-in/c/t0001.c
 check-clang: out/clang-pprint-in/c/t0002.c
+check-clang: out/clang-pprint-in/c/t0003.c
 
 # These do not work yet.
-#check-clang: out/clang-pprint-in/c/t0003.c
 #check-clang: out/clang-pprint-in/c/t0004.c
 #check-clang: out/clang-pprint-in/c/t0005.c
 

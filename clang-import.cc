@@ -148,7 +148,7 @@ std::vector<CXCursor> ClangImport::getChildren(CXCursor cursor)
 StringRef ClangImport::importString(CXString cxString)
 {
   WrapCXString wcxString(cxString);
-  return m_elsaParse.m_stringTable.add(wcxString.c_str());
+  return addStringRef(wcxString.c_str());
 }
 
 
@@ -831,6 +831,13 @@ Type *ClangImport::importType_maybeMethod(CXType cxType,
     case CXType_FunctionProto: // 111
       xassert(cv == CV_NONE);
       return importFunctionType(cxType, methodClass, methodCV);
+
+    case CXType_ConstantArray: // 112
+    case CXType_IncompleteArray: // 114
+    case CXType_VariableArray: // 115
+    case CXType_DependentSizedArray: // 116
+      xassert(cv == CV_NONE);
+      return importArrayType(cxType);
   }
 
   // Not reached.
@@ -892,9 +899,41 @@ void ClangImport::addReceiver(FunctionType *methodType,
   Type *recvRefType = m_tfac.makeReferenceType(qualifiedCT);
   methodType->addReceiver(makeVariable(
     loc,
-    m_elsaParse.m_stringTable.add("__receiver"), // Like Env::receiverName.
+    addStringRef("__receiver"), // Like Env::receiverName.
     recvRefType,
     DF_PARAMETER));
+}
+
+
+ArrayType *ClangImport::importArrayType(CXType cxArrayType)
+{
+  Type *eltType = importType(clang_getElementType(cxArrayType));
+
+  int size;
+  switch (cxArrayType.kind) {
+    default:
+      xfailure("bad array type");
+
+    case CXType_ConstantArray: // 112
+      checkedAssignment(size, clang_getArraySize(cxArrayType));
+      break;
+
+    case CXType_IncompleteArray: // 114
+      size = ArrayType::NO_SIZE;
+      break;
+
+    case CXType_VariableArray: // 115
+      size = ArrayType::DYN_SIZE;
+      break;
+
+    case CXType_DependentSizedArray: // 116
+      // Elsa really should have this as a separate case too.  I will
+      // just say the size is unspecified.
+      size = ArrayType::NO_SIZE;
+      break;
+  }
+
+  return m_tfac.makeArrayType(eltType, size);
 }
 
 
@@ -1184,6 +1223,17 @@ long long ClangImport::evalAsLongLong(CXCursor cxExpr)
 }
 
 
+std::string ClangImport::evalAsString(CXCursor cxExpr)
+{
+  CXEvalResult cxEvalResult = clang_Cursor_Evaluate(cxExpr);
+  xassert(clang_EvalResult_getKind(cxEvalResult) == CXEval_StrLiteral);
+  std::string ret(clang_EvalResult_getAsStr(cxEvalResult));
+  clang_EvalResult_dispose(cxEvalResult);
+
+  return ret;
+}
+
+
 Expression *ClangImport::importExpression(CXCursor cxExpr)
 {
   if (clang_Cursor_isNull(cxExpr)) {
@@ -1262,11 +1312,15 @@ Expression *ClangImport::importExpression(CXCursor cxExpr)
       int value;
       checkedAssignment(value, evalAsLongLong(cxExpr));
       E_intLit *intLit = new E_intLit(
-        m_elsaParse.m_stringTable.add(stringbc(value)));
+        addStringRef(stringbc(value)));
       intLit->i = value;
       ret = intLit;
       break;
     }
+
+    case CXCursor_StringLiteral: // 109
+      ret = importStringLiteral(cxExpr);
+      break;
 
     case CXCursor_ParenExpr: { // 111
       // Elsa drops parentheses, so I will do that here as well.
@@ -1392,6 +1446,37 @@ Expression *ClangImport::importExpression(CXCursor cxExpr)
 
   ret->type = legacyTypeNC(type);
   return ret;
+}
+
+
+E_stringLit *ClangImport::importStringLiteral(CXCursor cxExpr)
+{
+  // The spelling has something like the original quoted syntax,
+  // although it is different at least because (1) it concatenates all
+  // of the adjacent tokens, and (2) it normalizes octal escape
+  // sequences to use three digits.  Nevertheless, it is fine for my
+  // purposes.
+  StringRef quotedRef = cursorSpelling(cxExpr);
+
+  E_stringLit *slit = new E_stringLit(quotedRef);
+
+  unsigned length = clang_stringLiteralElement(cxExpr,
+    CXStringLiteralElement_length);
+  unsigned charByteWidth = clang_stringLiteralElement(cxExpr,
+    CXStringLiteralElement_charByteWidth);
+  xassert(charByteWidth > 0);
+
+  size_t numBytes = length * charByteWidth;
+
+  // Check for overflow.  This is valid because the multiplication
+  // was done using unsigned arithmetic.
+  xassert(numBytes / charByteWidth == length);
+
+  slit->m_stringData.setAllocated(numBytes);
+  clang_getStringLiteralBytes(cxExpr,
+    slit->m_stringData.getData(), numBytes);
+
+  return slit;
 }
 
 
@@ -1539,6 +1624,12 @@ Variable *ClangImport::makeVariable(SourceLoc loc, StringRef name,
 }
 
 
+StringRef ClangImport::addStringRef(char const *str)
+{
+  return m_elsaParse.m_stringTable.add(str);
+}
+
+
 DeclFlags ClangImport::importStorageClass(CX_StorageClass storageClass)
 {
   switch (storageClass) {
@@ -1680,7 +1771,7 @@ void ClangImport::printTypeTree(CXType cxType, int indent)
     cout << " restrict";
   }
 
-  cout << " size=" << clang_Type_getSizeOf(cxType);
+  cout << " tsize=" << clang_Type_getSizeOf(cxType);
   cout << " align=" << clang_Type_getAlignOf(cxType);
 
   // Inline attributes of certain types.
@@ -1723,10 +1814,12 @@ void ClangImport::printTypeTree(CXType cxType, int indent)
       break;
 
     case CXType_ConstantArray:
+      cout << " asize=" << clang_getArraySize(cxType);
+      break;
+
     case CXType_IncompleteArray:
     case CXType_VariableArray:
     case CXType_DependentSizedArray:
-      cout << " size=" << clang_getArraySize(cxType);
       break;
 
     case CXType_MemberPointer:

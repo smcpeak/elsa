@@ -3,11 +3,10 @@
 
 #include "clang-additions.h"                     // this module
 
-//#include "clang/AST/DeclObjC.h"                  // ObjCMethodDecl
 #include "clang/AST/Expr.h"                      // UnaryOperator, etc.
-//#include "clang/AST/ExprObjC.h"                  // ObjCMessageExpr
 
 #include <assert.h>                              // assert
+#include <string.h>                              // memcpy
 
 
 // I have chosen to disable the Objective-C stuff in order to limit how
@@ -654,6 +653,7 @@ static CXCursor MakeCXCursor(const Stmt *S, const Decl *Parent,
 // ------------------- END: Copied from CXCursor.cpp -------------------
 
 
+// --------------------------- UnaryOperator ---------------------------
 extern "C"
 enum CXUnaryOperator clang_unaryOperator_operator(CXCursor cursor)
 {
@@ -688,6 +688,7 @@ enum CXUnaryOperator clang_unaryOperator_operator(CXCursor cursor)
 }
 
 
+// -------------------------- BinaryOperator ---------------------------
 extern "C"
 enum CXBinaryOperator clang_binaryOperator_operator(CXCursor cursor)
 {
@@ -741,6 +742,7 @@ enum CXBinaryOperator clang_binaryOperator_operator(CXCursor cursor)
 }
 
 
+// ------------------------------ ForStmt ------------------------------
 // Make a cursor out of the arguments, unless 'S' is NULL, in which case
 // return 'clang_getNullCursor()'.
 static CXCursor makeCursorOrNull(const Stmt *S, const Decl *Parent,
@@ -787,6 +789,73 @@ CXCursor clang_forStmtElement(CXCursor cursor, CXForStmtElement element)
   }
 
   return clang_getNullCursor();
+}
+
+
+// --------------------------- StringLiteral ---------------------------
+extern "C"
+unsigned clang_stringLiteralElement(CXCursor stringLiteralCursor,
+  CXStringLiteralElement element)
+{
+  Stmt const *stmt = getCursorStmt(stringLiteralCursor);
+
+  // Disambiguate versus llvm::StringLiteral.
+  using clang::StringLiteral;
+
+  if (StringLiteral const *lit = dyn_cast_or_null<StringLiteral>(stmt)) {
+    switch (element) {
+      default:
+        break;
+
+      case CXStringLiteralElement_length:
+        return lit->getLength();
+
+      case CXStringLiteralElement_charByteWidth:
+        return lit->getCharByteWidth();
+
+      case CXStringLiteralElement_kind:
+        switch (lit->getKind()) {
+          default:
+            return CXStringLiteralKind_Unknown;
+
+          #define KINDCASE(name) \
+            case StringLiteral::name: return CXStringLiteralKind_##name;
+          KINDCASE(Ascii)
+          KINDCASE(Wide)
+          KINDCASE(UTF8)
+          KINDCASE(UTF16)
+          KINDCASE(UTF32)
+          #undef KINDCASE
+        }
+
+      case CXStringLiteralElement_isPascal:
+        return lit->isPascal();
+
+      case CXStringLiteralElement_numConcatenated:
+        return lit->getNumConcatenated();
+    }
+  }
+
+  return 0;
+}
+
+
+extern "C"
+void clang_getStringLiteralBytes(CXCursor stringLiteralCursor,
+  unsigned char *contents, size_t contentsSize)
+{
+  Stmt const *stmt = getCursorStmt(stringLiteralCursor);
+
+  using clang::StringLiteral;
+  if (StringLiteral const *lit = dyn_cast_or_null<StringLiteral>(stmt)) {
+    unsigned len = lit->getByteLength();
+    assert(contentsSize >= len);
+
+    StringRef bytes = lit->getBytes();
+    assert(bytes.size() == len);
+
+    memcpy(contents, bytes.bytes_begin(), len);
+  }
 }
 
 

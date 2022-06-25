@@ -218,6 +218,8 @@ public:      // methods
   void addReceiver(FunctionType *methodType,
     SourceLoc loc, CompoundType const *containingClass, CVFlags cv);
 
+  ArrayType *importArrayType(CXType cxArrayType);
+
   S_compound *importCompoundStatement(CXCursor cxFunctionBody);
 
   Statement *importStatement(CXCursor cxStmt);
@@ -233,7 +235,11 @@ public:      // methods
 
   long long evalAsLongLong(CXCursor cxExpr);
 
+  std::string evalAsString(CXCursor cxExpr);
+
   Expression *importExpression(CXCursor cxExpr);
+
+  E_stringLit *importStringLiteral(CXCursor cxExpr);
 
   // Describe the conversion from 'srcType' to 'destType' as a
   // standard conversion.
@@ -258,6 +264,8 @@ public:      // methods
 
   Variable *makeVariable(SourceLoc loc, StringRef name,
     Type *type, DeclFlags flags);
+
+  StringRef addStringRef(char const *str);
 
   DeclFlags importStorageClass(CX_StorageClass storageClass);
 
