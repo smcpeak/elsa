@@ -1298,6 +1298,13 @@ Expression *ClangImport::importExpression(CXCursor cxExpr)
 
     case CXCursor_MemberRefExpr: { // 102
       Expression *object = importExpression(getOnlyChild(cxExpr));
+      if (object->type->isPointerType()) {
+        // The Clang AST uses the same node for "." and "->", with the
+        // latter distinguished only by the fact that the child
+        // expression in that case has pointer type.  So I explicitly
+        // insert the dereference here.
+        object = makeE_deref(object);
+      }
 
       CXCursor decl = clang_getCursorReferenced(cxExpr);
       Variable *field = existingVariableForDeclaration(decl);
