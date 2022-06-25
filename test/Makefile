@@ -363,11 +363,11 @@ check: check-errmsg
 
 # --------------------------- clang tests ------------------------------
 # Run ccparse --clang and check the results with pprint.
-out/clang-pprint-in/%: ../in/% pprint-in/%.expect $(CCPARSE)
+out/clang-pprint-in/%: ../in/% pprint-in/%.clang.expect $(CCPARSE)
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/clang-pprint-in/$*.actual \
-	  --expect pprint-in/$*.expect \
+	  --expect pprint-in/$*.clang.expect \
 	  $(CCPARSE) --pretty-print --clang $<
 	touch $@
 
@@ -400,13 +400,17 @@ check-clang: out/clang-pprint-in/c/t0003.c
 
 # Run a C++ pretty-print test with --clang.
 #
-# This uses the same expected output as when not using --clang to
-# ensure that Elsa and Clang modes agree.
-out/clang-pprint/%: pprint/% pprint/%.expect $(CCPARSE)
+# This uses different expected output than when not using --clang
+# because Clang loses some information, including:
+#
+#   * parameter names in prototypes
+#   * multiple tokens of concatenated string literals
+#
+out/clang-pprint/%: pprint/% pprint/%.clang.expect $(CCPARSE)
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/clang-pprint/$*.actual \
-	  --expect pprint/$*.expect \
+	  --expect pprint/$*.clang.expect \
 	  $(CCPARSE) --pretty-print --clang $<
 	touch $@
 
