@@ -1,0 +1,17 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+void driv(void)
+{
+  1? 1 : driv();
+}
+
+void main(void)
+{
+  driv();
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

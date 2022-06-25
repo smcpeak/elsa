@@ -860,7 +860,7 @@ static SimpleTypeId cxTypeKindToSimpleTypeId(CXTypeKind kind)
   xassert(kind < TABLESIZE(table));
   Entry const &entry = table[kind];
   if (entry.m_id == NUM_SIMPLE_TYPES) {
-    xunimp(stringb("cxTypeKindToSimpleTypeId: Unhandled simple type kind: " << kind));
+    xunimp(stringb("cxTypeKindToSimpleTypeId: Unhandled simple type kind: " << toString(kind)));
   }
   return entry.m_id;
 }
@@ -1073,7 +1073,7 @@ Statement *ClangImport::importStatement(CXCursor cxStmt)
 
   switch (stmtKind) {
     default:
-      xunimp(stringb("importStatement: Unhandled stmtKind: " << stmtKind));
+      xunimp(stringb("importStatement: Unhandled stmtKind: " << toString(stmtKind)));
 
     // Codes 100 through 199 handled above.
 
@@ -1350,7 +1350,7 @@ Expression *ClangImport::importExpression(CXCursor cxExpr)
 
   switch (exprKind) {
     default:
-      xunimp(stringb("importExpression: Unhandled exprKind: " << exprKind));
+      xunimp(stringb("importExpression: Unhandled exprKind: " << toString(exprKind)));
 
     case CXCursor_UnexposedExpr: { // 100
       // This is used for implicit conversions (perhaps among other
@@ -1504,6 +1504,17 @@ Expression *ClangImport::importExpression(CXCursor cxExpr)
       break;
     }
 
+    case CXCursor_ConditionalOperator: { // 116
+      std::vector<CXCursor> children = getChildren(cxExpr);
+      xassert(children.size() == 3);
+      ret = new E_cond(
+        importExpression(children[0]),
+        importExpression(children[1]),
+        importExpression(children[2])
+      );
+      break;
+    }
+
     case CXCursor_CStyleCastExpr: { // 117
       // The destination type is simply the type of this expression.
       ASTTypeId *castType =
@@ -1627,6 +1638,12 @@ StandardConversion ClangImport::describeAsStandardConversion(
     destType);
 
   if (sc == SC_ERROR) {
+    if (destType->isVoid()) {
+      // Assume this is something like the ?: exception that allows an
+      // implicit conversion to void.
+      return SC_VOID_CONV;
+    }
+
     xfatal(stringb(
       "describeAsStandardConversion: destType='" << destType->toString() <<
       "' srcType='" << srcType->toString() <<

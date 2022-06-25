@@ -30,37 +30,48 @@
 // The kinds of Standard Conversions.  Any given pair of convertible
 // types will be related by the conversions permitted as one or more
 // of the following kinds.  ORing together zero or one conversion from
-// each group yields a Standard Conversion Sequence.  The encoding is
-// designed to fit into a single byte so that CompressedImplicitConversion
-// can fit into 8 bytes (7/30/04: that class is now gone, but I still
-// like the tight encoding).
+// each group yields a Standard Conversion Sequence.
+//
+// 2022-06-25: In the past I had worked to ensure this fit into 8 bits,
+// but that was not necessary, and it is convenient to express a wider
+// range of conversions, so the size restriction is now gone.
+//
 enum StandardConversion {
-  SC_IDENTITY        = 0x00,  // types are identical
+  SC_IDENTITY        = 0x000,  // types are identical
 
   // conversion group 1 (comes first)
-  SC_LVAL_TO_RVAL    = 0x01,  // 4.1: int& -> int
-  SC_ARRAY_TO_PTR    = 0x02,  // 4.2: char[] -> char*
-  SC_FUNC_TO_PTR     = 0x03,  // 4.3: int ()(int) -> int (*)(int)
-  SC_GROUP_1_MASK    = 0x03,
+  SC_LVAL_TO_RVAL    = 0x001,  // 4.1: int& -> int
+  SC_ARRAY_TO_PTR    = 0x002,  // 4.2: char[] -> char*
+  SC_FUNC_TO_PTR     = 0x003,  // 4.3: int ()(int) -> int (*)(int)
+  SC_GROUP_1_MASK    = 0x003,
 
   // conversion group 3 (comes last conceptually)
-  SC_QUAL_CONV       = 0x04,  // 4.4: int* -> int const*
-  SC_GROUP_3_MASK    = 0x04,
+  SC_QUAL_CONV       = 0x004,  // 4.4: int* -> int const*
+  SC_GROUP_3_MASK    = 0x004,
 
   // conversion group 2 (goes in the middle)
-  SC_INT_PROM        = 0x10,  // 4.5: int... -> int..., no info loss possible
-  SC_FLOAT_PROM      = 0x20,  // 4.6: float -> double, no info loss possible
-  SC_INT_CONV        = 0x30,  // 4.7: int... -> int..., info loss possible
-  SC_FLOAT_CONV      = 0x40,  // 4.8: float... -> float..., info loss possible
-  SC_FLOAT_INT_CONV  = 0x50,  // 4.9: int... <-> float..., info loss possible
-  SC_PTR_CONV        = 0x60,  // 4.10: 0 -> Foo*, Child* -> Parent*
-  SC_PTR_MEMB_CONV   = 0x70,  // 4.11: int Child::* -> int Parent::*
-  SC_BOOL_CONV       = 0x80,  // 4.12: various types <-> bool
-  SC_DERIVED_TO_BASE = 0x90,  // 13.3.3.1p6: Child -> Parent
-  SC_CHAR_PTR_CONV   = 0xA0,  // C: char* -> unsigned char*, etc.
-  SC_GROUP_2_MASK    = 0xF0,
+  SC_INT_PROM        = 0x010,  // 4.5: int... -> int..., no info loss possible
+  SC_FLOAT_PROM      = 0x020,  // 4.6: float -> double, no info loss possible
+  SC_INT_CONV        = 0x030,  // 4.7: int... -> int..., info loss possible
+  SC_FLOAT_CONV      = 0x040,  // 4.8: float... -> float..., info loss possible
+  SC_FLOAT_INT_CONV  = 0x050,  // 4.9: int... <-> float..., info loss possible
+  SC_PTR_CONV        = 0x060,  // 4.10: 0 -> Foo*, Child* -> Parent*
+  SC_PTR_MEMB_CONV   = 0x070,  // 4.11: int Child::* -> int Parent::*
+  SC_BOOL_CONV       = 0x080,  // 4.12: various types <-> bool
+  SC_DERIVED_TO_BASE = 0x090,  // 13.3.3.1p6: Child -> Parent
+  SC_CHAR_PTR_CONV   = 0x0A0,  // C: char* -> unsigned char*, etc.
+  SC_GROUP_2_MASK    = 0x0F0,
 
-  SC_ERROR           = 0xFF,  // cannot convert
+  // The rest are ad-hoc conversions that do not fit into the above
+  // scheme, and are not usually combined with them.
+
+  // This is for a conversion to void, which is allowed as an extension
+  // by GCC in ?: expressions, and might be needed in other cases too.
+  SC_VOID_CONV       = 0x100,
+
+  SC_AD_HOC_MASK     = 0xF00,
+
+  SC_ERROR          = 0x1000,  // cannot convert
 };
 
 // for '&', one of the arguments should always be a mask

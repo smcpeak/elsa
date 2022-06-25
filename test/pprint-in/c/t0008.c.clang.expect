@@ -1,0 +1,12 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+struct X {
+  int X;
+  int Y;
+};
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0
