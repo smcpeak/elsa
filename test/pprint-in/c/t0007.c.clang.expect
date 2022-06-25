@@ -1,0 +1,14 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+void f(int sz)
+{
+  int arr[sz];
+}
+
+int blah;
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

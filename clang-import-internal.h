@@ -141,6 +141,16 @@ public:      // methods
   // Get the direct children of the node at 'cursor'.
   std::vector<CXCursor> getChildren(CXCursor cursor);
 
+  // Get children, except skip any CXCursor_TypeRef children, which are
+  // often useless due to not being necessary (since we get type
+  // information without looking at children) and not appearing in
+  // consistent positions (since any mention of a type might or might
+  // not use a TypeRef).
+  //
+  // It is possible that I want *all* calls to 'getChildren' to instead
+  // be 'getNTRChildren'.  I just don't know yet.
+  std::vector<CXCursor> getNTRChildren(CXCursor cursor);
+
   // Convert a CXString to a StringRef.  This disposes 'cxString'.
   StringRef importString(CXString cxString);
 

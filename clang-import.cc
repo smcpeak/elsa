@@ -144,16 +144,34 @@ static CXChildVisitResult childCollector(CXCursor cursor,
   CXCursor parent, CXClientData client_data)
 {
   std::vector<CXCursor> *children =
-    reinterpret_cast<std::vector<CXCursor>*>(client_data);
+    static_cast<std::vector<CXCursor>*>(client_data);
   children->push_back(cursor);
   return CXChildVisit_Continue;
 }
-
 
 std::vector<CXCursor> ClangImport::getChildren(CXCursor cursor)
 {
   std::vector<CXCursor> children;
   clang_visitChildren(cursor, childCollector, &children);
+  return children;
+}
+
+
+static CXChildVisitResult ntrChildCollector(CXCursor cursor,
+  CXCursor parent, CXClientData client_data)
+{
+  if (clang_getCursorKind(cursor) != CXCursor_TypeRef) {
+    std::vector<CXCursor> *children =
+      static_cast<std::vector<CXCursor>*>(client_data);
+    children->push_back(cursor);
+  }
+  return CXChildVisit_Continue;
+}
+
+std::vector<CXCursor> ClangImport::getNTRChildren(CXCursor cursor)
+{
+  std::vector<CXCursor> children;
+  clang_visitChildren(cursor, ntrChildCollector, &children);
   return children;
 }
 
@@ -670,6 +688,18 @@ Variable *ClangImport::existingVariableForDeclaration(CXCursor cxDecl)
 }
 
 
+// Return true if 'type' is a variable-length array.
+static bool isVariableLengthArray(Type const *type)
+{
+  if (ArrayType const *at = type->ifArrayTypeC()) {
+    return at->getSize() == ArrayType::DYN_SIZE;
+  }
+  else {
+    return false;
+  }
+}
+
+
 Declaration *ClangImport::importVarOrTypedefDecl(CXCursor cxVarDecl,
   DeclaratorContext context)
 {
@@ -681,33 +711,43 @@ Declaration *ClangImport::importVarOrTypedefDecl(CXCursor cxVarDecl,
   decl->dflags |= possiblyAddNameQualifiers_and_getStorageClass(
     declarator, cxVarDecl);
 
+  std::vector<CXCursor> children = getNTRChildren(cxVarDecl);
+
+  // The interpretation of 'children' depends on the node type.
   CXCursorKind declKind = clang_getCursorKind(cxVarDecl);
-  if (declKind == CXCursor_VarDecl) {
-    // Import the initializer, if any.
-    std::vector<CXCursor> children = getChildren(cxVarDecl);
-
-    if (children.size() == 2) {
-      // The first child is a TypeRef node indicating that the type of
-      // the variable was specified with a typedef.
-      xassert(clang_getCursorKind(children[0]) == CXCursor_TypeRef);
-
-      // The next is the initializer.
-      declarator->init = importInitializer(children[1]);
-    }
-
-    else if (children.size() == 1) {
-      // The child could be either a TypeRef or an initializer.
-      if (clang_getCursorKind(children[0]) == CXCursor_TypeRef) {
-        // TypeRef, ignore.
+  switch (declKind) {
+    case CXCursor_VarDecl:
+      xassert(children.size() <= 1);
+      if (children.size() == 1) {
+        if (isVariableLengthArray(var->type)) {
+          // The child specifies the array length.
+          D_array *arrayDeclarator =
+            declarator->decl->getSecondFromBottom()->asD_array();
+          arrayDeclarator->size = importExpression(children.front());
+        }
+        else {
+          // The child specifies the initializer.
+          declarator->init = importInitializer(children[0]);
+        }
       }
-      else {
-        declarator->init = importInitializer(children[0]);
-      }
-    }
+      break;
 
-    else {
+    case CXCursor_FunctionDecl:
+    case CXCursor_CXXMethod:
+      // For a definition, the children declare the parameters.  I do
+      // not need to look at them here.
+      break;
+
+    case CXCursor_TypedefDecl:
+      // If the type specifier of the typedef defines a type (like a
+      // struct), that definition appears as a child, which we can
+      // safely ignore here.
+      break;
+
+    default:
+      // For other kinds, I think there should not be children.
       xassert(children.empty());
-    }
+      break;
   }
 
   return decl;
