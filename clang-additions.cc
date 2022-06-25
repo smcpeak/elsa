@@ -792,6 +792,42 @@ CXCursor clang_forStmtElement(CXCursor cursor, CXForStmtElement element)
 }
 
 
+// -------------------------- CharacterLiteral -------------------------
+extern "C"
+unsigned clang_characterLiteralElement(CXCursor characterLiteralCursor,
+  CXCharacterLiteralElement element)
+{
+  Stmt const *stmt = getCursorStmt(characterLiteralCursor);
+
+  if (CharacterLiteral const *lit = dyn_cast_or_null<CharacterLiteral>(stmt)) {
+    switch (element) {
+      default:
+        break;
+
+      case CXCharacterLiteralElement_kind:
+        switch (lit->getKind()) {
+          default:
+            return CXCharacterLiteralKind_Unknown;
+
+          #define KINDCASE(name) \
+            case CharacterLiteral::name: return CXCharacterLiteralKind_##name;
+          KINDCASE(Ascii)
+          KINDCASE(Wide)
+          KINDCASE(UTF8)
+          KINDCASE(UTF16)
+          KINDCASE(UTF32)
+          #undef KINDCASE
+        }
+
+      case CXCharacterLiteralElement_value:
+        return lit->getValue();
+    }
+  }
+
+  return 0;
+}
+
+
 // --------------------------- StringLiteral ---------------------------
 extern "C"
 unsigned clang_stringLiteralElement(CXCursor stringLiteralCursor,
@@ -816,10 +852,10 @@ unsigned clang_stringLiteralElement(CXCursor stringLiteralCursor,
       case CXStringLiteralElement_kind:
         switch (lit->getKind()) {
           default:
-            return CXStringLiteralKind_Unknown;
+            return CXCharacterLiteralKind_Unknown;
 
           #define KINDCASE(name) \
-            case StringLiteral::name: return CXStringLiteralKind_##name;
+            case StringLiteral::name: return CXCharacterLiteralKind_##name;
           KINDCASE(Ascii)
           KINDCASE(Wide)
           KINDCASE(UTF8)

@@ -16,6 +16,9 @@
 #include "str.h"                       // string
 #include "trace.h"                     // tracingSys
 
+// libc++
+#include <sstream>                     // std::ostringstream
+
 
 // This is a candidate to go into smbase.
 template <class DEST, class SRC>
@@ -1563,6 +1566,10 @@ Expression *ClangImport::importExpression(CXCursor cxExpr)
       ret = importStringLiteral(cxExpr);
       break;
 
+    case CXCursor_CharacterLiteral: // 110
+      ret = importCharacterLiteral(cxExpr);
+      break;
+
     case CXCursor_ParenExpr: { // 111
       // Elsa drops parentheses, so I will do that here as well.
       ret = importExpression(getOnlyChild(cxExpr));
@@ -1729,6 +1736,87 @@ E_stringLit *ClangImport::importStringLiteral(CXCursor cxExpr)
     slit->m_stringData.getData(), numBytes);
 
   return slit;
+}
+
+
+// Create the token denoting a character literal of 'kind' with 'value'.
+static std::string getCharLitToken(unsigned value,
+  CXCharacterLiteralKind kind)
+{
+  std::ostringstream litText;
+
+  // If we print any integers, use uppercase hex.
+  litText << std::uppercase << std::hex;
+
+  // String literal prefix character.
+  switch (kind) {
+    case CXCharacterLiteralKind_Ascii:
+      break;
+
+    case CXCharacterLiteralKind_Wide:
+      litText << 'L';
+      break;
+
+    default:
+      xunimp(stringb("importCharacterLiteral: unhandled kind: " << kind));
+  }
+
+  litText << '\'';
+
+  if (value == 0) {
+    litText << "\\0";
+  }
+  else if (32 <= value && value <= 126) {
+    if (value == '\\' || value == '\'') {
+      litText << '\\';
+    }
+    litText << (char)value;
+  }
+  else if (kind == CXCharacterLiteralKind_Wide) {
+    // Express as a single hex escape sequence.
+    litText << "\\x" << value;
+  }
+  else if (value >= (unsigned)(-0x80) || value <= 0xFF) {
+    // Express as a single two-digit hex escape sequence.
+    litText << "\\x" << (value & 0xFF);
+  }
+  else {
+    // Use a sequence of hex escape sequences, one for each byte.
+    //
+    // I'm not really sure if this is right.  This all depends on
+    // "implementation-defined" behavior.  According to
+    // https://en.cppreference.com/w/cpp/language/character_literal,
+    // this should be at least approximately right for compilers other
+    // than MSVC.
+    std::vector<unsigned char> bytes;
+    while (value != 0) {
+      bytes.push_back(value & 0xFF);
+      value >>= 8;
+    }
+    for (int i = bytes.size()-1; i >= 0; --i) {
+      litText << "\\x" << (unsigned)bytes[i];
+    }
+  }
+
+  litText << '\'';
+
+  return litText.str();
+}
+
+
+E_charLit *ClangImport::importCharacterLiteral(CXCursor cxExpr)
+{
+  CXCharacterLiteralKind kind = static_cast<CXCharacterLiteralKind>(
+    clang_characterLiteralElement(cxExpr, CXCharacterLiteralElement_kind));
+
+  unsigned value = clang_characterLiteralElement(cxExpr,
+    CXCharacterLiteralElement_value);
+
+  E_charLit *charLit =
+    new E_charLit(addStringRef(getCharLitToken(value, kind).c_str()));
+  charLit->c = value;
+
+  return charLit;
 }
 
 

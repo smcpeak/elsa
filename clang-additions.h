@@ -114,6 +114,43 @@ enum CXForStmtElement {
 CXCursor clang_forStmtElement(CXCursor forStmt, CXForStmtElement element);
 
 
+// -------------------------- CharacterLiteral -------------------------
+// Selector for 'clang_characterLiteralElement'.
+enum CXCharacterLiteralElement {
+  // The "kind" of string literal, as a CXCharacterLiteralKind.
+  CXCharacterLiteralElement_kind = 0,
+
+  // The numeric value of the literal.
+  CXCharacterLiteralElement_value = 1,
+};
+
+
+// Possible values for 'CXCharacterLiteralElement_kind' and
+// 'CXStringLiteralElement_kind'.  I do not know what they all mean, as
+// they are not documented in the clang sources.
+enum CXCharacterLiteralKind {
+  // This might be used if the C++ API gains a new king of string
+  // literal and this interface has not been updated.
+  CXCharacterLiteralKind_Unknown = 0,
+
+  CXCharacterLiteralKind_Ascii   = 1,
+  CXCharacterLiteralKind_Wide    = 2,
+  CXCharacterLiteralKind_UTF8    = 3,
+  CXCharacterLiteralKind_UTF16   = 4,
+  CXCharacterLiteralKind_UTF32   = 5,
+};
+
+
+// Get the specified element of a CXCursor_CharacterLiteral.
+//
+// Rationale for addition: The existing API does not allow
+// distinguishing the kind of literal in C (since they all have type
+// 'int'), and using the evaluator to get the numeric value is
+// inelegant.
+unsigned clang_characterLiteralElement(CXCursor characterLiteralCursor,
+  CXCharacterLiteralElement element);
+
+
 // --------------------------- StringLiteral ---------------------------
 // Selector for 'clang_stringLiteralElement'.
 enum CXStringLiteralElement {
@@ -123,7 +160,7 @@ enum CXStringLiteralElement {
   // Bytes per character.
   CXStringLiteralElement_charByteWidth = 1,
 
-  // The "kind" of string literal, as a CXStringLiteralKind.
+  // The "kind" of string literal, as a CXCharacterLiteralKind.
   CXStringLiteralElement_kind = 2,
 
   // True if this "isPascal()", which isn't document in clang.
@@ -135,27 +172,12 @@ enum CXStringLiteralElement {
 };
 
 
-// Possible values for 'CXStringLiteralElement_kind'.  I do not know
-// what they all mean, as they are not documented in the clang sources.
-enum CXStringLiteralKind {
-  // This might be used if the C++ API gains a new king of string
-  // literal and this interface has not been updated.
-  CXStringLiteralKind_Unknown = 0,
-
-  CXStringLiteralKind_Ascii   = 1,
-  CXStringLiteralKind_Wide    = 2,
-  CXStringLiteralKind_UTF8    = 3,
-  CXStringLiteralKind_UTF16   = 4,
-  CXStringLiteralKind_UTF32   = 5,
-};
-
-
-// Get the specified element of a CXCursor_stringLiteral.
+// Get the specified element of a CXCursor_StringLiteral.
 //
 // Rationale for addition: The existing API exposes some of this through
 // 'clang_getCursorSpelling', but that requires additional parsing, and
 // is incomplete.
-unsigned clang_stringLiteralElement(CXCursor stringLiteral,
+unsigned clang_stringLiteralElement(CXCursor stringLiteralCursor,
   CXStringLiteralElement element);
 
 
@@ -165,7 +187,7 @@ unsigned clang_stringLiteralElement(CXCursor stringLiteral,
 //
 // Rationale for addition: The existing API exposes this through
 // 'clang_getCursorSpelling', but that requires additional parsing.
-void clang_getStringLiteralBytes(CXCursor stringLiteral,
+void clang_getStringLiteralBytes(CXCursor stringLiteralCursor,
   unsigned char *contents, size_t contentsSize);
 
 

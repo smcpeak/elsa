@@ -1,0 +1,16 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+typedef long wchar_t;
+
+void foo()
+{
+  __elsa_checkType('a', (int)0);
+  __elsa_checkType('\x61\x62', (int)0);
+  __elsa_checkType(L'a', (wchar_t)0);
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

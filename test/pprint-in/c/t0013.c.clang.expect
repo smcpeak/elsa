@@ -1,0 +1,12 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+int f(int )
+{
+  return 1;
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

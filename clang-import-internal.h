@@ -256,6 +256,8 @@ public:      // methods
 
   E_stringLit *importStringLiteral(CXCursor cxExpr);
 
+  E_charLit *importCharacterLiteral(CXCursor cxExpr);
+
   // Determine if 'cxExpr' is any of the special forms described by the
   // 'SpecialExpr' enumeration.
   SpecialExpr getSpecialExpr(CXCursor cxExpr);

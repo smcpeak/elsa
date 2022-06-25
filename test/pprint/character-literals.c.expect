@@ -1,0 +1,40 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+typedef int wchar_t;
+
+void f()
+{
+  'a';
+  L'a';
+  '\'';
+  '\\';
+  '\0';
+  '\1';
+  '\x7E';
+  '\x7F';
+  '\x80';
+  '\x81';
+  '\xFE';
+  '\xFF';
+  L'\xFF';
+  L'\xFFFF';
+  L'\xFFFFFFFF';
+  'ab';
+  'abc';
+  'abcd';
+  'abcde';
+  '\xFF_';
+  '\xFF\x5F';
+}
+
+// ---- STOP ----
+---- stderr ----
+pprint/character-literals.c:29:3: warning: multicharacter literals not properly implemented
+pprint/character-literals.c:30:3: warning: multicharacter literals not properly implemented
+pprint/character-literals.c:31:3: warning: multicharacter literals not properly implemented
+pprint/character-literals.c:32:3: warning: multicharacter literals not properly implemented
+pprint/character-literals.c:34:3: warning: multicharacter literals not properly implemented
+pprint/character-literals.c:35:3: warning: multicharacter literals not properly implemented
+---- exit status ----
+Exit 0

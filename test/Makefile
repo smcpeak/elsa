@@ -94,6 +94,7 @@ TESTS += pprint/big-for-loop.c
 TESTS += pprint/bitfield.c
 TESTS += pprint/builtin-offsetof.c
 TESTS += pprint/cast-array-to-int.c
+TESTS += pprint/character-literals.c
 TESTS += pprint/compound-after-label.c
 TESTS += pprint/const-enum.c
 TESTS += pprint/const-struct.c
@@ -402,6 +403,8 @@ check-clang: out/clang-pprint-in/c/t0009.c
 check-clang: out/clang-pprint-in/c/t0010.c
 check-clang: out/clang-pprint-in/c/t0011.c
 check-clang: out/clang-pprint-in/c/t0012.c
+check-clang: out/clang-pprint-in/c/t0013.c
+check-clang: out/clang-pprint-in/c/t0014.c
 
 
 # Run a C++ pretty-print test with --clang.
@@ -425,6 +428,7 @@ out/clang-pprint/%: pprint/% pprint/%.clang.expect $(CCPARSE)
 	  $(CCPARSE) --pretty-print --clang $<
 	touch $@
 
+check-clang: out/clang-pprint/character-literals.c
 check-clang: out/clang-pprint/for-loop-missing-elts.c
 check-clang: out/clang-pprint/stringlit.c
 check-clang: out/clang-pprint/method-defn.cc
