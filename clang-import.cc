@@ -7,9 +7,6 @@
 #include "clang-print.h"               // toString(CXCursorKind), etc.
 #include "clang-additions.h"           // clang_getUnaryExpressionOperator, etc.
 
-// ast
-#include "asthelp.h"                   // ind
-
 // smbase
 #include "map-utils.h"                 // insertMapUnique
 #include "exc.h"                       // xfatal
@@ -130,7 +127,7 @@ void ClangImport::importTranslationUnit()
 {
   CXCursor cursor = clang_getTranslationUnitCursor(m_cxTranslationUnit);
   if (tracingSys("dumpClang")) {
-    printSubtree(cursor, 0);
+    printSubtree(cursor);
   }
 
   std::vector<CXCursor> decls = getChildren(cursor);
@@ -140,23 +137,6 @@ void ClangImport::importTranslationUnit()
   for (auto cursor : decls) {
     m_elsaParse.m_translationUnit->topForms.append(importTopForm(cursor));
   }
-}
-
-
-static CXChildVisitResult childCollector(CXCursor cursor,
-  CXCursor parent, CXClientData client_data)
-{
-  std::vector<CXCursor> *children =
-    static_cast<std::vector<CXCursor>*>(client_data);
-  children->push_back(cursor);
-  return CXChildVisit_Continue;
-}
-
-std::vector<CXCursor> ClangImport::getChildren(CXCursor cursor)
-{
-  std::vector<CXCursor> children;
-  clang_visitChildren(cursor, childCollector, &children);
-  return children;
 }
 
 
@@ -227,12 +207,6 @@ SourceLoc ClangImport::cursorLocation(CXCursor cxCursor)
 StringRef ClangImport::cursorSpelling(CXCursor cxCursor)
 {
   return importString(clang_getCursorSpelling(cxCursor));
-}
-
-
-StringRef ClangImport::typeSpelling(CXType cxType)
-{
-  return importString(clang_getTypeSpelling(cxType));
 }
 
 
@@ -2043,36 +2017,6 @@ DeclFlags ClangImport::importStorageClass(CX_StorageClass storageClass)
 }
 
 
-static char const *toString(CX_StorageClass storageClass)
-{
-  struct Entry {
-    CX_StorageClass m_storageClass;
-    char const *m_name;
-  };
-
-  static Entry const table[] = {
-    #define ENTRY(name) { CX_SC_##name, #name }
-    ENTRY(Invalid),
-    ENTRY(None),
-    ENTRY(Extern),
-    ENTRY(Static),
-    ENTRY(PrivateExtern),
-    ENTRY(OpenCLWorkGroupLocal),
-    ENTRY(Auto),
-    ENTRY(Register),
-    #undef ENTRY
-  };
-
-  for (Entry const &e : table) {
-    if (e.m_storageClass == storageClass) {
-      return e.m_name;
-    }
-  }
-
-  return "(invalid storage class)";
-}
-
-
 AccessKeyword ClangImport::importAccessKeyword(
   CX_CXXAccessSpecifier accessSpecifier)
 {
@@ -2085,229 +2029,10 @@ AccessKeyword ClangImport::importAccessKeyword(
 }
 
 
-bool ClangImport::maybePrintType(char const *label, CXType cxType)
+void ClangImport::printSubtree(CXCursor cursor)
 {
-  if (cxType.kind != CXType_Invalid) {
-    cout << " " << label << "=\"" << typeSpelling(cxType) << "\"";
-    return true;
-  }
-  return false;
-}
-
-
-void ClangImport::printSubtree(CXCursor cursor, int indent)
-{
-  StringRef spelling = cursorSpelling(cursor);
-  StringRef display = importString(clang_getCursorDisplayName(cursor));
-
-  CXCursorKind cursorKind = clang_getCursorKind(cursor);
-  ind(cout, indent)
-    << "cursor: kind=" << toString(cursorKind)
-    << "(" << cursorKindClassificationsString(cursorKind) << ")"
-    << " loc=" << toLCString(cursorLocation(cursor))
-    << " spelling=\"" << spelling << "\"";
-
-  if (spelling != display) {
-    cout << " display=\"" << display << "\"";
-  }
-
-  bool hasType = maybePrintType("type", clang_getCursorType(cursor));
-
-  if (clang_isExpression(cursorKind)) {
-    // 'getReceiverType' crashes if passed a non-expression.
-    maybePrintType("receiverType", clang_Cursor_getReceiverType(cursor));
-  }
-
-  CXCursor decl = clang_getCursorReferenced(cursor);
-  if (!clang_Cursor_isNull(decl)) {
-    cout << " references=" << toLCString(cursorLocation(decl));
-  }
-
-  CX_StorageClass storageClass = clang_Cursor_getStorageClass(cursor);
-  if (storageClass != CX_SC_Invalid && storageClass != CX_SC_None) {
-    cout << " storage=" << toString(storageClass);
-  }
-
-  cout << "\n";
-
-  if (hasType && tracingSys("dumpClangTypes")) {
-    printTypeTree(clang_getCursorType(cursor), indent+2);
-  }
-
-  for (CXCursor const &child : getChildren(cursor)) {
-    printSubtree(child, indent+2);
-  }
-}
-
-
-void ClangImport::printTypeTree(CXType cxType, int indent)
-{
-  CXTypeKind typeKind = cxType.kind;
-  std::string kindName = toString(typeKind);
-
-  ind(cout, indent) << "type: kind=" << kindName;
-
-  CXCursor cxDecl = clang_getTypeDeclaration(cxType);
-  if (!clang_Cursor_isNull(cxDecl)) {
-    cout << " declLoc=" << toLCString(cursorLocation(cxDecl));
-  }
-
-  cout << " spelling=\"" << typeSpelling(cxType) << "\"";
-
-  CXType canonical = clang_getCanonicalType(cxType);
-  if (!clang_equalTypes(cxType, canonical)) {
-    cout << " canonical=\"" << typeSpelling(canonical) << "\"";
-  }
-
-  if (clang_isConstQualifiedType(cxType)) {
-    cout << " const";
-  }
-
-  if (clang_isVolatileQualifiedType(cxType)) {
-    cout << " volatile";
-  }
-
-  if (clang_isRestrictQualifiedType(cxType)) {
-    cout << " restrict";
-  }
-
-  cout << " tsize=" << clang_Type_getSizeOf(cxType);
-  cout << " align=" << clang_Type_getAlignOf(cxType);
-
-  // Inline attributes of certain types.
-  switch (typeKind) {
-    default:
-      break;
-
-    case CXType_Pointer:
-    case CXType_LValueReference:
-    case CXType_RValueReference:
-      break;
-
-    case CXType_Record:
-      if (clang_isPODType(cxType)) {
-        cout << " pod";
-      }
-      break;
-
-    case CXType_Enum:
-      break;
-
-    case CXType_Typedef:
-      cout << " typedefName=\"" << importString(clang_getTypedefName(cxType)) << "\"";
-      if (clang_Type_isTransparentTagTypedef(cxType)) {
-        cout << " transparent";
-      }
-      break;
-
-    case CXType_FunctionNoProto:
-    case CXType_FunctionProto:
-      // TODO: Calling convention.
-      // TODO: Exception specification.
-      cout << " args=" << clang_getNumArgTypes(cxType);
-      if (clang_isFunctionTypeVariadic(cxType)) {
-        cout << " variadic";
-      }
-      if (CXRefQualifierKind rq = clang_Type_getCXXRefQualifier(cxType)) {
-        cout << " refqual=" << rq;
-      }
-      break;
-
-    case CXType_ConstantArray:
-      cout << " asize=" << clang_getArraySize(cxType);
-      break;
-
-    case CXType_IncompleteArray:
-    case CXType_VariableArray:
-    case CXType_DependentSizedArray:
-      break;
-
-    case CXType_MemberPointer:
-      break;
-
-    case CXType_Elaborated:
-      break;
-  }
-
-  cout << "\n";
-  indent += 2;
-
-  // Child types.
-  switch (typeKind) {
-    default:
-      break;
-
-    case CXType_Pointer:
-      printTypeTree(clang_getPointeeType(cxType), indent);
-      break;
-
-    case CXType_LValueReference:
-    case CXType_RValueReference:
-      break;
-
-    case CXType_Record: {
-      std::vector<CXCursor> fields = getTypeFields(cxType);
-      for (CXCursor const &field : fields) {
-        StringRef name = cursorSpelling(field);
-
-        // I do not recursively print details about field types because
-        // that could lead to an infinite loop.
-        StringRef type = typeSpelling(clang_getCursorType(field));
-
-        ind(cout, indent) << "field: name=" << name
-                          << " type=\"" << type << "\"\n";
-      }
-      break;
-    }
-
-    case CXType_Enum:
-    case CXType_Typedef:
-      break;
-
-    case CXType_FunctionNoProto:
-    case CXType_FunctionProto: {
-      printTypeTree(clang_getResultType(cxType), indent);
-      int numArgs = clang_getNumArgTypes(cxType);
-      for (int i=0; i < numArgs; i++) {
-        printTypeTree(clang_getArgType(cxType, i), indent);
-      }
-      break;
-    }
-
-    case CXType_Complex:
-    case CXType_ConstantArray:
-    case CXType_IncompleteArray:
-    case CXType_VariableArray:
-    case CXType_DependentSizedArray:
-      printTypeTree(clang_getElementType(cxType), indent);
-      break;
-
-    case CXType_MemberPointer:
-      printTypeTree(clang_Type_getClassType(cxType), indent);
-      break;
-
-    case CXType_Elaborated:
-      printTypeTree(clang_Type_getNamedType(cxType), indent);
-      break;
-  }
-}
-
-
-std::vector<CXCursor> ClangImport::getTypeFields(CXType cxType)
-{
-  std::vector<CXCursor> fields;
-
-  clang_Type_visitFields(cxType,
-    [](CXCursor child, CXClientData client_data)
-    {
-      std::vector<CXCursor> *fields =
-        static_cast<std::vector<CXCursor>*>(client_data);
-      fields->push_back(child);
-      return CXVisit_Continue;
-    },
-    &fields);
-
-  return fields;
+  ClangPrint clangPrint(cout);
+  clangPrint.printCursor(cursor, 0 /*indent*/);
 }
 
 

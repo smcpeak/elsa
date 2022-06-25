@@ -138,9 +138,6 @@ public:      // methods
   // Entry point to the importer.
   void importTranslationUnit();
 
-  // Get the direct children of the node at 'cursor'.
-  std::vector<CXCursor> getChildren(CXCursor cursor);
-
   // Get children, except skip any CXCursor_TypeRef children, which are
   // often useless due to not being necessary (since we get type
   // information without looking at children) and not appearing in
@@ -164,8 +161,6 @@ public:      // methods
   SourceLoc cursorLocation(CXCursor cxCursor);
 
   StringRef cursorSpelling(CXCursor cxCursor);
-
-  StringRef typeSpelling(CXType cxType);
 
   TopForm *importTopForm(CXCursor cxTopForm);
 
@@ -297,10 +292,7 @@ public:      // methods
     CX_CXXAccessSpecifier accessSpecifier);
 
   // Debug print.
-  bool maybePrintType(char const *label, CXType cxType);
-  void printSubtree(CXCursor cursor, int indent);
-  void printTypeTree(CXType cxType, int indent);
-  std::vector<CXCursor> getTypeFields(CXType cxType);
+  void printSubtree(CXCursor cursor);
 };
 
 
