@@ -155,6 +155,8 @@ public:      // methods
 
   StringRef cursorSpelling(CXCursor cxCursor);
 
+  StringRef typeSpelling(CXType cxType);
+
   TopForm *importTopForm(CXCursor cxTopForm);
 
   Variable *importEnumTypeAsForward(CXCursor cxEnumDecl);
@@ -280,6 +282,7 @@ public:      // methods
   bool maybePrintType(char const *label, CXType cxType);
   void printSubtree(CXCursor cursor, int indent);
   void printTypeTree(CXType cxType, int indent);
+  std::vector<CXCursor> getTypeFields(CXType cxType);
 };
 
 

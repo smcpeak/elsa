@@ -196,6 +196,12 @@ StringRef ClangImport::cursorSpelling(CXCursor cxCursor)
 }
 
 
+StringRef ClangImport::typeSpelling(CXType cxType)
+{
+  return importString(clang_getTypeSpelling(cxType));
+}
+
+
 TopForm *ClangImport::importTopForm(CXCursor cxTopForm)
 {
   SourceLoc loc = cursorLocation(cxTopForm);
@@ -1698,8 +1704,7 @@ AccessKeyword ClangImport::importAccessKeyword(
 bool ClangImport::maybePrintType(char const *label, CXType cxType)
 {
   if (cxType.kind != CXType_Invalid) {
-    cout << " " << label << "=\""
-         << importString(clang_getTypeSpelling(cxType)) << "\"";
+    cout << " " << label << "=\"" << typeSpelling(cxType) << "\"";
     return true;
   }
   return false;
@@ -1713,7 +1718,7 @@ void ClangImport::printSubtree(CXCursor cursor, int indent)
 
   CXCursorKind cursorKind = clang_getCursorKind(cursor);
   ind(cout, indent)
-    << "ckind=" << toString(cursorKind)
+    << "cursor: kind=" << toString(cursorKind)
     << "(" << cursorKindClassificationsString(cursorKind) << ")"
     << " loc=" << toLCString(cursorLocation(cursor))
     << " spelling=\"" << spelling << "\"";
@@ -1756,18 +1761,18 @@ void ClangImport::printTypeTree(CXType cxType, int indent)
   CXTypeKind typeKind = cxType.kind;
   std::string kindName = toString(typeKind);
 
-  ind(cout, indent) << "tkind=" << kindName;
+  ind(cout, indent) << "type: kind=" << kindName;
 
   CXCursor cxDecl = clang_getTypeDeclaration(cxType);
   if (!clang_Cursor_isNull(cxDecl)) {
     cout << " declLoc=" << toLCString(cursorLocation(cxDecl));
   }
 
-  cout << " spelling=\"" << importString(clang_getTypeSpelling(cxType)) << "\"";
+  cout << " spelling=\"" << typeSpelling(cxType) << "\"";
 
   CXType canonical = clang_getCanonicalType(cxType);
   if (!clang_equalTypes(cxType, canonical)) {
-    cout << " canonical=\"" << importString(clang_getTypeSpelling(canonical)) << "\"";
+    cout << " canonical=\"" << typeSpelling(canonical) << "\"";
   }
 
   if (clang_isConstQualifiedType(cxType)) {
@@ -1856,9 +1861,20 @@ void ClangImport::printTypeTree(CXType cxType, int indent)
     case CXType_RValueReference:
       break;
 
-    case CXType_Record:
-      // TODO: Use 'clang_Type_visitFields' to print fields.
+    case CXType_Record: {
+      std::vector<CXCursor> fields = getTypeFields(cxType);
+      for (CXCursor const &field : fields) {
+        StringRef name = cursorSpelling(field);
+
+        // I do not recursively print details about field types because
+        // that could lead to an infinite loop.
+        StringRef type = typeSpelling(clang_getCursorType(field));
+
+        ind(cout, indent) << "field: name=" << name
+                          << " type=\"" << type << "\"\n";
+      }
       break;
+    }
 
     case CXType_Enum:
     case CXType_Typedef:
@@ -1890,6 +1906,24 @@ void ClangImport::printTypeTree(CXType cxType, int indent)
       printTypeTree(clang_Type_getNamedType(cxType), indent);
       break;
   }
+}
+
+
+std::vector<CXCursor> ClangImport::getTypeFields(CXType cxType)
+{
+  std::vector<CXCursor> fields;
+
+  clang_Type_visitFields(cxType,
+    [](CXCursor child, CXClientData client_data)
+    {
+      std::vector<CXCursor> *fields =
+        static_cast<std::vector<CXCursor>*>(client_data);
+      fields->push_back(child);
+      return CXVisit_Continue;
+    },
+    &fields);
+
+  return fields;
 }
 
 
