@@ -1,0 +1,20 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+struct A {
+  int x;
+};
+
+struct A f()
+{
+  struct A a2;
+  struct A a3 = { 1 };
+  struct A a5;
+  struct A a6 = a5;
+  return a2;
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

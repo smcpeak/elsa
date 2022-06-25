@@ -538,6 +538,19 @@ Function *ClangImport::importFunctionDefinition(CXCursor cxFuncDefn)
   // Build a FunctionType specific to this definition, containing the
   // parameter names.
   FunctionType *defnFuncType = m_tfac.makeFunctionType(declFuncType->retType);
+
+  // Possibly add the receiver parameter.
+  if (clang_getCursorKind(cxFuncDefn) == CXCursor_CXXMethod &&
+      clang_Cursor_getStorageClass(cxFuncDefn) != CX_SC_Static) {
+    // The containing class is the semantic parent.
+    CXCursor semParent = clang_getCursorSemanticParent(cxFuncDefn);
+    Variable *classTypedefVar = existingVariableForDeclaration(semParent);
+    CVFlags cv = importMethodCVFlags(cxFuncDefn);
+    addReceiver(defnFuncType, cursorLocation(cxFuncDefn),
+                classTypedefVar->type->asCompoundTypeC(), cv);
+  }
+
+  // Scan for the parameter declarations and the body.
   {
     bool foundBody = false;
 
@@ -552,19 +565,13 @@ Function *ClangImport::importFunctionDefinition(CXCursor cxFuncDefn)
           break;
         }
 
-        case CXCursor_TypeRef: { // 43
-          // A TypeRef child indicates the receiver object type.
-          //
-          // TODO: I believe it could also indicate that the return type
-          // (or maybe any parameter type?) is named with a typedef.
-          Type const *receiverType = importType(clang_getCursorType(child));
-
-          CVFlags cv = importMethodCVFlags(child);
-
-          addReceiver(defnFuncType, cursorLocation(child),
-                      receiverType->asCompoundTypeC(), cv);
+        case CXCursor_TypeRef: // 43
+          // A TypeRef child can indicate the receiver object type, but
+          // it can also indicate the type of a return value or a
+          // parameter that is not a basic type like 'int', and there's
+          // no indication which is which, so these are entirely useless
+          // here.  Just skip them.
           break;
-        }
 
         case CXCursor_CompoundStmt: { // 202
           // The final child is the function body.
@@ -575,7 +582,8 @@ Function *ClangImport::importFunctionDefinition(CXCursor cxFuncDefn)
         }
 
         default:
-          xfailure(stringb("Unexpected childKind: " << toString(childKind)));
+          xfailure(stringb("importFunctionDefinition: Unexpected childKind: " <<
+                           toString(childKind)));
       }
     }
 
@@ -806,7 +814,7 @@ static SimpleTypeId cxTypeKindToSimpleTypeId(CXTypeKind kind)
   xassert(kind < TABLESIZE(table));
   Entry const &entry = table[kind];
   if (entry.m_id == NUM_SIMPLE_TYPES) {
-    xunimp(stringb("Unhandled simple type kind: " << kind));
+    xunimp(stringb("cxTypeKindToSimpleTypeId: Unhandled simple type kind: " << kind));
   }
   return entry.m_id;
 }
@@ -1019,7 +1027,7 @@ Statement *ClangImport::importStatement(CXCursor cxStmt)
 
   switch (stmtKind) {
     default:
-      xunimp(stringb("Unhandled stmtKind: " << stmtKind));
+      xunimp(stringb("importStatement: Unhandled stmtKind: " << stmtKind));
 
     // Codes 100 through 199 handled above.
 
@@ -1296,7 +1304,7 @@ Expression *ClangImport::importExpression(CXCursor cxExpr)
 
   switch (exprKind) {
     default:
-      xunimp(stringb("Unhandled exprKind: " << exprKind));
+      xunimp(stringb("importExpression: Unhandled exprKind: " << exprKind));
 
     case CXCursor_UnexposedExpr: { // 100
       // This is used for implicit conversions (perhaps among other
@@ -1623,22 +1631,39 @@ ASTTypeId *ClangImport::importASTTypeId(CXCursor cxDecl,
 
 Initializer *ClangImport::importInitializer(CXCursor cxInit)
 {
-  if (clang_getCursorKind(cxInit) == CXCursor_UnexposedExpr &&
-      getChildren(cxInit).empty()) {
-    // This is an 'ImplicitValueInitExpr', which in Elsa is represented
-    // with a NULL initialzer.
-    return nullptr;
+  SourceLoc loc = cursorLocation(cxInit);
+  std::vector<CXCursor> children = getChildren(cxInit);
+
+  CXCursorKind initKind = clang_getCursorKind(cxInit);
+  switch (initKind) {
+    case CXCursor_UnexposedExpr: // 100
+      if (children.empty()) {
+        // This is an 'ImplicitValueInitExpr', which in Elsa is represented
+        // with a NULL initialzer.
+        return nullptr;
+      }
+      break;
+
+    case CXCursor_CallExpr: // 103
+      if (children.empty()) {
+        // This is a 'CXXConstructExpr', which in Elsa is also represented
+        // with a NULL initialzer.
+        return nullptr;
+      }
+
+    case CXCursor_InitListExpr: { // 119
+      IN_compound *inc = new IN_compound(loc, nullptr /*inits*/);
+      for (CXCursor const &child : children) {
+        inc->inits.append(importInitializer(child));
+      }
+      return inc;
+    }
+
+    default:
+      break;
   }
 
-  if (clang_getCursorKind(cxInit) == CXCursor_CallExpr &&
-      getChildren(cxInit).empty()) {
-    // This is a 'CXXConstructExpr', which in Elsa is also represented
-    // with a NULL initialzer.
-    return nullptr;
-  }
-
-  // TODO: Handle IN_compound cases.
-  return new IN_expr(cursorLocation(cxInit), importExpression(cxInit));
+  return new IN_expr(loc, importExpression(cxInit));
 }
 
 

@@ -1,0 +1,76 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+struct Other {
+  Other()
+  {}
+  Other(Other const &__other)
+  {}
+  Other &operator=(Other const &__other)
+  {
+    return *this;
+  }
+  ~Other()
+  {}
+};
+
+struct Other2 {
+  Other2()
+  {}
+  Other2(Other2 const &__other)
+  {}
+  Other2 &operator=(Other2 const &__other)
+  {
+    return *this;
+  }
+  ~Other2()
+  {}
+};
+
+struct S {
+  int x;
+  int y;
+  void method1();
+  Other method2(Other2);
+  static Other method3(Other2);
+  S()
+  {}
+  S(S const &__other)
+    : x(__other.x),
+      y(__other.y)
+  {}
+  S &operator=(S const &__other)
+  {
+    (*this).x = __other.x;
+    (*this).y = __other.y;
+    return *this;
+  }
+  ~S()
+  {}
+};
+
+struct S func()
+{
+  struct S s;
+  return s;
+}
+
+void S::method1()
+{}
+
+Other S::method2(Other2)
+{
+  struct Other o;
+  return o;
+}
+
+Other S::method3(Other2)
+{
+  struct Other o;
+  return o;
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

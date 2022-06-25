@@ -61,6 +61,7 @@ TESTS += pprint/conversion-op.cc
 TESTS += pprint/forward.cc
 TESTS += pprint/gnu-attr-on-conversion-id.cc
 TESTS += pprint/longlines.cc
+TESTS += pprint/method-defn.cc
 TESTS += pprint/pp-decl.cc
 TESTS += pprint/pp-enum.cc
 TESTS += pprint/pp-syntax.cc
@@ -393,9 +394,7 @@ check-clang: out/clang-pprint-in/c/t0001.c
 check-clang: out/clang-pprint-in/c/t0002.c
 check-clang: out/clang-pprint-in/c/t0003.c
 check-clang: out/clang-pprint-in/c/t0004.c
-
-# These do not work yet.
-#check-clang: out/clang-pprint-in/c/t0005.c
+check-clang: out/clang-pprint-in/c/t0005.c
 
 
 # Run a C++ pretty-print test with --clang.
@@ -421,6 +420,7 @@ out/clang-pprint/%: pprint/% pprint/%.clang.expect $(CCPARSE)
 
 check-clang: out/clang-pprint/for-loop-missing-elts.c
 check-clang: out/clang-pprint/stringlit.c
+check-clang: out/clang-pprint/method-defn.cc
 check-clang: out/clang-pprint/try-catch.cc
 
 
