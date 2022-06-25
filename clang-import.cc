@@ -1071,6 +1071,80 @@ S_compound *ClangImport::importCompoundStatement(CXCursor cxCompStmt)
 }
 
 
+static void assertEqualPQNames(
+  PQName const *pq1,
+  PQName const *pq2)
+{
+  // For expedience, just compare the string representations.
+  xassert(pq1->toString() == pq2->toString());
+}
+
+
+// Assert that 'ts1' and 'ts2' say the same thing.
+static void assertEqualTypeSpecifiers(
+  TypeSpecifier const *ts1,
+  TypeSpecifier const *ts2)
+{
+  xassert(ts1->cv == ts2->cv);
+  xassert(ts1->kind() == ts2->kind());
+
+  switch (ts1->kind()) {
+    default:
+      xfailure("bad TypeSpecifier kind");
+
+    case TypeSpecifier::TS_NAME: {
+      TS_name const *n1 = ts1->asTS_nameC();
+      TS_name const *n2 = ts2->asTS_nameC();
+      assertEqualPQNames(n1->name, n2->name);
+      xassert(n1->typenameUsed == n2->typenameUsed);
+      break;
+    }
+
+    case TypeSpecifier::TS_SIMPLE: {
+      TS_simple const *s1 = ts1->asTS_simpleC();
+      TS_simple const *s2 = ts2->asTS_simpleC();
+      xassert(s1->id == s2->id);
+      break;
+    }
+
+    case TypeSpecifier::TS_ELABORATED: {
+      TS_elaborated const *e1 = ts1->asTS_elaboratedC();
+      TS_elaborated const *e2 = ts2->asTS_elaboratedC();
+      xassert(e1->keyword == e2->keyword);
+      assertEqualPQNames(e1->name, e2->name);
+      break;
+    }
+
+    case TypeSpecifier::TS_CLASSSPEC: {
+      TS_classSpec const *c1 = ts1->asTS_classSpecC();
+      TS_classSpec const *c2 = ts2->asTS_classSpecC();
+      xassert(c1->keyword == c2->keyword);
+      assertEqualPQNames(c1->name, c2->name);
+
+      // I will just assume that the bases and fields agree if the
+      // names agree.
+
+      break;
+    }
+
+    case TypeSpecifier::TS_ENUMSPEC: {
+      TS_enumSpec const *e1 = ts1->asTS_enumSpecC();
+      TS_enumSpec const *e2 = ts2->asTS_enumSpecC();
+      xassert(e1->name == e2->name);
+
+      // Similarly, assume the enumerators agree.
+
+      break;
+    }
+
+    case TypeSpecifier::TS_TYPEOF: {
+      // TODO: Actually compare these.
+      break;
+    }
+  }
+}
+
+
 Statement *ClangImport::importStatement(CXCursor cxStmt)
 {
   if (clang_Cursor_isNull(cxStmt)) {
@@ -1227,12 +1301,47 @@ Statement *ClangImport::importStatement(CXCursor cxStmt)
       return new S_skip(loc, MI_EXPLICIT);
 
     case CXCursor_DeclStmt: { // 231
-      xassert(children.size() == 1);
+      // Overall declaration to build.
+      Declaration *decl = nullptr;
+
+      // When a single statement declares multiple things, they show up
+      // as multiple children here.
       for (CXCursor const &child : children) {
         xassert(clang_getCursorKind(child) == CXCursor_VarDecl);
-        Declaration *decl = importVarOrTypedefDecl(child, DC_S_DECL);
-        return new S_decl(loc, decl);
+        if (!decl) {
+          // First declaration.
+          decl = importVarOrTypedefDecl(child, DC_S_DECL);
+        }
+        else {
+          // Subsequent declaration.
+          Declaration *next = importVarOrTypedefDecl(child, DC_S_DECL);
+
+          // We will merge 'next' onto 'decl'.  First, check that the
+          // declaration specifiers and type specifiers agree.
+          xassert(decl->dflags == next->dflags);
+          assertEqualTypeSpecifiers(decl->spec, next->spec);
+
+          // Now join the declarator lists.
+          xassert(fl_count(next->decllist) == 1);
+          decl->decllist = fl_prepend(decl->decllist, fl_first(next->decllist));
+
+          // Clean up 'next'.  This won't get everything because AST
+          // nodes do not automatically delete their children, but it
+          // gets what is easy.
+          delete next->spec;
+          next->spec = nullptr;
+          next->decllist = FakeList<Declarator>::emptyList();
+          delete next;
+        }
       }
+
+      // Should have seen at least one declaration.
+      xassert(decl);
+
+      // When there are multiple, we build the list in reverse order.
+      decl->decllist = fl_reverse(decl->decllist);
+
+      return new S_decl(loc, decl);
     }
   }
 

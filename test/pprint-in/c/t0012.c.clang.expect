@@ -1,0 +1,15 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+void f(int x)
+{
+  int i, j, k;
+  __elsa_checkType(x? i : j, k);
+  __elsa_checkType(x? i+1 : j, 1);
+  __elsa_checkType(x? i : j+1, 1);
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0
