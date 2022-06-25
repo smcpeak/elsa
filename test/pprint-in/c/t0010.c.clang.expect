@@ -1,0 +1,13 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+unsigned long foo(int y)
+{
+  unsigned long x;
+  return y? x : (void *)0;
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

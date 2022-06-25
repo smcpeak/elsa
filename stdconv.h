@@ -67,9 +67,14 @@ enum StandardConversion {
 
   // This is for a conversion to void, which is allowed as an extension
   // by GCC in ?: expressions, and might be needed in other cases too.
-  SC_VOID_CONV       = 0x100,
+  SC_ADH_TO_VOID     = 0x100,
 
-  SC_AD_HOC_MASK     = 0xF00,
+  // According to Clang, it is sometimes possible to implicitly convert
+  // a pointer to an integer and vice-versa!
+  SC_ADH_PTR_TO_INT  = 0x200,
+  SC_ADH_INT_TO_PTR  = 0x300,
+
+  SC_ADH_MASK        = 0xF00,
 
   SC_ERROR          = 0x1000,  // cannot convert
 };

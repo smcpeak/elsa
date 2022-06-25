@@ -1641,7 +1641,18 @@ StandardConversion ClangImport::describeAsStandardConversion(
     if (destType->isVoid()) {
       // Assume this is something like the ?: exception that allows an
       // implicit conversion to void.
-      return SC_VOID_CONV;
+      return SC_ADH_TO_VOID;
+    }
+
+    if (destType->isIntegerType() && srcType->isPointerType()) {
+      // This shows up for in/c/t0010.c.  Clang issues a warning on the
+      // command line, but allows it.
+      return SC_ADH_PTR_TO_INT;
+    }
+
+    if (destType->isPointerType() && srcType->isIntegerType()) {
+      // Another from in/c/t0010.c.
+      return SC_ADH_INT_TO_PTR;
     }
 
     xfatal(stringb(
