@@ -392,9 +392,9 @@ check-clang: out/clang-pprint-in/t0012.cc
 check-clang: out/clang-pprint-in/c/t0001.c
 check-clang: out/clang-pprint-in/c/t0002.c
 check-clang: out/clang-pprint-in/c/t0003.c
+check-clang: out/clang-pprint-in/c/t0004.c
 
 # These do not work yet.
-#check-clang: out/clang-pprint-in/c/t0004.c
 #check-clang: out/clang-pprint-in/c/t0005.c
 
 
@@ -405,6 +405,11 @@ check-clang: out/clang-pprint-in/c/t0003.c
 #
 #   * parameter names in prototypes
 #   * multiple tokens of concatenated string literals
+#   * combined definition of a struct with declaration of an instance
+#     of that struct
+#
+# In some cases, this information could be recovered by doing more work
+# in the importer, but I have chosen not to.
 #
 out/clang-pprint/%: pprint/% pprint/%.clang.expect $(CCPARSE)
 	$(CREATE_OUTPUT_DIRECTORY)

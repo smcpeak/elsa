@@ -159,6 +159,9 @@ public:      // methods
 
   TopForm *importTopForm(CXCursor cxTopForm);
 
+  Declaration *importDeclaration(CXCursor cxDecl,
+    DeclaratorContext context);
+
   Variable *importEnumTypeAsForward(CXCursor cxEnumDecl);
 
   Declaration *importEnumDefinition(CXCursor cxEnumDefn);

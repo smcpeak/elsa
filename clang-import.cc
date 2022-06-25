@@ -222,29 +222,16 @@ TopForm *ClangImport::importTopForm(CXCursor cxTopForm)
   CXCursorKind cxKind = clang_getCursorKind(cxTopForm);
   switch (cxKind) {
     default:
-      xfailure(stringb("Unknown cxKind: " << toString(cxKind)));
+      xfailure(stringb("importTopForm: Unknown cxKind: " << toString(cxKind)));
 
+    importDecl:
     case CXCursor_StructDecl: // 2
     case CXCursor_UnionDecl: // 3
-    case CXCursor_ClassDecl: { // 4
-      if (clang_isCursorDefinition(cxTopForm)) {
-        Declaration *decl = importCompoundTypeDefinition(cxTopForm);
-        return new TF_decl(loc, decl);
-      }
-      else {
-        xunimp("struct forward declaration");
-      }
-    }
-
-    case CXCursor_EnumDecl: { // 5
-      if (clang_isCursorDefinition(cxTopForm)) {
-        Declaration *decl = importEnumDefinition(cxTopForm);
-        return new TF_decl(loc, decl);
-      }
-      else {
-        xunimp("enum forward declaration");
-      }
-    }
+    case CXCursor_ClassDecl: // 4
+    case CXCursor_EnumDecl: // 5
+    case CXCursor_VarDecl: // 9
+    case CXCursor_TypedefDecl: // 20
+      return new TF_decl(loc, importDeclaration(cxTopForm, DC_TF_DECL));
 
     case CXCursor_FunctionDecl: // 8
     case CXCursor_CXXMethod: { // 21
@@ -256,13 +243,47 @@ TopForm *ClangImport::importTopForm(CXCursor cxTopForm)
         goto importDecl;
       }
     }
+  }
 
-    importDecl:
+  // Not reached.
+}
+
+
+Declaration *ClangImport::importDeclaration(CXCursor cxDecl,
+  DeclaratorContext context)
+{
+  CXCursorKind cxKind = clang_getCursorKind(cxDecl);
+  switch (cxKind) {
+    default:
+      xfailure(stringb("importDeclaration: Unknown cxKind: " << toString(cxKind)));
+
+    case CXCursor_StructDecl: // 2
+    case CXCursor_UnionDecl: // 3
+    case CXCursor_ClassDecl: // 4
+      if (clang_isCursorDefinition(cxDecl)) {
+        return importCompoundTypeDefinition(cxDecl);
+      }
+      else {
+        xunimp("struct forward declaration");
+      }
+
+    case CXCursor_EnumDecl: // 5
+      if (clang_isCursorDefinition(cxDecl)) {
+        return importEnumDefinition(cxDecl);
+      }
+      else {
+        xunimp("enum forward declaration");
+      }
+
+    case CXCursor_FunctionDecl: // 8
+    case CXCursor_CXXMethod: // 21
+      // This is only meant for use with non-definition declarations.
+      xassert(!clang_isCursorDefinition(cxDecl));
+      // Fallthrough.
+
     case CXCursor_VarDecl: // 9
-    case CXCursor_TypedefDecl: { // 20
-      Declaration *decl = importVarOrTypedefDecl(cxTopForm, DC_TF_DECL);
-      return new TF_decl(loc, decl);
-    }
+    case CXCursor_TypedefDecl: // 20
+      return importVarOrTypedefDecl(cxDecl, context);
   }
 
   // Not reached.
@@ -418,6 +439,14 @@ Declaration *ClangImport::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
     switch (childKind) {
       default:
         xunimp(stringb("compound defn child kind: " << toString(childKind)));
+
+      case CXCursor_StructDecl: // 2
+      case CXCursor_UnionDecl: // 3
+      case CXCursor_ClassDecl: // 4
+      case CXCursor_EnumDecl: // 5
+        newMember = new MR_decl(childLoc,
+          importDeclaration(child, DC_MR_DECL));
+        break;
 
       importDecl:
       case CXCursor_FieldDecl: // 6: non-static data

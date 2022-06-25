@@ -1,0 +1,25 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+struct Outer {
+  struct Inner {
+    int x;
+  };
+  struct Inner is;
+  enum InnerEnum {
+    InnerEnumerator
+  };
+  enum InnerEnum ie;
+  int y;
+};
+
+int foo(struct Inner *i)
+{
+  enum InnerEnum gotcha;
+  return (*i).x + InnerEnumerator;
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0
