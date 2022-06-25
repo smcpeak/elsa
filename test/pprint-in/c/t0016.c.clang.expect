@@ -1,0 +1,14 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+int fallowc(int);
+
+int fallowc(char c)
+{
+  return c;
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

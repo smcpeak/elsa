@@ -1,0 +1,12 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+int ttputc(int c)
+{
+  return 3;
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0
