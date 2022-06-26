@@ -1,0 +1,22 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+int f1()
+{
+  typedef int a;
+  a x = 3;
+  return ISC(SC_LVAL_TO_RVAL, int, x);
+}
+
+int f2()
+{
+  typedef int a, b;
+  a x = 3;
+  b y = 4;
+  return ISC(SC_LVAL_TO_RVAL, int, x)+ISC(SC_LVAL_TO_RVAL, int, y);
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

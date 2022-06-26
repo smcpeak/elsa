@@ -131,6 +131,7 @@ TESTS += pprint/return-zero-as-ptr.c
 TESTS += pprint/stdconv.c
 TESTS += pprint/stringlit.c
 TESTS += pprint/typedef.c
+TESTS += pprint/typedef-multi-declarator.c
 TESTS += pprint/vararg-promote.c
 TESTS += pprint/weak-alias.c
 
@@ -452,7 +453,7 @@ out/clang-pprint/%: pprint/% pprint/%.clang.expect $(CCPARSE)
 	touch $@
 
 # Clang C pprint tests.
-#check-clang: out/clang-pprint/ambig-cast-vs-funcall.c
+check-clang: out/clang-pprint/ambig-cast-vs-funcall.c
 #check-clang: out/clang-pprint/array-plus-int.c
 #check-clang: out/clang-pprint/attr-may-alias.c
 #check-clang: out/clang-pprint/big-for-loop.c
@@ -496,6 +497,7 @@ check-clang: out/clang-pprint/gnu-attr-several.c
 #check-clang: out/clang-pprint/stdconv.c
 check-clang: out/clang-pprint/stringlit.c
 #check-clang: out/clang-pprint/typedef.c
+check-clang: out/clang-pprint/typedef-multi-declarator.c
 #check-clang: out/clang-pprint/vararg-promote.c
 #check-clang: out/clang-pprint/weak-alias.c
 

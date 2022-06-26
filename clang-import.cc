@@ -1471,7 +1471,9 @@ Statement *ClangImport::importStatement(CXCursor cxStmt)
       // When a single statement declares multiple things, they show up
       // as multiple children here.
       for (CXCursor const &child : children) {
-        xassert(clang_getCursorKind(child) == CXCursor_VarDecl);
+        CXCursorKind childKind = clang_getCursorKind(child);
+        xassert(childKind == CXCursor_VarDecl ||
+                childKind == CXCursor_TypedefDecl);
         if (!decl) {
           // First declaration.
           decl = importVarOrTypedefDecl(child, DC_S_DECL);
