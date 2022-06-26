@@ -16,6 +16,9 @@
 // libc++
 #include <sstream>                     // std::ostringstream
 
+// libc
+#include <stdlib.h>                    // atoi, getenv
+
 
 // This is a candidate to go into smbase.
 template <class DEST, class SRC>
@@ -68,6 +71,14 @@ void clangParseTranslationUnit(
     }
   }
 
+  CXTranslationUnit_Flags tuFlags = CXTranslationUnit_None;
+  if (0) {
+    // This causes the TU to include things like MacroDefinition nodes,
+    // but it does not make the results of clang_tokenize any more
+    // accurate.
+    tuFlags = CXTranslationUnit_DetailedPreprocessingRecord;
+  }
+
   CXTranslationUnit cxTU;
   CXErrorCode errorCode = clang_parseTranslationUnit2(
     cxIndex,
@@ -76,7 +87,7 @@ void clangParseTranslationUnit(
     (int)gccOptions.size(),
     nullptr,                 // unsaved_files
     0,                       // num_unsaved_files
-    CXTranslationUnit_None,  // options
+    tuFlags,                 // options
     &cxTU);
 
   delete[] commandLine;
@@ -2032,6 +2043,12 @@ AccessKeyword ClangImport::importAccessKeyword(
 void ClangImport::printSubtree(CXCursor cursor)
 {
   ClangPrint clangPrint(cout);
+
+  static char const *maxTokensStr = getenv("MAX_TOKENS");
+  if (maxTokensStr) {
+    clangPrint.m_maxTokensToPrint = atoi(maxTokensStr);
+  }
+
   clangPrint.printCursor(cursor, 0 /*indent*/);
 }
 

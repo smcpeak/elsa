@@ -472,6 +472,10 @@ void ClangPrint::printCursor(CXCursor cursor, int indent)
 
   m_os << "\n";
 
+  if (m_maxTokensToPrint) {
+    printTokens(cursor, indent+2);
+  }
+
   if (hasType && m_printTypes) {
     printTypeTree(clang_getCursorType(cursor), indent+2);
   }
@@ -479,6 +483,33 @@ void ClangPrint::printCursor(CXCursor cursor, int indent)
   for (CXCursor const &child : getChildren(cursor)) {
     printCursor(child, indent+2);
   }
+}
+
+
+void ClangPrint::printTokens(CXCursor cursor, int indent)
+{
+  ind(m_os, indent) << "tokens:";
+
+  CXTranslationUnit tu = clang_Cursor_getTranslationUnit(cursor);
+
+  CXToken *tokens;
+  unsigned numTokens;
+  clang_tokenize(tu, clang_getCursorExtent(cursor), &tokens, &numTokens);
+
+  int i;
+  for (i=0; i < (int)numTokens && i < m_maxTokensToPrint; ++i) {
+    std::string tok = toString(clang_getTokenSpelling(tu, tokens[i]));
+    m_os << ' ' << tok;
+  }
+
+  if (i < (int)numTokens) {
+    m_os << " (+" << (numTokens-i) << " more)";
+  }
+
+  // Clean up.
+  clang_disposeTokens(tu, tokens, numTokens);
+
+  m_os << '\n';
 }
 
 

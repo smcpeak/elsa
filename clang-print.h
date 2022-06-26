@@ -52,17 +52,24 @@ public:      // data
   // If true, print type details too.
   bool m_printTypes;
 
+  // If non-zero print up to this many tokens from each node.
+  int m_maxTokensToPrint;
+
 private:     // methods
   bool maybePrintType(char const *label, CXType cxType);
 
 public:      // methods
   ClangPrint(std::ostream &os)
     : m_os(os),
-      m_printTypes(true)
+      m_printTypes(true),
+      m_maxTokensToPrint(0)
   {}
 
   // Print the subtree rooted at 'cursor'.
   void printCursor(CXCursor cursor, int indent);
+
+  // Print up to 'm_maxTokensToPrint' tokens of 'cursor'.
+  void printTokens(CXCursor cursor, int indent);
 
   // Print the type tree rooted at 'cxType'.
   void printTypeTree(CXType cxType, int indent);
