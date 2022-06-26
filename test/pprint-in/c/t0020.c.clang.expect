@@ -1,0 +1,25 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+int foo()
+{
+  return 2;
+}
+
+void char1()
+{
+  int ch;
+}
+
+typedef int wchar_t;
+
+void char2()
+{
+  int ch;
+  ch = L'x';
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

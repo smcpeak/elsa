@@ -1,0 +1,12 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+int foo()
+{
+  return not_declared();
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

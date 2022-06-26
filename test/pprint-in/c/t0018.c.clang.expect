@@ -1,0 +1,13 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+void foo(int x, int y)
+{
+label:
+  foo(x, y-0);
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

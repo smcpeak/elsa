@@ -409,6 +409,15 @@ check-clang: out/clang-pprint-in/c/t0014.c
 check-clang: out/clang-pprint-in/c/t0015.c
 check-clang: out/clang-pprint-in/c/t0016.c
 check-clang: out/clang-pprint-in/c/t0017.c
+check-clang: out/clang-pprint-in/c/t0018.c
+check-clang: out/clang-pprint-in/c/t0019.c
+check-clang: out/clang-pprint-in/c/t0020.c
+check-clang: out/clang-pprint-in/c/t0021.c
+
+# This test seems to be aimed at supporting some non-standard ways of
+# redeclaring 'main', tolerated by Elsa in a fairly specific way.  Since
+# this is primarily a code compliance test, I'll skip it for Clang.
+#check-clang: out/clang-pprint-in/c/t0022.c
 
 
 # Run a C++ pretty-print test with --clang.

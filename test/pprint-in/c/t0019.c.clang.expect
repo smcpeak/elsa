@@ -1,0 +1,18 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+struct S {
+  int x;
+};
+
+typedef struct S S;
+
+void foo()
+{
+  struct S s;
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0
