@@ -1,0 +1,16 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+enum  {
+  std
+};
+
+int foo()
+{
+  return std;
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

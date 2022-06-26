@@ -1,0 +1,27 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+struct S {
+  int x;
+  int y;
+};
+
+typedef struct S S;
+
+int f(S s)
+{
+  return s.x + s.y;
+}
+
+int g()
+{
+  S s;
+  s.x = 5;
+  s.y = 7;
+  return f(s);
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

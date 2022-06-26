@@ -419,6 +419,16 @@ check-clang: out/clang-pprint-in/c/t0021.c
 # this is primarily a code compliance test, I'll skip it for Clang.
 #check-clang: out/clang-pprint-in/c/t0022.c
 
+check-clang: out/clang-pprint-in/c/t0023.c
+check-clang: out/clang-pprint-in/c/t0024.c
+check-clang: out/clang-pprint-in/c/t0025.c
+
+# This is testing invalid code, and Clang properly rejects it.  Elsa
+# accepts it for bug compatibility only.
+#check-clang: out/clang-pprint-in/c/t0026.c
+
+check-clang: out/clang-pprint-in/c/t0027.c
+
 
 # Run a C++ pretty-print test with --clang.
 #
