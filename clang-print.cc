@@ -438,12 +438,16 @@ void ClangPrint::printCursor(CXCursor cursor, int indent)
   std::string spelling = toString(clang_getCursorSpelling(cursor));
   std::string display = toString(clang_getCursorDisplayName(cursor));
 
+  CXSourceRange extent = clang_getCursorExtent(cursor);
+
   CXCursorKind cursorKind = clang_getCursorKind(cursor);
   ind(m_os, indent)
     << "cursor: kind=" << toString(cursorKind)
     << "(" << cursorKindClassificationsString(cursorKind) << ")"
     << " loc=" << cursorLocLC(cursor)
-    << " spelling=\"" << spelling << "\"";
+    << " range=[" << toLCString(clang_getRangeStart(extent))
+    << "," << toLCString(clang_getRangeEnd(extent))
+    << ") spelling=\"" << spelling << "\"";
 
   if (spelling != display) {
     m_os << " display=\"" << display << "\"";
