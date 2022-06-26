@@ -451,10 +451,55 @@ out/clang-pprint/%: pprint/% pprint/%.clang.expect $(CCPARSE)
 	  $(CCPARSE) --pretty-print --clang $<
 	touch $@
 
+# Clang C pprint tests.
+#check-clang: out/clang-pprint/ambig-cast-vs-funcall.c
+#check-clang: out/clang-pprint/array-plus-int.c
+#check-clang: out/clang-pprint/attr-may-alias.c
+#check-clang: out/clang-pprint/big-for-loop.c
+#check-clang: out/clang-pprint/bitfield.c
+#check-clang: out/clang-pprint/builtin-offsetof.c
+#check-clang: out/clang-pprint/cast-array-to-int.c
 check-clang: out/clang-pprint/character-literals.c
+#check-clang: out/clang-pprint/compound-after-label.c
+#check-clang: out/clang-pprint/const-enum.c
+#check-clang: out/clang-pprint/const-struct.c
+#check-clang: out/clang-pprint/deref-array.c
 check-clang: out/clang-pprint/for-loop-missing-elts.c
+#check-clang: out/clang-pprint/for-loop-no-init.c
+#check-clang: out/clang-pprint/func.c
+#check-clang: out/clang-pprint/func-symbol.c
+#check-clang: out/clang-pprint/funcptr.c
+#check-clang: out/clang-pprint/gnu-attr-after-asm-label.c
+#check-clang: out/clang-pprint/gnu-attr-after-enum.c
+#check-clang: out/clang-pprint/gnu-attr-after-struct.c
+#check-clang: out/clang-pprint/gnu-attr-in-declaration.c
+#check-clang: out/clang-pprint/gnu-attr-in-declarator.c
+#check-clang: out/clang-pprint/gnu-attr-in-type-specifier.c
+#check-clang: out/clang-pprint/gnu-attr-mode.c
+#check-clang: out/clang-pprint/gnu-attr-on-label.c
 check-clang: out/clang-pprint/gnu-attr-several.c
+#check-clang: out/clang-pprint/gnu-declaration-attr.c
+#check-clang: out/clang-pprint/if-without-else.c
+#check-clang: out/clang-pprint/init-struct-with-string.c
+#check-clang: out/clang-pprint/init-struct-with-string2.c
+#check-clang: out/clang-pprint/logical-op-ptr.c
+#check-clang: out/clang-pprint/long-decl.c
+#check-clang: out/clang-pprint/long-parameters.c
+#check-clang: out/clang-pprint/longlines2.c
+#check-clang: out/clang-pprint/longlines3.c
+#check-clang: out/clang-pprint/nested-block.c
+#check-clang: out/clang-pprint/nested-field-access.c
+#check-clang: out/clang-pprint/printf-cond-arg.c
+#check-clang: out/clang-pprint/ptr-as-condition.c
+#check-clang: out/clang-pprint/range-case.c
+#check-clang: out/clang-pprint/return-zero-as-ptr.c
+#check-clang: out/clang-pprint/stdconv.c
 check-clang: out/clang-pprint/stringlit.c
+#check-clang: out/clang-pprint/typedef.c
+#check-clang: out/clang-pprint/vararg-promote.c
+#check-clang: out/clang-pprint/weak-alias.c
+
+# Clang C++ pprint tests.
 check-clang: out/clang-pprint/method-defn.cc
 check-clang: out/clang-pprint/try-catch.cc
 
