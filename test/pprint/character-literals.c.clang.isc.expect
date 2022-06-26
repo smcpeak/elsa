@@ -1,0 +1,34 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+typedef int wchar_t;
+
+void f()
+{
+  'a';
+  L'a';
+  '\'';
+  '\\';
+  '\0';
+  '\x1';
+  '~';
+  '\x7F';
+  '\x80';
+  '\x81';
+  '\xFE';
+  '\xFF';
+  L'\xFF';
+  L'\xFFFF';
+  L'\xFFFFFFFF';
+  '\x61\x62';
+  '\x61\x62\x63';
+  '\x61\x62\x63\x64';
+  '\x62\x63\x64\x65';
+  '\xFF\x5F';
+  '\xFF\x5F';
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

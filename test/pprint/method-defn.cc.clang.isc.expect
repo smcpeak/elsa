@@ -1,0 +1,42 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+struct Other {
+};
+
+struct Other2 {
+};
+
+struct S {
+  int x;
+  int y;
+  void method1();
+  Other method2(Other2);
+  static Other method3(Other2);
+};
+
+struct S func()
+{
+  struct S s;
+  return s();
+}
+
+void S::method1()
+{}
+
+Other S::method2(Other2 )
+{
+  struct Other o;
+  return o();
+}
+
+Other S::method3(Other2 )
+{
+  struct Other o;
+  return o();
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

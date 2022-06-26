@@ -433,28 +433,42 @@ check-clang: out/clang-pprint-in/c/t0027.c
 
 # Run a C++ pretty-print test with --clang.
 #
+# Also test with --print-isc so I can verify the standard conversions I
+# need are in place.
+#
 # This uses different expected output than when not using --clang
 # because Clang loses some information, including:
 #
-#   * parameter names in prototypes
+#   * parameter names in prototypes (this is a defect in my importer;
+#     Clang has the information in its AST)
 #   * multiple tokens of concatenated string literals
 #   * combined definition of a struct with declaration of an instance
 #     of that struct
 #
+# There are also differences that are not a loss of information, but
+# the same information presented differently:
+#
+#   * Elsa combines multiple standard conversions occurring at the same
+#     place into one AST node, while Clang uses multiple AST nodes.
+#
 # In some cases, this information could be recovered by doing more work
 # in the importer, but I have chosen not to.
 #
-out/clang-pprint/%: pprint/% pprint/%.clang.expect $(CCPARSE)
+out/clang-pprint/%: pprint/% pprint/%.clang.expect pprint/%.clang.isc.expect $(CCPARSE)
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/clang-pprint/$*.actual \
 	  --expect pprint/$*.clang.expect \
 	  $(CCPARSE) --pretty-print --clang $<
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/clang-pprint/$*.actual \
+	  --expect pprint/$*.clang.isc.expect \
+	  $(CCPARSE) --pretty-print --print-isc --clang $<
 	touch $@
 
 # Clang C pprint tests.
 check-clang: out/clang-pprint/ambig-cast-vs-funcall.c
-#check-clang: out/clang-pprint/array-plus-int.c
+check-clang: out/clang-pprint/array-plus-int.c
 #check-clang: out/clang-pprint/attr-may-alias.c
 #check-clang: out/clang-pprint/big-for-loop.c
 #check-clang: out/clang-pprint/bitfield.c

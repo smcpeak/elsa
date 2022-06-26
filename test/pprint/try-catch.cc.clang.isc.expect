@@ -1,0 +1,26 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+void g(int a)
+{
+  try {
+    a++;
+  }
+  catch (long b) {
+    a--;
+  }
+  catch (float b) {
+    a--;
+    a--;
+  }
+  catch (...) {
+    a = 3;
+  }
+
+  a++;
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

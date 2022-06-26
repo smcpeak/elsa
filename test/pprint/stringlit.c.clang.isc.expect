@@ -1,0 +1,22 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+void g(char const *);
+
+void f()
+{
+  char const *p =
+    ISC(SC_QUAL_CONV, char const *,
+      ISC(SC_ARRAY_TO_PTR, char *, "init"));
+  char *q = ISC(SC_ARRAY_TO_PTR, char *, "init2");
+  p =
+    ISC(SC_QUAL_CONV, char const *,
+      ISC(SC_ARRAY_TO_PTR, char *, "assign"));
+  g(
+    ISC(SC_QUAL_CONV, char const *, ISC(SC_ARRAY_TO_PTR, char *, "arg")));
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

@@ -1,0 +1,20 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+void f()
+{
+  char arr[5] = 5;
+  char *cp;
+  void *vp;
+  cp = ISC(SC_ARRAY_TO_PTR, char *, arr);
+  vp = ISC(SC_PTR_CONV, void *, ISC(SC_ARRAY_TO_PTR, char *, arr));
+  cp = ISC(SC_ARRAY_TO_PTR, char *, arr)+1;
+  vp = ISC(SC_PTR_CONV, void *, ISC(SC_ARRAY_TO_PTR, char *, arr)+1);
+  cp = ISC(SC_ARRAY_TO_PTR, char *, arr)-1;
+  vp = ISC(SC_PTR_CONV, void *, ISC(SC_ARRAY_TO_PTR, char *, arr)-1);
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

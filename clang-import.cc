@@ -1657,6 +1657,10 @@ Expression *ClangImport::importExpression(CXCursor cxExpr)
         return importExpression(child);
       }
       else {
+        // Note: When multiple conversions take place at the same
+        // location, Clang uses multiple conversion nodes, whereas Elsa
+        // combines them.  For now at least, I'm not collapsing them the
+        // way Elsa would.
         StandardConversion conv = describeAsStandardConversion(
           /*dest*/ type, /*src*/ childType, getSpecialExpr(child));
         ret = new E_implicitStandardConversion(conv,
@@ -1702,6 +1706,20 @@ Expression *ClangImport::importExpression(CXCursor cxExpr)
 
       // The first child is the callee expression.
       Expression *callee = importExpression(children.front());
+
+      if (E_implicitStandardConversion *calleeISC =
+            callee->ifE_implicitStandardConversion()) {
+        if (calleeISC->conv == SC_FUNC_TO_PTR) {
+          // For ordinary calls to a named function, Clang inserts an
+          // implicit conversion to the function's address.  I suppose
+          // that is done to make the AST more uniform, but I don't like
+          // it because it clutters the --print-isc output.  Discard the
+          // ISC.
+          callee = calleeISC->expr;
+          calleeISC->expr = nullptr;
+          delete calleeISC;
+        }
+      }
 
       // Remaining children are the arguments.
       FakeList<ArgExpression> *args = FakeList<ArgExpression>::emptyList();
