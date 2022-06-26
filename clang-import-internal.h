@@ -233,6 +233,28 @@ public:      // methods
   bool possiblyAddNameQualifiers(Declarator *declarator,
     CXCursor cxVarDecl);
 
+  // Given a set of attributes associated with 'declarator', parse them
+  // and attach their parsed forms to 'declarator'.
+  void importDeclaratorAttributes(Declarator *declarator,
+    std::vector<CXCursor> const &cxAttributes);
+
+  Attribute *importAttribute(CXCursor cxAttribute);
+
+  // Import a GNU-syntax attribute in 'attrString', expecting that the
+  // name of the attribute is 'name'.
+  Attribute *importGNUAttribute(SourceLoc loc,
+    char const *name, char const *attrString);
+
+  // Import a single argument to an attribute, such as '"name"' in
+  // '__attribute__((alias("name")))'.  The argument is expressed as its
+  // C token syntax.
+  //
+  // Although the result is described as an Expression, currently that
+  // Expression only contains syntax, without any of the semantic
+  // annotations that the Elsa type checker would add.
+  Expression *importAttributeArgument(SourceLoc loc,
+    StringRef arg);
+
   Type *importType(CXType cxType);
 
   // Import 'cxType' as a type.  If 'methodClass' is not NULL, and

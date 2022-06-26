@@ -112,6 +112,7 @@ TESTS += pprint/gnu-attr-in-declarator.c
 TESTS += pprint/gnu-attr-in-type-specifier.c
 TESTS += pprint/gnu-attr-mode.c
 TESTS += pprint/gnu-attr-on-label.c
+TESTS += pprint/gnu-attr-several.c
 TESTS += pprint/gnu-declaration-attr.c
 TESTS += pprint/if-without-else.c
 TESTS += pprint/init-struct-with-string.c
@@ -433,6 +434,7 @@ out/clang-pprint/%: pprint/% pprint/%.clang.expect $(CCPARSE)
 
 check-clang: out/clang-pprint/character-literals.c
 check-clang: out/clang-pprint/for-loop-missing-elts.c
+check-clang: out/clang-pprint/gnu-attr-several.c
 check-clang: out/clang-pprint/stringlit.c
 check-clang: out/clang-pprint/method-defn.cc
 check-clang: out/clang-pprint/try-catch.cc

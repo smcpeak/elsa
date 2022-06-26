@@ -8,8 +8,10 @@
 #include "clang-additions.h"           // clang_getUnaryExpressionOperator, etc.
 
 // smbase
-#include "map-utils.h"                 // insertMapUnique
+#include "codepoint.h"                 // isASCIIDigit, isCIdentifierCharacter
 #include "exc.h"                       // xfatal
+#include "map-utils.h"                 // insertMapUnique
+#include "parsestring.h"               // ParseString
 #include "str.h"                       // string
 #include "trace.h"                     // tracingSys
 
@@ -764,8 +766,13 @@ Declaration *ClangImport::importVarOrTypedefDecl(CXCursor cxVarDecl,
   // Get children, partitioned by category.
   PartitionedChildren children(cxVarDecl);
 
-  // TODO: Handle these.
-  xassert(children.m_attributes.empty());
+  // Process attributes, which are associated with the declarator.
+  // (When an attribute is associated with the entire declaration, Clang
+  // takes care of duplicating it as needed.)
+  if (!children.m_attributes.empty()) {
+    importDeclaratorAttributes(declarator, children.m_attributes);
+    children.m_attributes.clear();
+  }
 
   // The interpretation of 'children' depends on the node type.
   CXCursorKind declKind = clang_getCursorKind(cxVarDecl);
@@ -868,6 +875,118 @@ bool ClangImport::possiblyAddNameQualifiers(Declarator *declarator,
 
   declarator->setDeclaratorId(declaratorName);
   return loopCounter > 0;
+}
+
+
+void ClangImport::importDeclaratorAttributes(Declarator *declarator,
+  std::vector<CXCursor> const &cxAttributes)
+{
+  for (CXCursor const &cxAttribute : cxAttributes) {
+    Attribute *attr = importAttribute(cxAttribute);
+    AttributeSpecifier *aspec =
+      new AttributeSpecifier(attr, nullptr /*next*/);
+    AttributeSpecifierList *asl =
+      new AttributeSpecifierList(aspec, nullptr /*next*/);
+
+    // I am simply assuming that the attribute is to be associated with
+    // the outermost declarator since I can't really tell with Clang.
+    declarator->decl->appendASL(asl);
+  }
+}
+
+
+Attribute *ClangImport::importAttribute(CXCursor cxAttribute)
+{
+  SourceLoc loc = cursorLocation(cxAttribute);
+  CXAttributeSyntaxKind kind = clang_getAttributeSyntaxKind(cxAttribute);
+  WrapCXString name(clang_getAttributeName(cxAttribute));
+  WrapCXString pretty(clang_getAttributePrettyString(cxAttribute));
+
+  switch (kind) {
+    default:
+      xunimp(stringb("importAttribute: kind: " << kind));
+
+    case CXAttributeSyntaxKind_GNU:
+      return importGNUAttribute(loc, name.c_str(), pretty.c_str());
+  }
+
+  // Not reached.
+}
+
+
+Attribute *ClangImport::importGNUAttribute(SourceLoc loc,
+  char const *name, char const *attrString)
+{
+  ParseString parser(attrString);
+  parser.skipWS();
+  parser.parseString("__attribute__((");
+
+  // Empty attributes are dropped by Clang.
+
+  string parsedName = parser.parseCToken();
+  xassert(parsedName == name);
+
+  if (parser.cur() == ')') {
+    parser.parseString("))");
+    parser.parseEOS();
+    return new AT_word(loc, addStringRef(name));
+  }
+
+  parser.parseString("(");
+  FakeList<ArgExpression> *args = FakeList<ArgExpression>::emptyList();
+
+  while (true) {
+    StringRef arg = addStringRef(parser.parseCToken().c_str());
+    args = fl_prepend(args,
+      new ArgExpression(importAttributeArgument(loc, arg)));
+
+    parser.skipWS();
+    if (parser.cur() == ')') {
+      break;
+    }
+    else if (parser.cur() == ',') {
+      parser.parseString(",");
+      parser.skipWS();
+    }
+    else {
+      parser.throwErr(stringb("importGNUAttribute: Unexpected char: '" <<
+                              parser.cur() << "'."));
+    }
+  }
+
+  args = fl_reverse(args);
+
+  parser.parseString(")))");
+  parser.parseEOS();
+
+  return new AT_func(loc, addStringRef(name), args);
+}
+
+
+Expression *ClangImport::importAttributeArgument(SourceLoc loc,
+  StringRef arg)
+{
+  if (isASCIIDigit(arg[0])) {
+    // Number.
+    return new E_intLit(arg);
+  }
+  else if (arg[0] == '"') {
+    // String.
+    return new E_stringLit(arg);
+  }
+  else if (arg[0] == '\'') {
+    // Character.
+    return new E_charLit(arg);
+  }
+  else if (isCIdentifierCharacter(arg[0])) {
+    // Identifier.
+    return new E_variable(new PQ_name(loc, arg));
+  }
+  else {
+    xfatal(stringb("importGNUAttribute: Unexpected arg: \"" <<
+                   arg << "\"."));
+    return nullptr; // Not reached.
+  }
 }
 
 
