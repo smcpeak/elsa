@@ -386,12 +386,21 @@ CCPARSE_OBJS += clang-additions.o
 # These are the flags to link with libclang.
 LDFLAGS += -L$(CLANG_LLVM_LIB_DIR) -Wl,-rpath=$(CLANG_LLVM_LIB_DIR) -lclang
 
-# This is also needed for llvm::dyn_cast, I think.
+# This raft of libraries is required to call Attr::printPretty.
+LDFLAGS += -lclangAST
+LDFLAGS += -lclangLex
+LDFLAGS += -lclangBasic
+LDFLAGS += -lLLVMCore
+LDFLAGS += -lLLVMRemarks
+LDFLAGS += -lLLVMBitstreamReader
+LDFLAGS += -lLLVMBinaryFormat
+LDFLAGS += -lLLVMFrontendOpenMP
 LDFLAGS += -lLLVMSupport
+LDFLAGS += -lpthread
 
-else
+else # USE_CLANG=0
 CCPARSE_OBJS += clang-import-stub.o
-endif
+endif # USE_CLANG
 
 # parser binary
 ccparse.exe: $(CCPARSE_OBJS) libelsa.a $(LIBS)

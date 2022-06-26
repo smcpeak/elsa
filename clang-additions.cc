@@ -3,9 +3,20 @@
 
 #include "clang-additions.h"                     // this module
 
+// clang
+#include "clang/AST/Attr.h"                      // Attr
 #include "clang/AST/Expr.h"                      // UnaryOperator, etc.
+#include "clang/AST/PrettyPrinter.h"             // PrintingPolicy
 
+// llvm
+#include "llvm/Support/raw_ostream.h"            // raw_string_ostream
+
+// libc++
+#include <iostream>                              // std::cout (temporary!)
+
+// libc
 #include <assert.h>                              // assert
+#include <stdlib.h>                              // malloc
 #include <string.h>                              // memcpy
 
 
@@ -19,7 +30,7 @@ using namespace clang;
 using namespace llvm;
 
 
-// ------------------ BEGIN: Copied from CXCursor.cpp ------------------
+// ---------------------- Copied from CXCursor.cpp ---------------------
 // The routines in this section were copied from
 // clang/tools/libclang/CXCursor.cpp.  If this code were submitted to
 // Clang, this section would be omitted.
@@ -650,7 +661,48 @@ static CXCursor MakeCXCursor(const Stmt *S, const Decl *Parent,
 }
 
 
-// ------------------- END: Copied from CXCursor.cpp -------------------
+static const Attr *getCursorAttr(CXCursor Cursor) {
+  return static_cast<const Attr *>(Cursor.data[1]);
+}
+
+
+// ---------------------- Copied from CXString.cpp ---------------------
+// The routines in this section were copied from
+// clang/tools/libclang/CXString.cpp.  If this code were submitted to
+// Clang, this section would be omitted.
+
+/// Describes the kind of underlying data in CXString.
+enum CXStringFlag {
+  /// CXString contains a 'const char *' that it doesn't own.
+  CXS_Unmanaged,
+
+  /// CXString contains a 'const char *' that it allocated with malloc().
+  CXS_Malloc,
+
+  /// CXString contains a CXStringBuf that needs to be returned to the
+  /// CXStringPool.
+  CXS_StringBuf
+};
+
+// In some cases, 'createRef' might be more efficient, but I have chosen
+// to use 'createDup' exclusively to minimize copied code.
+static CXString createDup(StringRef String) {
+  CXString Result;
+
+#if 0 // original
+  // If I call 'safe_malloc', that incurs a link-time dependency on
+  // 'pthread_sigmask', but I do not want to have to link with pthreads.
+  char *Spelling = static_cast<char *>(llvm::safe_malloc(String.size() + 1));
+#else // my alternative
+  char *Spelling = static_cast<char *>(malloc(String.size() + 1));
+#endif
+
+  memmove(Spelling, String.data(), String.size());
+  Spelling[String.size()] = 0;
+  Result.data = Spelling;
+  Result.private_flags = (unsigned) CXS_Malloc;
+  return Result;
+}
 
 
 // --------------------------- UnaryOperator ---------------------------
@@ -891,6 +943,81 @@ void clang_getStringLiteralBytes(CXCursor stringLiteralCursor,
     assert(bytes.size() == len);
 
     memcpy(contents, bytes.bytes_begin(), len);
+  }
+}
+
+
+// ----------------------------- Attribute -----------------------------
+extern "C"
+CXAttributeSyntaxKind clang_getAttributeSyntaxKind(CXCursor attributeCursor)
+{
+  if (clang_isAttribute(clang_getCursorKind(attributeCursor))) {
+    Attr const *attr = getCursorAttr(attributeCursor);
+    assert(attr);
+
+    switch (attr->getSyntax()) {
+      #define ATTR_SYNTAX(name) \
+        case Attr::AS_##name: return CXAttributeSyntaxKind_##name;
+
+      ATTR_SYNTAX(GNU)
+      ATTR_SYNTAX(CXX11)
+      ATTR_SYNTAX(C2x)
+      ATTR_SYNTAX(Declspec)
+      ATTR_SYNTAX(Microsoft)
+      ATTR_SYNTAX(Keyword)
+      ATTR_SYNTAX(Pragma)
+      ATTR_SYNTAX(ContextSensitiveKeyword)
+
+      #undef ATTR_SYNTAX
+
+      default:
+        break;
+    }
+  }
+
+  return CXAttributeSyntaxKind_Unknown;
+}
+
+
+extern "C"
+CXString clang_getAttributeName(CXCursor attributeCursor)
+{
+  if (clang_isAttribute(clang_getCursorKind(attributeCursor))) {
+    Attr const *attr = getCursorAttr(attributeCursor);
+    assert(attr);
+
+    IdentifierInfo const *iinfo = attr->getAttrName();
+    assert(iinfo);
+
+    StringRef sref = iinfo->getName();
+    return createDup(sref);
+  }
+  else {
+    StringRef empty;
+    return createDup(empty);
+  }
+}
+
+
+extern "C"
+CXString clang_getAttributePrettyString(CXCursor attributeCursor)
+{
+  if (clang_isAttribute(clang_getCursorKind(attributeCursor))) {
+    Attr const *attr = getCursorAttr(attributeCursor);
+    assert(attr);
+
+    LangOptions lo;
+    PrintingPolicy pp(lo);
+    std::string str;
+    raw_string_ostream os(str);
+    attr->printPretty(os, pp);
+
+    StringRef sref(str);
+    return createDup(sref);
+  }
+  else {
+    StringRef empty;
+    return createDup(empty);
   }
 }
 

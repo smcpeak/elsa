@@ -3,6 +3,9 @@
 
 #include "clang-print.h"               // this module
 
+// elsa
+#include "clang-additions.h"           // clang_getAttributeName, etc.
+
 // ast
 #include "asthelp.h"                   // ind
 
@@ -468,6 +471,12 @@ void ClangPrint::printCursor(CXCursor cursor, int indent)
   CX_StorageClass storageClass = clang_Cursor_getStorageClass(cursor);
   if (storageClass != CX_SC_Invalid && storageClass != CX_SC_None) {
     m_os << " storage=" << toString(storageClass);
+  }
+
+  if (clang_isAttribute(cursorKind)) {
+    m_os << " attrSyntax=" << clang_getAttributeSyntaxKind(cursor);
+    m_os << " attrName=\"" << toString(clang_getAttributeName(cursor)) << "\"";
+    m_os << " attrPretty=\"" << toString(clang_getAttributePrettyString(cursor)) << "\"";
   }
 
   m_os << "\n";

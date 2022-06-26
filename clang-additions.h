@@ -191,6 +191,61 @@ void clang_getStringLiteralBytes(CXCursor stringLiteralCursor,
   unsigned char *contents, size_t contentsSize);
 
 
+// ----------------------------- Attribute -----------------------------
+// The flavor of attribute syntax used by a given attribute instance.
+enum CXAttributeSyntaxKind {
+  // Used for an invalid call, or an unknown syntax.
+  CXAttributeSyntaxKind_Unknown = 0,
+
+  // __attribute__((...))
+  CXAttributeSyntaxKind_GNU = 1,
+
+  // [[...]]
+  CXAttributeSyntaxKind_CXX11 = 2,
+
+  // [[...]]
+  CXAttributeSyntaxKind_C2x = 3,
+
+  // __declspec(...)
+  CXAttributeSyntaxKind_Declspec = 4,
+
+  // [uuid("...")] class Foo
+  CXAttributeSyntaxKind_Microsoft = 5,
+
+  // __ptr16, alignas(...), etc.
+  CXAttributeSyntaxKind_Keyword = 6,
+
+  // #pragma ...
+  CXAttributeSyntaxKind_Pragma = 7,
+
+  // Context-sensitive version of a keyword attribute.
+  CXAttributeSyntaxKind_ContextSensitiveKeyword = 8,
+};
+
+
+// Get the syntax kind of the given attribute.
+//
+// Returns CXAttributeSyntaxKind_Unknown if this is not an attribute.
+CXAttributeSyntaxKind clang_getAttributeSyntaxKind(CXCursor attributeCursor);
+
+
+// Get the name of the given attribute.
+//
+// Returns an empty string if this is not an attribute.
+CXString clang_getAttributeName(CXCursor attributeCursor);
+
+
+// Return the "printPretty" string for this attribute, which contains
+// the leading syntax element along with its name and arguments, for
+// example: ' __attribute__((alias("var_target")))'.
+//
+// This typically (always?) has a leading space for all syntaxes except
+// Microsoft.
+//
+// Returns an empty string if this is not an attribute.
+CXString clang_getAttributePrettyString(CXCursor attributeCursor);
+
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus
