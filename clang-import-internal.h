@@ -240,10 +240,11 @@ public:      // methods
 
   Attribute *importAttribute(CXCursor cxAttribute);
 
-  // Import a GNU-syntax attribute in 'attrString', expecting that the
-  // name of the attribute is 'name'.
+  // Import a GNU-syntax attribute described by the Clang
+  // 'prettyAttrString'.  The Clang-reported attribute name is
+  // 'attrName'.
   Attribute *importGNUAttribute(SourceLoc loc,
-    char const *name, char const *attrString);
+    char const *attrName, char const *prettyAttrString);
 
   // Import a single argument to an attribute, such as '"name"' in
   // '__attribute__((alias("name")))'.  The argument is expressed as its

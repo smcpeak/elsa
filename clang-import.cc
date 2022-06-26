@@ -899,15 +899,16 @@ Attribute *ClangImport::importAttribute(CXCursor cxAttribute)
 {
   SourceLoc loc = cursorLocation(cxAttribute);
   CXAttributeSyntaxKind kind = clang_getAttributeSyntaxKind(cxAttribute);
-  WrapCXString name(clang_getAttributeName(cxAttribute));
-  WrapCXString pretty(clang_getAttributePrettyString(cxAttribute));
+  WrapCXString attrName(clang_getAttributeName(cxAttribute));
+  WrapCXString prettyAttrString(clang_getAttributePrettyString(cxAttribute));
 
   switch (kind) {
     default:
       xunimp(stringb("importAttribute: kind: " << kind));
 
     case CXAttributeSyntaxKind_GNU:
-      return importGNUAttribute(loc, name.c_str(), pretty.c_str());
+      return importGNUAttribute(loc,
+        attrName.c_str(), prettyAttrString.c_str());
   }
 
   // Not reached.
@@ -915,23 +916,40 @@ Attribute *ClangImport::importAttribute(CXCursor cxAttribute)
 
 
 Attribute *ClangImport::importGNUAttribute(SourceLoc loc,
-  char const *name, char const *attrString)
+  char const *attrName, char const *prettyAttrString)
 {
-  ParseString parser(attrString);
+  ParseString parser(prettyAttrString);
   parser.skipWS();
   parser.parseString("__attribute__((");
 
   // Empty attributes are dropped by Clang.
+  xassert(parser.cur() != ')');
 
-  string parsedName = parser.parseCToken();
-  xassert(parsedName == name);
+  // Get the name from the pretty string, and confirm it matches
+  // 'attrName'.
+  {
+    string parsedName = parser.parseCToken();
+    if (parsedName != attrName) {
+      // The "pretty" form does not include the surrounding underscores,
+      // but the 'attrName' may.
+      if (stringb("__" << parsedName << "__") != attrName) {
+        xfailure(stringb("importGNUAttribute: attrName=\"" << attrName <<
+                         "\" but parsedName=\"" << parsedName << "\""));
+      }
+    }
 
-  if (parser.cur() == ')') {
-    parser.parseString("))");
-    parser.parseEOS();
-    return new AT_word(loc, addStringRef(name));
+    // We use 'attrName' rather than 'parsedName' in the created AST
+    // node to preserve the underscore information.
   }
 
+  if (parser.cur() == ')') {
+    // The attribute is just the name.
+    parser.parseString("))");
+    parser.parseEOS();
+    return new AT_word(loc, addStringRef(attrName));
+  }
+
+  // The attribute is a name followed by some arguments.
   parser.parseString("(");
   FakeList<ArgExpression> *args = FakeList<ArgExpression>::emptyList();
 
@@ -959,7 +977,7 @@ Attribute *ClangImport::importGNUAttribute(SourceLoc loc,
   parser.parseString(")))");
   parser.parseEOS();
 
-  return new AT_func(loc, addStringRef(name), args);
+  return new AT_func(loc, addStringRef(attrName), args);
 }
 
 
