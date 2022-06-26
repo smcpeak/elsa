@@ -1813,6 +1813,29 @@ Expression *ClangImport::importExpression(CXCursor cxExpr)
       break;
     }
 
+    case CXCursor_ArraySubscriptExpr: { // 113
+      CXCursor cxLHS, cxRHS;
+      getTwoChildren(cxLHS, cxRHS, cxExpr);
+
+      Expression *lhs = importExpression(cxLHS);
+      Expression *rhs = importExpression(cxRHS);
+
+      // One of the operands should be a pointer, and that determines
+      // the type of the addition node.
+      E_binary *bin = new E_binary(lhs, BIN_PLUS, rhs);
+      if (lhs->type->isPointerType()) {
+        bin->type = lhs->type;
+      }
+      else {
+        xassert(rhs->type->isPointerType());
+        bin->type = rhs->type;
+      }
+
+      // The Elsa AST represents 'a[b]' as '*(a+b)'.
+      ret = new E_deref(bin);
+      break;
+    }
+
     case CXCursor_BinaryOperator: { // 114
       CXCursor cxLHS, cxRHS;
       getTwoChildren(cxLHS, cxRHS, cxExpr);

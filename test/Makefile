@@ -469,7 +469,7 @@ out/clang-pprint/%: pprint/% pprint/%.clang.expect pprint/%.clang.isc.expect $(C
 # Clang C pprint tests.
 check-clang: out/clang-pprint/ambig-cast-vs-funcall.c
 check-clang: out/clang-pprint/array-plus-int.c
-#check-clang: out/clang-pprint/attr-may-alias.c
+check-clang: out/clang-pprint/attr-may-alias.c
 #check-clang: out/clang-pprint/big-for-loop.c
 #check-clang: out/clang-pprint/bitfield.c
 #check-clang: out/clang-pprint/builtin-offsetof.c
