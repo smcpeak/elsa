@@ -116,6 +116,56 @@ void clangParseTranslationUnit(
 }
 
 
+// ----------------------- PartitionedChildren -------------------------
+static CXChildVisitResult partitionedChildCollector(CXCursor cursor,
+  CXCursor parent, CXClientData client_data)
+{
+  PartitionedChildren *children =
+    static_cast<PartitionedChildren*>(client_data);
+
+  CXCursorKind kind = clang_getCursorKind(cursor);
+  if (clang_isDeclaration(kind)) {
+    children->m_declarations.push_back(cursor);
+  }
+  else if (clang_isExpression(kind)) {
+    children->m_expressions.push_back(cursor);
+  }
+  else if (clang_isStatement(kind)) {
+    children->m_statements.push_back(cursor);
+  }
+  else if (clang_isAttribute(kind)) {
+    children->m_attributes.push_back(cursor);
+  }
+  else if (kind == CXCursor_TypeRef) {
+    // These are entirely useless, so I don't even bother to save them.
+  }
+  else {
+    xunimp(stringb("partitionedChildCollector: kind: " << toString(kind)));
+  }
+
+  return CXChildVisit_Continue;
+}
+
+
+PartitionedChildren::PartitionedChildren(CXCursor cursor)
+  : m_declarations(),
+    m_expressions(),
+    m_statements(),
+    m_attributes()
+{
+  clang_visitChildren(cursor, partitionedChildCollector, this);
+}
+
+
+bool PartitionedChildren::empty() const
+{
+  return m_declarations.empty() &&
+         m_expressions.empty() &&
+         m_statements.empty() &&
+         m_attributes.empty();
+}
+
+
 // --------------------------- ClangImport -----------------------------
 ClangImport::ClangImport(CXIndex cxIndex,
                          CXTranslationUnit cxTranslationUnit,
@@ -148,25 +198,6 @@ void ClangImport::importTranslationUnit()
   for (auto cursor : decls) {
     m_elsaParse.m_translationUnit->topForms.append(importTopForm(cursor));
   }
-}
-
-
-static CXChildVisitResult ntrChildCollector(CXCursor cursor,
-  CXCursor parent, CXClientData client_data)
-{
-  if (clang_getCursorKind(cursor) != CXCursor_TypeRef) {
-    std::vector<CXCursor> *children =
-      static_cast<std::vector<CXCursor>*>(client_data);
-    children->push_back(cursor);
-  }
-  return CXChildVisit_Continue;
-}
-
-std::vector<CXCursor> ClangImport::getNTRChildren(CXCursor cursor)
-{
-  std::vector<CXCursor> children;
-  clang_visitChildren(cursor, ntrChildCollector, &children);
-  return children;
 }
 
 
@@ -730,44 +761,54 @@ Declaration *ClangImport::importVarOrTypedefDecl(CXCursor cxVarDecl,
   decl->dflags |= possiblyAddNameQualifiers_and_getStorageClass(
     declarator, cxVarDecl);
 
-  std::vector<CXCursor> children = getNTRChildren(cxVarDecl);
+  // Get children, partitioned by category.
+  PartitionedChildren children(cxVarDecl);
+
+  // TODO: Handle these.
+  xassert(children.m_attributes.empty());
 
   // The interpretation of 'children' depends on the node type.
   CXCursorKind declKind = clang_getCursorKind(cxVarDecl);
   switch (declKind) {
     case CXCursor_VarDecl:
-      xassert(children.size() <= 1);
-      if (children.size() == 1) {
+      xassert(children.m_expressions.size() <= 1);
+      if (children.m_expressions.size() == 1) {
+        CXCursor first = children.m_expressions.front();
         if (isVariableLengthArray(var->type)) {
           // The child specifies the array length.
           D_array *arrayDeclarator =
             declarator->decl->getSecondFromBottom()->asD_array();
-          arrayDeclarator->size = importExpression(children.front());
+          arrayDeclarator->size = importExpression(first);
         }
         else {
           // The child specifies the initializer.
-          declarator->init = importInitializer(children[0]);
+          declarator->init = importInitializer(first);
         }
       }
+      children.m_expressions.clear();
       break;
 
     case CXCursor_FunctionDecl:
     case CXCursor_CXXMethod:
       // For a definition, the children declare the parameters.  I do
       // not need to look at them here.
+      children.m_declarations.clear();
       break;
 
     case CXCursor_TypedefDecl:
       // If the type specifier of the typedef defines a type (like a
       // struct), that definition appears as a child, which we can
       // safely ignore here.
+      children.m_declarations.clear();
       break;
 
     default:
       // For other kinds, I think there should not be children.
-      xassert(children.empty());
       break;
   }
+
+  // Verify that all children have been consumed.
+  xassert(children.empty());
 
   return decl;
 }

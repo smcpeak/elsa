@@ -102,6 +102,34 @@ public:      // methods
 };
 
 
+// Children of a node, partitioned by node kind.
+class PartitionedChildren {
+public:      // data
+  // 'clang_isDeclaration' is true.
+  std::vector<CXCursor> m_declarations;
+
+  // 'clang_isExpression' is true.
+  std::vector<CXCursor> m_expressions;
+
+  // 'clang_isStatement' is true.  In libclang, expressions are *not*
+  // considered to be statements.
+  std::vector<CXCursor> m_statements;
+
+  // 'clang_isAttribute' is true.
+  std::vector<CXCursor> m_attributes;
+
+public:
+  // Populate with children of 'cursor'.
+  PartitionedChildren(CXCursor cursor);
+
+  // True if all vectors are empty.
+  //
+  // The idea is, as each list is consumed, the client should clear that
+  // list.  Then at the end it can check that the children are empty.
+  bool empty() const;
+};
+
+
 // Manage the process of importing.
 class ClangImport : public SourceLocProvider, ElsaASTBuild {
 public:      // data
@@ -137,16 +165,6 @@ public:      // methods
 
   // Entry point to the importer.
   void importTranslationUnit();
-
-  // Get children, except skip any CXCursor_TypeRef children, which are
-  // often useless due to not being necessary (since we get type
-  // information without looking at children) and not appearing in
-  // consistent positions (since any mention of a type might or might
-  // not use a TypeRef).
-  //
-  // It is possible that I want *all* calls to 'getChildren' to instead
-  // be 'getNTRChildren'.  I just don't know yet.
-  std::vector<CXCursor> getNTRChildren(CXCursor cursor);
 
   // Convert a CXString to a StringRef.  This disposes 'cxString'.
   StringRef importString(CXString cxString);
