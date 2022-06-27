@@ -12,7 +12,12 @@ extern "C" {
 #endif // __cplusplus
 
 
-// --------------------------- UnaryOperator ---------------------------
+// TODO: Sort the sections numerically, here and in the .cc file.
+// TODO: Put the word "Kind" on all of the enumerations.
+// TODO: Rename all "_Invalid" to "_Unknown".
+
+
+// ------------------------ UnaryOperator (112) ------------------------
 // Possible operators for CXCursor_UnaryOperator.
 enum CXUnaryOperator {
   // Columns: \S+ = @40://
@@ -47,7 +52,7 @@ enum CXUnaryOperator {
 enum CXUnaryOperator clang_unaryOperator_operator(CXCursor cursor);
 
 
-// -------------------------- BinaryOperator ---------------------------
+// ----------------------- BinaryOperator (114) ------------------------
 // Possible operators for CXCursor_BinaryOperator.
 enum CXBinaryOperator {
   // Columns: \S+ = @40://
@@ -95,7 +100,37 @@ enum CXBinaryOperator {
 enum CXBinaryOperator clang_binaryOperator_operator(CXCursor cursor);
 
 
-// ------------------------------ ForStmt ------------------------------
+// -------------------------- UnaryExpr (136) --------------------------
+// The kind of expression represented by CXCursor_UnaryExpr.
+enum CXUnaryExprKind {
+  // Not among those below.
+  CXUnaryExprKind_Unknown = 0,
+
+  // Ordinary 'sizeof'.
+  CXUnaryExprKind_SizeOf = 1,
+
+  // C '_Alignof' and C++ 'alignof'.
+  CXUnaryExprKind_AlignOf = 2,
+
+  // TODO: What is this?
+  CXUnaryExprKind_VecStep = 3,
+
+  // TODO: What is this?
+  CXUnaryExprKind_OpenMPRequiredSimdAlign = 4,
+
+  // GCC '__alignof'.
+  CXUnaryExprKind_PreferredAlignOf = 5,
+};
+
+
+// For a CXCursor_UnaryExpr, return the operator.
+//
+// Rationale for addition: Like the unary and binary operators, this
+// information is not exposed in the existing API.
+enum CXUnaryExprKind clang_unaryExpr_operator(CXCursor cursor);
+
+
+// --------------------------- ForStmt (209) ---------------------------
 // Selector for 'clang_forStmtElement'.
 enum CXForStmtElement {
   CXForStmtElement_init = 0,
@@ -114,7 +149,7 @@ enum CXForStmtElement {
 CXCursor clang_forStmtElement(CXCursor forStmt, CXForStmtElement element);
 
 
-// -------------------------- CharacterLiteral -------------------------
+// ----------------------- CharacterLiteral (110) ----------------------
 // Selector for 'clang_characterLiteralElement'.
 enum CXCharacterLiteralElement {
   // The "kind" of string literal, as a CXCharacterLiteralKind.
@@ -151,7 +186,7 @@ unsigned clang_characterLiteralElement(CXCursor characterLiteralCursor,
   CXCharacterLiteralElement element);
 
 
-// --------------------------- StringLiteral ---------------------------
+// ------------------------ StringLiteral (109) ------------------------
 // Selector for 'clang_stringLiteralElement'.
 enum CXStringLiteralElement {
   // Length in characters.
@@ -191,7 +226,7 @@ void clang_getStringLiteralBytes(CXCursor stringLiteralCursor,
   unsigned char *contents, size_t contentsSize);
 
 
-// ----------------------------- Attribute -----------------------------
+// -------------------------- Attribute (400) --------------------------
 // The flavor of attribute syntax used by a given attribute instance.
 enum CXAttributeSyntaxKind {
   // Used for an invalid call, or an unknown syntax.

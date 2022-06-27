@@ -705,7 +705,7 @@ static CXString createDup(StringRef String) {
 }
 
 
-// --------------------------- UnaryOperator ---------------------------
+// ------------------------ UnaryOperator (112) ------------------------
 extern "C"
 enum CXUnaryOperator clang_unaryOperator_operator(CXCursor cursor)
 {
@@ -740,7 +740,7 @@ enum CXUnaryOperator clang_unaryOperator_operator(CXCursor cursor)
 }
 
 
-// -------------------------- BinaryOperator ---------------------------
+// ----------------------- BinaryOperator (114) ------------------------
 extern "C"
 enum CXBinaryOperator clang_binaryOperator_operator(CXCursor cursor)
 {
@@ -794,7 +794,36 @@ enum CXBinaryOperator clang_binaryOperator_operator(CXCursor cursor)
 }
 
 
-// ------------------------------ ForStmt ------------------------------
+// -------------------------- UnaryExpr (136) --------------------------
+extern "C"
+enum CXUnaryExprKind clang_unaryExpr_operator(CXCursor cursor)
+{
+  Stmt const *stmt = getCursorStmt(cursor);
+
+  if (UnaryExprOrTypeTraitExpr const *unExpr =
+        dyn_cast_or_null<UnaryExprOrTypeTraitExpr>(stmt)) {
+    switch (unExpr->getKind()) {
+      #define UNY_CASE(name) \
+        case UETT_##name: return CXUnaryExprKind_##name;
+
+      UNY_CASE(SizeOf)
+      UNY_CASE(AlignOf)
+      UNY_CASE(VecStep)
+      UNY_CASE(OpenMPRequiredSimdAlign)
+      UNY_CASE(PreferredAlignOf)
+
+      #undef UNY_CASE
+
+      default:
+        break;
+    }
+  }
+
+  return CXUnaryExprKind_Unknown;
+}
+
+
+// --------------------------- ForStmt (209) ---------------------------
 // Make a cursor out of the arguments, unless 'S' is NULL, in which case
 // return 'clang_getNullCursor()'.
 static CXCursor makeCursorOrNull(const Stmt *S, const Decl *Parent,
@@ -844,7 +873,7 @@ CXCursor clang_forStmtElement(CXCursor cursor, CXForStmtElement element)
 }
 
 
-// -------------------------- CharacterLiteral -------------------------
+// ----------------------- CharacterLiteral (110) ----------------------
 extern "C"
 unsigned clang_characterLiteralElement(CXCursor characterLiteralCursor,
   CXCharacterLiteralElement element)
@@ -880,7 +909,7 @@ unsigned clang_characterLiteralElement(CXCursor characterLiteralCursor,
 }
 
 
-// --------------------------- StringLiteral ---------------------------
+// ------------------------ StringLiteral (109) ------------------------
 extern "C"
 unsigned clang_stringLiteralElement(CXCursor stringLiteralCursor,
   CXStringLiteralElement element)
@@ -947,7 +976,7 @@ void clang_getStringLiteralBytes(CXCursor stringLiteralCursor,
 }
 
 
-// ----------------------------- Attribute -----------------------------
+// -------------------------- Attribute (400) --------------------------
 extern "C"
 CXAttributeSyntaxKind clang_getAttributeSyntaxKind(CXCursor attributeCursor)
 {
