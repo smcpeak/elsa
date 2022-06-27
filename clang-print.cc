@@ -14,6 +14,23 @@
 #include <sstream>                     // std::ostringstream
 
 
+// An entry in a table mapping values of type T to names.
+template <class T>
+struct ValueNameEntry {
+  T m_value;
+  char const *m_name;
+};
+
+
+// Scan 'table' for 'value' and return its name if found.
+#define LOOKUP_VALUE_NAME(value) \
+  for (auto const &e : table) { \
+    if (e.m_value == value) {    \
+      return e.m_name;           \
+    }                            \
+  }
+
+
 std::string toString(CXString cxString)
 {
   std::string ret(clang_getCString(cxString));
@@ -24,278 +41,267 @@ std::string toString(CXString cxString)
 
 std::string toString(CXCursorKind cursorKind)
 {
-  struct Entry {
-    CXCursorKind m_kind;
-    char const *m_name;
-  };
-
-  static Entry const table[] = {
-    #define ENTRY(name) { CXCursor_##name, #name }
-
-    ENTRY(UnexposedDecl),
-    ENTRY(StructDecl),
-    ENTRY(UnionDecl),
-    ENTRY(ClassDecl),
-    ENTRY(EnumDecl),
-    ENTRY(FieldDecl),
-    ENTRY(EnumConstantDecl),
-    ENTRY(FunctionDecl),
-    ENTRY(VarDecl),
-    ENTRY(ParmDecl),
-    ENTRY(ObjCInterfaceDecl),
-    ENTRY(ObjCCategoryDecl),
-    ENTRY(ObjCProtocolDecl),
-    ENTRY(ObjCPropertyDecl),
-    ENTRY(ObjCIvarDecl),
-    ENTRY(ObjCInstanceMethodDecl),
-    ENTRY(ObjCClassMethodDecl),
-    ENTRY(ObjCImplementationDecl),
-    ENTRY(ObjCCategoryImplDecl),
-    ENTRY(TypedefDecl),
-    ENTRY(CXXMethod),
-    ENTRY(Namespace),
-    ENTRY(LinkageSpec),
-    ENTRY(Constructor),
-    ENTRY(Destructor),
-    ENTRY(ConversionFunction),
-    ENTRY(TemplateTypeParameter),
-    ENTRY(NonTypeTemplateParameter),
-    ENTRY(TemplateTemplateParameter),
-    ENTRY(FunctionTemplate),
-    ENTRY(ClassTemplate),
-    ENTRY(ClassTemplatePartialSpecialization),
-    ENTRY(NamespaceAlias),
-    ENTRY(UsingDirective),
-    ENTRY(UsingDeclaration),
-    ENTRY(TypeAliasDecl),
-    ENTRY(ObjCSynthesizeDecl),
-    ENTRY(ObjCDynamicDecl),
-    ENTRY(CXXAccessSpecifier),
-    ENTRY(ObjCSuperClassRef),
-    ENTRY(ObjCProtocolRef),
-    ENTRY(ObjCClassRef),
-    ENTRY(TypeRef),
-    ENTRY(CXXBaseSpecifier),
-    ENTRY(TemplateRef),
-    ENTRY(NamespaceRef),
-    ENTRY(MemberRef),
-    ENTRY(LabelRef),
-    ENTRY(OverloadedDeclRef),
-    ENTRY(VariableRef),
-    ENTRY(InvalidFile),
-    ENTRY(NoDeclFound),
-    ENTRY(NotImplemented),
-    ENTRY(InvalidCode),
-    ENTRY(UnexposedExpr),
-    ENTRY(DeclRefExpr),
-    ENTRY(MemberRefExpr),
-    ENTRY(CallExpr),
-    ENTRY(ObjCMessageExpr),
-    ENTRY(BlockExpr),
-    ENTRY(IntegerLiteral),
-    ENTRY(FloatingLiteral),
-    ENTRY(ImaginaryLiteral),
-    ENTRY(StringLiteral),
-    ENTRY(CharacterLiteral),
-    ENTRY(ParenExpr),
-    ENTRY(UnaryOperator),
-    ENTRY(ArraySubscriptExpr),
-    ENTRY(BinaryOperator),
-    ENTRY(CompoundAssignOperator),
-    ENTRY(ConditionalOperator),
-    ENTRY(CStyleCastExpr),
-    ENTRY(CompoundLiteralExpr),
-    ENTRY(InitListExpr),
-    ENTRY(AddrLabelExpr),
-    ENTRY(StmtExpr),
-    ENTRY(GenericSelectionExpr),
-    ENTRY(GNUNullExpr),
-    ENTRY(CXXStaticCastExpr),
-    ENTRY(CXXDynamicCastExpr),
-    ENTRY(CXXReinterpretCastExpr),
-    ENTRY(CXXConstCastExpr),
-    ENTRY(CXXFunctionalCastExpr),
-    ENTRY(CXXTypeidExpr),
-    ENTRY(CXXBoolLiteralExpr),
-    ENTRY(CXXNullPtrLiteralExpr),
-    ENTRY(CXXThisExpr),
-    ENTRY(CXXThrowExpr),
-    ENTRY(CXXNewExpr),
-    ENTRY(CXXDeleteExpr),
-    ENTRY(UnaryExpr),
-    ENTRY(ObjCStringLiteral),
-    ENTRY(ObjCEncodeExpr),
-    ENTRY(ObjCSelectorExpr),
-    ENTRY(ObjCProtocolExpr),
-    ENTRY(ObjCBridgedCastExpr),
-    ENTRY(PackExpansionExpr),
-    ENTRY(SizeOfPackExpr),
-    ENTRY(LambdaExpr),
-    ENTRY(ObjCBoolLiteralExpr),
-    ENTRY(ObjCSelfExpr),
-    ENTRY(OMPArraySectionExpr),
-    ENTRY(ObjCAvailabilityCheckExpr),
-    ENTRY(FixedPointLiteral),
-    ENTRY(OMPArrayShapingExpr),
-    ENTRY(OMPIteratorExpr),
-    ENTRY(CXXAddrspaceCastExpr),
-    ENTRY(UnexposedStmt),
-    ENTRY(LabelStmt),
-    ENTRY(CompoundStmt),
-    ENTRY(CaseStmt),
-    ENTRY(DefaultStmt),
-    ENTRY(IfStmt),
-    ENTRY(SwitchStmt),
-    ENTRY(WhileStmt),
-    ENTRY(DoStmt),
-    ENTRY(ForStmt),
-    ENTRY(GotoStmt),
-    ENTRY(IndirectGotoStmt),
-    ENTRY(ContinueStmt),
-    ENTRY(BreakStmt),
-    ENTRY(ReturnStmt),
-    ENTRY(GCCAsmStmt),
-    ENTRY(ObjCAtTryStmt),
-    ENTRY(ObjCAtCatchStmt),
-    ENTRY(ObjCAtFinallyStmt),
-    ENTRY(ObjCAtThrowStmt),
-    ENTRY(ObjCAtSynchronizedStmt),
-    ENTRY(ObjCAutoreleasePoolStmt),
-    ENTRY(ObjCForCollectionStmt),
-    ENTRY(CXXCatchStmt),
-    ENTRY(CXXTryStmt),
-    ENTRY(CXXForRangeStmt),
-    ENTRY(SEHTryStmt),
-    ENTRY(SEHExceptStmt),
-    ENTRY(SEHFinallyStmt),
-    ENTRY(MSAsmStmt),
-    ENTRY(NullStmt),
-    ENTRY(DeclStmt),
-    ENTRY(OMPParallelDirective),
-    ENTRY(OMPSimdDirective),
-    ENTRY(OMPForDirective),
-    ENTRY(OMPSectionsDirective),
-    ENTRY(OMPSectionDirective),
-    ENTRY(OMPSingleDirective),
-    ENTRY(OMPParallelForDirective),
-    ENTRY(OMPParallelSectionsDirective),
-    ENTRY(OMPTaskDirective),
-    ENTRY(OMPMasterDirective),
-    ENTRY(OMPCriticalDirective),
-    ENTRY(OMPTaskyieldDirective),
-    ENTRY(OMPBarrierDirective),
-    ENTRY(OMPTaskwaitDirective),
-    ENTRY(OMPFlushDirective),
-    ENTRY(SEHLeaveStmt),
-    ENTRY(OMPOrderedDirective),
-    ENTRY(OMPAtomicDirective),
-    ENTRY(OMPForSimdDirective),
-    ENTRY(OMPParallelForSimdDirective),
-    ENTRY(OMPTargetDirective),
-    ENTRY(OMPTeamsDirective),
-    ENTRY(OMPTaskgroupDirective),
-    ENTRY(OMPCancellationPointDirective),
-    ENTRY(OMPCancelDirective),
-    ENTRY(OMPTargetDataDirective),
-    ENTRY(OMPTaskLoopDirective),
-    ENTRY(OMPTaskLoopSimdDirective),
-    ENTRY(OMPDistributeDirective),
-    ENTRY(OMPTargetEnterDataDirective),
-    ENTRY(OMPTargetExitDataDirective),
-    ENTRY(OMPTargetParallelDirective),
-    ENTRY(OMPTargetParallelForDirective),
-    ENTRY(OMPTargetUpdateDirective),
-    ENTRY(OMPDistributeParallelForDirective),
-    ENTRY(OMPDistributeParallelForSimdDirective),
-    ENTRY(OMPDistributeSimdDirective),
-    ENTRY(OMPTargetParallelForSimdDirective),
-    ENTRY(OMPTargetSimdDirective),
-    ENTRY(OMPTeamsDistributeDirective),
-    ENTRY(OMPTeamsDistributeSimdDirective),
-    ENTRY(OMPTeamsDistributeParallelForSimdDirective),
-    ENTRY(OMPTeamsDistributeParallelForDirective),
-    ENTRY(OMPTargetTeamsDirective),
-    ENTRY(OMPTargetTeamsDistributeDirective),
-    ENTRY(OMPTargetTeamsDistributeParallelForDirective),
-    ENTRY(OMPTargetTeamsDistributeParallelForSimdDirective),
-    ENTRY(OMPTargetTeamsDistributeSimdDirective),
-    ENTRY(BuiltinBitCastExpr),
-    ENTRY(OMPMasterTaskLoopDirective),
-    ENTRY(OMPParallelMasterTaskLoopDirective),
-    ENTRY(OMPMasterTaskLoopSimdDirective),
-    ENTRY(OMPParallelMasterTaskLoopSimdDirective),
-    ENTRY(OMPParallelMasterDirective),
-    ENTRY(OMPDepobjDirective),
-    ENTRY(OMPScanDirective),
-    ENTRY(OMPTileDirective),
-    ENTRY(OMPCanonicalLoop),
-    ENTRY(OMPInteropDirective),
-    ENTRY(OMPDispatchDirective),
-    ENTRY(OMPMaskedDirective),
-    ENTRY(OMPUnrollDirective),
-    ENTRY(OMPMetaDirective),
-    ENTRY(OMPGenericLoopDirective),
-    ENTRY(TranslationUnit),
-    ENTRY(UnexposedAttr),
-    ENTRY(IBActionAttr),
-    ENTRY(IBOutletAttr),
-    ENTRY(IBOutletCollectionAttr),
-    ENTRY(CXXFinalAttr),
-    ENTRY(CXXOverrideAttr),
-    ENTRY(AnnotateAttr),
-    ENTRY(AsmLabelAttr),
-    ENTRY(PackedAttr),
-    ENTRY(PureAttr),
-    ENTRY(ConstAttr),
-    ENTRY(NoDuplicateAttr),
-    ENTRY(CUDAConstantAttr),
-    ENTRY(CUDADeviceAttr),
-    ENTRY(CUDAGlobalAttr),
-    ENTRY(CUDAHostAttr),
-    ENTRY(CUDASharedAttr),
-    ENTRY(VisibilityAttr),
-    ENTRY(DLLExport),
-    ENTRY(DLLImport),
-    ENTRY(NSReturnsRetained),
-    ENTRY(NSReturnsNotRetained),
-    ENTRY(NSReturnsAutoreleased),
-    ENTRY(NSConsumesSelf),
-    ENTRY(NSConsumed),
-    ENTRY(ObjCException),
-    ENTRY(ObjCNSObject),
-    ENTRY(ObjCIndependentClass),
-    ENTRY(ObjCPreciseLifetime),
-    ENTRY(ObjCReturnsInnerPointer),
-    ENTRY(ObjCRequiresSuper),
-    ENTRY(ObjCRootClass),
-    ENTRY(ObjCSubclassingRestricted),
-    ENTRY(ObjCExplicitProtocolImpl),
-    ENTRY(ObjCDesignatedInitializer),
-    ENTRY(ObjCRuntimeVisible),
-    ENTRY(ObjCBoxable),
-    ENTRY(FlagEnum),
-    ENTRY(ConvergentAttr),
-    ENTRY(WarnUnusedAttr),
-    ENTRY(WarnUnusedResultAttr),
-    ENTRY(AlignedAttr),
-    ENTRY(PreprocessingDirective),
-    ENTRY(MacroDefinition),
-    ENTRY(MacroExpansion),
-    ENTRY(InclusionDirective),
-    ENTRY(ModuleImportDecl),
-    ENTRY(TypeAliasTemplateDecl),
-    ENTRY(StaticAssert),
-    ENTRY(FriendDecl),
-    ENTRY(OverloadCandidate),
-
+  static ValueNameEntry<CXCursorKind> const table[] = {
+    #define ENTRY(name) { CXCursor_##name, #name },
+    ENTRY(UnexposedDecl)
+    ENTRY(StructDecl)
+    ENTRY(UnionDecl)
+    ENTRY(ClassDecl)
+    ENTRY(EnumDecl)
+    ENTRY(FieldDecl)
+    ENTRY(EnumConstantDecl)
+    ENTRY(FunctionDecl)
+    ENTRY(VarDecl)
+    ENTRY(ParmDecl)
+    ENTRY(ObjCInterfaceDecl)
+    ENTRY(ObjCCategoryDecl)
+    ENTRY(ObjCProtocolDecl)
+    ENTRY(ObjCPropertyDecl)
+    ENTRY(ObjCIvarDecl)
+    ENTRY(ObjCInstanceMethodDecl)
+    ENTRY(ObjCClassMethodDecl)
+    ENTRY(ObjCImplementationDecl)
+    ENTRY(ObjCCategoryImplDecl)
+    ENTRY(TypedefDecl)
+    ENTRY(CXXMethod)
+    ENTRY(Namespace)
+    ENTRY(LinkageSpec)
+    ENTRY(Constructor)
+    ENTRY(Destructor)
+    ENTRY(ConversionFunction)
+    ENTRY(TemplateTypeParameter)
+    ENTRY(NonTypeTemplateParameter)
+    ENTRY(TemplateTemplateParameter)
+    ENTRY(FunctionTemplate)
+    ENTRY(ClassTemplate)
+    ENTRY(ClassTemplatePartialSpecialization)
+    ENTRY(NamespaceAlias)
+    ENTRY(UsingDirective)
+    ENTRY(UsingDeclaration)
+    ENTRY(TypeAliasDecl)
+    ENTRY(ObjCSynthesizeDecl)
+    ENTRY(ObjCDynamicDecl)
+    ENTRY(CXXAccessSpecifier)
+    ENTRY(ObjCSuperClassRef)
+    ENTRY(ObjCProtocolRef)
+    ENTRY(ObjCClassRef)
+    ENTRY(TypeRef)
+    ENTRY(CXXBaseSpecifier)
+    ENTRY(TemplateRef)
+    ENTRY(NamespaceRef)
+    ENTRY(MemberRef)
+    ENTRY(LabelRef)
+    ENTRY(OverloadedDeclRef)
+    ENTRY(VariableRef)
+    ENTRY(InvalidFile)
+    ENTRY(NoDeclFound)
+    ENTRY(NotImplemented)
+    ENTRY(InvalidCode)
+    ENTRY(UnexposedExpr)
+    ENTRY(DeclRefExpr)
+    ENTRY(MemberRefExpr)
+    ENTRY(CallExpr)
+    ENTRY(ObjCMessageExpr)
+    ENTRY(BlockExpr)
+    ENTRY(IntegerLiteral)
+    ENTRY(FloatingLiteral)
+    ENTRY(ImaginaryLiteral)
+    ENTRY(StringLiteral)
+    ENTRY(CharacterLiteral)
+    ENTRY(ParenExpr)
+    ENTRY(UnaryOperator)
+    ENTRY(ArraySubscriptExpr)
+    ENTRY(BinaryOperator)
+    ENTRY(CompoundAssignOperator)
+    ENTRY(ConditionalOperator)
+    ENTRY(CStyleCastExpr)
+    ENTRY(CompoundLiteralExpr)
+    ENTRY(InitListExpr)
+    ENTRY(AddrLabelExpr)
+    ENTRY(StmtExpr)
+    ENTRY(GenericSelectionExpr)
+    ENTRY(GNUNullExpr)
+    ENTRY(CXXStaticCastExpr)
+    ENTRY(CXXDynamicCastExpr)
+    ENTRY(CXXReinterpretCastExpr)
+    ENTRY(CXXConstCastExpr)
+    ENTRY(CXXFunctionalCastExpr)
+    ENTRY(CXXTypeidExpr)
+    ENTRY(CXXBoolLiteralExpr)
+    ENTRY(CXXNullPtrLiteralExpr)
+    ENTRY(CXXThisExpr)
+    ENTRY(CXXThrowExpr)
+    ENTRY(CXXNewExpr)
+    ENTRY(CXXDeleteExpr)
+    ENTRY(UnaryExpr)
+    ENTRY(ObjCStringLiteral)
+    ENTRY(ObjCEncodeExpr)
+    ENTRY(ObjCSelectorExpr)
+    ENTRY(ObjCProtocolExpr)
+    ENTRY(ObjCBridgedCastExpr)
+    ENTRY(PackExpansionExpr)
+    ENTRY(SizeOfPackExpr)
+    ENTRY(LambdaExpr)
+    ENTRY(ObjCBoolLiteralExpr)
+    ENTRY(ObjCSelfExpr)
+    ENTRY(OMPArraySectionExpr)
+    ENTRY(ObjCAvailabilityCheckExpr)
+    ENTRY(FixedPointLiteral)
+    ENTRY(OMPArrayShapingExpr)
+    ENTRY(OMPIteratorExpr)
+    ENTRY(CXXAddrspaceCastExpr)
+    ENTRY(UnexposedStmt)
+    ENTRY(LabelStmt)
+    ENTRY(CompoundStmt)
+    ENTRY(CaseStmt)
+    ENTRY(DefaultStmt)
+    ENTRY(IfStmt)
+    ENTRY(SwitchStmt)
+    ENTRY(WhileStmt)
+    ENTRY(DoStmt)
+    ENTRY(ForStmt)
+    ENTRY(GotoStmt)
+    ENTRY(IndirectGotoStmt)
+    ENTRY(ContinueStmt)
+    ENTRY(BreakStmt)
+    ENTRY(ReturnStmt)
+    ENTRY(GCCAsmStmt)
+    ENTRY(ObjCAtTryStmt)
+    ENTRY(ObjCAtCatchStmt)
+    ENTRY(ObjCAtFinallyStmt)
+    ENTRY(ObjCAtThrowStmt)
+    ENTRY(ObjCAtSynchronizedStmt)
+    ENTRY(ObjCAutoreleasePoolStmt)
+    ENTRY(ObjCForCollectionStmt)
+    ENTRY(CXXCatchStmt)
+    ENTRY(CXXTryStmt)
+    ENTRY(CXXForRangeStmt)
+    ENTRY(SEHTryStmt)
+    ENTRY(SEHExceptStmt)
+    ENTRY(SEHFinallyStmt)
+    ENTRY(MSAsmStmt)
+    ENTRY(NullStmt)
+    ENTRY(DeclStmt)
+    ENTRY(OMPParallelDirective)
+    ENTRY(OMPSimdDirective)
+    ENTRY(OMPForDirective)
+    ENTRY(OMPSectionsDirective)
+    ENTRY(OMPSectionDirective)
+    ENTRY(OMPSingleDirective)
+    ENTRY(OMPParallelForDirective)
+    ENTRY(OMPParallelSectionsDirective)
+    ENTRY(OMPTaskDirective)
+    ENTRY(OMPMasterDirective)
+    ENTRY(OMPCriticalDirective)
+    ENTRY(OMPTaskyieldDirective)
+    ENTRY(OMPBarrierDirective)
+    ENTRY(OMPTaskwaitDirective)
+    ENTRY(OMPFlushDirective)
+    ENTRY(SEHLeaveStmt)
+    ENTRY(OMPOrderedDirective)
+    ENTRY(OMPAtomicDirective)
+    ENTRY(OMPForSimdDirective)
+    ENTRY(OMPParallelForSimdDirective)
+    ENTRY(OMPTargetDirective)
+    ENTRY(OMPTeamsDirective)
+    ENTRY(OMPTaskgroupDirective)
+    ENTRY(OMPCancellationPointDirective)
+    ENTRY(OMPCancelDirective)
+    ENTRY(OMPTargetDataDirective)
+    ENTRY(OMPTaskLoopDirective)
+    ENTRY(OMPTaskLoopSimdDirective)
+    ENTRY(OMPDistributeDirective)
+    ENTRY(OMPTargetEnterDataDirective)
+    ENTRY(OMPTargetExitDataDirective)
+    ENTRY(OMPTargetParallelDirective)
+    ENTRY(OMPTargetParallelForDirective)
+    ENTRY(OMPTargetUpdateDirective)
+    ENTRY(OMPDistributeParallelForDirective)
+    ENTRY(OMPDistributeParallelForSimdDirective)
+    ENTRY(OMPDistributeSimdDirective)
+    ENTRY(OMPTargetParallelForSimdDirective)
+    ENTRY(OMPTargetSimdDirective)
+    ENTRY(OMPTeamsDistributeDirective)
+    ENTRY(OMPTeamsDistributeSimdDirective)
+    ENTRY(OMPTeamsDistributeParallelForSimdDirective)
+    ENTRY(OMPTeamsDistributeParallelForDirective)
+    ENTRY(OMPTargetTeamsDirective)
+    ENTRY(OMPTargetTeamsDistributeDirective)
+    ENTRY(OMPTargetTeamsDistributeParallelForDirective)
+    ENTRY(OMPTargetTeamsDistributeParallelForSimdDirective)
+    ENTRY(OMPTargetTeamsDistributeSimdDirective)
+    ENTRY(BuiltinBitCastExpr)
+    ENTRY(OMPMasterTaskLoopDirective)
+    ENTRY(OMPParallelMasterTaskLoopDirective)
+    ENTRY(OMPMasterTaskLoopSimdDirective)
+    ENTRY(OMPParallelMasterTaskLoopSimdDirective)
+    ENTRY(OMPParallelMasterDirective)
+    ENTRY(OMPDepobjDirective)
+    ENTRY(OMPScanDirective)
+    ENTRY(OMPTileDirective)
+    ENTRY(OMPCanonicalLoop)
+    ENTRY(OMPInteropDirective)
+    ENTRY(OMPDispatchDirective)
+    ENTRY(OMPMaskedDirective)
+    ENTRY(OMPUnrollDirective)
+    ENTRY(OMPMetaDirective)
+    ENTRY(OMPGenericLoopDirective)
+    ENTRY(TranslationUnit)
+    ENTRY(UnexposedAttr)
+    ENTRY(IBActionAttr)
+    ENTRY(IBOutletAttr)
+    ENTRY(IBOutletCollectionAttr)
+    ENTRY(CXXFinalAttr)
+    ENTRY(CXXOverrideAttr)
+    ENTRY(AnnotateAttr)
+    ENTRY(AsmLabelAttr)
+    ENTRY(PackedAttr)
+    ENTRY(PureAttr)
+    ENTRY(ConstAttr)
+    ENTRY(NoDuplicateAttr)
+    ENTRY(CUDAConstantAttr)
+    ENTRY(CUDADeviceAttr)
+    ENTRY(CUDAGlobalAttr)
+    ENTRY(CUDAHostAttr)
+    ENTRY(CUDASharedAttr)
+    ENTRY(VisibilityAttr)
+    ENTRY(DLLExport)
+    ENTRY(DLLImport)
+    ENTRY(NSReturnsRetained)
+    ENTRY(NSReturnsNotRetained)
+    ENTRY(NSReturnsAutoreleased)
+    ENTRY(NSConsumesSelf)
+    ENTRY(NSConsumed)
+    ENTRY(ObjCException)
+    ENTRY(ObjCNSObject)
+    ENTRY(ObjCIndependentClass)
+    ENTRY(ObjCPreciseLifetime)
+    ENTRY(ObjCReturnsInnerPointer)
+    ENTRY(ObjCRequiresSuper)
+    ENTRY(ObjCRootClass)
+    ENTRY(ObjCSubclassingRestricted)
+    ENTRY(ObjCExplicitProtocolImpl)
+    ENTRY(ObjCDesignatedInitializer)
+    ENTRY(ObjCRuntimeVisible)
+    ENTRY(ObjCBoxable)
+    ENTRY(FlagEnum)
+    ENTRY(ConvergentAttr)
+    ENTRY(WarnUnusedAttr)
+    ENTRY(WarnUnusedResultAttr)
+    ENTRY(AlignedAttr)
+    ENTRY(PreprocessingDirective)
+    ENTRY(MacroDefinition)
+    ENTRY(MacroExpansion)
+    ENTRY(InclusionDirective)
+    ENTRY(ModuleImportDecl)
+    ENTRY(TypeAliasTemplateDecl)
+    ENTRY(StaticAssert)
+    ENTRY(FriendDecl)
+    ENTRY(OverloadCandidate)
     #undef ENTRY
   };
 
-  for (Entry const &entry : table) {
-    if (entry.m_kind == cursorKind) {
-      return entry.m_name;
-    }
-  }
+  LOOKUP_VALUE_NAME(cursorKind)
 
   std::ostringstream oss;
   oss << "(unknown kind " << (int)cursorKind << ")";
@@ -356,12 +362,7 @@ std::string cursorLocLC(CXCursor cursor)
 
 char const *toString(CX_StorageClass storageClass)
 {
-  struct Entry {
-    CX_StorageClass m_storageClass;
-    char const *m_name;
-  };
-
-  static Entry const table[] = {
+  static ValueNameEntry<CX_StorageClass> const table[] = {
     #define ENTRY(name) { CX_SC_##name, #name }
     ENTRY(Invalid),
     ENTRY(None),
@@ -374,12 +375,7 @@ char const *toString(CX_StorageClass storageClass)
     #undef ENTRY
   };
 
-  for (Entry const &e : table) {
-    if (e.m_storageClass == storageClass) {
-      return e.m_name;
-    }
-  }
-
+  LOOKUP_VALUE_NAME(storageClass);
   return "(invalid storage class)";
 }
 
@@ -390,14 +386,82 @@ std::string typeSpelling(CXType type)
 }
 
 
-char const *toString(CXUnaryExprKind kind)
+char const *toString(CXUnaryOperator kind)
 {
-  struct Entry {
-    CXUnaryExprKind m_kind;
-    char const *m_name;
+  static ValueNameEntry<CXUnaryOperator> const table[] = {
+    #define ENTRY(name) { CXUnaryOperator_##name, #name },
+    ENTRY(Invalid)
+    ENTRY(PostInc)
+    ENTRY(PostDec)
+    ENTRY(PreInc)
+    ENTRY(PreDec)
+    ENTRY(AddrOf)
+    ENTRY(Deref)
+    ENTRY(Plus)
+    ENTRY(Minus)
+    ENTRY(Not)
+    ENTRY(LNot)
+    ENTRY(Real)
+    ENTRY(Imag)
+    ENTRY(Extension)
+    ENTRY(Coawait)
+    #undef ENTRY
   };
 
-  static Entry const table[] = {
+  LOOKUP_VALUE_NAME(kind);
+  return "(invalid unary operator kind)";
+}
+
+
+char const *toString(CXBinaryOperator kind)
+{
+  static ValueNameEntry<CXBinaryOperator> const table[] = {
+    #define ENTRY(name) { CXBinaryOperator_##name, #name },
+    ENTRY(Invalid)
+    ENTRY(PtrMemD)
+    ENTRY(PtrMemI)
+    ENTRY(Mul)
+    ENTRY(Div)
+    ENTRY(Rem)
+    ENTRY(Add)
+    ENTRY(Sub)
+    ENTRY(Shl)
+    ENTRY(Shr)
+    ENTRY(Cmp)
+    ENTRY(LT)
+    ENTRY(GT)
+    ENTRY(LE)
+    ENTRY(GE)
+    ENTRY(EQ)
+    ENTRY(NE)
+    ENTRY(And)
+    ENTRY(Xor)
+    ENTRY(Or)
+    ENTRY(LAnd)
+    ENTRY(LOr)
+    ENTRY(Assign)
+    ENTRY(MulAssign)
+    ENTRY(DivAssign)
+    ENTRY(RemAssign)
+    ENTRY(AddAssign)
+    ENTRY(SubAssign)
+    ENTRY(ShlAssign)
+    ENTRY(ShrAssign)
+    ENTRY(AndAssign)
+    ENTRY(XorAssign)
+    ENTRY(OrAssign)
+    ENTRY(Comma)
+    #undef ENTRY
+  };
+
+  LOOKUP_VALUE_NAME(kind);
+  return "(invalid unary operator kind)";
+}
+
+
+char const *toString(CXUnaryExprKind kind)
+{
+  static ValueNameEntry<CXUnaryExprKind> const table[] = {
     #define ENTRY(name) { CXUnaryExprKind_##name, #name },
     ENTRY(Unknown)
     ENTRY(SizeOf)
@@ -408,12 +472,7 @@ char const *toString(CXUnaryExprKind kind)
     #undef ENTRY
   };
 
-  for (Entry const &e : table) {
-    if (e.m_kind == kind) {
-      return e.m_name;
-    }
-  }
-
+  LOOKUP_VALUE_NAME(kind);
   return "(invalid unary expr kind)";
 }
 
@@ -490,8 +549,21 @@ void ClangPrint::printCursor(CXCursor cursor, int indent)
     // 'getReceiverType' crashes if passed a non-expression.
     maybePrintType("receiverType", clang_Cursor_getReceiverType(cursor));
 
-    if (cursorKind == CXCursor_UnaryExpr) {
-      m_os << " op=" << toString(clang_unaryExpr_operator(cursor));
+    switch (cursorKind) {
+      case CXCursor_UnaryOperator: // 112
+        m_os << " op=" << toString(clang_unaryOperator_operator(cursor));
+        break;
+
+      case CXCursor_BinaryOperator: // 114
+        m_os << " op=" << toString(clang_binaryOperator_operator(cursor));
+        break;
+
+      case CXCursor_UnaryExpr: // 136
+        m_os << " op=" << toString(clang_unaryExpr_operator(cursor));
+        break;
+
+      default:
+        break;
     }
   }
 

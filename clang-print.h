@@ -42,6 +42,12 @@ char const *toString(CX_StorageClass storageClass);
 // Return the spelling of 'type'.
 std::string typeSpelling(CXType type);
 
+// Return a string like "PostInc".
+char const *toString(CXUnaryOperator kind);
+
+// Return a string like "Mul".
+char const *toString(CXBinaryOperator kind);
+
 // Return a string like "SizeOf".
 char const *toString(CXUnaryExprKind kind);
 
