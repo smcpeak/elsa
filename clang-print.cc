@@ -390,6 +390,34 @@ std::string typeSpelling(CXType type)
 }
 
 
+char const *toString(CXUnaryExprKind kind)
+{
+  struct Entry {
+    CXUnaryExprKind m_kind;
+    char const *m_name;
+  };
+
+  static Entry const table[] = {
+    #define ENTRY(name) { CXUnaryExprKind_##name, #name },
+    ENTRY(Unknown)
+    ENTRY(SizeOf)
+    ENTRY(AlignOf)
+    ENTRY(VecStep)
+    ENTRY(OpenMPRequiredSimdAlign)
+    ENTRY(PreferredAlignOf)
+    #undef ENTRY
+  };
+
+  for (Entry const &e : table) {
+    if (e.m_kind == kind) {
+      return e.m_name;
+    }
+  }
+
+  return "(invalid unary expr kind)";
+}
+
+
 static std::vector<CXCursor> getTypeFields(CXType cxType)
 {
   std::vector<CXCursor> fields;
@@ -461,6 +489,10 @@ void ClangPrint::printCursor(CXCursor cursor, int indent)
   if (clang_isExpression(cursorKind)) {
     // 'getReceiverType' crashes if passed a non-expression.
     maybePrintType("receiverType", clang_Cursor_getReceiverType(cursor));
+
+    if (cursorKind == CXCursor_UnaryExpr) {
+      m_os << " op=" << toString(clang_unaryExpr_operator(cursor));
+    }
   }
 
   CXCursor decl = clang_getCursorReferenced(cursor);

@@ -7,6 +7,9 @@
 // clang
 #include "clang-c/Index.h"             // CXCursorKind, etc.
 
+// elsa
+#include "clang-additions.h"           // CXUnaryExprKind
+
 // libc++
 #include <iosfwd>                      // std::ostream
 #include <string>                      // std::string
@@ -38,6 +41,9 @@ char const *toString(CX_StorageClass storageClass);
 
 // Return the spelling of 'type'.
 std::string typeSpelling(CXType type);
+
+// Return a string like "SizeOf".
+char const *toString(CXUnaryExprKind kind);
 
 // Return all children of 'cursor'.
 std::vector<CXCursor> getChildren(CXCursor cursor);
