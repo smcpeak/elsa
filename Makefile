@@ -383,20 +383,9 @@ CCPARSE_OBJS += clang-print.o
 CCPARSE_OBJS += clang-import.o
 CCPARSE_OBJS += clang-additions.o
 
-# These are the flags to link with libclang.
-LDFLAGS += -L$(CLANG_LLVM_LIB_DIR) -Wl,-rpath=$(CLANG_LLVM_LIB_DIR) -lclang
-
-# This raft of libraries is required to call Attr::printPretty.
-LDFLAGS += -lclangAST
-LDFLAGS += -lclangLex
-LDFLAGS += -lclangBasic
-LDFLAGS += -lLLVMCore
-LDFLAGS += -lLLVMRemarks
-LDFLAGS += -lLLVMBitstreamReader
-LDFLAGS += -lLLVMBinaryFormat
-LDFLAGS += -lLLVMFrontendOpenMP
-LDFLAGS += -lLLVMSupport
-LDFLAGS += -lpthread
+# These are the flags to link with libclang and libclang-cpp.  The
+# former is the C API, the latter is the C++ API.
+LDFLAGS += -L$(CLANG_LLVM_LIB_DIR) -Wl,-rpath=$(CLANG_LLVM_LIB_DIR) -lclang -lclang-cpp
 
 else # USE_CLANG=0
 CCPARSE_OBJS += clang-import-stub.o
