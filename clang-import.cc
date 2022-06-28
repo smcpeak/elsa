@@ -311,6 +311,7 @@ Declaration *ClangImport::importDeclaration(CXCursor cxDecl,
         return importEnumDefinition(cxDecl);
       }
       else {
+        printSubtree(cxDecl);
         xunimp("enum forward declaration");
       }
 
@@ -477,6 +478,7 @@ Declaration *ClangImport::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
     Member *newMember = nullptr;
     switch (childKind) {
       default:
+        printSubtree(child);
         xunimp(stringb("compound defn child kind: " << toString(childKind)));
 
       case CXCursor_StructDecl: // 2
@@ -904,6 +906,7 @@ Attribute *ClangImport::importAttribute(CXCursor cxAttribute)
 
   switch (kind) {
     default:
+      printSubtree(cxAttribute);
       xunimp(stringb("importAttribute: kind: " << kind));
 
     case CXAttributeSyntaxKind_GNU:
@@ -1347,6 +1350,7 @@ Statement *ClangImport::importStatement(CXCursor cxStmt)
 
   switch (stmtKind) {
     default:
+      printSubtree(cxStmt);
       xunimp(stringb("importStatement: Unhandled stmtKind: " << toString(stmtKind)));
 
     // Codes 100 through 199 handled above.
@@ -1661,6 +1665,7 @@ Expression *ClangImport::importExpression(CXCursor cxExpr)
 
   switch (exprKind) {
     default:
+      printSubtree(cxExpr);
       xunimp(stringb("importExpression: Unhandled exprKind: " << toString(exprKind)));
 
     case CXCursor_UnexposedExpr: { // 100
@@ -1782,6 +1787,7 @@ Expression *ClangImport::importExpression(CXCursor cxExpr)
       CXUnaryOperator cxCode = clang_unaryOperator_operator(cxExpr);
       switch (cxCode) {
         default:
+          printSubtree(childCursor);
           xunimp(stringb("Unary operator: " << cxCode));
 
         case CXUnaryOperator_PostInc:
