@@ -1,0 +1,36 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+int i1;
+
+typedef int myint;
+
+myint i2;
+
+struct S_tag {
+  int x;
+};
+
+typedef struct S_tag S_td;
+
+S_td s;
+
+unsigned f()
+{
+  unsigned exprs =
+    ISC(SC_INT_CONV, unsigned,
+      sizeof(i1) + sizeof(i2) + sizeof(s) +
+        ISC(SC_INT_CONV, unsigned long, 0));
+  unsigned types = ISC(SC_INT_CONV, unsigned, 0);
+  return exprs+types;
+}
+
+unsigned g()
+{
+  return ISC(SC_INT_CONV, unsigned, sizeof(3) + sizeof(3));
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

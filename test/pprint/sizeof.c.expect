@@ -1,0 +1,33 @@
+---- stdout ----
+// ---- START ----
+// -*- c++ -*-
+int i1;
+
+typedef int myint;
+
+myint i2;
+
+typedef struct S_tag {
+  int x;
+} S_td;
+
+S_td s;
+
+unsigned f()
+{
+  unsigned exprs = sizeof(i1) + sizeof(i2) + sizeof(s) + 0;
+  unsigned types =
+    sizeof(int) + sizeof(myint) + sizeof(struct S_tag) + sizeof(S_td) +
+      0;
+  return exprs+types;
+}
+
+unsigned g()
+{
+  return sizeof(3) + sizeof(int [3]);
+}
+
+// ---- STOP ----
+---- stderr ----
+---- exit status ----
+Exit 0

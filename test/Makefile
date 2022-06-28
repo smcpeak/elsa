@@ -128,6 +128,7 @@ TESTS += pprint/printf-cond-arg.c
 TESTS += pprint/ptr-as-condition.c
 TESTS += pprint/range-case.c
 TESTS += pprint/return-zero-as-ptr.c
+TESTS += pprint/sizeof.c
 TESTS += pprint/stdconv.c
 TESTS += pprint/stringlit.c
 TESTS += pprint/typedef.c
@@ -470,7 +471,7 @@ out/clang-pprint/%: pprint/% pprint/%.clang.expect pprint/%.clang.isc.expect $(C
 check-clang: out/clang-pprint/ambig-cast-vs-funcall.c
 check-clang: out/clang-pprint/array-plus-int.c
 check-clang: out/clang-pprint/attr-may-alias.c
-#check-clang: out/clang-pprint/big-for-loop.c
+check-clang: out/clang-pprint/big-for-loop.c
 #check-clang: out/clang-pprint/bitfield.c
 #check-clang: out/clang-pprint/builtin-offsetof.c
 #check-clang: out/clang-pprint/cast-array-to-int.c
@@ -508,6 +509,7 @@ check-clang: out/clang-pprint/gnu-attr-several.c
 #check-clang: out/clang-pprint/ptr-as-condition.c
 #check-clang: out/clang-pprint/range-case.c
 #check-clang: out/clang-pprint/return-zero-as-ptr.c
+check-clang: out/clang-pprint/sizeof.c
 #check-clang: out/clang-pprint/stdconv.c
 check-clang: out/clang-pprint/stringlit.c
 #check-clang: out/clang-pprint/typedef.c

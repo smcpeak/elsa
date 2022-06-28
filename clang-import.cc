@@ -1929,6 +1929,10 @@ Expression *ClangImport::importExpression(CXCursor cxExpr)
       ret = new E_throw(expr);
       break;
     }
+
+    case CXCursor_UnaryExpr: // 136
+      ret = importUnaryExpr(cxExpr);
+      break;
   }
 
   ret->type = legacyTypeNC(type);
@@ -2045,6 +2049,29 @@ E_charLit *ClangImport::importCharacterLiteral(CXCursor cxExpr)
   charLit->c = value;
 
   return charLit;
+}
+
+
+
+Expression *ClangImport::importUnaryExpr(CXCursor cxExpr)
+{
+  CXUnaryExprKind unaryKind = clang_unaryExpr_operator(cxExpr);
+  CXCursor child = getOnlyChild(cxExpr);
+  Expression *operand = importExpression(child);
+
+  switch (unaryKind) {
+    default:
+      xunimp(stringb("unary expr operator: " << toString(unaryKind)));
+
+    case CXUnaryExprKind_SizeOf:
+      return new E_sizeof(operand);
+
+    case CXUnaryExprKind_AlignOf:
+    case CXUnaryExprKind_PreferredAlignOf:
+      return new E_alignofExpr(operand);
+  }
+
+  // Not reached.
 }
 
 
