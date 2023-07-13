@@ -17,10 +17,20 @@
 #include "elsaparse.h"                 // ElsaParse
 
 // clang
-#include "clang-c/Index.h"             // libclang
+#include "clang/AST/Decl.h"                                // NamedDecl, FunctionDecl, etc.
+#include "clang/AST/DeclBase.h"                            // Decl
+#include "clang/AST/Expr.h"                                // Expr
+#include "clang/AST/Stmt.h"                                // Stmt, CompoundStmt, etc.
+#include "clang/AST/Type.h"                                // QualType, FunctionType, Qualifiers, etc.
+#include "clang/Basic/LLVM.h"                              // StringRef
+#include "clang/Basic/SourceLocation.h"                    // FileID, SourceLocation
+#include "clang/Basic/Specifiers.h"                        // StorageClass
+#include "clang/Frontend/ASTUnit.h"                        // ASTUnit
+#include "clang-c/Index.h"                                 // libclang (TODO: remove)
 
 // libc++
 #include <map>                         // std::map
+#include <memory>                      // std::unique_ptr
 
 
 // Dispose the index upon scope exit.
@@ -134,11 +144,8 @@ public:
 class ClangImport : public SourceLocProvider, ElsaASTBuild {
 public:      // data
   // ---- Clang AST ----
-  // Container for Clang translation-wide data.
-  CXIndex m_cxIndex;
-
   // Root of the Clang AST.
-  CXTranslationUnit m_cxTranslationUnit;
+  std::unique_ptr<clang::ASTUnit> m_clangASTUnit;
 
   // ---- Elsa AST ----
   // Container for Elsa translation-wide data.
@@ -152,38 +159,41 @@ public:      // data
   Scope *m_globalScope;
 
   // ---- Maps between Clang and Elsa ----
-  // Map from Clang file pointer to its name.
-  std::map<CXFile /*cxFile*/, StringRef /*fname*/> m_cxFileToName;
+  // Map from Clang file ID to its name.
+  std::map<clang::FileID /*clangFileID*/,
+           StringRef /*fname*/> m_clangFileIDToName;
 
   // Map from SourceLoc of a declaration to its associated Variable.
   std::map<SourceLoc, Variable *> m_locToVariable;
 
 public:      // methods
-  ClangImport(CXIndex cxIndex,
-              CXTranslationUnit cxTranslationUnit,
+  ClangImport(std::unique_ptr<clang::ASTUnit> &&clangASTUnit,
               ElsaParse &elsaParse);
 
   // Entry point to the importer.
   void importTranslationUnit();
 
-  // Convert a CXString to a StringRef.  This disposes 'cxString'.
-  StringRef importString(CXString cxString);
+  StringRef importStringRef(clang::StringRef clangString);
 
-  // Map 'cxFile' to a file name, using a map to remember entries
+  // Map 'clangFileID' to a file name, using a map to remember entries
   // already seen.
-  StringRef importFileName(CXFile cxFile);
+  StringRef importFileName(clang::FileID clangFileID);
 
-  SourceLoc importSourceLocation(CXSourceLocation cxLoc);
+  SourceLoc importSourceLocation(clang::SourceLocation clangLoc);
+
+  SourceLoc declLocation(clang::Decl const *clangDecl);
+
+  SourceLoc stmtLocation(clang::Stmt const *clangStmt);
 
   // Get the location of 'cxCursor'.
   SourceLoc cursorLocation(CXCursor cxCursor);
 
   StringRef cursorSpelling(CXCursor cxCursor);
 
-  TopForm *importTopForm(CXCursor cxTopForm);
+  TopForm *importTopForm(clang::Decl const *clangTopFormDecl);
 
-  Declaration *importDeclaration(CXCursor cxDecl,
-    DeclaratorContext context);
+  //Declaration *importDeclaration(CXCursor cxDecl,
+  //  DeclaratorContext context);
 
   Variable *importEnumTypeAsForward(CXCursor cxEnumDecl);
 
@@ -199,39 +209,51 @@ public:      // methods
   Declaration *importCompoundTypeForwardDeclaration(
     CXCursor cxCompoundDecl);
 
-  // Return the CV flags applied to the receiver for 'cxMethodDecl'.
-  CVFlags importMethodCVFlags(CXCursor cxMethodDecl);
+  // Return the CV flags applied to the receiver for 'clangCXXMethodDecl'.
+  CVFlags importMethodQualifiers(
+    clang::CXXMethodDecl const *clangCXXMethodDecl);
 
-  Function *importFunctionDefinition(CXCursor cxFuncDefn);
+  Function *importFunctionDefinition(
+    clang::FunctionDecl const *clangFunctionDecl);
 
-  // Get a reference to the Variable pointer for 'cxDecl'.  If the
-  // Variable has not yet been created, this returns a reference to a
-  // NULL pointer, which the caller is obliged to fill in immediately.
-  Variable *&variableRefForDeclaration(CXCursor cxDecl);
+  // Get a reference to the Variable pointer for 'clangNamedDecl'.  If
+  // the Variable has not yet been created, this returns a reference to
+  // a NULL pointer, which the caller is obliged to fill in immediately.
+  Variable *&variableRefForDeclaration(clang::NamedDecl const *clangNamedDecl);
 
   // Get or create the Variable that represents the entity declared at
-  // 'cxDecl'.  'declFlags' is added to whatever is derived from the
-  // Clang AST.
-  Variable *variableForDeclaration(CXCursor cxDecl,
+  // 'clangNamedDecl'.  'declFlags' is added to whatever is derived from
+  // the Clang AST.
+  Variable *variableForDeclaration(clang::NamedDecl const *clangNamedDecl,
     DeclFlags declFlags = DF_NONE);
 
   // Get the associated Variable, asserting that it exists.
-  Variable *existingVariableForDeclaration(CXCursor cxDecl);
+  Variable *existingVariableForDeclaration(
+    clang::NamedDecl const *clangNamedDecl);
 
-  Declaration *importVarOrTypedefDecl(CXCursor cxVarDecl,
+  Declaration *importNamedDecl(
+    clang::NamedDecl const *clangNamedDecl,
     DeclaratorContext context);
 
+  // If 'clangNamedDecl' can have a storage class, get it and return
+  // that within DeclFlags.  Otherwise, return DF_NONE.
+  DeclFlags declStorageClass(clang::NamedDecl const *clangNamedDecl);
+
   // Possibly add qualifiers to 'declarator', and also get the storage
-  // class for 'cxVarDecl' as would be used at its declaration site
+  // class for 'clangNamedDecl' as would be used at its declaration site
   // (which depends on the presence of qualifiers).
   DeclFlags possiblyAddNameQualifiers_and_getStorageClass(
-    Declarator *declarator, CXCursor cxVarDecl);
+    Declarator *declarator, clang::NamedDecl const *clangNamedDecl);
 
-  // If 'cxVarDecl' requires qualifiers, add them to 'declarator', which
-  // already has an unqualified name.  Return true if any qualifiers
-  // were added.
+  // If 'clangNamedDecl' requires qualifiers, add them to 'declarator',
+  // which already has an unqualified name.  Return true if any
+  // qualifiers were added.
   bool possiblyAddNameQualifiers(Declarator *declarator,
-    CXCursor cxVarDecl);
+    clang::NamedDecl const *clangNamedDecl);
+
+  // Get the identifier name of 'clangDeclContext', (for now) throwing
+  // an exception if it does not have one.
+  StringRef declContextName(clang::DeclContext const *clangDeclContext);
 
   // Given a set of attributes associated with 'declarator', parse them
   // and attach their parsed forms to 'declarator'.
@@ -256,16 +278,19 @@ public:      // methods
   Expression *importAttributeArgument(SourceLoc loc,
     StringRef arg);
 
-  Type *importType(CXType cxType);
+  CVFlags importQualifiers(clang::Qualifiers clangQualifiers);
 
-  // Import 'cxType' as a type.  If 'methodClass' is not NULL, and
-  // 'cxType' is a function type, then return a method type with a
-  // receiver that is a 'methodCV' reference to 'methodClass'.
-  Type *importType_maybeMethod(CXType cxType,
+  Type *importQualType(clang::QualType clangQualType);
+
+  // Import 'clangQualType' as a type.  If 'methodClass' is not NULL,
+  // and 'clangQualType' is a function type, then return a method type
+  // with a receiver that is a 'methodCV' reference to 'methodClass'.
+  Type *importQualType_maybeMethod(clang::QualType clangQualType,
     CompoundType const * NULLABLE methodClass, CVFlags methodCV);
 
   // Like above, but specific to the function type case.
-  FunctionType *importFunctionType(CXType cxFunctionType,
+  FunctionType *importFunctionType(
+    clang::FunctionType const *clangFunctionType,
     CompoundType const * NULLABLE methodClass, CVFlags methodCV);
 
   // Add the receiver parameter to 'methodType'.
@@ -274,11 +299,12 @@ public:      // methods
 
   ArrayType *importArrayType(CXType cxArrayType);
 
-  S_compound *importCompoundStatement(CXCursor cxFunctionBody);
+  S_compound *importCompoundStatement(
+    clang::CompoundStmt const *clangCompoundStmt);
 
-  Statement *importStatement(CXCursor cxStmt);
+  Statement *importStatement(clang::Stmt const *clangStmt);
 
-  FullExpression *importFullExpression(CXCursor cxExpr);
+  FullExpression *importFullExpression(clang::Expr const *clangExpr);
 
   // Assert that 'cxNode' has exactly one child, and return it.
   CXCursor getOnlyChild(CXCursor cxNode);
@@ -291,18 +317,18 @@ public:      // methods
 
   std::string evalAsString(CXCursor cxExpr);
 
-  Expression *importExpression(CXCursor cxExpr);
+  Expression *importExpression(clang::Expr const *clangExpr);
 
   E_stringLit *importStringLiteral(CXCursor cxExpr);
 
   E_charLit *importCharacterLiteral(CXCursor cxExpr);
 
-  // Import a CXCursor_UnaryExpr.
-  Expression *importUnaryExpr(CXCursor cxExpr);
+  Expression *importUnaryOperator(
+    clang::UnaryOperator const *clangUnaryOperator);
 
-  // Determine if 'cxExpr' is any of the special forms described by the
-  // 'SpecialExpr' enumeration.
-  SpecialExpr getSpecialExpr(CXCursor cxExpr);
+  // Determine if 'clangExpr' is any of the special forms described by
+  // the 'SpecialExpr' enumeration.
+  SpecialExpr getSpecialExpr(clang::Expr const *clangExpr);
 
   // Describe the conversion from 'srcType' to 'destType' as a
   // standard conversion.
@@ -321,16 +347,17 @@ public:      // methods
   Handler *importHandler(CXCursor cxHandler);
 
   // Make a Variable, and set its 'm_containingScope' according to
-  // 'cxDecl'.
+  // 'clangNamedDecl'.
   Variable *makeVariable_setScope(SourceLoc loc,
-    StringRef name, Type *type, DeclFlags flags, CXCursor cxDecl);
+    StringRef name, Type *type, DeclFlags flags,
+    clang::NamedDecl const *clangNamedDecl);
 
   Variable *makeVariable(SourceLoc loc, StringRef name,
     Type *type, DeclFlags flags);
 
   StringRef addStringRef(char const *str);
 
-  DeclFlags importStorageClass(CX_StorageClass storageClass);
+  DeclFlags importStorageClass(clang::StorageClass storageClass);
 
   AccessKeyword importAccessKeyword(
     CX_CXXAccessSpecifier accessSpecifier);

@@ -15,11 +15,50 @@
 #include "str.h"                       // string
 #include "trace.h"                     // tracingSys
 
+// clang
+#include "clang/AST/DeclBase.h"                            // Decl
+#include "clang/Basic/Diagnostic.h"                        // DiagnosticEngine
+#include "clang/Basic/DiagnosticOptions.h"                 // DiagnosticOptions
+#include "clang/Basic/LLVM.h"                              // IntrusiveRefCntPtr
+#include "clang/Driver/Driver.h"                           // driver::Driver
+#include "clang/Frontend/CompilerInstance.h"               // CompilerInstance
+#include "clang/Serialization/PCHContainerOperations.h"    // PCHContainerOperations
+
 // libc++
 #include <sstream>                     // std::ostringstream
 
 // libc
 #include <stdlib.h>                    // atoi, getenv
+
+
+// Unfortunately, I cannot just say "using namespace clang" because
+// clang/Basic/LLVM.h contains "using llvm::StringRef", and
+// llvm::StringRef collides with the one I define in strtable.h.  So,
+// instead, pull in the needed classes and namespaces one by one.
+//
+// Also, for AST classes, I want them to always be explicitly qualified
+// with "clang::" in this file so they can readily be distinguished from
+// Elsa AST classes, so I do not pull any of those in with a 'using'
+// declaration.
+using llvm::IntrusiveRefCntPtr;
+using llvm::dyn_cast;
+using clang::CompilerInstance;
+using clang::DiagnosticsEngine;
+using clang::DiagnosticOptions;
+using clang::PCHContainerOperations;
+namespace driver = clang::driver;
+
+
+// Downcast 'oldVar' to 'destClass', which is in the 'clang' namespace,
+// storing the result in 'newVar', and asserting it succeeds.
+#define CLANG_DOWNCAST(destClass, newVar, oldVar)                      \
+  clang::destClass const *newVar = dyn_cast<clang::destClass>(oldVar); \
+  xassert(newVar) /* user ; */
+
+
+// Downcast within an 'if' condition such that the 'if' will do the test.
+#define CLANG_DOWNCAST_IN_IF(destClass, newVar, oldVar) \
+  clang::destClass const *newVar = dyn_cast<clang::destClass>(oldVar)
 
 
 // This is a candidate to go into smbase.
@@ -34,86 +73,72 @@ void checkedAssignment(DEST &dest, SRC src)
 }
 
 
-static string cxErrorCodeString(CXErrorCode code)
-{
-  static char const * const table[] = {
-    "Success",
-    "Failure",
-    "Crashed",
-    "InvalidArguments",
-    "ASTReadError"
-  };
-
-  if ((unsigned)code < TABLESIZE(table)) {
-    return string(table[code]);
-  }
-  else {
-    return stringb("Unknown error code: " << (int)code);
-  }
-}
-
-
 // Entry point to this module.
 void clangParseTranslationUnit(
   ElsaParse &elsaParse,
   std::vector<std::string> const &gccOptions)
 {
-  CXIndex cxIndex = clang_createIndex(
-    0 /*excludeDeclarationsFromPCH*/,
-    1 /*displayDiagnostics*/);
-  DisposeCXIndex disposeCxIndex(cxIndex);
-
-  // Copy the arguments into an ordinary array of pointers.
-  char const **commandLine = new char const * [gccOptions.size()];
+  // Copy the arguments into a vector of char pointers since that is
+  // what 'LoadFromCommandLine' wants.
+  std::vector<char const *> commandLine(gccOptions.size() + 1);
   {
     size_t i = 0;
+
+    // The documentation for clang::createInvocation (which is what
+    // LoadFromCommandLine calls internally) says the first argument
+    // should be the driver name, and that an absolute path is
+    // preferred, although I would expect system headers to be found
+    // using 'resourcesPath', not this, so I'll try the simplest thing.
+    commandLine.at(i++) = "clang";
+
     for (std::string const &s : gccOptions) {
-      xassert(i < gccOptions.size());
-      commandLine[i++] = s.c_str();
+      xassert(i < commandLine.size());
+      commandLine.at(i++) = s.c_str();
     }
   }
 
-  CXTranslationUnit_Flags tuFlags = CXTranslationUnit_None;
-  if (0) {
-    // This causes the TU to include things like MacroDefinition nodes,
-    // but it does not make the results of clang_tokenize any more
-    // accurate.
-    tuFlags = CXTranslationUnit_DetailedPreprocessingRecord;
+  std::shared_ptr<PCHContainerOperations> pchContainerOps(
+    new PCHContainerOperations());
+
+  // The diagnostics engine created this way will simply print all
+  // warnings and errors to stderr as they occur, and also maintain a
+  // count of each.
+  IntrusiveRefCntPtr<DiagnosticsEngine> diagnosticsEngine(
+    CompilerInstance::createDiagnostics(new DiagnosticOptions));
+
+  // Get the path to the headers (etc.) Clang uses while parsing.  The
+  // 'GetResourcesPath' function accepts a path to a file in the Clang
+  // lib or bin directory, and immediately discards the file name itself
+  // in order to get the directory (and then append more things).  So I
+  // append a dummy file name to the lib directory.
+  //
+  // I'm not actually sure if I need or want this to be set properly
+  // since my intent for the moment is to always supply my own header
+  // files rather than using Clang's, but as an experiment I'll start by
+  // trying to specify it correctly.
+  std::string resourcesPath =
+    driver::Driver::GetResourcesPath(CLANG_LLVM_LIB_DIR "/dummy");
+
+  // Run the Clang parser to produce an AST.
+  std::unique_ptr<clang::ASTUnit> ast(clang::ASTUnit::LoadFromCommandLine(
+    commandLine.data(),
+    commandLine.data() + commandLine.size(),
+    pchContainerOps,
+    diagnosticsEngine,
+    resourcesPath));
+
+  if (ast == nullptr) {
+    // Error messages should already have been printed, so this might
+    // be redundant.
+    xfatal("clang parse failed to produce an AST");
   }
 
-  CXTranslationUnit cxTU;
-  CXErrorCode errorCode = clang_parseTranslationUnit2(
-    cxIndex,
-    nullptr,                 // source_filename
-    commandLine,
-    (int)gccOptions.size(),
-    nullptr,                 // unsaved_files
-    0,                       // num_unsaved_files
-    tuFlags,                 // options
-    &cxTU);
-
-  delete[] commandLine;
-
-  if (errorCode != CXError_Success) {
-    xfatal("clang parse failed: " << cxErrorCodeString(errorCode));
+  if (diagnosticsEngine->getNumErrors() > 0) {
+    // The errors should have been printed already.
+    xfatal("clang reported errors, stopping");
   }
 
-  DisposeCXTranslationUnit disposeTU(cxTU);
-
-  // Check for errors.
-  unsigned numDiagnostics = clang_getNumDiagnostics(cxTU);
-  for (unsigned i=0; i < numDiagnostics; i++) {
-    CXDiagnostic diag = clang_getDiagnostic(cxTU, i);
-    CXDiagnosticSeverity sev = clang_getDiagnosticSeverity(diag);
-    clang_disposeDiagnostic(diag);
-
-    if (sev >= CXDiagnostic_Error) {
-      // The diagnostics should already be printed.
-      xfatal("clang parse produced error diagnostics");
-    }
-  }
-
-  ClangImport importClang(cxIndex, cxTU, elsaParse);
+  ClangImport importClang(std::move(ast), elsaParse);
   importClang.importTranslationUnit();
 }
 
@@ -169,53 +194,61 @@ bool PartitionedChildren::empty() const
 
 
 // --------------------------- ClangImport -----------------------------
-ClangImport::ClangImport(CXIndex cxIndex,
-                         CXTranslationUnit cxTranslationUnit,
+ClangImport::ClangImport(std::unique_ptr<clang::ASTUnit> &&clangASTUnit,
                          ElsaParse &elsaParse)
   : ElsaASTBuild(elsaParse.m_stringTable,
                  elsaParse.m_typeFactory,
                  elsaParse.m_lang,
                  *this),
-    m_cxIndex(cxIndex),
-    m_cxTranslationUnit(cxTranslationUnit),
+    m_clangASTUnit(std::move(clangASTUnit)),
     m_elsaParse(elsaParse),
     m_tfac(elsaParse.m_typeFactory),
     m_globalScope(new Scope(SK_GLOBAL, 0 /*changeCount*/, SL_INIT)),
-    m_cxFileToName(),
+    m_clangFileIDToName(),
     m_locToVariable()
 {}
 
 
 void ClangImport::importTranslationUnit()
 {
-  CXCursor cursor = clang_getTranslationUnitCursor(m_cxTranslationUnit);
-  if (tracingSys("dumpClang")) {
-    printSubtree(cursor);
-  }
-
-  std::vector<CXCursor> decls = getChildren(cursor);
+  bool dump = tracingSys("dumpClang");
 
   m_elsaParse.m_translationUnit = new TranslationUnit(nullptr);
 
-  for (auto cursor : decls) {
-    m_elsaParse.m_translationUnit->topForms.append(importTopForm(cursor));
+  // An ASTUnit should have a TranslationUnitDecl inside it, acting as
+  // the context for all of the top-level declarations, but I do not see
+  // a way to directly get the TranslationUnitDecl.  Instead it seems I
+  // have to iterate over the top-level declarations.
+  for (auto it = m_clangASTUnit->top_level_begin();
+       it < m_clangASTUnit->top_level_end();
+       ++it) {
+    clang::Decl *decl = *it;
+    if (dump) {
+      decl->dump();
+    }
+    m_elsaParse.m_translationUnit->topForms.append(importTopForm(decl));
   }
 }
 
 
-StringRef ClangImport::importString(CXString cxString)
+StringRef ClangImport::importStringRef(clang::StringRef clangString)
 {
-  WrapCXString wcxString(cxString);
-  return addStringRef(wcxString.c_str());
+  // This could be made more efficient.
+  std::string s(clangString.data(), clangString.size());
+  return addStringRef(s.c_str());
 }
 
 
-StringRef ClangImport::importFileName(CXFile cxFile)
+StringRef ClangImport::importFileName(clang::FileID clangFileID)
 {
-  auto it = m_cxFileToName.find(cxFile);
-  if (it == m_cxFileToName.end()) {
-    StringRef fname = importString(clang_getFileName(cxFile));
-    insertMapUnique(m_cxFileToName, cxFile, fname);
+  auto it = m_clangFileIDToName.find(clangFileID);
+  if (it == m_clangFileIDToName.end()) {
+    clang::SourceManager const &srcMgr =
+      m_clangASTUnit->getSourceManager();
+    clang::FileEntry const *fileEntry =
+      srcMgr.getFileEntryForID(clangFileID);
+    StringRef fname = importStringRef(fileEntry->getName());
+    insertMapUnique(m_clangFileIDToName, clangFileID, fname);
     return fname;
   }
   else {
@@ -224,70 +257,81 @@ StringRef ClangImport::importFileName(CXFile cxFile)
 }
 
 
-SourceLoc ClangImport::importSourceLocation(CXSourceLocation cxLoc)
+SourceLoc ClangImport::importSourceLocation(clang::SourceLocation clangLoc)
 {
-  // TODO: It would probably be more efficient to use the offset.
-  CXFile cxFile;
-  unsigned line;
-  unsigned column;
-  clang_getFileLocation(cxLoc, &cxFile, &line, &column, nullptr /*offset*/);
+  clang::SourceManager const &srcMgr =
+    m_clangASTUnit->getSourceManager();
 
-  if (!cxFile) {
-    // This happens for the null location.
+  clang::FileID fid = srcMgr.getFileID(clangLoc);
+  if (!fid.isValid()) {
     return SL_UNKNOWN;
   }
+  StringRef fname = importFileName(fid);
 
-  StringRef fname = importFileName(cxFile);
+  // TODO: It would probably be more efficient to use the offset.
+  unsigned line = srcMgr.getSpellingLineNumber(clangLoc);
+  unsigned column = srcMgr.getSpellingColumnNumber(clangLoc);
+
   return sourceLocManager->encodeLineCol(fname, line, column);
+}
+
+
+SourceLoc ClangImport::declLocation(clang::Decl const *clangDecl)
+{
+  // Decl has both 'getBeginLoc' and 'getLocation'.  I'm not sure how
+  // they are different, but for now I will use the latter since it is
+  // perhaps less specific.
+  return importSourceLocation(clangDecl->getLocation());
+}
+
+
+SourceLoc ClangImport::stmtLocation(clang::Stmt const *clangStmt)
+{
+  return importSourceLocation(clangStmt->getBeginLoc());
 }
 
 
 SourceLoc ClangImport::cursorLocation(CXCursor cxCursor)
 {
-  return importSourceLocation(clang_getCursorLocation(cxCursor));
+  xunimp("old");
+  return SL_UNKNOWN;
+  //return importSourceLocation(clang_getCursorLocation(cxCursor));
 }
 
 
 StringRef ClangImport::cursorSpelling(CXCursor cxCursor)
 {
-  return importString(clang_getCursorSpelling(cxCursor));
+  xunimp("old");
+  return nullptr;
+  //return importString(clang_getCursorSpelling(cxCursor));
 }
 
 
-TopForm *ClangImport::importTopForm(CXCursor cxTopForm)
+TopForm *ClangImport::importTopForm(clang::Decl const *clangTopFormDecl)
 {
-  SourceLoc loc = cursorLocation(cxTopForm);
+  SourceLoc loc = declLocation(clangTopFormDecl);
 
-  CXCursorKind cxKind = clang_getCursorKind(cxTopForm);
-  switch (cxKind) {
-    default:
-      xfailure(stringb("importTopForm: Unknown cxKind: " << toString(cxKind)));
-
-    importDecl:
-    case CXCursor_StructDecl: // 2
-    case CXCursor_UnionDecl: // 3
-    case CXCursor_ClassDecl: // 4
-    case CXCursor_EnumDecl: // 5
-    case CXCursor_VarDecl: // 9
-    case CXCursor_TypedefDecl: // 20
-      return new TF_decl(loc, importDeclaration(cxTopForm, DC_TF_DECL));
-
-    case CXCursor_FunctionDecl: // 8
-    case CXCursor_CXXMethod: { // 21
-      if (clang_isCursorDefinition(cxTopForm)) {
-        Function *func = importFunctionDefinition(cxTopForm);
+  if (clang::NamedDecl const *cnd =
+        dyn_cast<clang::NamedDecl>(clangTopFormDecl)) {
+    // Handle function definitions separately.
+    if (clang::FunctionDecl const *cfd =
+          dyn_cast<clang::FunctionDecl>(cnd)) {
+      if (cfd->hasBody()) {
+        Function *func = importFunctionDefinition(cfd);
         return new TF_func(loc, func);
       }
-      else {
-        goto importDecl;
-      }
     }
+
+    return new TF_decl(loc, importNamedDecl(cnd, DC_TF_DECL));
   }
 
-  // Not reached.
+  xunimp(stringb("importTopForm: Unknown kind: " <<
+                 clangTopFormDecl->getDeclKindName()));
+  return nullptr; // not reached
 }
 
 
+#if 0 // old
 Declaration *ClangImport::importDeclaration(CXCursor cxDecl,
   DeclaratorContext context)
 {
@@ -323,15 +367,20 @@ Declaration *ClangImport::importDeclaration(CXCursor cxDecl,
 
     case CXCursor_VarDecl: // 9
     case CXCursor_TypedefDecl: // 20
-      return importVarOrTypedefDecl(cxDecl, context);
+      return importNamedDecl(cxDecl, context);
   }
 
   // Not reached.
 }
+#endif // 0
 
 
 Variable *ClangImport::importEnumTypeAsForward(CXCursor cxEnumDecl)
 {
+  xunimp("this");
+  return nullptr;
+
+#if 0 // old
   StringRef enumName = cursorSpelling(cxEnumDecl);
 
   // Have we already created a record for it?
@@ -355,11 +404,16 @@ Variable *ClangImport::importEnumTypeAsForward(CXCursor cxEnumDecl)
   }
 
   return var;
+#endif // 0
 }
 
 
 Declaration *ClangImport::importEnumDefinition(CXCursor cxEnumDefn)
 {
+  xunimp("importEnumDefinition");
+  return nullptr;
+
+#if 0 // old
   Variable *enumVar = importEnumTypeAsForward(cxEnumDefn);
   EnumType *enumType = enumVar->type->asNamedAtomicType()->asEnumType();
 
@@ -419,11 +473,16 @@ Declaration *ClangImport::importEnumDefinition(CXCursor cxEnumDefn)
 
   // Wrap up the type specifier in a declaration with no declarators.
   return new Declaration(DF_NONE, enumTS, nullptr /*decllist*/);
+#endif // 0
 }
 
 
 Variable *ClangImport::importCompoundTypeAsForward(CXCursor cxCompoundDecl)
 {
+  xunimp("importCompoundTypeAsForward");
+  return nullptr;
+
+#if 0 // old
   StringRef compoundName = cursorSpelling(cxCompoundDecl);
 
   // What kind of compound is this?
@@ -456,6 +515,7 @@ Variable *ClangImport::importCompoundTypeAsForward(CXCursor cxCompoundDecl)
   }
 
   return var;
+#endif // 0
 }
 
 
@@ -468,6 +528,7 @@ Declaration *ClangImport::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
   FakeList<BaseClassSpec> *bases = FakeList<BaseClassSpec>::emptyList();
   MemberList *memberList = new MemberList(nullptr /*list*/);
 
+#if 0 // old
   // Process the children of the definition.
   for (CXCursor const &child : getChildren(cxCompoundDefn)) {
     CXCursorKind childKind = clang_getCursorKind(child);
@@ -497,7 +558,7 @@ Declaration *ClangImport::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
         Variable *&fieldVar = variableRefForDeclaration(child);
         xassert(!fieldVar);
 
-        Type *fieldType = importType_maybeMethod(
+        Type *fieldType = importQualType_maybeMethod(
           clang_getCursorType(child), ct, methodCV);
 
         DeclFlags dflags = importStorageClass(
@@ -523,7 +584,7 @@ Declaration *ClangImport::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
           newMember = new MR_func(childLoc, func);
         }
         else {
-          methodCV = importMethodCVFlags(child);
+          methodCV = importMethodQualifiers(child);
           goto importDecl;
         }
         break;
@@ -539,6 +600,7 @@ Declaration *ClangImport::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
     xassert(newMember);
     memberList->list.append(newMember);
   }
+#endif // 0
 
   // Now that the members have been populated, 'ct' is no longer forward.
   ct->m_isForwardDeclared = false;
@@ -573,90 +635,71 @@ Declaration *ClangImport::importCompoundTypeForwardDeclaration(
 }
 
 
-CVFlags ClangImport::importMethodCVFlags(CXCursor cxMethodDecl)
+CVFlags ClangImport::importMethodQualifiers(
+  clang::CXXMethodDecl const *clangCXXMethodDecl)
 {
-  // libclang does not expose an 'isVolatile' bit for methods.
-  // Fortunately, volatile methods are virtually non-existent in
-  // practice.
-  return clang_CXXMethod_isConst(cxMethodDecl)? CV_CONST : CV_NONE;
+  return importQualifiers(clangCXXMethodDecl->getMethodQualifiers());
 }
 
 
-Function *ClangImport::importFunctionDefinition(CXCursor cxFuncDefn)
+Function *ClangImport::importFunctionDefinition(
+  clang::FunctionDecl const *clangFunctionDecl)
 {
+  xassert(clangFunctionDecl->hasBody());
+
   // Build a representative for the function.  This will have an
   // associated FunctionType, but without parameter names.
-  Variable *funcVar = variableForDeclaration(cxFuncDefn);
+  Variable *funcVar = variableForDeclaration(clangFunctionDecl);
   FunctionType const *declFuncType = funcVar->type->asFunctionTypeC();
-
-  // Function body.
-  CXCursor cxFunctionBody;
 
   // Build a FunctionType specific to this definition, containing the
   // parameter names.
   FunctionType *defnFuncType = m_tfac.makeFunctionType(declFuncType->retType);
 
   // Possibly add the receiver parameter.
-  if (clang_getCursorKind(cxFuncDefn) == CXCursor_CXXMethod &&
-      clang_Cursor_getStorageClass(cxFuncDefn) != CX_SC_Static) {
-    // The containing class is the semantic parent.
-    CXCursor semParent = clang_getCursorSemanticParent(cxFuncDefn);
-    Variable *classTypedefVar = existingVariableForDeclaration(semParent);
-    CVFlags cv = importMethodCVFlags(cxFuncDefn);
-    addReceiver(defnFuncType, cursorLocation(cxFuncDefn),
-                classTypedefVar->type->asCompoundTypeC(), cv);
-  }
-
-  // Scan for the parameter declarations and the body.
-  {
-    bool foundBody = false;
-
-    // The parameter declarations are children of 'cxFuncDefn'.
-    std::vector<CXCursor> children = getChildren(cxFuncDefn);
-    for (CXCursor const &child : children) {
-      CXCursorKind childKind = clang_getCursorKind(child);
-      switch (childKind) {
-        case CXCursor_ParmDecl: { // 10
-          Variable *paramVar = variableForDeclaration(child, DF_PARAMETER);
-          defnFuncType->addParam(paramVar);
-          break;
-        }
-
-        case CXCursor_TypeRef: // 43
-          // A TypeRef child can indicate the receiver object type, but
-          // it can also indicate the type of a return value or a
-          // parameter that is not a basic type like 'int', and there's
-          // no indication which is which, so these are entirely useless
-          // here.  Just skip them.
-          break;
-
-        case CXCursor_CompoundStmt: { // 202
-          // The final child is the function body.
-          xassert(!foundBody);
-          foundBody = true;
-          cxFunctionBody = child;
-          break;
-        }
-
-        default:
-          xfailure(stringb("importFunctionDefinition: Unexpected childKind: " <<
-                           toString(childKind)));
-      }
+  if (clang::CXXMethodDecl const *ccmd =
+        dyn_cast<clang::CXXMethodDecl>(clangFunctionDecl)) {
+    if (!ccmd->isStatic()) {
+      // The containing class is the semantic parent.
+      clang::CXXRecordDecl const *clangCXXRecordDecl = ccmd->getParent();
+      Variable *classTypedefVar =
+        existingVariableForDeclaration(clangCXXRecordDecl);
+      CVFlags cv = importMethodQualifiers(ccmd);
+      addReceiver(defnFuncType, declLocation(clangFunctionDecl),
+                  classTypedefVar->type->asCompoundTypeC(), cv);
     }
-
-    defnFuncType->flags = declFuncType->flags;
-
-    m_tfac.doneParams(defnFuncType);
-    xassert(foundBody);
   }
+
+  // Add parameters.
+  unsigned numParams = clangFunctionDecl->getNumParams();
+  for (unsigned i = 0; i < numParams; ++i) {
+    clang::ParmVarDecl const *clangParmVarDecl =
+      clangFunctionDecl->getParamDecl(i);
+    Variable *paramVar =
+      variableForDeclaration(clangParmVarDecl, DF_PARAMETER);
+    defnFuncType->addParam(paramVar);
+  }
+
+  defnFuncType->flags = declFuncType->flags;
+  m_tfac.doneParams(defnFuncType);
 
   std::pair<TypeSpecifier*, Declarator*> tsAndDeclarator =
     makeTSandDeclaratorForType(funcVar, defnFuncType, DC_FUNCTION);
 
   DeclFlags declFlags = possiblyAddNameQualifiers_and_getStorageClass(
-    tsAndDeclarator.second, cxFuncDefn);
+    tsAndDeclarator.second, clangFunctionDecl);
 
-  S_compound *body = importCompoundStatement(cxFunctionBody);
+  clang::Stmt const *clangFunctionBody = clangFunctionDecl->getBody();
+  S_compound *body = nullptr;
+  if (clang::CompoundStmt const *ccs =
+        dyn_cast<clang::CompoundStmt>(clangFunctionBody)) {
+    body = importCompoundStatement(ccs);
+  }
+  else {
+    // I think the only other possibility is CXXTryStmt.
+    xunimp(stringb("importFunctionDefinition: unhandled body type: " <<
+                   clangFunctionBody->getStmtClassName()));
+  }
 
   return new Function(
     declFlags,
@@ -668,52 +711,62 @@ Function *ClangImport::importFunctionDefinition(CXCursor cxFuncDefn)
 }
 
 
-Variable *&ClangImport::variableRefForDeclaration(CXCursor cxDecl)
+Variable *&ClangImport::variableRefForDeclaration(
+  clang::NamedDecl const *clangNamedDecl)
 {
   // Go to the canonical cursor to handle the case of an entity that is
   // declared multiple times.
-  cxDecl = clang_getCanonicalCursor(cxDecl);
+  clangNamedDecl = dyn_cast<clang::NamedDecl>(clangNamedDecl->getCanonicalDecl());
+  xassert(clangNamedDecl);
 
-  // CXCursor is a structure with several elements, so does not appear
-  // usable as a map key.  Use the location instead.
-  SourceLoc loc = cursorLocation(cxDecl);
+  // TODO: Update to use the NamedDecl pointer as the key instead of
+  // its location.
+  SourceLoc loc = declLocation(clangNamedDecl);
 
   return m_locToVariable[loc];
 }
 
 
-Variable *ClangImport::variableForDeclaration(CXCursor cxDecl,
+Variable *ClangImport::variableForDeclaration(
+  clang::NamedDecl const *clangNamedDecl,
   DeclFlags declFlags)
 {
-  StringRef name = cursorSpelling(cxDecl);
-  CXCursorKind declKind = clang_getCursorKind(cxDecl);
+  StringRef name = importStringRef(clangNamedDecl->getName());
 
-  Variable *&var = variableRefForDeclaration(cxDecl);
+  Variable *&var = variableRefForDeclaration(clangNamedDecl);
   if (!var) {
     Type *type;
 
-    if (declKind == CXCursor_TypedefDecl) {
+    if (clang::TypedefNameDecl const *ctnd =
+          dyn_cast<clang::TypedefNameDecl>(clangNamedDecl)) {
       declFlags |= DF_TYPEDEF;
 
       // For a typedef, the 'type' is the underlying type.
-      type = importType(clang_getTypedefDeclUnderlyingType(cxDecl));
+      type = importQualType(ctnd->getUnderlyingType());
+    }
+
+    else if (clang::ValueDecl const *cvd =
+               dyn_cast<clang::ValueDecl>(clangNamedDecl)) {
+      // For value, the type is what the declaration says it is.
+      type = importQualType(cvd->getType());
     }
 
     else {
-      // For anything else, the type is what the declaration says.
-      type = importType(clang_getCursorType(cxDecl));
+      xunimp(stringb("variableForDeclaration: unhandled kind: " <<
+                     clangNamedDecl->getDeclKindName()));
     }
 
-    SourceLoc loc = cursorLocation(cxDecl);
+    SourceLoc loc = declLocation(clangNamedDecl);
 
     xassert(!var);
-    var = makeVariable_setScope(loc, name, type, declFlags, cxDecl);
+    var = makeVariable_setScope(loc, name, type, declFlags, clangNamedDecl);
   }
 
   else {
     // Detect location collisions.
     xassert(var->name == name);
 
+#if 0 // old
     if (declKind == CXCursor_FunctionDecl) {
       FunctionType const *ft = var->type->asFunctionTypeC();
       if (ft->hasFlag(FF_NO_PARAM_INFO)) {
@@ -721,27 +774,30 @@ Variable *ClangImport::variableForDeclaration(CXCursor cxDecl,
         // far, do not have parameter info.  Import the type at this
         // location to see if it has parameter info.
         FunctionType const *ft2 =
-          importType(clang_getCursorType(cxDecl))->asFunctionTypeC();
+          importQualType(clang_getCursorType(cxDecl))->asFunctionTypeC();
         if (!ft2->hasFlag(FF_NO_PARAM_INFO)) {
           // Update the Variable accordingly.
           var->type = legacyTypeNC(ft2);
         }
       }
     }
+#endif // 0
   }
 
   return var;
 }
 
 
-Variable *ClangImport::existingVariableForDeclaration(CXCursor cxDecl)
+Variable *ClangImport::existingVariableForDeclaration(
+  clang::NamedDecl const *clangNamedDecl)
 {
-  Variable *&var = variableRefForDeclaration(cxDecl);
+  Variable *&var = variableRefForDeclaration(clangNamedDecl);
   xassert(var);
   return var;
 }
 
 
+#if 0 // temporarily unneeded
 // Return true if 'type' is a variable-length array.
 static bool isVariableLengthArray(Type const *type)
 {
@@ -752,89 +808,61 @@ static bool isVariableLengthArray(Type const *type)
     return false;
   }
 }
+#endif // 0
 
 
-Declaration *ClangImport::importVarOrTypedefDecl(CXCursor cxVarDecl,
+Declaration *ClangImport::importNamedDecl(
+  clang::NamedDecl const *clangNamedDecl,
   DeclaratorContext context)
 {
-  Variable *var = variableForDeclaration(cxVarDecl);
+  Variable *var = variableForDeclaration(clangNamedDecl);
   Declaration *decl = makeDeclaration(var, context);
   Declarator *declarator = fl_first(decl->decllist);
 
   // Add qualifiers if needed.
   decl->dflags |= possiblyAddNameQualifiers_and_getStorageClass(
-    declarator, cxVarDecl);
+    declarator, clangNamedDecl);
 
-  // Get children, partitioned by category.
-  PartitionedChildren children(cxVarDecl);
+  // TODO: Attributes.
 
-  // Process attributes, which are associated with the declarator.
-  // (When an attribute is associated with the entire declaration, Clang
-  // takes care of duplicating it as needed.)
-  if (!children.m_attributes.empty()) {
-    importDeclaratorAttributes(declarator, children.m_attributes);
-    children.m_attributes.clear();
-  }
-
-  // The interpretation of 'children' depends on the node type.
-  CXCursorKind declKind = clang_getCursorKind(cxVarDecl);
-  switch (declKind) {
-    case CXCursor_VarDecl:
-      xassert(children.m_expressions.size() <= 1);
-      if (children.m_expressions.size() == 1) {
-        CXCursor first = children.m_expressions.front();
-        if (isVariableLengthArray(var->type)) {
-          // The child specifies the array length.
-          D_array *arrayDeclarator =
-            declarator->decl->getSecondFromBottom()->asD_array();
-          arrayDeclarator->size = importExpression(first);
-        }
-        else {
-          // The child specifies the initializer.
-          declarator->init = importInitializer(first);
-        }
-      }
-      children.m_expressions.clear();
-      break;
-
-    case CXCursor_FunctionDecl:
-    case CXCursor_CXXMethod:
-      // For a definition, the children declare the parameters.  I do
-      // not need to look at them here.
-      children.m_declarations.clear();
-      break;
-
-    case CXCursor_TypedefDecl:
-      // If the type specifier of the typedef defines a type (like a
-      // struct), that definition appears as a child, which we can
-      // safely ignore here.
-      children.m_declarations.clear();
-      break;
-
-    default:
-      // For other kinds, I think there should not be children.
-      break;
-  }
-
-  // Verify that all children have been consumed.
-  xassert(children.empty());
+  // TODO: Get variable length array size.
 
   return decl;
 }
 
 
+DeclFlags ClangImport::declStorageClass(
+  clang::NamedDecl const *clangNamedDecl)
+{
+  // VarDecl and FunctionDecl each have a storage class.
+
+  if (clang::VarDecl const *cvd = dyn_cast<clang::VarDecl>(clangNamedDecl)) {
+    return importStorageClass(cvd->getStorageClass());
+  }
+
+  if (clang::FunctionDecl const *cfd = dyn_cast<clang::FunctionDecl>(clangNamedDecl)) {
+    return importStorageClass(cfd->getStorageClass());
+  }
+
+  return DF_NONE;
+}
+
+
 DeclFlags ClangImport::possiblyAddNameQualifiers_and_getStorageClass(
-  Declarator *declarator, CXCursor cxVarDecl)
+  Declarator *declarator, clang::NamedDecl const *clangNamedDecl)
 {
   // Add qualifiers if needed.
-  bool qualified = possiblyAddNameQualifiers(declarator, cxVarDecl);
+  bool qualified = possiblyAddNameQualifiers(declarator, clangNamedDecl);
 
-  DeclFlags declFlags = importStorageClass(
-    clang_Cursor_getStorageClass(cxVarDecl));
+  DeclFlags declFlags = declStorageClass(clangNamedDecl);
 
   if (qualified) {
     // If a declaration uses a qualifier, it is not allowed to also
     // say 'static'.
+    //
+    // TODO: This seems aimed at handling static methods, where 'static'
+    // can appear at a declaration or an inline definition, but not an
+    // out-of-line definition, but I'm not sure this is correct.
     declFlags &= ~DF_STATIC;
   }
 
@@ -843,27 +871,29 @@ DeclFlags ClangImport::possiblyAddNameQualifiers_and_getStorageClass(
 
 
 bool ClangImport::possiblyAddNameQualifiers(Declarator *declarator,
-  CXCursor cxVarDecl)
+  clang::NamedDecl const *clangNamedDecl)
 {
-  SourceLoc loc = cursorLocation(cxVarDecl);
+  SourceLoc loc = declLocation(clangNamedDecl);
   PQName *declaratorName = declarator->getDeclaratorId();
   int loopCounter = 0;
 
-  CXCursor lexParent = clang_getCursorLexicalParent(cxVarDecl);
-  if (clang_getCursorKind(lexParent) == CXCursor_FunctionDecl) {
+  clang::DeclContext const *lexParent =
+    clangNamedDecl->getLexicalDeclContext();
+  if (lexParent->getDeclKind() == clang::Decl::Function) {
     // A qualified name cannot be declared local to a function.
     return false;
   }
 
-  CXCursor semParent = clang_getCursorSemanticParent(cxVarDecl);
-  while (!( clang_equalCursors(semParent, lexParent) ||
-            clang_getCursorKind(semParent) == CXCursor_TranslationUnit )) {
+  clang::DeclContext const *semParent = clangNamedDecl->getDeclContext();
+  xassert(semParent);
+  while (!( lexParent == semParent ||
+            semParent->getDeclKind() == clang::Decl::TranslationUnit )) {
     if (++loopCounter > 100) {
       // Guard against an infinite loop.
       xfatal("possiblyAddNameQualifiers: hit loop counter limit");
     }
 
-    StringRef semParentName = cursorSpelling(semParent);
+    StringRef semParentName = declContextName(semParent);
 
     // TODO: Handle template arguments.
     TemplateArgument *templArgs = nullptr;
@@ -871,12 +901,26 @@ bool ClangImport::possiblyAddNameQualifiers(Declarator *declarator,
     declaratorName = new PQ_qualifier(loc,
       semParentName, templArgs, declaratorName);
 
-    semParent = clang_getCursorSemanticParent(semParent);
-    xassert(!clang_isInvalid(clang_getCursorKind(semParent)));
+    semParent = semParent->getParent();
+    xassert(semParent);
   }
 
   declarator->setDeclaratorId(declaratorName);
   return loopCounter > 0;
+}
+
+
+StringRef ClangImport::declContextName(
+  clang::DeclContext const *clangDeclContext)
+{
+  if (clang::TagDecl const *ctd =
+        dyn_cast<clang::TagDecl>(clangDeclContext)) {
+    return importStringRef(ctd->getName());
+  }
+
+  xunimp(stringb("declContextName: unhandled kind: " <<
+                 clangDeclContext->getDeclKindName()));
+  return nullptr; // not reached
 }
 
 
@@ -1011,13 +1055,13 @@ Expression *ClangImport::importAttributeArgument(SourceLoc loc,
 }
 
 
-// Handle the low end of the 'CXTypeKind' range.
-static SimpleTypeId cxTypeKindToSimpleTypeId(CXTypeKind kind)
+static SimpleTypeId clangBuiltinTypeKindToSimpleTypeId(
+  clang::BuiltinType::Kind kind)
 {
   struct Entry {
     // I store the key in the table just so I can assert that it is
     // correct.
-    CXTypeKind m_kind;
+    clang::BuiltinType::Kind m_kind;
 
     // Some of the entries are NUM_SIMPLE_TYPES to indicate that Elsa
     // is missing the corresponding type.
@@ -1025,67 +1069,169 @@ static SimpleTypeId cxTypeKindToSimpleTypeId(CXTypeKind kind)
   };
 
   static Entry const table[] = {
-    #define ENTRY(kind, id) { kind, id }
+    #define ENTRY(kind, id) { clang::BuiltinType::kind, id }
 
-    // Columns: \S+ \S+
-    ENTRY(CXType_Invalid,    NUM_SIMPLE_TYPES),
-    ENTRY(CXType_Unexposed,  NUM_SIMPLE_TYPES),
-    ENTRY(CXType_Void,       ST_VOID),
-    ENTRY(CXType_Bool,       ST_BOOL),
-    ENTRY(CXType_Char_U,     ST_CHAR),   // 'char' for targets where it is unsigned
-    ENTRY(CXType_UChar,      ST_UNSIGNED_CHAR),
-    ENTRY(CXType_Char16,     NUM_SIMPLE_TYPES),
-    ENTRY(CXType_Char32,     NUM_SIMPLE_TYPES),
-    ENTRY(CXType_UShort,     ST_UNSIGNED_SHORT_INT),
-    ENTRY(CXType_UInt,       ST_UNSIGNED_INT),
-    ENTRY(CXType_ULong,      ST_UNSIGNED_LONG_INT),
-    ENTRY(CXType_ULongLong,  ST_UNSIGNED_LONG_LONG),
-    ENTRY(CXType_UInt128,    NUM_SIMPLE_TYPES),
-    ENTRY(CXType_Char_S,     ST_CHAR),   // 'char' for targets where it is signed
-    ENTRY(CXType_SChar,      ST_SIGNED_CHAR),
-    ENTRY(CXType_WChar,      ST_WCHAR_T),
-    ENTRY(CXType_Short,      ST_SHORT_INT),
-    ENTRY(CXType_Int,        ST_INT),
-    ENTRY(CXType_Long,       ST_LONG_INT),
-    ENTRY(CXType_LongLong,   ST_LONG_LONG),
-    ENTRY(CXType_Int128,     NUM_SIMPLE_TYPES),
-    ENTRY(CXType_Float,      ST_FLOAT),
-    ENTRY(CXType_Double,     ST_DOUBLE),
-    ENTRY(CXType_LongDouble, ST_LONG_DOUBLE),
+    // Currently, this table only lists the values defined in
+    // clang/AST/BuiltinTypes.def, even though the Kind enumeration has
+    // more stuff for more specialized targets.  Consequently, the entry
+    // indices are offset from the enumeration values by the value of
+    // 'Void', the first enumeration.
+
+    // BuiltinTypes.def has comments explaining what each of these are;
+    // I've repeated some information in my own comments for non-obvious
+    // cases.
+
+    // Columns: \S+ \S+ \S+
+    ENTRY(Void,           ST_VOID),
+    ENTRY(Bool,           ST_BOOL),
+    ENTRY(Char_U,         ST_CHAR),               // 'char' for targets where it is unsigned
+    ENTRY(UChar,          ST_UNSIGNED_CHAR),
+    ENTRY(WChar_U,        ST_WCHAR_T),            // 'wchar_t' where it is unsigned
+    ENTRY(Char8,          NUM_SIMPLE_TYPES),
+    ENTRY(Char16,         NUM_SIMPLE_TYPES),
+    ENTRY(Char32,         NUM_SIMPLE_TYPES),
+    ENTRY(UShort,         ST_UNSIGNED_SHORT_INT),
+    ENTRY(UInt,           ST_UNSIGNED_INT),
+    ENTRY(ULong,          ST_UNSIGNED_LONG_INT),
+    ENTRY(ULongLong,      ST_UNSIGNED_LONG_LONG),
+    ENTRY(UInt128,        NUM_SIMPLE_TYPES),
+    ENTRY(Char_S,         ST_CHAR),               // 'char' where it is signed
+    ENTRY(SChar,          ST_SIGNED_CHAR),
+    ENTRY(WChar_S,        ST_WCHAR_T),            // 'wchar_t' where it is signed
+    ENTRY(Short,          ST_SHORT_INT),
+    ENTRY(Int,            ST_INT),
+    ENTRY(Long,           ST_LONG_INT),
+    ENTRY(LongLong,       ST_LONG_LONG),
+    ENTRY(Int128,         NUM_SIMPLE_TYPES),
+    ENTRY(ShortAccum,     NUM_SIMPLE_TYPES),
+    ENTRY(Accum,          NUM_SIMPLE_TYPES),
+    ENTRY(LongAccum,      NUM_SIMPLE_TYPES),
+    ENTRY(UShortAccum,    NUM_SIMPLE_TYPES),
+    ENTRY(UAccum,         NUM_SIMPLE_TYPES),
+    ENTRY(ULongAccum,     NUM_SIMPLE_TYPES),
+    ENTRY(ShortFract,     NUM_SIMPLE_TYPES),
+    ENTRY(Fract,          NUM_SIMPLE_TYPES),
+    ENTRY(LongFract,      NUM_SIMPLE_TYPES),
+    ENTRY(UShortFract,    NUM_SIMPLE_TYPES),
+    ENTRY(UFract,         NUM_SIMPLE_TYPES),
+    ENTRY(ULongFract,     NUM_SIMPLE_TYPES),
+    ENTRY(SatShortAccum,  NUM_SIMPLE_TYPES),
+    ENTRY(SatAccum,       NUM_SIMPLE_TYPES),
+    ENTRY(SatLongAccum,   NUM_SIMPLE_TYPES),
+    ENTRY(SatUShortAccum, NUM_SIMPLE_TYPES),
+    ENTRY(SatUAccum,      NUM_SIMPLE_TYPES),
+    ENTRY(SatULongAccum,  NUM_SIMPLE_TYPES),
+    ENTRY(SatShortFract,  NUM_SIMPLE_TYPES),
+    ENTRY(SatFract,       NUM_SIMPLE_TYPES),
+    ENTRY(SatLongFract,   NUM_SIMPLE_TYPES),
+    ENTRY(SatUShortFract, NUM_SIMPLE_TYPES),
+    ENTRY(SatUFract,      NUM_SIMPLE_TYPES),
+    ENTRY(SatULongFract,  NUM_SIMPLE_TYPES),
+    ENTRY(Half,           NUM_SIMPLE_TYPES),
+    ENTRY(Float,          ST_FLOAT),
+    ENTRY(Double,         ST_DOUBLE),
+    ENTRY(LongDouble,     ST_LONG_DOUBLE),
+    ENTRY(Float16,        NUM_SIMPLE_TYPES),
+    ENTRY(BFloat16,       NUM_SIMPLE_TYPES),
+    ENTRY(Float128,       NUM_SIMPLE_TYPES),
+    ENTRY(Ibm128,         NUM_SIMPLE_TYPES),
+    ENTRY(NullPtr,        NUM_SIMPLE_TYPES),
 
     #undef ENTRY
   };
 
-  STATIC_ASSERT(TABLESIZE(table) == CXType_LongDouble+1);
-  xassert(kind < TABLESIZE(table));
-  Entry const &entry = table[kind];
-  if (entry.m_id == NUM_SIMPLE_TYPES) {
-    xunimp(stringb("cxTypeKindToSimpleTypeId: Unhandled simple type kind: " << toString(kind)));
+  // The table covers the subrange from 'Void' to 'NullPtr'.
+  STATIC_ASSERT(TABLESIZE(table) ==
+    clang::BuiltinType::NullPtr - clang::BuiltinType::Void + 1);
+
+  if (clang::BuiltinType::Void <= kind &&
+                                  kind <= clang::BuiltinType::NullPtr) {
+    unsigned index = kind - clang::BuiltinType::Void;
+
+    xassert(index < TABLESIZE(table));
+    Entry const &entry = table[index];
+    if (entry.m_id != NUM_SIMPLE_TYPES) {
+      return entry.m_id;
+    }
   }
-  return entry.m_id;
+
+  // Unfortunately there isn't an easy way to stringify 'kind'.
+  xunimp(stringb("clangBuiltinTypeKindToSimpleTypeId: Unhandled builtin type kind: " << kind));
+
+  return NUM_SIMPLE_TYPES; // not reached
 }
 
 
-Type *ClangImport::importType(CXType cxType)
-{
-  return importType_maybeMethod(cxType, nullptr /*methodCV*/, CV_NONE);
-}
-
-
-Type *ClangImport::importType_maybeMethod(CXType cxType,
-  CompoundType const * NULLABLE methodClass, CVFlags methodCV)
+CVFlags ClangImport::importQualifiers(clang::Qualifiers clangQualifiers)
 {
   CVFlags cv = CV_NONE;
-  if (clang_isConstQualifiedType(cxType)) {
+  if (clangQualifiers.hasConst()) {
     cv |= CV_CONST;
   }
-  if (clang_isVolatileQualifiedType(cxType)) {
+  if (clangQualifiers.hasVolatile()) {
     cv |= CV_VOLATILE;
   }
-  if (clang_isRestrictQualifiedType(cxType)) {
+  if (clangQualifiers.hasRestrict()) {
     cv |= CV_RESTRICT;
   }
+  return cv;
+}
 
+
+Type *ClangImport::importQualType(clang::QualType clangQualType)
+{
+  return importQualType_maybeMethod(clangQualType, nullptr /*methodCV*/, CV_NONE);
+}
+
+
+Type *ClangImport::importQualType_maybeMethod(clang::QualType clangQualType,
+  CompoundType const * NULLABLE methodClass, CVFlags methodCV)
+{
+  xassert(!clangQualType.isNull());
+
+  CVFlags cv = importQualifiers(clangQualType.getQualifiers());
+
+  clang::Type const *clangType = clangQualType.getTypePtr();
+  switch (clangType->getTypeClass()) {
+    default:
+      xunimp(stringb("Unhandled type class: " << clangType->getTypeClassName()));
+      // fake fallthrough
+
+    #define CASE(kind, var, code)                                              \
+      case clang::Type::kind: {                                                \
+        clang::kind##Type const *var = dyn_cast<clang::kind##Type>(clangType); \
+        xassert(var);                                                          \
+        code                                                                   \
+      }
+
+    CASE(Builtin, cbt,
+      return m_tfac.getSimpleType(
+        clangBuiltinTypeKindToSimpleTypeId(cbt->getKind()), cv);
+    )
+
+    CASE(Typedef, ctt,
+      clang::TypedefNameDecl const *ctnd = ctt->getDecl();
+      Variable *typedefVar = existingVariableForDeclaration(ctnd);
+      return m_tfac.makeTypedefType(typedefVar, cv);
+    )
+
+    case clang::Type::FunctionNoProto:
+    case clang::Type::FunctionProto: {
+      clang::FunctionType const *cft = dyn_cast<clang::FunctionType>(clangType);
+      xassert(cft);
+      xassert(cv == CV_NONE);
+      return importFunctionType(cft, methodClass, methodCV);
+    }
+
+    CASE(Paren, cpt,
+      return importQualType_maybeMethod(cpt->getInnerType(),
+                                        methodClass, methodCV);
+    )
+
+    #undef CASE
+  }
+
+#if 0 // old
   // Codes 2 through 23.
   if (CXType_Void <= cxType.kind && cxType.kind <= CXType_LongDouble) {
     return m_tfac.getSimpleType(cxTypeKindToSimpleTypeId(cxType.kind), cv);
@@ -1096,17 +1242,17 @@ Type *ClangImport::importType_maybeMethod(CXType cxType,
       xfailure(stringb("Unknown cxType kind: " << toString(cxType.kind)));
 
     case CXType_Invalid: // 0
-      xfailure("importType: cxType is invalid");
+      xfailure("importQualType: cxType is invalid");
 
     // Codes 2 through 23 are handled above.
 
     case CXType_Pointer: // 101
       return m_tfac.makePointerType(cv,
-        importType(clang_getPointeeType(cxType)));
+        importQualType(clang_getPointeeType(cxType)));
 
     case CXType_LValueReference: // 103
       return m_tfac.makeReferenceType(
-        importType(clang_getPointeeType(cxType)));
+        importQualType(clang_getPointeeType(cxType)));
 
     // TODO: CXType_RValueReference = 104
 
@@ -1143,42 +1289,52 @@ Type *ClangImport::importType_maybeMethod(CXType cxType,
   }
 
   // Not reached.
+#endif // 0
 }
 
 
-FunctionType *ClangImport::importFunctionType(CXType cxFunctionType,
+FunctionType *ClangImport::importFunctionType(
+  clang::FunctionType const *clangFunctionType,
   CompoundType const * NULLABLE methodClass, CVFlags methodCV)
 {
-  Type *retType = importType(clang_getResultType(cxFunctionType));
+  Type *retType = importQualType(clangFunctionType->getReturnType());
 
   FunctionType *ft = m_tfac.makeFunctionType(retType);
 
   if (methodClass) {
-    // Note: Even if 'cxFunctionType' refers to a method type, libclang
-    // does *not* report it as cv-qualified, even though
-    // 'clang_getTypeSpelling' will include the 'const'.  Instead, the
-    // declaration itself can be 'clang_CXXMethod_isConst'.
-    // Consequently, 'methodCV' must be passed in by the caller.
+    // Note: Even if 'clangFunctionType' refers to a method type, clang
+    // does *not* report it as cv-qualified.  Instead, the declaration
+    // itself can be const.  Consequently, 'methodCV' must be passed in
+    // by the caller.
     addReceiver(ft, SL_UNKNOWN, methodClass, methodCV);
   }
 
-  int numParams = clang_getNumArgTypes(cxFunctionType);
-  for (int i=0; i < numParams; i++) {
-    Type *paramType = importType(clang_getArgType(cxFunctionType, i));
+  if (clang::FunctionProtoType const *cfpt =
+        dyn_cast<clang::FunctionProtoType>(clangFunctionType)) {
+    unsigned numParams = cfpt->getNumParams();
+    for (unsigned i=0; i < numParams; i++) {
+      Type *paramType = importQualType(cfpt->getParamType(i));
 
-    // The Clang AST does not appear to record the names of function
-    // parameters for non-definitions anywhere other than as tokens
-    // that would have to be parsed.
-    //
-    // TODO: That is wrong; non-definition FunctionProto nodes have
-    // ParmDecl children.  I should get the names from them.
-    Variable *paramVar = makeVariable(SL_UNKNOWN, nullptr /*name*/,
-      paramType, DF_PARAMETER);
+      // The Clang AST does not appear to record the names of function
+      // parameters for non-definitions anywhere other than as tokens
+      // that would have to be parsed.
+      //
+      // TODO: That is wrong; non-definition FunctionProto nodes have
+      // ParmDecl children.  I should get the names from them.
+      Variable *paramVar = makeVariable(SL_UNKNOWN, nullptr /*name*/,
+        paramType, DF_PARAMETER);
 
-    ft->addParam(paramVar);
+      ft->addParam(paramVar);
+    }
+
+    if (cfpt->isVariadic()) {
+      ft->setFlag(FF_VARARGS);
+    }
   }
 
-  if (cxFunctionType.kind == CXType_FunctionNoProto) {
+  else {
+    xassert(dyn_cast<clang::FunctionNoProtoType>(clangFunctionType));
+
     // Note: If this declaration is also a definition, then C11
     // 6.7.6.3p14 says it accepts no parameters.  But the response
     // to Defect Report 317 says that, even so, the function type
@@ -1186,9 +1342,6 @@ FunctionType *ClangImport::importFunctionType(CXType cxFunctionType,
     //
     // https://www.open-std.org/jtc1/sc22/wg14/www/docs/dr_317.htm
     ft->setFlag(FF_NO_PARAM_INFO);
-  }
-  else if (clang_isFunctionTypeVariadic(cxFunctionType)) {
-    ft->setFlag(FF_VARARGS);
   }
 
   m_tfac.doneParams(ft);
@@ -1212,7 +1365,7 @@ void ClangImport::addReceiver(FunctionType *methodType,
 
 ArrayType *ClangImport::importArrayType(CXType cxArrayType)
 {
-  Type *eltType = importType(clang_getElementType(cxArrayType));
+  Type *eltType = nullptr; // old: importQualType(clang_getElementType(cxArrayType));
 
   int size;
   switch (cxArrayType.kind) {
@@ -1242,14 +1395,18 @@ ArrayType *ClangImport::importArrayType(CXType cxArrayType)
 }
 
 
-S_compound *ClangImport::importCompoundStatement(CXCursor cxCompStmt)
+S_compound *ClangImport::importCompoundStatement(
+  clang::CompoundStmt const *clangCompoundStmt)
 {
-  SourceLoc loc = cursorLocation(cxCompStmt);
+  SourceLoc loc = stmtLocation(clangCompoundStmt);
   S_compound *comp = new S_compound(loc, nullptr /*stmts*/);
 
-  std::vector<CXCursor> children = getChildren(cxCompStmt);
-  for (CXCursor const &child : children) {
-    comp->stmts.append(importStatement(child));
+  for (clang::CompoundStmt::const_body_iterator it =
+         clangCompoundStmt->body_begin();
+       it != clangCompoundStmt->body_end();
+       ++it) {
+    clang::Stmt const *cs = *it;
+    comp->stmts.append(importStatement(cs));
   }
 
   return comp;
@@ -1330,15 +1487,87 @@ static void assertEqualTypeSpecifiers(
 }
 
 
-Statement *ClangImport::importStatement(CXCursor cxStmt)
+Statement *ClangImport::importStatement(clang::Stmt const *clangStmt)
 {
+  SourceLoc loc = stmtLocation(clangStmt);
+
+  switch (clangStmt->getStmtClass()) {
+    default:
+      xunimp(stringb("importStatement: unhandled: " <<
+                     clangStmt->getStmtClassName()));
+      // fake fallthrough
+
+    case clang::Stmt::ReturnStmtClass: {
+      CLANG_DOWNCAST(ReturnStmt, crs, clangStmt);
+      FullExpression *retval = nullptr;
+      clang::Expr const *clangExpr = crs->getRetValue();
+      if (clangExpr != nullptr) {
+        retval = importFullExpression(clangExpr);
+      }
+      return new S_return(loc, retval);
+    }
+
+    case clang::Stmt::DeclStmtClass: {
+      clang::DeclStmt const *cds = dyn_cast<clang::DeclStmt>(clangStmt);
+      xassert(cds);
+
+      // Overall declaration to build.
+      Declaration *decl = nullptr;
+
+      // Iterate over all the declarations in this statement.
+      for (auto it = cds->decl_begin(); it != cds->decl_end(); ++it) {
+        clang::Decl const *clangDecl = *it;
+        xassert(clangDecl->getKind() == clang::Decl::Var ||
+                clangDecl->getKind() == clang::Decl::Typedef);
+        clang::NamedDecl const *cnd = dyn_cast<clang::NamedDecl>(clangDecl);
+        xassert(cnd);
+
+        if (!decl) {
+          // First declaration.
+          decl = importNamedDecl(cnd, DC_S_DECL);
+        }
+        else {
+          // Subsequent declaration.
+          Declaration *next = importNamedDecl(cnd, DC_S_DECL);
+
+          // We will merge 'next' onto 'decl'.  First, check that the
+          // declaration specifiers and type specifiers agree.
+          xassert(decl->dflags == next->dflags);
+          assertEqualTypeSpecifiers(decl->spec, next->spec);
+
+          // Now join the declarator lists.
+          xassert(fl_count(next->decllist) == 1);
+          decl->decllist = fl_prepend(decl->decllist, fl_first(next->decllist));
+
+          // Clean up 'next'.  This won't get everything because AST
+          // nodes do not automatically delete their children, but it
+          // gets what is easy.
+          delete next->spec;
+          next->spec = nullptr;
+          next->decllist = FakeList<Declarator>::emptyList();
+          delete next;
+        }
+      }
+
+      // Should have seen at least one declaration.
+      xassert(decl);
+
+      // When there are multiple, we build the list in reverse order.
+      decl->decllist = fl_reverse(decl->decllist);
+
+      return new S_decl(loc, decl);
+    }
+  }
+
+  return nullptr; // not reached
+
+#if 0
   if (clang_Cursor_isNull(cxStmt)) {
     // This is for a case like a missing initializer in a 'for'
     // statement.
     return new S_skip(SL_UNKNOWN, MI_IMPLICIT);
   }
 
-  SourceLoc loc = cursorLocation(cxStmt);
   CXCursorKind stmtKind = clang_getCursorKind(cxStmt);
   std::vector<CXCursor> children = getChildren(cxStmt);
 
@@ -1498,11 +1727,11 @@ Statement *ClangImport::importStatement(CXCursor cxStmt)
                 childKind == CXCursor_TypedefDecl);
         if (!decl) {
           // First declaration.
-          decl = importVarOrTypedefDecl(child, DC_S_DECL);
+          decl = importNamedDecl(child, DC_S_DECL);
         }
         else {
           // Subsequent declaration.
-          Declaration *next = importVarOrTypedefDecl(child, DC_S_DECL);
+          Declaration *next = importNamedDecl(child, DC_S_DECL);
 
           // We will merge 'next' onto 'decl'.  First, check that the
           // declaration specifiers and type specifiers agree.
@@ -1535,12 +1764,14 @@ Statement *ClangImport::importStatement(CXCursor cxStmt)
 
   // Not reached.
   return NULL;
+#endif // 0
 }
 
 
-FullExpression *ClangImport::importFullExpression(CXCursor cxExpr)
+FullExpression *ClangImport::importFullExpression(
+  clang::Expr const *clangExpr)
 {
-  return new FullExpression(importExpression(cxExpr));
+  return new FullExpression(importExpression(clangExpr));
 }
 
 
@@ -1562,6 +1793,7 @@ void ClangImport::getTwoChildren(CXCursor &c1, CXCursor &c2,
 }
 
 
+#if 0 // old
 static UnaryOp cxUnaryToElsaUnary(CXUnaryOperator op)
 {
   switch (op) {
@@ -1627,6 +1859,7 @@ static BinaryOp cxBinaryToElsaBinary(CXBinaryOperator op)
     case CXBinaryOperator_Comma:     return BIN_COMMA;
   }
 }
+#endif // 0
 
 
 long long ClangImport::evalAsLongLong(CXCursor cxExpr)
@@ -1651,33 +1884,37 @@ std::string ClangImport::evalAsString(CXCursor cxExpr)
 }
 
 
-Expression *ClangImport::importExpression(CXCursor cxExpr)
+Expression *ClangImport::importExpression(clang::Expr const *clangExpr)
 {
+#if 0 // old
   if (clang_Cursor_isNull(cxExpr)) {
     // This is used for a missing 'for' condition or increment.
     return new E_boolLit(true);
   }
+#endif // 0
 
-  CXCursorKind exprKind = clang_getCursorKind(cxExpr);
-  Type const *type = importType(clang_getCursorType(cxExpr));
+  Type const *type = importQualType(clangExpr->getType());
 
   Expression *ret = nullptr;
 
-  switch (exprKind) {
+  switch (clangExpr->getStmtClass()) {
     default:
-      printSubtree(cxExpr);
-      xunimp(stringb("importExpression: Unhandled exprKind: " << toString(exprKind)));
+      xunimp(stringb("importExpression: unhandled: " <<
+                     clangExpr->getStmtClassName()));
+      // fake fallthrough
 
-    case CXCursor_UnexposedExpr: { // 100
-      // This is used for implicit conversions (perhaps among other
-      // things).
-      CXCursor child = getOnlyChild(cxExpr);
-      Type const *childType = importType(clang_getCursorType(child));
+    case clang::Stmt::ImplicitCastExprClass: {
+      CLANG_DOWNCAST(ImplicitCastExpr, cice, clangExpr);
+
+      clang::Expr const *clangChildExpr = cice->getSubExpr();
+      Type const *childType = importQualType(clangChildExpr->getType());
       if (type->equals(childType)) {
-        // This happens for lvalue-to-rvalue conversions.  There does
-        // not seem to be a way in libclang to see that directly, so I
-        // will just drop the conversion.
-        return importExpression(child);
+        // OLD: This happens for lvalue-to-rvalue conversions.  There
+        // does not seem to be a way in libclang to see that directly,
+        // so I will just drop the conversion.
+        //
+        // TODO: Maybe I can see it in the C++ API?
+        return importExpression(clangChildExpr);
       }
       else {
         // Note: When multiple conversions take place at the same
@@ -1685,25 +1922,28 @@ Expression *ClangImport::importExpression(CXCursor cxExpr)
         // combines them.  For now at least, I'm not collapsing them the
         // way Elsa would.
         StandardConversion conv = describeAsStandardConversion(
-          /*dest*/ type, /*src*/ childType, getSpecialExpr(child));
+          /*dest*/ type, /*src*/ childType, getSpecialExpr(clangChildExpr));
         ret = new E_implicitStandardConversion(conv,
-          importExpression(child));
+          importExpression(clangChildExpr));
       }
       break;
     }
 
-    case CXCursor_DeclRefExpr: { // 101
-      CXCursor decl = clang_getCursorReferenced(cxExpr);
+    case clang::Stmt::DeclRefExprClass: {
+      CLANG_DOWNCAST(DeclRefExpr, cdre, clangExpr);
+
+      clang::ValueDecl const *clangValueDecl = cdre->getDecl();
 
       // The expression might be referring to an implicitly declared
       // function in C, so we need to allow for the possibility that the
       // declaration has not yet been seen.
-      Variable *var = variableForDeclaration(decl);
+      Variable *var = variableForDeclaration(clangValueDecl);
 
       ret = makeE_variable(var);
       break;
     }
 
+#if 0
     case CXCursor_MemberRefExpr: { // 102
       Expression *object = importExpression(getOnlyChild(cxExpr));
       if (object->type->isPointerType()) {
@@ -1931,8 +2171,9 @@ Expression *ClangImport::importExpression(CXCursor cxExpr)
     }
 
     case CXCursor_UnaryExpr: // 136
-      ret = importUnaryExpr(cxExpr);
+      ret = importUnaryOperator(cxExpr);
       break;
+#endif // 0
   }
 
   ret->type = legacyTypeNC(type);
@@ -2053,8 +2294,13 @@ E_charLit *ClangImport::importCharacterLiteral(CXCursor cxExpr)
 
 
 
-Expression *ClangImport::importUnaryExpr(CXCursor cxExpr)
+Expression *ClangImport::importUnaryOperator(
+  clang::UnaryOperator const *clangUnaryOperator)
 {
+  xunimp("importUnaryOperator");
+  return nullptr;
+
+#if 0
   CXUnaryExprKind unaryKind = clang_unaryExpr_operator(cxExpr);
   CXCursor child = getOnlyChild(cxExpr);
   Expression *operand = importExpression(child);
@@ -2072,23 +2318,20 @@ Expression *ClangImport::importUnaryExpr(CXCursor cxExpr)
   }
 
   // Not reached.
+#endif // 0
 }
 
 
-SpecialExpr ClangImport::getSpecialExpr(CXCursor cxExpr)
+SpecialExpr ClangImport::getSpecialExpr(clang::Expr const *clangExpr)
 {
-  switch (clang_getCursorKind(cxExpr)) {
-    default:
-      break;
+  if (CLANG_DOWNCAST_IN_IF(IntegerLiteral, cil, clangExpr)) {
+    if (cil->getValue() == 0) {
+      return SE_ZERO;
+    }
+  }
 
-    case CXCursor_IntegerLiteral:
-      if (evalAsLongLong(cxExpr) == 0) {
-        return SE_ZERO;
-      }
-      break;
-
-    case CXCursor_StringLiteral:
-      return SE_STRINGLIT;
+  if (clangExpr->getStmtClass() == clang::Stmt::StringLiteralClass) {
+    return SE_STRINGLIT;
   }
 
   return SE_NONE;
@@ -2138,6 +2381,10 @@ StandardConversion ClangImport::describeAsStandardConversion(
 
 Condition *ClangImport::importCondition(CXCursor cxCond)
 {
+  xunimp("importCondition");
+  return nullptr;
+
+#if 0
   CXCursorKind kind = clang_getCursorKind(cxCond);
 
   if (kind == CXCursor_VarDecl) {
@@ -2146,12 +2393,17 @@ Condition *ClangImport::importCondition(CXCursor cxCond)
   else {
     return new CN_expr(importFullExpression(cxCond));
   }
+#endif // 0
 }
 
 
 ASTTypeId *ClangImport::importASTTypeId(CXCursor cxDecl,
   DeclaratorContext context)
 {
+  xunimp("importASTTypeId");
+  return nullptr;
+
+#if 0 // old
   xassert(clang_getCursorKind(cxDecl) == CXCursor_VarDecl);
 
   Variable *var = variableForDeclaration(cxDecl);
@@ -2175,11 +2427,16 @@ ASTTypeId *ClangImport::importASTTypeId(CXCursor cxDecl,
   }
 
   return typeId;
+#endif // 0
 }
 
 
 Initializer *ClangImport::importInitializer(CXCursor cxInit)
 {
+  xunimp("importInitializer");
+  return nullptr;
+
+#if 0
   SourceLoc loc = cursorLocation(cxInit);
   std::vector<CXCursor> children = getChildren(cxInit);
 
@@ -2213,11 +2470,16 @@ Initializer *ClangImport::importInitializer(CXCursor cxInit)
   }
 
   return new IN_expr(loc, importExpression(cxInit));
+#endif // 0
 }
 
 
 Handler *ClangImport::importHandler(CXCursor cxHandler)
 {
+  xunimp("importHandler");
+  return nullptr;
+
+#if 0
   xassert(clang_getCursorKind(cxHandler) == CXCursor_CXXCatchStmt);
 
   std::vector<CXCursor> children = getChildren(cxHandler);
@@ -2240,16 +2502,21 @@ Handler *ClangImport::importHandler(CXCursor cxHandler)
   Statement *body = importStatement(children.back());
 
   return new Handler(typeId, body);
+#endif // 0
 }
 
 
 Variable *ClangImport::makeVariable_setScope(SourceLoc loc,
-  StringRef name, Type *type, DeclFlags flags, CXCursor cxDecl)
+  StringRef name, Type *type, DeclFlags flags,
+  clang::NamedDecl const *clangNamedDecl)
 {
   Variable *var = makeVariable(loc, name, type, flags);
 
-  CXCursor cxSemParent = clang_getCursorSemanticParent(cxDecl);
-  if (clang_getCursorKind(cxSemParent) == CXCursor_TranslationUnit) {
+  clang::DeclContext const *declContext =
+    clangNamedDecl->getDeclContext();
+  xassert(declContext);      // Can this be null?
+
+  if (declContext->getDeclKind() == clang::Decl::TranslationUnit) {
     var->m_containingScope = m_globalScope;
   }
 
@@ -2270,14 +2537,18 @@ StringRef ClangImport::addStringRef(char const *str)
 }
 
 
-DeclFlags ClangImport::importStorageClass(CX_StorageClass storageClass)
+DeclFlags ClangImport::importStorageClass(clang::StorageClass storageClass)
 {
   switch (storageClass) {
-    case CX_SC_Extern:   return DF_EXTERN;
-    case CX_SC_Static:   return DF_STATIC;
-    case CX_SC_Auto:     return DF_AUTO;
-    case CX_SC_Register: return DF_REGISTER;
-    default:             return DF_NONE;
+    default: xfailure(stringb("unknown storage class: " << storageClass));
+
+    // Columns: \S+ \S+ \S+ \S+
+    case clang::SC_None:          return DF_NONE;
+    case clang::SC_Extern:        return DF_EXTERN;
+    case clang::SC_Static:        return DF_STATIC;
+    case clang::SC_PrivateExtern: return DF_NONE;     // No Elsa equivalent, not sure what it is.
+    case clang::SC_Auto:          return DF_AUTO;
+    case clang::SC_Register:      return DF_REGISTER;
   }
 }
 

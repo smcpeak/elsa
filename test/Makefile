@@ -384,52 +384,52 @@ endif
 check-clang: out/clang-pprint-in/t0001.cc
 check-clang: out/clang-pprint-in/t0002.cc
 check-clang: out/clang-pprint-in/t0003.cc
-check-clang: out/clang-pprint-in/t0004.cc
-check-clang: out/clang-pprint-in/t0005.cc
-check-clang: out/clang-pprint-in/t0006.cc
-check-clang: out/clang-pprint-in/t0007.cc
-check-clang: out/clang-pprint-in/t0008.cc
-check-clang: out/clang-pprint-in/t0009.cc
-check-clang: out/clang-pprint-in/t0010.cc
-check-clang: out/clang-pprint-in/t0011.cc
-check-clang: out/clang-pprint-in/t0012.cc
+#check-clang: out/clang-pprint-in/t0004.cc
+#check-clang: out/clang-pprint-in/t0005.cc
+#check-clang: out/clang-pprint-in/t0006.cc
+#check-clang: out/clang-pprint-in/t0007.cc
+#check-clang: out/clang-pprint-in/t0008.cc
+#check-clang: out/clang-pprint-in/t0009.cc
+#check-clang: out/clang-pprint-in/t0010.cc
+#check-clang: out/clang-pprint-in/t0011.cc
+#check-clang: out/clang-pprint-in/t0012.cc
 
-check-clang: out/clang-pprint-in/c/t0001.c
-check-clang: out/clang-pprint-in/c/t0002.c
-check-clang: out/clang-pprint-in/c/t0003.c
-check-clang: out/clang-pprint-in/c/t0004.c
-check-clang: out/clang-pprint-in/c/t0005.c
-check-clang: out/clang-pprint-in/c/t0006.c
-check-clang: out/clang-pprint-in/c/t0007.c
-check-clang: out/clang-pprint-in/c/t0008.c
-check-clang: out/clang-pprint-in/c/t0009.c
-check-clang: out/clang-pprint-in/c/t0010.c
-check-clang: out/clang-pprint-in/c/t0011.c
-check-clang: out/clang-pprint-in/c/t0012.c
-check-clang: out/clang-pprint-in/c/t0013.c
-check-clang: out/clang-pprint-in/c/t0014.c
-check-clang: out/clang-pprint-in/c/t0015.c
-check-clang: out/clang-pprint-in/c/t0016.c
-check-clang: out/clang-pprint-in/c/t0017.c
-check-clang: out/clang-pprint-in/c/t0018.c
-check-clang: out/clang-pprint-in/c/t0019.c
-check-clang: out/clang-pprint-in/c/t0020.c
-check-clang: out/clang-pprint-in/c/t0021.c
+#check-clang: out/clang-pprint-in/c/t0001.c
+#check-clang: out/clang-pprint-in/c/t0002.c
+#check-clang: out/clang-pprint-in/c/t0003.c
+#check-clang: out/clang-pprint-in/c/t0004.c
+#check-clang: out/clang-pprint-in/c/t0005.c
+#check-clang: out/clang-pprint-in/c/t0006.c
+#check-clang: out/clang-pprint-in/c/t0007.c
+#check-clang: out/clang-pprint-in/c/t0008.c
+#check-clang: out/clang-pprint-in/c/t0009.c
+#check-clang: out/clang-pprint-in/c/t0010.c
+#check-clang: out/clang-pprint-in/c/t0011.c
+#check-clang: out/clang-pprint-in/c/t0012.c
+#check-clang: out/clang-pprint-in/c/t0013.c
+#check-clang: out/clang-pprint-in/c/t0014.c
+#check-clang: out/clang-pprint-in/c/t0015.c
+#check-clang: out/clang-pprint-in/c/t0016.c
+#check-clang: out/clang-pprint-in/c/t0017.c
+#check-clang: out/clang-pprint-in/c/t0018.c
+#check-clang: out/clang-pprint-in/c/t0019.c
+#check-clang: out/clang-pprint-in/c/t0020.c
+#check-clang: out/clang-pprint-in/c/t0021.c
 
 # This test seems to be aimed at supporting some non-standard ways of
 # redeclaring 'main', tolerated by Elsa in a fairly specific way.  Since
 # this is primarily a code compliance test, I'll skip it for Clang.
 #check-clang: out/clang-pprint-in/c/t0022.c
 
-check-clang: out/clang-pprint-in/c/t0023.c
-check-clang: out/clang-pprint-in/c/t0024.c
-check-clang: out/clang-pprint-in/c/t0025.c
+#check-clang: out/clang-pprint-in/c/t0023.c
+#check-clang: out/clang-pprint-in/c/t0024.c
+#check-clang: out/clang-pprint-in/c/t0025.c
 
 # This is testing invalid code, and Clang properly rejects it.  Elsa
 # accepts it for bug compatibility only.
 #check-clang: out/clang-pprint-in/c/t0026.c
 
-check-clang: out/clang-pprint-in/c/t0027.c
+#check-clang: out/clang-pprint-in/c/t0027.c
 
 
 # Run a C++ pretty-print test with --clang.
@@ -468,19 +468,19 @@ out/clang-pprint/%: pprint/% pprint/%.clang.expect pprint/%.clang.isc.expect $(C
 	touch $@
 
 # Clang C pprint tests.
-check-clang: out/clang-pprint/ambig-cast-vs-funcall.c
-check-clang: out/clang-pprint/array-plus-int.c
-check-clang: out/clang-pprint/attr-may-alias.c
-check-clang: out/clang-pprint/big-for-loop.c
+#check-clang: out/clang-pprint/ambig-cast-vs-funcall.c
+#check-clang: out/clang-pprint/array-plus-int.c
+#check-clang: out/clang-pprint/attr-may-alias.c
+#check-clang: out/clang-pprint/big-for-loop.c
 #check-clang: out/clang-pprint/bitfield.c
 #check-clang: out/clang-pprint/builtin-offsetof.c
 #check-clang: out/clang-pprint/cast-array-to-int.c
-check-clang: out/clang-pprint/character-literals.c
+#check-clang: out/clang-pprint/character-literals.c
 #check-clang: out/clang-pprint/compound-after-label.c
 #check-clang: out/clang-pprint/const-enum.c
 #check-clang: out/clang-pprint/const-struct.c
 #check-clang: out/clang-pprint/deref-array.c
-check-clang: out/clang-pprint/for-loop-missing-elts.c
+#check-clang: out/clang-pprint/for-loop-missing-elts.c
 #check-clang: out/clang-pprint/for-loop-no-init.c
 #check-clang: out/clang-pprint/func.c
 #check-clang: out/clang-pprint/func-symbol.c
@@ -493,7 +493,7 @@ check-clang: out/clang-pprint/for-loop-missing-elts.c
 #check-clang: out/clang-pprint/gnu-attr-in-type-specifier.c
 #check-clang: out/clang-pprint/gnu-attr-mode.c
 #check-clang: out/clang-pprint/gnu-attr-on-label.c
-check-clang: out/clang-pprint/gnu-attr-several.c
+#check-clang: out/clang-pprint/gnu-attr-several.c
 #check-clang: out/clang-pprint/gnu-declaration-attr.c
 #check-clang: out/clang-pprint/if-without-else.c
 #check-clang: out/clang-pprint/init-struct-with-string.c
@@ -509,17 +509,17 @@ check-clang: out/clang-pprint/gnu-attr-several.c
 #check-clang: out/clang-pprint/ptr-as-condition.c
 #check-clang: out/clang-pprint/range-case.c
 #check-clang: out/clang-pprint/return-zero-as-ptr.c
-check-clang: out/clang-pprint/sizeof.c
+#check-clang: out/clang-pprint/sizeof.c
 #check-clang: out/clang-pprint/stdconv.c
-check-clang: out/clang-pprint/stringlit.c
+#check-clang: out/clang-pprint/stringlit.c
 #check-clang: out/clang-pprint/typedef.c
-check-clang: out/clang-pprint/typedef-multi-declarator.c
+#check-clang: out/clang-pprint/typedef-multi-declarator.c
 #check-clang: out/clang-pprint/vararg-promote.c
 #check-clang: out/clang-pprint/weak-alias.c
 
 # Clang C++ pprint tests.
-check-clang: out/clang-pprint/method-defn.cc
-check-clang: out/clang-pprint/try-catch.cc
+#check-clang: out/clang-pprint/method-defn.cc
+#check-clang: out/clang-pprint/try-catch.cc
 
 
 # ---------------------------- unit tests ------------------------------

@@ -1,0 +1,31 @@
+clang-import-design.txt
+Notes on design of the clang importer
+
+
+The clang 'NamedDecl' corresponds approximately to an Elsa 'Variable',
+
+
+Superclass  Discrim func    Example value        Subclass
+----------  --------------  -------------        --------------
+Stmt        getStmtClass()  BreakStmtClass       BreakStmt
+                            BinaryOperatorClass  BinaryOperator // Expr isa Stmt
+Decl        getKind()       Var                  VarDecl
+
+
+When a variable refers to a clang AST node, if it is a function
+parameter, then its name is 'clangXXX' where 'XXX' is the type of the
+AST node.  If it is a local with a short scope, its name is 'cxxx' where
+'xxx' is the initials of the type of the AST node.  If it is a local
+with a longer scope, then it is named like a parameter.
+
+For example:
+
+  int foo(clang::VarDecl const *clangVarDecl);     // parameter
+  clang::VarDecl const *cvd = ...;                 // short-lived local
+
+Rationale: In both cases, I want the name to pretty clearly indicate it
+comes from clang, hence the "clang" or "c" prefix.  Then, depending on
+scope length, I lean toward either clarity or convenience.
+
+
+EOF
