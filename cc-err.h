@@ -160,8 +160,8 @@ public:
   bool hasFromNonDisambErrors() const;
 
   // print all the errors, one per line, in order
-  void print(ostream &os) const;
-  string printToString() const;
+  void print(ostream &os, bool printWarnings) const;
+  string printToString(bool printWarnings) const;
 };
 
 

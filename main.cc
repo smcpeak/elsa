@@ -115,10 +115,7 @@ static char const *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
       argc--;
     }
     else if (0==strcmp(argv[1], "-w")) {
-      // synonym for -tr nowarnings
-      //
-      // TODO: Use a proper flag for this!
-      traceAddSys("nowarnings");
+      elsaParse.m_printWarnings = false;
       argv++;
       argc--;
     }
@@ -273,7 +270,11 @@ static char const *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
     lang.MSVC_bug_compatibility();
   }
 
-  if (!tracingSys("nowarnings")) {
+  // TODO: The 'm_printWarnings' flag is consulted in two places, once
+  // here to choose what warnings to produce, and once in
+  // 'ErrorList::printToString' to decide what to print.  It should only
+  // be done in one place.
+  if (elsaParse.m_printWarnings) {
     lang.enableAllWarnings();
   }
 

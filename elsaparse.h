@@ -45,6 +45,9 @@ public:      // data
   // is initially false.
   bool m_printErrorCount;
 
+  // If true, print warnings.  Initially true.
+  bool m_printWarnings;
+
   // If true, pretty-print the parsed AST as C/C++ syntax after parsing.
   // Initially false.
   bool m_prettyPrint;

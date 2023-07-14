@@ -145,11 +145,11 @@ public:
 };
 
 
-void handle_xBase(Env &env, xBase &x)
+static void handle_xBase(Env &env, xBase &x, bool printWarnings)
 {
   // typically an assertion failure from the tchecker; catch it here
   // so we can print the errors, and something about the location
-  env.errors.print(cerr);
+  env.errors.print(cerr, printWarnings);
   cerr << x << endl;
   cerr << "Failure probably related to code near " << env.locStr() << endl;
 
@@ -176,6 +176,7 @@ ElsaParse::ElsaParse(StringTable &stringTable_, CCLang &lang_)
     m_typeFactory(),
     m_lang(lang_),
     m_printErrorCount(false),
+    m_printWarnings(true),
     m_prettyPrint(false),
     m_prettyPrintComments(true),
     m_prettyPrintISC(false),
@@ -343,7 +344,7 @@ bool ElsaParse::parse(char const *inputFname)
         // Delta might see it.  If I am intending to minimize an assertion
         // failure, it's no good if Delta introduces an error.
         env.error("confused by earlier errors, bailing out");
-        env.errors.print(cerr);
+        env.errors.print(cerr, m_printWarnings);
         exit(4);
       }
 
@@ -354,11 +355,11 @@ bool ElsaParse::parse(char const *inputFname)
 
       // if we don't have a basis for reducing severity, pass this on
       // to the normal handler
-      handle_xBase(env, x);
+      handle_xBase(env, x, m_printWarnings);
     }
     catch (xBase &x) {
       HANDLER();
-      handle_xBase(env, x);
+      handle_xBase(env, x, m_printWarnings);
     }
 
     int numErrors = env.errors.numErrors();
@@ -399,7 +400,7 @@ bool ElsaParse::parse(char const *inputFname)
     }
 
     // print errors and warnings
-    env.errors.print(cerr);
+    env.errors.print(cerr, m_printWarnings);
 
     if (m_printErrorCount) {
       cerr << "typechecking results:\n"

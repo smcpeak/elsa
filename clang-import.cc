@@ -90,7 +90,7 @@ void clangParseTranslationUnit(
     commandLine.push_back("clang");
 
     // Optionally suppress warnings.
-    if (tracingSys("nowarnings")) {
+    if (!elsaParse.m_printWarnings) {
       commandLine.push_back("-w");
     }
 

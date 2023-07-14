@@ -182,21 +182,19 @@ bool ErrorList::hasFromNonDisambErrors() const
 }
 
 
-void ErrorList::print(ostream &os) const
+void ErrorList::print(ostream &os, bool printWarnings) const
 {
-  os << printToString();
+  os << printToString(printWarnings);
 }
 
 
-string ErrorList::printToString() const
+string ErrorList::printToString(bool printWarnings) const
 {
   stringBuilder sb;
 
   // need to temporarily reverse it, but I promise to restore it
   // when I'm done
   ObjList<ErrorMsg> &nclist = const_cast<ObjList<ErrorMsg>&>(list);
-
-  bool printWarnings = !tracingSys("nowarnings");
 
   nclist.reverse();
   FOREACH_OBJLIST(ErrorMsg, nclist, iter) {

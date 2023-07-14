@@ -142,7 +142,7 @@ void doit(int argc, char **argv)
 
     int numErrors = env.errors.numErrors();
     if (numErrors) {
-      env.errors.print(cerr);
+      env.errors.print(cerr, true /*printWarnings*/);
       cerr << numErrors << " errors\n";
       exit(4);
     }
