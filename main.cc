@@ -116,6 +116,8 @@ static char const *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
     }
     else if (0==strcmp(argv[1], "-w")) {
       // synonym for -tr nowarnings
+      //
+      // TODO: Use a proper flag for this!
       traceAddSys("nowarnings");
       argv++;
       argc--;

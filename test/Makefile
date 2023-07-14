@@ -368,12 +368,16 @@ check: check-errmsg
 
 # --------------------------- clang tests ------------------------------
 # Run ccparse --clang and check the results with pprint.
+#
+# Warnings are suppressed with -w because my examples are filled with
+# anomalies that provoke warnings that I do not want in the expected
+# output.
 out/clang-pprint-in/%: ../in/% pprint-in/%.clang.expect $(CCPARSE)
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/clang-pprint-in/$*.actual \
 	  --expect pprint-in/$*.clang.expect \
-	  $(CCPARSE) --pretty-print --clang $<
+	  $(CCPARSE) --pretty-print --clang -w $<
 	touch $@
 
 .PHONY: check-clang
@@ -384,7 +388,7 @@ endif
 check-clang: out/clang-pprint-in/t0001.cc
 check-clang: out/clang-pprint-in/t0002.cc
 check-clang: out/clang-pprint-in/t0003.cc
-#check-clang: out/clang-pprint-in/t0004.cc
+check-clang: out/clang-pprint-in/t0004.cc
 #check-clang: out/clang-pprint-in/t0005.cc
 #check-clang: out/clang-pprint-in/t0006.cc
 #check-clang: out/clang-pprint-in/t0007.cc

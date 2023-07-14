@@ -185,6 +185,8 @@ public:      // methods
 
   SourceLoc stmtLocation(clang::Stmt const *clangStmt);
 
+  SourceLoc exprLocation(clang::Expr const *clangExpr);
+
   // Get the location of 'cxCursor'.
   SourceLoc cursorLocation(CXCursor cxCursor);
 
@@ -342,7 +344,7 @@ public:      // methods
   ASTTypeId *importASTTypeId(CXCursor cxDecl,
     DeclaratorContext context);
 
-  Initializer *importInitializer(CXCursor cxInit);
+  Initializer *importInitializer(clang::Expr const *clangInitExpr);
 
   Handler *importHandler(CXCursor cxHandler);
 

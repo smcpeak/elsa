@@ -80,31 +80,43 @@ void clangParseTranslationUnit(
 {
   // Copy the arguments into a vector of char pointers since that is
   // what 'LoadFromCommandLine' wants.
-  std::vector<char const *> commandLine(gccOptions.size() + 1);
+  std::vector<char const *> commandLine;
   {
-    size_t i = 0;
-
     // The documentation for clang::createInvocation (which is what
     // LoadFromCommandLine calls internally) says the first argument
     // should be the driver name, and that an absolute path is
     // preferred, although I would expect system headers to be found
     // using 'resourcesPath', not this, so I'll try the simplest thing.
-    commandLine.at(i++) = "clang";
+    commandLine.push_back("clang");
+
+    // Optionally suppress warnings.
+    if (tracingSys("nowarnings")) {
+      commandLine.push_back("-w");
+    }
 
     for (std::string const &s : gccOptions) {
-      xassert(i < commandLine.size());
-      commandLine.at(i++) = s.c_str();
+      commandLine.push_back(s.c_str());
     }
   }
 
   std::shared_ptr<PCHContainerOperations> pchContainerOps(
     new PCHContainerOperations());
 
+  // Arrange to print the option names with emitted diagnostics.
+  //
+  // NOTE: Setting some things in 'diagnosticOptions', such as its
+  // 'Warnings' field, will not work here because they will be
+  // overridden when the command line is processed later.  So we have to
+  // configure options using command line syntax.
+  DiagnosticOptions *diagnosticOptions = new DiagnosticOptions;
+  diagnosticOptions->ShowOptionNames = true;
+
   // The diagnostics engine created this way will simply print all
   // warnings and errors to stderr as they occur, and also maintain a
   // count of each.
   IntrusiveRefCntPtr<DiagnosticsEngine> diagnosticsEngine(
-    CompilerInstance::createDiagnostics(new DiagnosticOptions));
+    CompilerInstance::createDiagnostics(
+      diagnosticOptions /*callee takes ownership*/));
 
   // Get the path to the headers (etc.) Clang uses while parsing.  The
   // 'GetResourcesPath' function accepts a path to a file in the Clang
@@ -288,6 +300,14 @@ SourceLoc ClangImport::declLocation(clang::Decl const *clangDecl)
 SourceLoc ClangImport::stmtLocation(clang::Stmt const *clangStmt)
 {
   return importSourceLocation(clangStmt->getBeginLoc());
+}
+
+
+SourceLoc ClangImport::exprLocation(clang::Expr const *clangExpr)
+{
+  // For the moment, just use the fact that expressions are statements.
+  // I might later want to adjust how expression locations work.
+  return stmtLocation(clangExpr);
 }
 
 
@@ -827,6 +847,14 @@ Declaration *ClangImport::importNamedDecl(
 
   // TODO: Get variable length array size.
 
+  // Get initializer if there is one.
+  if (CLANG_DOWNCAST_IN_IF(VarDecl, cvd, clangNamedDecl)) {
+    if (cvd->hasInit()) {
+      clang::Expr const *clangInitExpr = cvd->getInit();
+      declarator->init = importInitializer(clangInitExpr);
+    }
+  }
+
   return decl;
 }
 
@@ -1209,47 +1237,12 @@ Type *ClangImport::importQualType_maybeMethod(clang::QualType clangQualType,
         clangBuiltinTypeKindToSimpleTypeId(cbt->getKind()), cv);
     )
 
-    CASE(Typedef, ctt,
-      clang::TypedefNameDecl const *ctnd = ctt->getDecl();
-      Variable *typedefVar = existingVariableForDeclaration(ctnd);
-      return m_tfac.makeTypedefType(typedefVar, cv);
+    CASE(Pointer, cpt,
+      return m_tfac.makePointerType(cv,
+        importQualType(cpt->getPointeeType()));
     )
-
-    case clang::Type::FunctionNoProto:
-    case clang::Type::FunctionProto: {
-      clang::FunctionType const *cft = dyn_cast<clang::FunctionType>(clangType);
-      xassert(cft);
-      xassert(cv == CV_NONE);
-      return importFunctionType(cft, methodClass, methodCV);
-    }
-
-    CASE(Paren, cpt,
-      return importQualType_maybeMethod(cpt->getInnerType(),
-                                        methodClass, methodCV);
-    )
-
-    #undef CASE
-  }
 
 #if 0 // old
-  // Codes 2 through 23.
-  if (CXType_Void <= cxType.kind && cxType.kind <= CXType_LongDouble) {
-    return m_tfac.getSimpleType(cxTypeKindToSimpleTypeId(cxType.kind), cv);
-  }
-
-  switch (cxType.kind) {
-    default:
-      xfailure(stringb("Unknown cxType kind: " << toString(cxType.kind)));
-
-    case CXType_Invalid: // 0
-      xfailure("importQualType: cxType is invalid");
-
-    // Codes 2 through 23 are handled above.
-
-    case CXType_Pointer: // 101
-      return m_tfac.makePointerType(cv,
-        importQualType(clang_getPointeeType(cxType)));
-
     case CXType_LValueReference: // 103
       return m_tfac.makeReferenceType(
         importQualType(clang_getPointeeType(cxType)));
@@ -1267,29 +1260,38 @@ Type *ClangImport::importQualType_maybeMethod(clang::QualType clangQualType,
       Variable *typedefVar = existingVariableForDeclaration(cxTypeDecl);
       return typedefVar->type;
     }
+#endif // 0
 
-    handleTypedef:
-    case CXType_Typedef: { // 107
-      CXCursor cxTypeDecl = clang_getTypeDeclaration(cxType);
-      Variable *typedefVar = existingVariableForDeclaration(cxTypeDecl);
+    CASE(Typedef, ctt,
+      clang::TypedefNameDecl const *ctnd = ctt->getDecl();
+      Variable *typedefVar = existingVariableForDeclaration(ctnd);
       return m_tfac.makeTypedefType(typedefVar, cv);
+    )
+
+    case clang::Type::FunctionNoProto:
+    case clang::Type::FunctionProto: {
+      clang::FunctionType const *cft = dyn_cast<clang::FunctionType>(clangType);
+      xassert(cft);
+      xassert(cv == CV_NONE);
+      return importFunctionType(cft, methodClass, methodCV);
     }
 
-    case CXType_FunctionNoProto: // 110
-    case CXType_FunctionProto: // 111
-      xassert(cv == CV_NONE);
-      return importFunctionType(cxType, methodClass, methodCV);
-
+#if 0 // old
     case CXType_ConstantArray: // 112
     case CXType_IncompleteArray: // 114
     case CXType_VariableArray: // 115
     case CXType_DependentSizedArray: // 116
       xassert(cv == CV_NONE);
       return importArrayType(cxType);
-  }
-
-  // Not reached.
 #endif // 0
+
+    CASE(Paren, cpt,
+      return importQualType_maybeMethod(cpt->getInnerType(),
+                                        methodClass, methodCV);
+    )
+
+    #undef CASE
+  }
 }
 
 
@@ -1903,32 +1905,6 @@ Expression *ClangImport::importExpression(clang::Expr const *clangExpr)
                      clangExpr->getStmtClassName()));
       // fake fallthrough
 
-    case clang::Stmt::ImplicitCastExprClass: {
-      CLANG_DOWNCAST(ImplicitCastExpr, cice, clangExpr);
-
-      clang::Expr const *clangChildExpr = cice->getSubExpr();
-      Type const *childType = importQualType(clangChildExpr->getType());
-      if (type->equals(childType)) {
-        // OLD: This happens for lvalue-to-rvalue conversions.  There
-        // does not seem to be a way in libclang to see that directly,
-        // so I will just drop the conversion.
-        //
-        // TODO: Maybe I can see it in the C++ API?
-        return importExpression(clangChildExpr);
-      }
-      else {
-        // Note: When multiple conversions take place at the same
-        // location, Clang uses multiple conversion nodes, whereas Elsa
-        // combines them.  For now at least, I'm not collapsing them the
-        // way Elsa would.
-        StandardConversion conv = describeAsStandardConversion(
-          /*dest*/ type, /*src*/ childType, getSpecialExpr(clangChildExpr));
-        ret = new E_implicitStandardConversion(conv,
-          importExpression(clangChildExpr));
-      }
-      break;
-    }
-
     case clang::Stmt::DeclRefExprClass: {
       CLANG_DOWNCAST(DeclRefExpr, cdre, clangExpr);
 
@@ -2116,45 +2092,48 @@ Expression *ClangImport::importExpression(clang::Expr const *clangExpr)
       );
       break;
     }
+#endif // 0
 
-    case CXCursor_CStyleCastExpr: { // 117
+    case clang::Stmt::CStyleCastExprClass: {
+      CLANG_DOWNCAST(CStyleCastExpr, ccsce, clangExpr);
+
       // The destination type is simply the type of this expression.
       ASTTypeId *castType =
         makeASTTypeId(type, nullptr /*name*/, DC_E_CAST);
 
-      // Get the expression under the cast.
-      CXCursor underExpr;
-      {
-        std::vector<CXCursor> children = getChildren(cxExpr);
-        if (children.size() == 1) {
-          // The only child is the underlying expression.
-          underExpr = children[0];
-        }
-        else {
-          xassert(children.size() == 2);
+      clang::Expr const *clangChildExpr = ccsce->getSubExpr();
 
-          // The first child is a TypeRef.  This happens when the type is
-          // a typedef.  But I don't need to pay attention to it, since
-          // the 'type' already names the typedef.
-          CXCursor typeRef = children[0];
-          xassert(clang_getCursorKind(typeRef) == CXCursor_TypeRef);
-
-          underExpr = children[1];
-        }
-      }
-
-      // Based on -ast-dump output, it seems that a typical C-style cast
-      // has CStyleCastExpr on top of one or more ImplicitCastExpr nodes
-      // (which themselves are conveyed as "unexposed" in libclang).  I
-      // don't think the implicit nodes help me, so I'll skip them.
-      while (clang_getCursorKind(underExpr) == CXCursor_UnexposedExpr) {
-        underExpr = getOnlyChild(underExpr);
-      }
-
-      ret = new E_cast(castType, importExpression(underExpr));
+      ret = new E_cast(castType, importExpression(clangChildExpr));
       break;
     }
 
+    case clang::Stmt::ImplicitCastExprClass: {
+      CLANG_DOWNCAST(ImplicitCastExpr, cice, clangExpr);
+
+      clang::Expr const *clangChildExpr = cice->getSubExpr();
+      Type const *childType = importQualType(clangChildExpr->getType());
+      if (type->equals(childType)) {
+        // OLD: This happens for lvalue-to-rvalue conversions.  There
+        // does not seem to be a way in libclang to see that directly,
+        // so I will just drop the conversion.
+        //
+        // TODO: Maybe I can see it in the C++ API?
+        return importExpression(clangChildExpr);
+      }
+      else {
+        // Note: When multiple conversions take place at the same
+        // location, Clang uses multiple conversion nodes, whereas Elsa
+        // combines them.  For now at least, I'm not collapsing them the
+        // way Elsa would.
+        StandardConversion conv = describeAsStandardConversion(
+          /*dest*/ type, /*src*/ childType, getSpecialExpr(clangChildExpr));
+        ret = new E_implicitStandardConversion(conv,
+          importExpression(clangChildExpr));
+      }
+      break;
+    }
+
+#if 0 // old
     case CXCursor_CXXThrowExpr: { // 133
       Expression *expr = nullptr;
 
@@ -2431,36 +2410,36 @@ ASTTypeId *ClangImport::importASTTypeId(CXCursor cxDecl,
 }
 
 
-Initializer *ClangImport::importInitializer(CXCursor cxInit)
+Initializer *ClangImport::importInitializer(
+  clang::Expr const *clangInitExpr)
 {
-  xunimp("importInitializer");
-  return nullptr;
+  SourceLoc loc = exprLocation(clangInitExpr);
 
-#if 0
-  SourceLoc loc = cursorLocation(cxInit);
-  std::vector<CXCursor> children = getChildren(cxInit);
+  // In the clang AST, the various kinds of initializer are all just
+  // treated as kinds of expressions, even though they can't appear in
+  // most expression contexts.  In contrast, the Elsa AST represents
+  // them with their own Initializer class hierarchy.  So we need to
+  // check for specific kinds of clang expressions to map them to Elsa
+  // Initializers.
 
-  CXCursorKind initKind = clang_getCursorKind(cxInit);
-  switch (initKind) {
-    case CXCursor_UnexposedExpr: // 100
-      if (children.empty()) {
-        // This is an 'ImplicitValueInitExpr', which in Elsa is represented
-        // with a NULL initialzer.
-        return nullptr;
-      }
-      break;
+  switch (clangInitExpr->getStmtClass()) {
+    case clang::Stmt::ImplicitValueInitExprClass:
+      // In Elsa, this is represented with a NULL initializer.
+      return nullptr;
 
-    case CXCursor_CallExpr: // 103
-      if (children.empty()) {
-        // This is a 'CXXConstructExpr', which in Elsa is also represented
-        // with a NULL initialzer.
-        return nullptr;
-      }
+    case clang::Stmt::CXXConstructExprClass: {
+      //CLANG_DOWNCAST(CXXConstructExpr, ccce, clangInitExpr);
+      xunimp("importInitializer: CXXConstructExpr");
+      return nullptr;
+    }
 
-    case CXCursor_InitListExpr: { // 119
+    case clang::Stmt::InitListExprClass: {
+      CLANG_DOWNCAST(InitListExpr, cile, clangInitExpr);
       IN_compound *inc = new IN_compound(loc, nullptr /*inits*/);
-      for (CXCursor const &child : children) {
-        inc->inits.append(importInitializer(child));
+      unsigned numInits = cile->getNumInits();
+      for (unsigned i=0; i < numInits; ++i) {
+        clang::Expr const *clangInitElem = cile->getInit(i);
+        inc->inits.append(importInitializer(clangInitElem));
       }
       return inc;
     }
@@ -2469,8 +2448,7 @@ Initializer *ClangImport::importInitializer(CXCursor cxInit)
       break;
   }
 
-  return new IN_expr(loc, importExpression(cxInit));
-#endif // 0
+  return new IN_expr(loc, importExpression(clangInitExpr));
 }
 
 
