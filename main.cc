@@ -270,13 +270,10 @@ static char const *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
     lang.MSVC_bug_compatibility();
   }
 
-  // TODO: The 'm_printWarnings' flag is consulted in two places, once
-  // here to choose what warnings to produce, and once in
-  // 'ErrorList::printToString' to decide what to print.  It should only
-  // be done in one place.
-  if (elsaParse.m_printWarnings) {
-    lang.enableAllWarnings();
-  }
+  // Start with all warnings enabled, even if 'm_printWarnings' is
+  // false.  The client can change that flag, which is consulted when
+  // diagnostics are printed.
+  lang.enableAllWarnings();
 
   return inputFname;
 }
