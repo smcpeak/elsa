@@ -17,6 +17,7 @@
 
 // clang
 #include "clang/AST/DeclBase.h"                            // Decl
+#include "clang/AST/OperationKinds.h"                      // UnaryOperatorKind, BinaryOperatorKind
 #include "clang/Basic/Diagnostic.h"                        // DiagnosticEngine
 #include "clang/Basic/DiagnosticOptions.h"                 // DiagnosticOptions
 #include "clang/Basic/LLVM.h"                              // IntrusiveRefCntPtr
@@ -245,6 +246,11 @@ void ClangImport::importTranslationUnit()
 
 StringRef ClangImport::importStringRef(clang::StringRef clangString)
 {
+  // Generally, Elsa uses NULL pointers to represent absent names.
+  if (clangString.empty()) {
+    return nullptr;
+  }
+
   // This could be made more efficient.
   std::string s(clangString.data(), clangString.size());
   return addStringRef(s.c_str());
@@ -395,26 +401,23 @@ Declaration *ClangImport::importDeclaration(CXCursor cxDecl,
 #endif // 0
 
 
-Variable *ClangImport::importEnumTypeAsForward(CXCursor cxEnumDecl)
+Variable *ClangImport::importEnumTypeAsForward(
+  clang::EnumDecl const *clangEnumDecl)
 {
-  xunimp("this");
-  return nullptr;
-
-#if 0 // old
-  StringRef enumName = cursorSpelling(cxEnumDecl);
+  StringRef enumName = declName(clangEnumDecl);
 
   // Have we already created a record for it?
-  Variable *&var = variableRefForDeclaration(cxEnumDecl);
+  Variable *&var = variableRefForDeclaration(clangEnumDecl);
   if (!var) {
     // Conceptually, we would like to make a forward-declared enum, but
     // the Elsa type system cannot explicitly do that.  So we just make
     // a regular EnumType without any values.
-    SourceLoc loc = cursorLocation(cxEnumDecl);
+    SourceLoc loc = declLocation(clangEnumDecl);
 
     EnumType *enumType = m_tfac.makeEnumType(enumName);
     Type *type = m_tfac.makeCVAtomicType(enumType, CV_NONE);
     var = enumType->typedefVar =
-      makeVariable_setScope(loc, enumName, type, DF_TYPEDEF, cxEnumDecl);
+      makeVariable_setScope(loc, enumName, type, DF_TYPEDEF, clangEnumDecl);
   }
 
   else {
@@ -424,17 +427,13 @@ Variable *ClangImport::importEnumTypeAsForward(CXCursor cxEnumDecl)
   }
 
   return var;
-#endif // 0
 }
 
 
-Declaration *ClangImport::importEnumDefinition(CXCursor cxEnumDefn)
+Declaration *ClangImport::importEnumDefinition(
+  clang::EnumDecl const *clangEnumDecl)
 {
-  xunimp("importEnumDefinition");
-  return nullptr;
-
-#if 0 // old
-  Variable *enumVar = importEnumTypeAsForward(cxEnumDefn);
+  Variable *enumVar = importEnumTypeAsForward(clangEnumDecl);
   EnumType *enumType = enumVar->type->asNamedAtomicType()->asEnumType();
 
   // Begin the syntactic list.
@@ -442,36 +441,35 @@ Declaration *ClangImport::importEnumDefinition(CXCursor cxEnumDefn)
 
   // Get all of the enumerators and add them to 'enumType' and
   // 'enumerators'.
-  for (CXCursor const &cxEnumerator : getChildren(cxEnumDefn)) {
-    xassert(clang_getCursorKind(cxEnumerator) == CXCursor_EnumConstantDecl);
-    SourceLoc enumeratorLoc = cursorLocation(cxEnumerator);
+  for (auto it = clangEnumDecl->enumerator_begin();
+       it != clangEnumDecl->enumerator_end();
+       ++it) {
+    clang::EnumConstantDecl const *clangEnumConstantDecl = *it;
+    SourceLoc enumeratorLoc = declLocation(clangEnumConstantDecl);
 
     // Get the enumerator name and value.
-    StringRef enumeratorName = cursorSpelling(cxEnumerator);
-    long long llValue = clang_getEnumConstantDeclValue(cxEnumerator);
-    int intValue = (int)llValue;
-    checkedAssignment(intValue, llValue);
+    StringRef enumeratorName = declName(clangEnumConstantDecl);
+    int intValue = importAPSIntAsInt(clangEnumConstantDecl->getInitVal());
 
     // Create a Variable to represent the enumerator, associated with
     // its declaration.
-    Variable *&enumeratorVar = variableRefForDeclaration(cxEnumerator);
+    Variable *&enumeratorVar = variableRefForDeclaration(clangEnumConstantDecl);
     xassert(!enumeratorVar);
     enumeratorVar = makeVariable_setScope(
       enumeratorLoc,
       enumeratorName,
       enumVar->type,
       DF_ENUMERATOR,
-      cxEnumerator);
+      clangEnumConstantDecl);
 
     // Add it to the semantic type.
     enumType->addValue(enumeratorName, intValue, enumeratorVar);
 
     // Get the expression that specifies the value, if any.
     Expression * NULLABLE expr = nullptr;
-    std::vector<CXCursor> children = getChildren(cxEnumerator);
-    if (!children.empty()) {
-      xassert(children.size() == 1);
-      expr = importExpression(children.front());
+    if (clang::Expr const *clangInitExpr =
+          clangEnumConstantDecl->getInitExpr()) {
+      expr = importExpression(clangInitExpr);
     }
 
     // Build the enumerator syntax.
@@ -486,14 +484,13 @@ Declaration *ClangImport::importEnumDefinition(CXCursor cxEnumDefn)
   enumerators = fl_reverse(enumerators);
 
   TS_enumSpec *enumTS = new TS_enumSpec(
-    cursorLocation(cxEnumDefn),
+    declLocation(clangEnumDecl),
     enumVar->name,
     enumerators);
   enumTS->etype = legacyTypeNC(enumType);
 
   // Wrap up the type specifier in a declaration with no declarators.
   return new Declaration(DF_NONE, enumTS, nullptr /*decllist*/);
-#endif // 0
 }
 
 
@@ -751,7 +748,7 @@ Variable *ClangImport::variableForDeclaration(
   clang::NamedDecl const *clangNamedDecl,
   DeclFlags declFlags)
 {
-  StringRef name = importStringRef(clangNamedDecl->getName());
+  StringRef name = declName(clangNamedDecl);
 
   Variable *&var = variableRefForDeclaration(clangNamedDecl);
   if (!var) {
@@ -835,6 +832,10 @@ Declaration *ClangImport::importNamedDecl(
   clang::NamedDecl const *clangNamedDecl,
   DeclaratorContext context)
 {
+  if (CLANG_DOWNCAST_IN_IF(EnumDecl, ced, clangNamedDecl)) {
+    return importEnumDefinition(ced);
+  }
+
   Variable *var = variableForDeclaration(clangNamedDecl);
   Declaration *decl = makeDeclaration(var, context);
   Declarator *declarator = fl_first(decl->decllist);
@@ -922,6 +923,7 @@ bool ClangImport::possiblyAddNameQualifiers(Declarator *declarator,
     }
 
     StringRef semParentName = declContextName(semParent);
+    xassert(semParentName);
 
     // TODO: Handle template arguments.
     TemplateArgument *templArgs = nullptr;
@@ -938,12 +940,18 @@ bool ClangImport::possiblyAddNameQualifiers(Declarator *declarator,
 }
 
 
+StringRef ClangImport::declName(clang::NamedDecl const *clangNamedDecl)
+{
+  return importStringRef(clangNamedDecl->getName());
+}
+
+
 StringRef ClangImport::declContextName(
   clang::DeclContext const *clangDeclContext)
 {
   if (clang::TagDecl const *ctd =
         dyn_cast<clang::TagDecl>(clangDeclContext)) {
-    return importStringRef(ctd->getName());
+    return declName(ctd);
   }
 
   xunimp(stringb("declContextName: unhandled kind: " <<
@@ -1225,11 +1233,10 @@ Type *ClangImport::importQualType_maybeMethod(clang::QualType clangQualType,
       xunimp(stringb("Unhandled type class: " << clangType->getTypeClassName()));
       // fake fallthrough
 
-    #define CASE(kind, var, code)                                              \
-      case clang::Type::kind: {                                                \
-        clang::kind##Type const *var = dyn_cast<clang::kind##Type>(clangType); \
-        xassert(var);                                                          \
-        code                                                                   \
+    #define CASE(kind, var, code)                   \
+      case clang::Type::kind: {                     \
+        CLANG_DOWNCAST(kind##Type, var, clangType); \
+        code                                        \
       }
 
     CASE(Builtin, cbt,
@@ -1248,13 +1255,19 @@ Type *ClangImport::importQualType_maybeMethod(clang::QualType clangQualType,
         importQualType(clang_getPointeeType(cxType)));
 
     // TODO: CXType_RValueReference = 104
+#endif // 0
 
-    case CXType_Record: // 105
-    case CXType_Enum: // 106
-      // For a Record or Enum that does not go through Elaborated,
-      // create a TypedefType, the same as the Typedef case.
-      goto handleTypedef;
+    // For a Record or Enum that does not go through Elaborated, create
+    // a TypedefType, the same as the Typedef case.
+    case clang::Type::Record:
+    case clang::Type::Enum: {
+      CLANG_DOWNCAST(TagType, ctt, clangType);
 
+      Variable *typedefVar = existingVariableForDeclaration(ctt->getDecl());
+      return m_tfac.makeTypedefType(typedefVar, cv);
+    }
+
+#if 0 // old
     case CXType_Elaborated: { // 119
       CXCursor cxTypeDecl = clang_getTypeDeclaration(cxType);
       Variable *typedefVar = existingVariableForDeclaration(cxTypeDecl);
@@ -1491,7 +1504,20 @@ static void assertEqualTypeSpecifiers(
 
 Statement *ClangImport::importStatement(clang::Stmt const *clangStmt)
 {
+#if 0 // needed?
+  if (clang_Cursor_isNull(cxStmt)) {
+    // This is for a case like a missing initializer in a 'for'
+    // statement.
+    return new S_skip(SL_UNKNOWN, MI_IMPLICIT);
+  }
+#endif // 0
+
   SourceLoc loc = stmtLocation(clangStmt);
+
+  if (CLANG_DOWNCAST_IN_IF(Expr, clangExpr, clangStmt)) {
+    FullExpression *fullExpr = importFullExpression(clangExpr);
+    return new S_expr(loc, fullExpr);
+  }
 
   switch (clangStmt->getStmtClass()) {
     default:
@@ -1499,101 +1525,20 @@ Statement *ClangImport::importStatement(clang::Stmt const *clangStmt)
                      clangStmt->getStmtClassName()));
       // fake fallthrough
 
-    case clang::Stmt::ReturnStmtClass: {
-      CLANG_DOWNCAST(ReturnStmt, crs, clangStmt);
-      FullExpression *retval = nullptr;
-      clang::Expr const *clangExpr = crs->getRetValue();
-      if (clangExpr != nullptr) {
-        retval = importFullExpression(clangExpr);
-      }
-      return new S_return(loc, retval);
-    }
-
-    case clang::Stmt::DeclStmtClass: {
-      clang::DeclStmt const *cds = dyn_cast<clang::DeclStmt>(clangStmt);
-      xassert(cds);
-
-      // Overall declaration to build.
-      Declaration *decl = nullptr;
-
-      // Iterate over all the declarations in this statement.
-      for (auto it = cds->decl_begin(); it != cds->decl_end(); ++it) {
-        clang::Decl const *clangDecl = *it;
-        xassert(clangDecl->getKind() == clang::Decl::Var ||
-                clangDecl->getKind() == clang::Decl::Typedef);
-        clang::NamedDecl const *cnd = dyn_cast<clang::NamedDecl>(clangDecl);
-        xassert(cnd);
-
-        if (!decl) {
-          // First declaration.
-          decl = importNamedDecl(cnd, DC_S_DECL);
-        }
-        else {
-          // Subsequent declaration.
-          Declaration *next = importNamedDecl(cnd, DC_S_DECL);
-
-          // We will merge 'next' onto 'decl'.  First, check that the
-          // declaration specifiers and type specifiers agree.
-          xassert(decl->dflags == next->dflags);
-          assertEqualTypeSpecifiers(decl->spec, next->spec);
-
-          // Now join the declarator lists.
-          xassert(fl_count(next->decllist) == 1);
-          decl->decllist = fl_prepend(decl->decllist, fl_first(next->decllist));
-
-          // Clean up 'next'.  This won't get everything because AST
-          // nodes do not automatically delete their children, but it
-          // gets what is easy.
-          delete next->spec;
-          next->spec = nullptr;
-          next->decllist = FakeList<Declarator>::emptyList();
-          delete next;
-        }
-      }
-
-      // Should have seen at least one declaration.
-      xassert(decl);
-
-      // When there are multiple, we build the list in reverse order.
-      decl->decllist = fl_reverse(decl->decllist);
-
-      return new S_decl(loc, decl);
-    }
-  }
-
-  return nullptr; // not reached
-
-#if 0
-  if (clang_Cursor_isNull(cxStmt)) {
-    // This is for a case like a missing initializer in a 'for'
-    // statement.
-    return new S_skip(SL_UNKNOWN, MI_IMPLICIT);
-  }
-
-  CXCursorKind stmtKind = clang_getCursorKind(cxStmt);
-  std::vector<CXCursor> children = getChildren(cxStmt);
-
-  // Codes 100 through 199.
-  if (CXCursor_FirstExpr <= stmtKind && stmtKind < CXCursor_FirstStmt) {
-    FullExpression *fullExpr = importFullExpression(cxStmt);
-    return new S_expr(loc, fullExpr);
-  }
-
-  switch (stmtKind) {
-    default:
-      printSubtree(cxStmt);
-      xunimp(stringb("importStatement: Unhandled stmtKind: " << toString(stmtKind)));
-
-    // Codes 100 through 199 handled above.
-
+#if 0 // old
     case CXCursor_LabelStmt: { // 201
       StringRef name = importString(clang_getCursorSpelling(cxStmt));
       return new S_label(loc, name, importStatement(getOnlyChild(cxStmt)));
     }
+#endif // 0
 
-    case CXCursor_CompoundStmt: // 202
-      return importCompoundStatement(cxStmt);
+    case clang::Stmt::CompoundStmtClass: {
+      CLANG_DOWNCAST(CompoundStmt, ccs, clangStmt);
 
+      return importCompoundStatement(ccs);
+    }
+
+#if 0 // old
     case CXCursor_CaseStmt: { // 203
       CXCursor caseValue, childStmt;
       getTwoChildren(caseValue, childStmt, cxStmt);
@@ -1688,16 +1633,19 @@ Statement *ClangImport::importStatement(clang::Stmt const *clangStmt)
 
     case CXCursor_BreakStmt: // 213
       return new S_break(loc);
+#endif // 0
 
-    case CXCursor_ReturnStmt: { // 214
+    case clang::Stmt::ReturnStmtClass: {
+      CLANG_DOWNCAST(ReturnStmt, crs, clangStmt);
       FullExpression *retval = nullptr;
-      if (!children.empty()) {
-        xassert(children.size() == 1);
-        retval = importFullExpression(children.front());
+      clang::Expr const *clangExpr = crs->getRetValue();
+      if (clangExpr != nullptr) {
+        retval = importFullExpression(clangExpr);
       }
       return new S_return(loc, retval);
     }
 
+#if 0 // old
     case CXCursor_CXXTryStmt: { // 224
       // The first child is the body, and the rest are handlers.
       std::vector<CXCursor> children = getChildren(cxStmt);
@@ -1716,24 +1664,30 @@ Statement *ClangImport::importStatement(clang::Stmt const *clangStmt)
 
     case CXCursor_NullStmt: // 230
       return new S_skip(loc, MI_EXPLICIT);
+#endif // 0
 
-    case CXCursor_DeclStmt: { // 231
+    case clang::Stmt::DeclStmtClass: {
+      clang::DeclStmt const *cds = dyn_cast<clang::DeclStmt>(clangStmt);
+      xassert(cds);
+
       // Overall declaration to build.
       Declaration *decl = nullptr;
 
-      // When a single statement declares multiple things, they show up
-      // as multiple children here.
-      for (CXCursor const &child : children) {
-        CXCursorKind childKind = clang_getCursorKind(child);
-        xassert(childKind == CXCursor_VarDecl ||
-                childKind == CXCursor_TypedefDecl);
+      // Iterate over all the declarations in this statement.
+      for (auto it = cds->decl_begin(); it != cds->decl_end(); ++it) {
+        clang::Decl const *clangDecl = *it;
+        xassert(clangDecl->getKind() == clang::Decl::Var ||
+                clangDecl->getKind() == clang::Decl::Typedef);
+        clang::NamedDecl const *cnd = dyn_cast<clang::NamedDecl>(clangDecl);
+        xassert(cnd);
+
         if (!decl) {
           // First declaration.
-          decl = importNamedDecl(child, DC_S_DECL);
+          decl = importNamedDecl(cnd, DC_S_DECL);
         }
         else {
           // Subsequent declaration.
-          Declaration *next = importNamedDecl(child, DC_S_DECL);
+          Declaration *next = importNamedDecl(cnd, DC_S_DECL);
 
           // We will merge 'next' onto 'decl'.  First, check that the
           // declaration specifiers and type specifiers agree.
@@ -1764,9 +1718,7 @@ Statement *ClangImport::importStatement(clang::Stmt const *clangStmt)
     }
   }
 
-  // Not reached.
-  return NULL;
-#endif // 0
+  return nullptr; // not reached
 }
 
 
@@ -1795,73 +1747,122 @@ void ClangImport::getTwoChildren(CXCursor &c1, CXCursor &c2,
 }
 
 
-#if 0 // old
-static UnaryOp cxUnaryToElsaUnary(CXUnaryOperator op)
+static UnaryOp clangUnaryToElsaUnary(clang::UnaryOperatorKind op)
 {
   switch (op) {
     default: xfailure("bad code");
-    case CXUnaryOperator_Plus:  return UNY_PLUS;
-    case CXUnaryOperator_Minus: return UNY_MINUS;
-    case CXUnaryOperator_Not:   return UNY_BITNOT;
-    case CXUnaryOperator_LNot:  return UNY_NOT;
+    case clang::UO_Plus:  return UNY_PLUS;
+    case clang::UO_Minus: return UNY_MINUS;
+    case clang::UO_Not:   return UNY_BITNOT;
+    case clang::UO_LNot:  return UNY_NOT;
   }
 }
 
 
-static EffectOp cxUnaryToElsaEffect(CXUnaryOperator op)
+static EffectOp clangUnaryToElsaEffect(clang::UnaryOperatorKind op)
 {
   switch (op) {
     default: xfailure("bad code");
-    case CXUnaryOperator_PostInc: return EFF_POSTINC;
-    case CXUnaryOperator_PostDec: return EFF_POSTDEC;
-    case CXUnaryOperator_PreInc:  return EFF_PREINC;
-    case CXUnaryOperator_PreDec:  return EFF_PREDEC;
+    case clang::UO_PostInc: return EFF_POSTINC;
+    case clang::UO_PostDec: return EFF_POSTDEC;
+    case clang::UO_PreInc:  return EFF_PREINC;
+    case clang::UO_PreDec:  return EFF_PREDEC;
   }
 }
 
 
-static BinaryOp cxBinaryToElsaBinary(CXBinaryOperator op)
+static BinaryOp clangBinaryToElsaBinary(clang::BinaryOperatorKind op)
 {
   switch (op) {
     default: xfailure("bad code");
 
     // Columns: case return
-    case CXBinaryOperator_PtrMemD:   return BIN_DOT_STAR;
-    case CXBinaryOperator_PtrMemI:   return BIN_ARROW_STAR;
-    case CXBinaryOperator_Mul:       return BIN_MULT;
-    case CXBinaryOperator_Div:       return BIN_DIV;
-    case CXBinaryOperator_Rem:       return BIN_MOD;
-    case CXBinaryOperator_Add:       return BIN_PLUS;
-    case CXBinaryOperator_Sub:       return BIN_MINUS;
-    case CXBinaryOperator_Shl:       return BIN_LSHIFT;
-    case CXBinaryOperator_Shr:       return BIN_RSHIFT;
-    case CXBinaryOperator_Cmp:       xunimp("spaceship");
-    case CXBinaryOperator_LT:        return BIN_LESS;
-    case CXBinaryOperator_GT:        return BIN_GREATER;
-    case CXBinaryOperator_LE:        return BIN_LESSEQ;
-    case CXBinaryOperator_GE:        return BIN_GREATEREQ;
-    case CXBinaryOperator_EQ:        return BIN_EQUAL;
-    case CXBinaryOperator_NE:        return BIN_NOTEQUAL;
-    case CXBinaryOperator_And:       return BIN_BITAND;
-    case CXBinaryOperator_Xor:       return BIN_BITXOR;
-    case CXBinaryOperator_Or:        return BIN_BITOR;
-    case CXBinaryOperator_LAnd:      return BIN_AND;
-    case CXBinaryOperator_LOr:       return BIN_OR;
-    case CXBinaryOperator_Assign:    return BIN_ASSIGN;
-    case CXBinaryOperator_MulAssign: return BIN_MULT;
-    case CXBinaryOperator_DivAssign: return BIN_DIV;
-    case CXBinaryOperator_RemAssign: return BIN_MOD;
-    case CXBinaryOperator_AddAssign: return BIN_PLUS;
-    case CXBinaryOperator_SubAssign: return BIN_MINUS;
-    case CXBinaryOperator_ShlAssign: return BIN_LSHIFT;
-    case CXBinaryOperator_ShrAssign: return BIN_RSHIFT;
-    case CXBinaryOperator_AndAssign: return BIN_BITAND;
-    case CXBinaryOperator_XorAssign: return BIN_BITXOR;
-    case CXBinaryOperator_OrAssign:  return BIN_BITOR;
-    case CXBinaryOperator_Comma:     return BIN_COMMA;
+    case clang::BO_PtrMemD:   return BIN_DOT_STAR;
+    case clang::BO_PtrMemI:   return BIN_ARROW_STAR;
+    case clang::BO_Mul:       return BIN_MULT;
+    case clang::BO_Div:       return BIN_DIV;
+    case clang::BO_Rem:       return BIN_MOD;
+    case clang::BO_Add:       return BIN_PLUS;
+    case clang::BO_Sub:       return BIN_MINUS;
+    case clang::BO_Shl:       return BIN_LSHIFT;
+    case clang::BO_Shr:       return BIN_RSHIFT;
+    case clang::BO_Cmp:       xunimp("spaceship");
+    case clang::BO_LT:        return BIN_LESS;
+    case clang::BO_GT:        return BIN_GREATER;
+    case clang::BO_LE:        return BIN_LESSEQ;
+    case clang::BO_GE:        return BIN_GREATEREQ;
+    case clang::BO_EQ:        return BIN_EQUAL;
+    case clang::BO_NE:        return BIN_NOTEQUAL;
+    case clang::BO_And:       return BIN_BITAND;
+    case clang::BO_Xor:       return BIN_BITXOR;
+    case clang::BO_Or:        return BIN_BITOR;
+    case clang::BO_LAnd:      return BIN_AND;
+    case clang::BO_LOr:       return BIN_OR;
+    case clang::BO_Assign:    return BIN_ASSIGN;
+    case clang::BO_MulAssign: return BIN_MULT;
+    case clang::BO_DivAssign: return BIN_DIV;
+    case clang::BO_RemAssign: return BIN_MOD;
+    case clang::BO_AddAssign: return BIN_PLUS;
+    case clang::BO_SubAssign: return BIN_MINUS;
+    case clang::BO_ShlAssign: return BIN_LSHIFT;
+    case clang::BO_ShrAssign: return BIN_RSHIFT;
+    case clang::BO_AndAssign: return BIN_BITAND;
+    case clang::BO_XorAssign: return BIN_BITXOR;
+    case clang::BO_OrAssign:  return BIN_BITOR;
+    case clang::BO_Comma:     return BIN_COMMA;
   }
 }
+
+
+int ClangImport::importAPIntAsInt(llvm::APInt const &apInt, bool isSigned)
+{
+  int ret;
+  if (isSigned) {
+    int64_t i = apInt.getSExtValue();
+    checkedAssignment(ret, i);
+  }
+  else {
+    uint64_t i = apInt.getZExtValue();
+    checkedAssignment(ret, i);
+  }
+  return ret;
+}
+
+
+#if 0   // not needed for the moment
+static std::string asString(llvm::APSInt const &n)
+{
+  // Use an intentionally small size to force heap allocation so I can
+  // confirm I'm using this right.
+  llvm::SmallVector<char, 2> v;
+  n.toString(v);
+
+  // Copy 'v' to a std::string.  I believe 'toString' does not add a NUL
+  // terminator, so I ensure there is one beyond what has been added.
+  std::string s(v.size()+1, 0);
+  for (size_t i=0; i < v.size(); ++i) {
+    s[i] = v[i];
+  }
+
+  return s;
+}
 #endif // 0
+
+
+int ClangImport::importAPSIntAsInt(llvm::APSInt const &apsInt)
+{
+#if 0   // Evidently my version of llvm lacks this check; it was added in 0a89825a28 on 2022-12-26.
+  if (!apsInt.isRepresentableByInt64()) {
+    xunimp(stringb("enumerator value is not representable with int64_t: " <<
+                   asString(apInt)));
+  }
+#endif // 0
+
+  int64_t i64Value = apsInt.getExtValue();
+  int intValue;
+  checkedAssignment(intValue, i64Value);
+  return intValue;
+}
 
 
 long long ClangImport::evalAsLongLong(CXCursor cxExpr)
@@ -1919,6 +1920,15 @@ Expression *ClangImport::importExpression(clang::Expr const *clangExpr)
       break;
     }
 
+    case clang::Stmt::ConstantExprClass: {
+      CLANG_DOWNCAST(ConstantExpr, cce, clangExpr);
+
+      // ConstantExpr is basically just a marker wrapper for an
+      // expression that happens to evaluate to a constant.  For the
+      // purpose of importing an expression, just skip it.
+      return importExpression(cce->getSubExpr());
+    }
+
 #if 0
     case CXCursor_MemberRefExpr: { // 102
       Expression *object = importExpression(getOnlyChild(cxExpr));
@@ -1938,13 +1948,13 @@ Expression *ClangImport::importExpression(clang::Expr const *clangExpr)
       ret = acc;
       break;
     }
+#endif // 0
 
-    case CXCursor_CallExpr: { // 103
-      std::vector<CXCursor> children = getChildren(cxExpr);
-      xassert(!children.empty());
+    case clang::Stmt::CallExprClass: {
+      CLANG_DOWNCAST(CallExpr, clangCallExpr, clangExpr);
 
-      // The first child is the callee expression.
-      Expression *callee = importExpression(children.front());
+      // Import the callee expression.
+      Expression *callee = importExpression(clangCallExpr->getCallee());
 
       if (E_implicitStandardConversion *calleeISC =
             callee->ifE_implicitStandardConversion()) {
@@ -1960,11 +1970,15 @@ Expression *ClangImport::importExpression(clang::Expr const *clangExpr)
         }
       }
 
-      // Remaining children are the arguments.
+      // Import the arguments.
       FakeList<ArgExpression> *args = FakeList<ArgExpression>::emptyList();
-      for (size_t i=1; i < children.size(); ++i) {
+      for (auto it = clangCallExpr->arg_begin();
+           it != clangCallExpr->arg_end();
+           ++it) {
+        clang::Expr const *clangArg = *it;
+
         args = fl_prepend(args, new ArgExpression(
-          importExpression(children[i])));
+          importExpression(clangArg)));
       }
       args = fl_reverse(args);
 
@@ -1972,9 +1986,13 @@ Expression *ClangImport::importExpression(clang::Expr const *clangExpr)
       break;
     }
 
-    case CXCursor_IntegerLiteral: { // 106
-      int value;
-      checkedAssignment(value, evalAsLongLong(cxExpr));
+    case clang::Stmt::IntegerLiteralClass: {
+      CLANG_DOWNCAST(IntegerLiteral, cil, clangExpr);
+
+      bool isSigned =
+        clangExpr->getType().getTypePtr()->isSignedIntegerType();
+      int value = importAPIntAsInt(cil->getValue(), isSigned);
+
       E_intLit *intLit = new E_intLit(
         addStringRef(stringbc(value)));
       intLit->i = value;
@@ -1982,6 +2000,7 @@ Expression *ClangImport::importExpression(clang::Expr const *clangExpr)
       break;
     }
 
+#if 0 // old
     case CXCursor_StringLiteral: // 109
       ret = importStringLiteral(cxExpr);
       break;
@@ -1989,45 +2008,50 @@ Expression *ClangImport::importExpression(clang::Expr const *clangExpr)
     case CXCursor_CharacterLiteral: // 110
       ret = importCharacterLiteral(cxExpr);
       break;
+#endif // 0
 
-    case CXCursor_ParenExpr: { // 111
+    case clang::Stmt::ParenExprClass: {
+      CLANG_DOWNCAST(ParenExpr, cpe, clangExpr);
+
       // Elsa drops parentheses, so I will do that here as well.
-      ret = importExpression(getOnlyChild(cxExpr));
+      ret = importExpression(cpe->getSubExpr());
       break;
     }
 
-    case CXCursor_UnaryOperator: { // 112
-      CXCursor childCursor = getOnlyChild(cxExpr);
-      Expression *childExpr = importExpression(childCursor);
+    case clang::Stmt::UnaryOperatorClass: {
+      CLANG_DOWNCAST(UnaryOperator, cuo, clangExpr);
 
-      CXUnaryOperator cxCode = clang_unaryOperator_operator(cxExpr);
-      switch (cxCode) {
+      clang::Expr const *clangChildExpr = cuo->getSubExpr();
+      Expression *childExpr = importExpression(clangChildExpr);
+
+      clang::UnaryOperatorKind opcode = cuo->getOpcode();
+      switch (opcode) {
         default:
-          printSubtree(childCursor);
-          xunimp(stringb("Unary operator: " << cxCode));
+          xunimp(stringb("Unary operator: " << opcode));
+          // fake fallthrough
 
-        case CXUnaryOperator_PostInc:
-        case CXUnaryOperator_PostDec:
-        case CXUnaryOperator_PreInc:
-        case CXUnaryOperator_PreDec: {
-          EffectOp effOp = cxUnaryToElsaEffect(cxCode);
+        case clang::UO_PostInc:
+        case clang::UO_PostDec:
+        case clang::UO_PreInc:
+        case clang::UO_PreDec: {
+          EffectOp effOp = clangUnaryToElsaEffect(opcode);
           ret = new E_effect(effOp, childExpr);
           break;
         }
 
-        case CXUnaryOperator_AddrOf:
+        case clang::UO_AddrOf:
           ret = new E_addrOf(childExpr);
           break;
 
-        case CXUnaryOperator_Deref:
+        case clang::UO_Deref:
           ret = new E_deref(childExpr);
           break;
 
-        case CXUnaryOperator_Plus:
-        case CXUnaryOperator_Minus:
-        case CXUnaryOperator_Not:
-        case CXUnaryOperator_LNot: {
-          UnaryOp unOp = cxUnaryToElsaUnary(cxCode);
+        case clang::UO_Plus:
+        case clang::UO_Minus:
+        case clang::UO_Not:
+        case clang::UO_LNot: {
+          UnaryOp unOp = clangUnaryToElsaUnary(opcode);
           ret = new E_unary(unOp, childExpr);
           break;
         }
@@ -2035,6 +2059,7 @@ Expression *ClangImport::importExpression(clang::Expr const *clangExpr)
       break;
     }
 
+#if 0 // old
     case CXCursor_ArraySubscriptExpr: { // 113
       CXCursor cxLHS, cxRHS;
       getTwoChildren(cxLHS, cxRHS, cxExpr);
@@ -2057,31 +2082,27 @@ Expression *ClangImport::importExpression(clang::Expr const *clangExpr)
       ret = new E_deref(bin);
       break;
     }
+#endif // 0
 
-    case CXCursor_BinaryOperator: { // 114
-      CXCursor cxLHS, cxRHS;
-      getTwoChildren(cxLHS, cxRHS, cxExpr);
+    case clang::Stmt::BinaryOperatorClass: {
+      CLANG_DOWNCAST(BinaryOperator, cbo, clangExpr);
 
-      CXBinaryOperator cxCode = clang_binaryOperator_operator(cxExpr);
-      BinaryOp binOp = cxBinaryToElsaBinary(cxCode);
-      if (CXBinaryOperator_Assign <= cxCode &&
-                                     cxCode <= CXBinaryOperator_OrAssign) {
-        ret = new E_assign(
-          importExpression(cxLHS),
-          binOp,
-          importExpression(cxRHS)
-        );
+      Expression *lhs = importExpression(cbo->getLHS());
+      Expression *rhs = importExpression(cbo->getRHS());
+
+      clang::BinaryOperatorKind opcode = cbo->getOpcode();
+      BinaryOp binOp = clangBinaryToElsaBinary(opcode);
+      if (clang::BO_Assign <= opcode &&
+                              opcode <= clang::BO_OrAssign) {
+        ret = new E_assign(lhs, binOp, rhs);
       }
       else {
-        ret = new E_binary(
-          importExpression(cxLHS),
-          binOp,
-          importExpression(cxRHS)
-        );
+        ret = new E_binary(lhs, binOp, rhs);
       }
       break;
     }
 
+#if 0 // old
     case CXCursor_ConditionalOperator: { // 116
       std::vector<CXCursor> children = getChildren(cxExpr);
       xassert(children.size() == 3);

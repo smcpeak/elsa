@@ -28,6 +28,10 @@
 #include "clang/Frontend/ASTUnit.h"                        // ASTUnit
 #include "clang-c/Index.h"                                 // libclang (TODO: remove)
 
+// llvm
+#include "llvm/ADT/APInt.h"                                // APInt
+#include "llvm/ADT/APSInt.h"                               // APSInt
+
 // libc++
 #include <map>                         // std::map
 #include <memory>                      // std::unique_ptr
@@ -197,9 +201,11 @@ public:      // methods
   //Declaration *importDeclaration(CXCursor cxDecl,
   //  DeclaratorContext context);
 
-  Variable *importEnumTypeAsForward(CXCursor cxEnumDecl);
+  Variable *importEnumTypeAsForward(
+    clang::EnumDecl const *clangEnumDecl);
 
-  Declaration *importEnumDefinition(CXCursor cxEnumDefn);
+  Declaration *importEnumDefinition(
+    clang::EnumDecl const *clangEnumDecl);
 
   // Import the CompoundType declared by 'cxCompoundDecl', yielding its
   // typedefVar.  If it has not already been imported, create it as a
@@ -253,8 +259,11 @@ public:      // methods
   bool possiblyAddNameQualifiers(Declarator *declarator,
     clang::NamedDecl const *clangNamedDecl);
 
-  // Get the identifier name of 'clangDeclContext', (for now) throwing
-  // an exception if it does not have one.
+  // Get the name of 'clangNamedDecl', or NULL if it is anonymous.
+  StringRef declName(clang::NamedDecl const *clangNamedDecl);
+
+  // Get the identifier name of 'clangDeclContext', or NULL if it is
+  // anonymous.
   StringRef declContextName(clang::DeclContext const *clangDeclContext);
 
   // Given a set of attributes associated with 'declarator', parse them
@@ -314,6 +323,14 @@ public:      // methods
   // Assert that 'cxNode' has two children, and return them.
   void getTwoChildren(CXCursor &c1, CXCursor &c2,
     CXCursor cxNode);
+
+  // Convert 'apInt' to 'int'.  If 'isSigned', then treat 'apInt' as
+  // representing a signed integer.  Throw if the value cannot be
+  // represented.
+  int importAPIntAsInt(llvm::APInt const &apInt, bool isSigned);
+
+  // Convert 'apsInt' to 'int', throwing if it cannot be represented.
+  int importAPSIntAsInt(llvm::APSInt const &apsInt);
 
   long long evalAsLongLong(CXCursor cxExpr);
 
