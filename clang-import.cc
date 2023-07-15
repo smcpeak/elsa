@@ -74,6 +74,20 @@ void checkedAssignment(DEST &dest, SRC src)
 }
 
 
+static std::string stmtToString(clang::Stmt const *clangStmt)
+{
+  std::string ret;
+  llvm::raw_string_ostream rso(ret);
+
+  clang::LangOptions lo;
+  clang::PrintingPolicy pp(lo);
+
+  clangStmt->printPretty(rso, nullptr, pp);
+
+  return ret;
+}
+
+
 // Entry point to this module.
 void clangParseTranslationUnit(
   ElsaParse &elsaParse,
@@ -241,6 +255,12 @@ void ClangImport::importTranslationUnit()
     }
     m_elsaParse.m_translationUnit->topForms.append(importTopForm(decl));
   }
+}
+
+
+clang::ASTContext const &ClangImport::getASTContext() const
+{
+  return m_clangASTUnit->getASTContext();
 }
 
 
@@ -1249,13 +1269,12 @@ Type *ClangImport::importQualType_maybeMethod(clang::QualType clangQualType,
         importQualType(cpt->getPointeeType()));
     )
 
-#if 0 // old
-    case CXType_LValueReference: // 103
+    CASE(LValueReference, clvr,
       return m_tfac.makeReferenceType(
-        importQualType(clang_getPointeeType(cxType)));
+        importQualType(clvr->getPointeeType()));
+    )
 
     // TODO: CXType_RValueReference = 104
-#endif // 0
 
     // For a Record or Enum that does not go through Elaborated, create
     // a TypedefType, the same as the Typedef case.
@@ -1525,12 +1544,12 @@ Statement *ClangImport::importStatement(clang::Stmt const *clangStmt)
                      clangStmt->getStmtClassName()));
       // fake fallthrough
 
-#if 0 // old
-    case CXCursor_LabelStmt: { // 201
-      StringRef name = importString(clang_getCursorSpelling(cxStmt));
-      return new S_label(loc, name, importStatement(getOnlyChild(cxStmt)));
+    case clang::Stmt::LabelStmtClass: {
+      CLANG_DOWNCAST(LabelStmt, cls, clangStmt);
+
+      StringRef name = addStringRef(cls->getName());
+      return new S_label(loc, name, importStatement(cls->getSubStmt()));
     }
-#endif // 0
 
     case clang::Stmt::CompoundStmtClass: {
       CLANG_DOWNCAST(CompoundStmt, ccs, clangStmt);
@@ -1538,102 +1557,115 @@ Statement *ClangImport::importStatement(clang::Stmt const *clangStmt)
       return importCompoundStatement(ccs);
     }
 
-#if 0 // old
-    case CXCursor_CaseStmt: { // 203
-      CXCursor caseValue, childStmt;
-      getTwoChildren(caseValue, childStmt, cxStmt);
+    case clang::Stmt::CaseStmtClass: {
+      CLANG_DOWNCAST(CaseStmt, ccs, clangStmt);
 
-      S_case *ret = new S_case(loc, importExpression(caseValue),
-        importStatement(childStmt));
-      checkedAssignment(ret->labelVal, evalAsLongLong(caseValue));
+      if (ccs->caseStmtIsGNURange()) {
+        xunimp("case statement with GNU range");
+      }
+
+      S_case *ret = new S_case(loc, importExpression(ccs->getLHS()),
+        importStatement(ccs->getSubStmt()));
+      ret->labelVal = evalExprAsInt(ccs->getLHS());
       return ret;
     }
 
-    case CXCursor_DefaultStmt: // 204
-      return new S_default(loc, importStatement(getOnlyChild(cxStmt)));
+    case clang::Stmt::DefaultStmtClass: {
+      CLANG_DOWNCAST(DefaultStmt, cds, clangStmt);
 
-    case CXCursor_IfStmt: { // 205
-      std::vector<CXCursor> children = getChildren(cxStmt);
+      return new S_default(loc, importStatement(cds->getSubStmt()));
+    }
+
+    case clang::Stmt::IfStmtClass: {
+      CLANG_DOWNCAST(IfStmt, cis, clangStmt);
 
       Statement *elseStmt;
-      if (children.size() == 2) {
+      if (cis->getElse() == nullptr) {
         elseStmt = new S_skip(loc, MI_IMPLICIT);
       }
       else {
-        xassert(children.size() == 3);
-        elseStmt = importStatement(children[2]);
+        elseStmt = importStatement(cis->getElse());
       }
 
-      return new S_if(loc,
-        importCondition(children[0]),
-        importStatement(children[1]),
-        elseStmt);
+      if (clang::DeclStmt const *condDecl =
+            cis->getConditionVariableDeclStmt()) {
+        // As with 'while', there could be an implicit conversion that
+        // we are missing here.
+        return new S_if(loc,
+          importCondition(condDecl),
+          importStatement(cis->getThen()),
+          elseStmt);
+      }
+      else {
+        return new S_if(loc,
+          importCondition(cis->getCond()),
+          importStatement(cis->getThen()),
+          elseStmt);
+      }
     }
 
-    case CXCursor_SwitchStmt: { // 206
-      CXCursor selectorExpr, childStmt;
-      getTwoChildren(selectorExpr, childStmt, cxStmt);
+    case clang::Stmt::SwitchStmtClass: {
+      CLANG_DOWNCAST(SwitchStmt, css, clangStmt);
 
       return new S_switch(loc,
-        importCondition(selectorExpr),
-        importStatement(childStmt));
+        importCondition(css->getCond()),
+        importStatement(css->getBody()));
     }
 
-    case CXCursor_WhileStmt: { // 207
-      std::vector<CXCursor> children = getChildren(cxStmt);
+    case clang::Stmt::WhileStmtClass: {
+      CLANG_DOWNCAST(WhileStmt, cws, clangStmt);
 
-      // If two children, they are [cond,body].  If three, the first is
-      // a variable declaration, the second is an expression using the
-      // declared variable that acts as the loop condition, and the
-      // third is the body.
-      xassert(children.size() == 2 || children.size() == 3);
-
-      // Elsa does not currently have any way to represent the implicit
-      // conversion that can appear in the condition when there are
-      // three children, so I'll just ignore it.
-      CXCursor conditionExpr = children.front();
-      CXCursor childStmt = children.back();
-
-      return new S_while(loc,
-        importCondition(conditionExpr),
-        importStatement(childStmt));
+      if (clang::DeclStmt const *condDecl =
+            cws->getConditionVariableDeclStmt()) {
+        // There is an implicit conversion to boolean when the condition
+        // declares a non-bool variable.  Clang puts that into its
+        // 'getCond()' expression, which is separate from the optional
+        // variable declaration.  Elsa does not have a place to store
+        // that implicit conversion, so I'll just ignore it.
+        return new S_while(loc,
+          importCondition(condDecl),
+          importStatement(cws->getBody()));
+      }
+      else {
+        return new S_while(loc,
+          importCondition(cws->getCond()),
+          importStatement(cws->getBody()));
+      }
     }
 
-    case CXCursor_DoStmt: { // 208
-      CXCursor childStmt, conditionExpr;
-      getTwoChildren(childStmt, conditionExpr, cxStmt);
+    case clang::Stmt::DoStmtClass: {
+      CLANG_DOWNCAST(DoStmt, cds, clangStmt);
 
       return new S_doWhile(loc,
-        importStatement(childStmt),
-        importFullExpression(conditionExpr));
+        importStatement(cds->getBody()),
+        importFullExpression(cds->getCond()));
     }
 
-    case CXCursor_ForStmt: { // 209
+    case clang::Stmt::ForStmtClass: {
+      CLANG_DOWNCAST(ForStmt, cfs, clangStmt);
+
       return new S_for(loc,
-        importStatement(     clang_forStmtElement(cxStmt, CXForStmtElement_init)),
-        importCondition(     clang_forStmtElement(cxStmt, CXForStmtElement_cond)),
-        importFullExpression(clang_forStmtElement(cxStmt, CXForStmtElement_inc )),
-        importStatement(     clang_forStmtElement(cxStmt, CXForStmtElement_body))
+        importStatement(cfs->getInit()),
+        importCondition(cfs->getCond()),
+        importFullExpression(cfs->getInc()),
+        importStatement(cfs->getBody())
       );
     }
 
-    case CXCursor_GotoStmt: { // 210
-      // The 'goto' itself does not carry the label, but we can get the
-      // referenced statement, and that has it.
-      CXCursor label = clang_getCursorReferenced(cxStmt);
-      xassert(clang_getCursorKind(label) == CXCursor_LabelStmt);
-      StringRef name = importString(clang_getCursorSpelling(label));
+    case clang::Stmt::GotoStmtClass: {
+      CLANG_DOWNCAST(GotoStmt, cfs, clangStmt);
+
+      StringRef name = importStringRef(cfs->getLabel()->getName());
       return new S_goto(loc, name);
     }
 
     // TODO: CXCursor_IndirectGotoStmt: // 211
 
-    case CXCursor_ContinueStmt: // 212
+    case clang::Stmt::ContinueStmtClass:
       return new S_continue(loc);
 
-    case CXCursor_BreakStmt: // 213
+    case clang::Stmt::BreakStmtClass:
       return new S_break(loc);
-#endif // 0
 
     case clang::Stmt::ReturnStmtClass: {
       CLANG_DOWNCAST(ReturnStmt, crs, clangStmt);
@@ -1645,26 +1677,22 @@ Statement *ClangImport::importStatement(clang::Stmt const *clangStmt)
       return new S_return(loc, retval);
     }
 
-#if 0 // old
-    case CXCursor_CXXTryStmt: { // 224
-      // The first child is the body, and the rest are handlers.
-      std::vector<CXCursor> children = getChildren(cxStmt);
-      xassert(children.size() >= 2);
+    case clang::Stmt::CXXTryStmtClass: {
+      CLANG_DOWNCAST(CXXTryStmt, ccts, clangStmt);
 
-      Statement *body = importStatement(children.front());
+      Statement *body = importStatement(ccts->getTryBlock());
 
       FakeList<Handler> *handlers = FakeList<Handler>::emptyList();
-      for (unsigned i=1; i < children.size(); i++) {
-        handlers = fl_prepend(handlers, importHandler(children[i]));
+      for (unsigned i=0; i < ccts->getNumHandlers(); ++i) {
+        handlers = fl_prepend(handlers, importHandler(ccts->getHandler(i)));
       }
       handlers = fl_reverse(handlers);
 
       return new S_try(loc, body, handlers);
     }
 
-    case CXCursor_NullStmt: // 230
+    case clang::Stmt::NullStmtClass:
       return new S_skip(loc, MI_EXPLICIT);
-#endif // 0
 
     case clang::Stmt::DeclStmtClass: {
       clang::DeclStmt const *cds = dyn_cast<clang::DeclStmt>(clangStmt);
@@ -1830,7 +1858,7 @@ int ClangImport::importAPIntAsInt(llvm::APInt const &apInt, bool isSigned)
 
 
 #if 0   // not needed for the moment
-static std::string asString(llvm::APSInt const &n)
+static std::string apsIntToString(llvm::APSInt const &n)
 {
   // Use an intentionally small size to force heap allocation so I can
   // confirm I'm using this right.
@@ -1854,7 +1882,7 @@ int ClangImport::importAPSIntAsInt(llvm::APSInt const &apsInt)
 #if 0   // Evidently my version of llvm lacks this check; it was added in 0a89825a28 on 2022-12-26.
   if (!apsInt.isRepresentableByInt64()) {
     xunimp(stringb("enumerator value is not representable with int64_t: " <<
-                   asString(apInt)));
+                   apsIntToString(apInt)));
   }
 #endif // 0
 
@@ -1862,6 +1890,23 @@ int ClangImport::importAPSIntAsInt(llvm::APSInt const &apsInt)
   int intValue;
   checkedAssignment(intValue, i64Value);
   return intValue;
+}
+
+
+int ClangImport::evalExprAsInt(clang::Expr const *clangExpr)
+{
+  clang::Expr::EvalResult result;
+  if (clangExpr->EvaluateAsInt(result, getASTContext())) {
+    xassert(result.Val.isInt());
+    return importAPSIntAsInt(result.Val.getInt());
+  }
+  else {
+    // TODO: It is possible to extract further diagnostics from
+    // 'result'.
+    xfailure(stringb("could not evaluate expression as integer: " <<
+                     stmtToString(clangExpr)));
+    return 0; // not reached
+  }
 }
 
 
@@ -2154,22 +2199,19 @@ Expression *ClangImport::importExpression(clang::Expr const *clangExpr)
       break;
     }
 
-#if 0 // old
-    case CXCursor_CXXThrowExpr: { // 133
-      Expression *expr = nullptr;
+    case clang::Stmt::CXXThrowExprClass: {
+      CLANG_DOWNCAST(CXXThrowExpr, ccte, clangExpr);
 
-      std::vector<CXCursor> children = getChildren(cxExpr);
-      if (children.size() == 1) {
-        expr = importExpression(children.front());
-      }
-      else {
-        xassert(children.empty());
+      Expression *expr = nullptr;
+      if (ccte->getSubExpr()) {
+        expr = importExpression(ccte->getSubExpr());
       }
 
       ret = new E_throw(expr);
       break;
     }
 
+#if 0 // old
     case CXCursor_UnaryExpr: // 136
       ret = importUnaryOperator(cxExpr);
       break;
@@ -2379,55 +2421,39 @@ StandardConversion ClangImport::describeAsStandardConversion(
 }
 
 
-Condition *ClangImport::importCondition(CXCursor cxCond)
+Condition *ClangImport::importCondition(clang::Stmt const *clangCond)
 {
-  xunimp("importCondition");
-  return nullptr;
+  if (CLANG_DOWNCAST_IN_IF(Expr, clangExpr, clangCond)) {
+    return new CN_expr(importFullExpression(clangExpr));
+  }
+  else if (CLANG_DOWNCAST_IN_IF(DeclStmt, clangDecl, clangCond)) {
+    xassert(clangDecl->isSingleDecl());
+    CLANG_DOWNCAST(VarDecl, clangVarDecl, clangDecl->getSingleDecl());
+    xassert(clangVarDecl->hasInit());
 
-#if 0
-  CXCursorKind kind = clang_getCursorKind(cxCond);
-
-  if (kind == CXCursor_VarDecl) {
-    return new CN_decl(importASTTypeId(cxCond, DC_CN_DECL));
+    return new CN_decl(importASTTypeId(clangVarDecl, DC_CN_DECL));
   }
   else {
-    return new CN_expr(importFullExpression(cxCond));
+    xunimp(stringb("importCondition: " <<
+                    clangCond->getStmtClassName()));
+    return nullptr; // not reached
   }
-#endif // 0
 }
 
 
-ASTTypeId *ClangImport::importASTTypeId(CXCursor cxDecl,
+ASTTypeId *ClangImport::importASTTypeId(
+  clang::VarDecl const *clangVarDecl,
   DeclaratorContext context)
 {
-  xunimp("importASTTypeId");
-  return nullptr;
-
-#if 0 // old
-  xassert(clang_getCursorKind(cxDecl) == CXCursor_VarDecl);
-
-  Variable *var = variableForDeclaration(cxDecl);
+  Variable *var = variableForDeclaration(clangVarDecl);
   ASTTypeId *typeId =
     makeASTTypeId(var->type, makePQName(var), context);
 
-  if (context == DC_HANDLER) {
-    // There is no initializer for a handler parameter, but Clang will
-    // have a child here if the type is a typedef.  Skip it.
-    //
-    // TODO: That's certainly going to cause problems elsewhere.
-  }
-  else {
-    std::vector<CXCursor> children = getChildren(cxDecl);
-    if (children.size() == 1) {
-      typeId->decl->init = importInitializer(children.front());
-    }
-    else {
-      xassert(children.empty());
-    }
+  if (clangVarDecl->hasInit()) {
+    typeId->decl->init = importInitializer(clangVarDecl->getInit());
   }
 
   return typeId;
-#endif // 0
 }
 
 
@@ -2473,20 +2499,17 @@ Initializer *ClangImport::importInitializer(
 }
 
 
-Handler *ClangImport::importHandler(CXCursor cxHandler)
+Handler *ClangImport::importHandler(
+  clang::CXXCatchStmt const *clangCXXCatchStmt)
 {
-  xunimp("importHandler");
-  return nullptr;
-
-#if 0
-  xassert(clang_getCursorKind(cxHandler) == CXCursor_CXXCatchStmt);
-
-  std::vector<CXCursor> children = getChildren(cxHandler);
-  xassert(children.size() == 1 || children.size() == 2);
-
   ASTTypeId *typeId;
-  if (children.size() == 1) {
-    typeId = Handler::makeEllipsisTypeId(cursorLocation(cxHandler));
+  if (clang::VarDecl const *clangDecl =
+        clangCXXCatchStmt->getExceptionDecl()) {
+    typeId = importASTTypeId(clangDecl, DC_HANDLER);
+  }
+  else {
+    typeId = Handler::makeEllipsisTypeId(
+      importSourceLocation(clangCXXCatchStmt->getCatchLoc()));
 
     // Fill in the declarator 'type' and 'var' fields similar to how the
     // Elsa type checker does, in order to pacify the integrity checker.
@@ -2494,14 +2517,10 @@ Handler *ClangImport::importHandler(CXCursor cxHandler)
     typeId->decl->var = makeVariable(SL_UNKNOWN, nullptr /*name*/,
       typeId->decl->type, DF_NONE);
   }
-  else {
-    typeId = importASTTypeId(children.front(), DC_HANDLER);
-  }
 
-  Statement *body = importStatement(children.back());
+  Statement *body = importStatement(clangCXXCatchStmt->getHandlerBlock());
 
   return new Handler(typeId, body);
-#endif // 0
 }
 
 

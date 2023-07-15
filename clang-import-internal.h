@@ -17,6 +17,7 @@
 #include "elsaparse.h"                 // ElsaParse
 
 // clang
+#include "clang/AST/ASTContext.h"                          // ASTContext
 #include "clang/AST/Decl.h"                                // NamedDecl, FunctionDecl, etc.
 #include "clang/AST/DeclBase.h"                            // Decl
 #include "clang/AST/Expr.h"                                // Expr
@@ -177,6 +178,9 @@ public:      // methods
   // Entry point to the importer.
   void importTranslationUnit();
 
+  // Get the ASTContext from the ASTUnit.
+  clang::ASTContext const &getASTContext() const;
+
   StringRef importStringRef(clang::StringRef clangString);
 
   // Map 'clangFileID' to a file name, using a map to remember entries
@@ -332,6 +336,8 @@ public:      // methods
   // Convert 'apsInt' to 'int', throwing if it cannot be represented.
   int importAPSIntAsInt(llvm::APSInt const &apsInt);
 
+  int evalExprAsInt(clang::Expr const *clangExpr);
+
   long long evalAsLongLong(CXCursor cxExpr);
 
   std::string evalAsString(CXCursor cxExpr);
@@ -354,16 +360,17 @@ public:      // methods
   StandardConversion describeAsStandardConversion(
     Type const *destType, Type const *srcType, SpecialExpr srcSpecial);
 
-  Condition *importCondition(CXCursor cxCond);
+  Condition *importCondition(clang::Stmt const *clangCond);
 
   // Import a variable declaration in a context where the Elsa AST
   // represents it as an ASTTypeId.
-  ASTTypeId *importASTTypeId(CXCursor cxDecl,
+  ASTTypeId *importASTTypeId(
+    clang::VarDecl const *clangVarDecl,
     DeclaratorContext context);
 
   Initializer *importInitializer(clang::Expr const *clangInitExpr);
 
-  Handler *importHandler(CXCursor cxHandler);
+  Handler *importHandler(clang::CXXCatchStmt const *clangCXXCatchStmt);
 
   // Make a Variable, and set its 'm_containingScope' according to
   // 'clangNamedDecl'.
