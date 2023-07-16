@@ -2046,6 +2046,50 @@ void PQ_variable::tcheck_pq(Env &env, Scope*, LookupFlags)
   // nothing to check
 }
 
+
+// This compiles, but isn't really tested.  I wrote it, then changed my
+// mind about using it.
+//
+// The main problem is what I really want is to print only those
+// qualifiers that are needed for the context, but that is much harder
+// than just querying the scope of the variable.
+#if 0
+static void printScopeQualifier(PrintEnv &env, Variable *var)
+{
+  if (Scope *scope = var->m_containingScope) {
+    if (scope->isGlobalScope()) {
+      // For now I'm going to not add the global scope qualifier.  Doing
+      // so would add significant clutter, and would make the result not
+      // usable with C.
+      return;
+    }
+
+    // Move up a level.
+    var = scope->namespaceVar;
+    if (!var) {
+      // This happens for things defined inside a function.  Do not
+      // print a qualifier.
+      return;
+    }
+
+    // Get the qualifier here.
+    StringRef qualifier = var->name;
+    if (!qualifier) {
+      // Happens for anonymous namespaces.  No qualifier.
+      return;
+    }
+
+    TemplateInfo *templateInfo = var->templateInfo();
+    if (templateInfo) {
+      xunimp("printScopeQualifier of a variable whose scope has template info");
+    }
+
+    printScopeQualifier(env, var);
+    env << qualifier << "::";
+  }
+}
+#endif // 0
+
 void PQ_variable::print(PrintEnv &env) const
 {
   if (var->name) {
@@ -2053,6 +2097,9 @@ void PQ_variable::print(PrintEnv &env) const
       // Do not print.
     }
     else {
+      // Disabled for now.
+      //printScopeQualifier(env, var);
+
       env << var->name;
     }
   }
