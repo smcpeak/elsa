@@ -10,7 +10,7 @@ public:
   int func3() const;
 };
 
-static int Foo::x = 5;
+int Foo::x = 5;
 
 int main()
 {

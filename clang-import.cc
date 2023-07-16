@@ -627,12 +627,17 @@ Declaration *ClangImport::importCompoundTypeDefinition(
           dflags = importStorageClass(cvd->getStorageClass());
         }
 
+        StringRef fieldName = declName(cdd);
         fieldVar = makeVariable_setScope(
           childLoc,
-          declName(cdd),
+          fieldName,
           fieldType,
           dflags,
           cdd);
+        CI_TRACE("importCompound: created fieldVar: name=\"" << fieldName <<
+                 "\" cdd=" << cdd <<
+                 " dflags={" << toString(dflags) <<
+                 "} fieldVar=" << fieldVar);
 
         ct->addField(fieldVar);
 
@@ -916,6 +921,11 @@ Declaration *ClangImport::importNamedDecl(
   Declaration *decl = makeDeclaration(var, context);
   Declarator *declarator = fl_first(decl->decllist);
 
+  // Remove DF_STATIC from 'decl' since we don't want to carry that
+  // from a static member declaration to its definition.  For other
+  // cases, the following call should re-add it when needed.
+  decl->dflags &= ~DF_STATIC;
+
   // Add qualifiers if needed.
   decl->dflags |= possiblyAddNameQualifiers_and_getStorageClass(
     declarator, clangNamedDecl);
@@ -962,12 +972,9 @@ DeclFlags ClangImport::possiblyAddNameQualifiers_and_getStorageClass(
   DeclFlags declFlags = declStorageClass(clangNamedDecl);
 
   if (qualified) {
-    // If a declaration uses a qualifier, it is not allowed to also
+    // If a declaration uses a qualifier (out of line method definition,
+    // or definition of a static data member), it is not allowed to also
     // say 'static'.
-    //
-    // TODO: This seems aimed at handling static methods, where 'static'
-    // can appear at a declaration or an inline definition, but not an
-    // out-of-line definition, but I'm not sure this is correct.
     declFlags &= ~DF_STATIC;
   }
 
