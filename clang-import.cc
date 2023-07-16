@@ -50,6 +50,13 @@ using clang::PCHContainerOperations;
 namespace driver = clang::driver;
 
 
+#if 1
+  #define CI_TRACE(stuff) TRACE("clang-import", stuff)
+#else
+  #define CI_TRACE(stuff) ((void)0)
+#endif
+
+
 // Downcast 'oldVar' to 'destClass', which is in the 'clang' namespace,
 // storing the result in 'newVar', and asserting it succeeds.
 #define CLANG_DOWNCAST(destClass, newVar, oldVar)                      \
@@ -362,7 +369,10 @@ TopForm *ClangImport::importTopForm(clang::Decl const *clangTopFormDecl)
     // Handle function definitions separately.
     if (clang::FunctionDecl const *cfd =
           dyn_cast<clang::FunctionDecl>(cnd)) {
-      if (cfd->hasBody()) {
+      // The 'hasBody' method reports true for a function prototype if
+      // the TU also has a definition somewhere else.  So, use the query
+      // that is specific to this particular declaration.
+      if (cfd->doesThisDeclarationHaveABody()) {
         Function *func = importFunctionDefinition(cfd);
         return new TF_func(loc, func);
       }
@@ -637,7 +647,7 @@ Declaration *ClangImport::importCompoundTypeDefinition(
       case clang::Decl::CXXDestructor: {
         CLANG_DOWNCAST(CXXMethodDecl, ccm, clangChildDecl);
 
-        if (ccm->hasBody()) {
+        if (ccm->doesThisDeclarationHaveABody()) {
           Function *func = importFunctionDefinition(ccm);
           newMember = new MR_func(childLoc, func);
         }
@@ -708,12 +718,14 @@ CVFlags ClangImport::importMethodQualifiers(
 Function *ClangImport::importFunctionDefinition(
   clang::FunctionDecl const *clangFunctionDecl)
 {
-  xassert(clangFunctionDecl->hasBody());
+  xassert(clangFunctionDecl->doesThisDeclarationHaveABody());
 
   // Build a representative for the function.  This will have an
   // associated FunctionType, but without parameter names.
   Variable *funcVar = variableForDeclaration(clangFunctionDecl);
   FunctionType const *declFuncType = funcVar->type->asFunctionTypeC();
+
+  CI_TRACE("importFunctionDefinition: " << funcVar->name);
 
   // Build a FunctionType specific to this definition, containing the
   // parameter names.
@@ -819,9 +831,22 @@ Variable *ClangImport::variableForDeclaration(
 
     xassert(!var);
     var = makeVariable_setScope(loc, name, type, declFlags, clangNamedDecl);
+
+    CI_TRACE("variableForDeclaration: name=\"" << name <<
+             "\" clangNamedDecl=" << clangNamedDecl <<
+             ": created new Variable at " << var <<
+             " with flags {" << toString(declFlags) <<
+             "}");
   }
 
   else {
+    CI_TRACE("variableForDeclaration: name=\"" << name <<
+             "\" clangNamedDecl=" << clangNamedDecl <<
+             ": reusing Variable at " << var <<
+             "; existing flags {" << toString(var->flags) <<
+             "}, incoming flags {" << toString(declFlags) <<
+             "}");
+
     // Detect location collisions.
     xassert(var->name == name);
 
