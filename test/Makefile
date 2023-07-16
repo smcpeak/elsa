@@ -394,7 +394,7 @@ check-clang: out/clang-pprint-in/t0006.cc
 check-clang: out/clang-pprint-in/t0007.cc
 check-clang: out/clang-pprint-in/t0008.cc
 check-clang: out/clang-pprint-in/t0009.cc
-#check-clang: out/clang-pprint-in/t0010.cc
+check-clang: out/clang-pprint-in/t0010.cc
 #check-clang: out/clang-pprint-in/t0011.cc
 #check-clang: out/clang-pprint-in/t0012.cc
 

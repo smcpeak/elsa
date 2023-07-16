@@ -1332,13 +1332,18 @@ Type *ClangImport::importQualType_maybeMethod(clang::QualType clangQualType,
       return m_tfac.makeTypedefType(typedefVar, cv);
     }
 
-#if 0 // old
-    case CXType_Elaborated: { // 119
-      CXCursor cxTypeDecl = clang_getTypeDeclaration(cxType);
-      Variable *typedefVar = existingVariableForDeclaration(cxTypeDecl);
+    CASE(Elaborated, cet,
+      // If the syntax is 'enum E', get the enumeration E.
+      clang::Type const *clangType = cet->getNamedType().getTypePtr();
+
+      // It should be a type defined using a type tag keyword since
+      // the tag is what appears in the elaborated specifier.
+      CLANG_DOWNCAST(TagType, ctt, clangType);
+
+      // Use its declaration to find my typedef Variable.
+      Variable *typedefVar = existingVariableForDeclaration(ctt->getDecl());
       return typedefVar->type;
-    }
-#endif // 0
+    )
 
     CASE(Typedef, ctt,
       clang::TypedefNameDecl const *ctnd = ctt->getDecl();
