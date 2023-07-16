@@ -232,7 +232,7 @@ ClangImport::ClangImport(std::unique_ptr<clang::ASTUnit> &&clangASTUnit,
     m_tfac(elsaParse.m_typeFactory),
     m_globalScope(new Scope(SK_GLOBAL, 0 /*changeCount*/, SL_INIT)),
     m_clangFileIDToName(),
-    m_locToVariable()
+    m_clangDeclToVariable()
 {}
 
 
@@ -514,34 +514,35 @@ Declaration *ClangImport::importEnumDefinition(
 }
 
 
-Variable *ClangImport::importCompoundTypeAsForward(CXCursor cxCompoundDecl)
+Variable *ClangImport::importCompoundTypeAsForward(
+  clang::RecordDecl const *clangRecordDecl)
 {
-  xunimp("importCompoundTypeAsForward");
-  return nullptr;
-
-#if 0 // old
-  StringRef compoundName = cursorSpelling(cxCompoundDecl);
+  StringRef compoundName = declName(clangRecordDecl);
 
   // What kind of compound is this?
   CompoundType::Keyword keyword;
-  switch (clang_getCursorKind(cxCompoundDecl)) {
-    default: xfailure("bad kind");
-    case CXCursor_StructDecl: keyword = CompoundType::K_STRUCT; break;
-    case CXCursor_UnionDecl:  keyword = CompoundType::K_UNION;  break;
-    case CXCursor_ClassDecl:  keyword = CompoundType::K_CLASS;  break;
+  switch (clangRecordDecl->getTagKind()) {
+    default:
+      xunimp(stringb("importCompoundTypeAsForward: " <<
+                     importStringRef(clangRecordDecl->getKindName())));
+      // fake fallthrough
+
+    case clang::TTK_Struct: keyword = CompoundType::K_STRUCT; break;
+    case clang::TTK_Union:  keyword = CompoundType::K_UNION;  break;
+    case clang::TTK_Class:  keyword = CompoundType::K_CLASS;  break;
   }
 
   // Have we already created a record for it?
-  Variable *&var = variableRefForDeclaration(cxCompoundDecl);
+  Variable *&var = variableRefForDeclaration(clangRecordDecl);
   if (!var) {
     // Make a forward-declared one.
-    SourceLoc loc = cursorLocation(cxCompoundDecl);
+    SourceLoc loc = declLocation(clangRecordDecl);
 
     // This makes a CompoundType with 'm_isForwardDeclared==true'.
     CompoundType *compoundType = m_tfac.makeCompoundType(keyword, compoundName);
     Type *type = m_tfac.makeCVAtomicType(compoundType, CV_NONE);
     var = compoundType->typedefVar =
-      makeVariable_setScope(loc, compoundName, type, DF_TYPEDEF, cxCompoundDecl);
+      makeVariable_setScope(loc, compoundName, type, DF_TYPEDEF, clangRecordDecl);
   }
 
   else {
@@ -552,61 +553,76 @@ Variable *ClangImport::importCompoundTypeAsForward(CXCursor cxCompoundDecl)
   }
 
   return var;
-#endif // 0
 }
 
 
-Declaration *ClangImport::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
+Declaration *ClangImport::importCompoundTypeDefinition(
+  clang::RecordDecl const *clangRecordDecl)
 {
-  Variable *var = importCompoundTypeAsForward(cxCompoundDefn);
+  Variable *var = importCompoundTypeAsForward(clangRecordDecl);
   CompoundType *ct = var->type->asCompoundType();
 
   // Begin the syntactic lists.
   FakeList<BaseClassSpec> *bases = FakeList<BaseClassSpec>::emptyList();
   MemberList *memberList = new MemberList(nullptr /*list*/);
 
-#if 0 // old
   // Process the children of the definition.
-  for (CXCursor const &child : getChildren(cxCompoundDefn)) {
-    CXCursorKind childKind = clang_getCursorKind(child);
-    SourceLoc childLoc = cursorLocation(child);
+  //
+  // I'm processing the syntactic declaration list rather than, say,
+  // separately iterating over fields, then methods, etc., because I'd
+  // like the resulting Elsa AST to be similar to what would have been
+  // obtained when using its parser.
+  for (clang::Decl const *clangChildDecl : clangRecordDecl->decls()) {
+    if (clangChildDecl->isImplicit()) {
+      // For now, just ignore any implicit members.
+      continue;
+    }
+
+    SourceLoc childLoc = declLocation(clangChildDecl);
 
     CVFlags methodCV = CV_NONE;
 
     Member *newMember = nullptr;
-    switch (childKind) {
+    switch (clangChildDecl->getKind()) {
       default:
-        printSubtree(child);
-        xunimp(stringb("compound defn child kind: " << toString(childKind)));
+        xunimp(stringb("compound defn child kind: " <<
+                       clangChildDecl->getDeclKindName()));
 
-      case CXCursor_StructDecl: // 2
-      case CXCursor_UnionDecl: // 3
-      case CXCursor_ClassDecl: // 4
-      case CXCursor_EnumDecl: // 5
+      case clang::Decl::Enum:
+      case clang::Decl::Record:
+      case clang::Decl::CXXRecord: {
+        CLANG_DOWNCAST(TagDecl, ctd, clangChildDecl);
+
         newMember = new MR_decl(childLoc,
-          importDeclaration(child, DC_MR_DECL));
+                                importNamedDecl(ctd, DC_MR_DECL));
         break;
+      }
 
       importDecl:
-      case CXCursor_FieldDecl: // 6: non-static data
-      case CXCursor_VarDecl: { // 9: static data
+      case clang::Decl::Field: // 6: non-static data
+      case clang::Decl::Var: { // 9: static data
+        CLANG_DOWNCAST(DeclaratorDecl, cdd, clangChildDecl);
+
         // Associate the Variable we will create with the declaration of
         // the field.
-        Variable *&fieldVar = variableRefForDeclaration(child);
+        Variable *&fieldVar = variableRefForDeclaration(cdd);
         xassert(!fieldVar);
 
         Type *fieldType = importQualType_maybeMethod(
-          clang_getCursorType(child), ct, methodCV);
+          cdd->getType(), ct, methodCV);
 
-        DeclFlags dflags = importStorageClass(
-          clang_Cursor_getStorageClass(child));
+        // For static data members, get the storage class.
+        DeclFlags dflags = DF_NONE;
+        if (CLANG_DOWNCAST_IN_IF(VarDecl, cvd, cdd)) {
+          dflags = importStorageClass(cvd->getStorageClass());
+        }
 
         fieldVar = makeVariable_setScope(
-          cursorLocation(child),
-          cursorSpelling(child),
+          childLoc,
+          declName(cdd),
           fieldType,
           dflags,
-          child);
+          cdd);
 
         ct->addField(fieldVar);
 
@@ -615,21 +631,32 @@ Declaration *ClangImport::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
         break;
       }
 
-      case CXCursor_CXXMethod: { // 21
-        if (clang_isCursorDefinition(child)) {
-          Function *func = importFunctionDefinition(child);
+      case clang::Decl::CXXMethod:
+      case clang::Decl::CXXConstructor:
+      case clang::Decl::CXXConversion:
+      case clang::Decl::CXXDestructor: {
+        CLANG_DOWNCAST(CXXMethodDecl, ccm, clangChildDecl);
+
+        if (ccm->hasBody()) {
+          Function *func = importFunctionDefinition(ccm);
           newMember = new MR_func(childLoc, func);
         }
         else {
-          methodCV = importMethodQualifiers(child);
+          methodCV = importMethodQualifiers(ccm);
           goto importDecl;
         }
         break;
       }
 
-      case CXCursor_CXXAccessSpecifier: { // 39
+      case clang::Decl::AccessSpec: {
+        CLANG_DOWNCAST(AccessSpecDecl, casd, clangChildDecl);
+
+        // Note: 'getAccess' is a method on 'Decl'.  All declarations
+        // can be queried for their access level, but for access
+        // specifier declarations themselves, the access level is the
+        // only information they carry (beyond source location details).
         newMember = new MR_access(childLoc,
-          importAccessKeyword(clang_getCXXAccessSpecifier(child)));
+          importAccessKeyword(casd->getAccess()));
         break;
       }
     }
@@ -637,14 +664,13 @@ Declaration *ClangImport::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
     xassert(newMember);
     memberList->list.append(newMember);
   }
-#endif // 0
 
   // Now that the members have been populated, 'ct' is no longer forward.
   ct->m_isForwardDeclared = false;
 
   // Finish making the definition syntax.
   TS_classSpec *specifier = new TS_classSpec(
-    cursorLocation(cxCompoundDefn),
+    declLocation(clangRecordDecl),
     CompoundType::toTypeIntr(ct->keyword),
     makePQName(var),
     bases,
@@ -657,13 +683,13 @@ Declaration *ClangImport::importCompoundTypeDefinition(CXCursor cxCompoundDefn)
 
 
 Declaration *ClangImport::importCompoundTypeForwardDeclaration(
-  CXCursor cxCompoundDecl)
+  clang::RecordDecl const *clangRecordDecl)
 {
-  Variable *var = importCompoundTypeAsForward(cxCompoundDecl);
+  Variable *var = importCompoundTypeAsForward(clangRecordDecl);
   CompoundType *ct = var->type->asCompoundType();
 
   TS_elaborated *specifier = new TS_elaborated(
-    cursorLocation(cxCompoundDecl),
+    declLocation(clangRecordDecl),
     CompoundType::toTypeIntr(ct->keyword),
     makePQName(var));
   specifier->atype = ct;
@@ -751,16 +777,12 @@ Function *ClangImport::importFunctionDefinition(
 Variable *&ClangImport::variableRefForDeclaration(
   clang::NamedDecl const *clangNamedDecl)
 {
-  // Go to the canonical cursor to handle the case of an entity that is
-  // declared multiple times.
+  // Go to the canonical declaration to handle the case of an entity
+  // that is declared multiple times.
   clangNamedDecl = dyn_cast<clang::NamedDecl>(clangNamedDecl->getCanonicalDecl());
   xassert(clangNamedDecl);
 
-  // TODO: Update to use the NamedDecl pointer as the key instead of
-  // its location.
-  SourceLoc loc = declLocation(clangNamedDecl);
-
-  return m_locToVariable[loc];
+  return m_clangDeclToVariable[clangNamedDecl];
 }
 
 
@@ -854,6 +876,15 @@ Declaration *ClangImport::importNamedDecl(
 {
   if (CLANG_DOWNCAST_IN_IF(EnumDecl, ced, clangNamedDecl)) {
     return importEnumDefinition(ced);
+  }
+
+  if (CLANG_DOWNCAST_IN_IF(RecordDecl, crd, clangNamedDecl)) {
+    if (crd->isCompleteDefinition()) {
+      return importCompoundTypeDefinition(crd);
+    }
+    else {
+      return importCompoundTypeForwardDeclaration(crd);
+    }
   }
 
   Variable *var = variableForDeclaration(clangNamedDecl);
@@ -962,7 +993,17 @@ bool ClangImport::possiblyAddNameQualifiers(Declarator *declarator,
 
 StringRef ClangImport::declName(clang::NamedDecl const *clangNamedDecl)
 {
-  return importStringRef(clangNamedDecl->getName());
+  clang::DeclarationName dname = clangNamedDecl->getDeclName();
+  if (dname.isIdentifier()) {
+    return importStringRef(clangNamedDecl->getName());
+  }
+  else {
+    // Handle special names like constructors and conversion operators.
+    //
+    // TODO: This does not match what Elsa does.
+    std::string str = dname.getAsString();
+    return addStringRef(str.c_str());
+  }
 }
 
 
@@ -1274,7 +1315,12 @@ Type *ClangImport::importQualType_maybeMethod(clang::QualType clangQualType,
         importQualType(clvr->getPointeeType()));
     )
 
-    // TODO: CXType_RValueReference = 104
+    CASE(RValueReference, clvr,
+      // TODO: Add rvalue references to Elsa so I can record this
+      // properly.
+      return m_tfac.makeReferenceType(
+        importQualType(clvr->getPointeeType()));
+    )
 
     // For a Record or Enum that does not go through Elaborated, create
     // a TypedefType, the same as the Typedef case.
@@ -1932,6 +1978,23 @@ std::string ClangImport::evalAsString(CXCursor cxExpr)
 }
 
 
+namespace {
+  // 'ITER_RANGE' is something like 'clang::CXXConstructExpr::arg_range'.
+  template <class ITER_RANGE>
+  FakeList<ArgExpression> *importArgumentList(ClangImport &clangImport,
+    ITER_RANGE const &arguments)
+  {
+    FakeList<ArgExpression> *args = FakeList<ArgExpression>::emptyList();
+    for (clang::Expr const *clangArg : arguments) {
+      args = fl_prepend(args, new ArgExpression(
+        clangImport.importExpression(clangArg)));
+    }
+    args = fl_reverse(args);
+    return args;
+  }
+}
+
+
 Expression *ClangImport::importExpression(clang::Expr const *clangExpr)
 {
 #if 0 // old
@@ -1974,9 +2037,10 @@ Expression *ClangImport::importExpression(clang::Expr const *clangExpr)
       return importExpression(cce->getSubExpr());
     }
 
-#if 0
-    case CXCursor_MemberRefExpr: { // 102
-      Expression *object = importExpression(getOnlyChild(cxExpr));
+    case clang::Stmt::MemberExprClass: {
+      CLANG_DOWNCAST(MemberExpr, cme, clangExpr);
+
+      Expression *object = importExpression(cme->getBase());
       if (object->type->isPointerType()) {
         // The Clang AST uses the same node for "." and "->", with the
         // latter distinguished only by the fact that the child
@@ -1985,15 +2049,14 @@ Expression *ClangImport::importExpression(clang::Expr const *clangExpr)
         object = makeE_deref(object);
       }
 
-      CXCursor decl = clang_getCursorReferenced(cxExpr);
-      Variable *field = existingVariableForDeclaration(decl);
+      clang::ValueDecl const *clangMemberDecl = cme->getMemberDecl();
+      Variable *field = existingVariableForDeclaration(clangMemberDecl);
 
       E_fieldAcc *acc = new E_fieldAcc(object, makePQName(field));
       acc->field = field;
       ret = acc;
       break;
     }
-#endif // 0
 
     case clang::Stmt::CallExprClass: {
       CLANG_DOWNCAST(CallExpr, clangCallExpr, clangExpr);
@@ -2015,19 +2078,8 @@ Expression *ClangImport::importExpression(clang::Expr const *clangExpr)
         }
       }
 
-      // Import the arguments.
-      FakeList<ArgExpression> *args = FakeList<ArgExpression>::emptyList();
-      for (auto it = clangCallExpr->arg_begin();
-           it != clangCallExpr->arg_end();
-           ++it) {
-        clang::Expr const *clangArg = *it;
-
-        args = fl_prepend(args, new ArgExpression(
-          importExpression(clangArg)));
-      }
-      args = fl_reverse(args);
-
-      ret = new E_funCall(callee, args);
+      ret = new E_funCall(callee,
+        importArgumentList(*this, clangCallExpr->arguments()));
       break;
     }
 
@@ -2475,9 +2527,10 @@ Initializer *ClangImport::importInitializer(
       return nullptr;
 
     case clang::Stmt::CXXConstructExprClass: {
-      //CLANG_DOWNCAST(CXXConstructExpr, ccce, clangInitExpr);
-      xunimp("importInitializer: CXXConstructExpr");
-      return nullptr;
+      CLANG_DOWNCAST(CXXConstructExpr, ccce, clangInitExpr);
+
+      return new IN_ctor(loc,
+        importArgumentList(*this, ccce->arguments()));
     }
 
     case clang::Stmt::InitListExprClass: {
@@ -2572,13 +2625,13 @@ DeclFlags ClangImport::importStorageClass(clang::StorageClass storageClass)
 
 
 AccessKeyword ClangImport::importAccessKeyword(
-  CX_CXXAccessSpecifier accessSpecifier)
+  clang::AccessSpecifier accessSpecifier)
 {
   switch (accessSpecifier) {
-    case CX_CXXPublic:    return AK_PUBLIC;
-    case CX_CXXProtected: return AK_PROTECTED;
-    case CX_CXXPrivate:   return AK_PRIVATE;
-    default:              return AK_UNSPECIFIED;
+    case clang::AS_public:    return AK_PUBLIC;
+    case clang::AS_protected: return AK_PROTECTED;
+    case clang::AS_private:   return AK_PRIVATE;
+    default:                  return AK_UNSPECIFIED;
   }
 }
 

@@ -25,7 +25,7 @@
 #include "clang/AST/Type.h"                                // QualType, FunctionType, Qualifiers, etc.
 #include "clang/Basic/LLVM.h"                              // StringRef
 #include "clang/Basic/SourceLocation.h"                    // FileID, SourceLocation
-#include "clang/Basic/Specifiers.h"                        // StorageClass
+#include "clang/Basic/Specifiers.h"                        // StorageClass, AccessSpecifier
 #include "clang/Frontend/ASTUnit.h"                        // ASTUnit
 #include "clang-c/Index.h"                                 // libclang (TODO: remove)
 
@@ -168,8 +168,9 @@ public:      // data
   std::map<clang::FileID /*clangFileID*/,
            StringRef /*fname*/> m_clangFileIDToName;
 
-  // Map from SourceLoc of a declaration to its associated Variable.
-  std::map<SourceLoc, Variable *> m_locToVariable;
+  // Map from Clang canonical declaration AST node to its associated
+  // Elsa Variable.
+  std::map<clang::NamedDecl const *, Variable *> m_clangDeclToVariable;
 
 public:      // methods
   ClangImport(std::unique_ptr<clang::ASTUnit> &&clangASTUnit,
@@ -214,12 +215,14 @@ public:      // methods
   // Import the CompoundType declared by 'cxCompoundDecl', yielding its
   // typedefVar.  If it has not already been imported, create it as a
   // forward declaration.
-  Variable *importCompoundTypeAsForward(CXCursor cxCompoundDecl);
+  Variable *importCompoundTypeAsForward(
+    clang::RecordDecl const *clangRecordDecl);
 
-  Declaration *importCompoundTypeDefinition(CXCursor cxCompoundDefn);
+  Declaration *importCompoundTypeDefinition(
+    clang::RecordDecl const *clangRecordDecl);
 
   Declaration *importCompoundTypeForwardDeclaration(
-    CXCursor cxCompoundDecl);
+    clang::RecordDecl const *clangRecordDecl);
 
   // Return the CV flags applied to the receiver for 'clangCXXMethodDecl'.
   CVFlags importMethodQualifiers(
@@ -386,7 +389,7 @@ public:      // methods
   DeclFlags importStorageClass(clang::StorageClass storageClass);
 
   AccessKeyword importAccessKeyword(
-    CX_CXXAccessSpecifier accessSpecifier);
+    clang::AccessSpecifier accessSpecifier);
 
   // Debug print.
   void printSubtree(CXCursor cursor);
