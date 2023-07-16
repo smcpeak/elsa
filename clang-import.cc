@@ -247,7 +247,7 @@ void ClangImport::importTranslationUnit()
   // a way to directly get the TranslationUnitDecl.  Instead it seems I
   // have to iterate over the top-level declarations.
   for (auto it = m_clangASTUnit->top_level_begin();
-       it < m_clangASTUnit->top_level_end();
+       it != m_clangASTUnit->top_level_end();
        ++it) {
     clang::Decl *decl = *it;
     if (dump) {
