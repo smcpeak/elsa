@@ -3,7 +3,7 @@
 // -*- c++ -*-
 char const *foo()
 {
-  return "foo";
+  return __func__;
 }
 
 // ---- STOP ----

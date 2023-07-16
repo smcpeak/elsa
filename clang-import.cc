@@ -1391,14 +1391,18 @@ Type *ClangImport::importQualType_maybeMethod(clang::QualType clangQualType,
       return importFunctionType(cft, methodClass, methodCV);
     }
 
-#if 0 // old
-    case CXType_ConstantArray: // 112
-    case CXType_IncompleteArray: // 114
-    case CXType_VariableArray: // 115
-    case CXType_DependentSizedArray: // 116
-      xassert(cv == CV_NONE);
-      return importArrayType(cxType);
-#endif // 0
+    case clang::Type::ConstantArray:
+    case clang::Type::IncompleteArray:
+    case clang::Type::VariableArray:
+    case clang::Type::DependentSizedArray: {
+      CLANG_DOWNCAST(ArrayType, cat, clangType);
+
+      // clang string literals have a 'const' associated with the array
+      // type itself, as well as with the elements.  Discard the former
+      // by ignoring what is in 'cv'.
+
+      return importArrayType(cat);
+    }
 
     CASE(Paren, cpt,
       return importQualType_maybeMethod(cpt->getInnerType(),
@@ -1480,28 +1484,32 @@ void ClangImport::addReceiver(FunctionType *methodType,
 }
 
 
-ArrayType *ClangImport::importArrayType(CXType cxArrayType)
+ArrayType *ClangImport::importArrayType(
+  clang::ArrayType const *clangArrayType)
 {
-  Type *eltType = nullptr; // old: importQualType(clang_getElementType(cxArrayType));
+  Type *eltType = importQualType(clangArrayType->getElementType());
 
   int size;
-  switch (cxArrayType.kind) {
+  switch (clangArrayType->getTypeClass()) {
     default:
       xfailure("bad array type");
 
-    case CXType_ConstantArray: // 112
-      checkedAssignment(size, clang_getArraySize(cxArrayType));
-      break;
+    case clang::Type::ConstantArray: {
+      CLANG_DOWNCAST(ConstantArrayType, ccat, clangArrayType);
 
-    case CXType_IncompleteArray: // 114
+      size = importAPIntAsInt(ccat->getSize(), false /*isSigned*/);
+      break;
+    }
+
+    case clang::Type::IncompleteArray:
       size = ArrayType::NO_SIZE;
       break;
 
-    case CXType_VariableArray: // 115
+    case clang::Type::VariableArray:
       size = ArrayType::DYN_SIZE;
       break;
 
-    case CXType_DependentSizedArray: // 116
+    case clang::Type::DependentSizedArray:
       // Elsa really should have this as a separate case too.  I will
       // just say the size is unspecified.
       size = ArrayType::NO_SIZE;
@@ -2074,6 +2082,21 @@ Expression *ClangImport::importExpression(clang::Expr const *clangExpr)
       return importExpression(cce->getSubExpr());
     }
 
+    case clang::Stmt::ParenExprClass: {
+      CLANG_DOWNCAST(ParenExpr, cpe, clangExpr);
+
+      // Elsa drops parentheses, so I will do that here as well.
+      return importExpression(cpe->getSubExpr());
+    }
+
+    case clang::Stmt::PredefinedExprClass: {
+      CLANG_DOWNCAST(PredefinedExpr, cpe, clangExpr);
+
+      // This is just a marker class surrounding a string literal,
+      // describing how it arose.  Skip it.
+      return importExpression(cpe->getFunctionName());
+    }
+
     case clang::Stmt::MemberExprClass: {
       CLANG_DOWNCAST(MemberExpr, cme, clangExpr);
 
@@ -2134,23 +2157,18 @@ Expression *ClangImport::importExpression(clang::Expr const *clangExpr)
       break;
     }
 
-#if 0 // old
-    case CXCursor_StringLiteral: // 109
-      ret = importStringLiteral(cxExpr);
-      break;
+    case clang::Stmt::StringLiteralClass: {
+      CLANG_DOWNCAST(StringLiteral, csl, clangExpr);
 
+      ret = importStringLiteral(csl);
+      break;
+    }
+
+#if 0 // old
     case CXCursor_CharacterLiteral: // 110
       ret = importCharacterLiteral(cxExpr);
       break;
 #endif // 0
-
-    case clang::Stmt::ParenExprClass: {
-      CLANG_DOWNCAST(ParenExpr, cpe, clangExpr);
-
-      // Elsa drops parentheses, so I will do that here as well.
-      ret = importExpression(cpe->getSubExpr());
-      break;
-    }
 
     case clang::Stmt::UnaryOperatorClass: {
       CLANG_DOWNCAST(UnaryOperator, cuo, clangExpr);
@@ -2312,21 +2330,39 @@ Expression *ClangImport::importExpression(clang::Expr const *clangExpr)
 }
 
 
-E_stringLit *ClangImport::importStringLiteral(CXCursor cxExpr)
+StringRef ClangImport::getTokenText(clang::SourceLocation clangSrcLoc)
 {
-  // The spelling has something like the original quoted syntax,
-  // although it is different at least because (1) it concatenates all
-  // of the adjacent tokens, and (2) it normalizes octal escape
-  // sequences to use three digits.  Nevertheless, it is fine for my
-  // purposes.
-  StringRef quotedRef = cursorSpelling(cxExpr);
+  llvm::SmallVector<char, 80> buffer;
+  llvm::StringRef token = clang::Lexer::getSpelling(
+    clangSrcLoc,
+    buffer,
+    m_clangASTUnit->getSourceManager(),
+    m_clangASTUnit->getLangOpts());
+  return importStringRef(token);
+}
 
-  E_stringLit *slit = new E_stringLit(quotedRef);
 
-  unsigned length = clang_stringLiteralElement(cxExpr,
-    CXStringLiteralElement_length);
-  unsigned charByteWidth = clang_stringLiteralElement(cxExpr,
-    CXStringLiteralElement_charByteWidth);
+E_stringLit *ClangImport::importStringLiteral(
+  clang::StringLiteral const *clangStringLiteral)
+{
+  // Build the syntactic string literal backwards to get all of the
+  // concatenated elements, using their original syntax.
+  E_stringLit *slit = nullptr;
+  {
+    int numConcat = (int)clangStringLiteral->getNumConcatenated();
+    for (int i = numConcat - 1; i >= 0; --i) {
+      StringRef tokenText =
+        getTokenText(clangStringLiteral->getStrTokenLoc(i));
+      slit = new E_stringLit(tokenText, slit);
+    }
+
+    // There must have been at least one token.
+    xassert(slit != nullptr);
+  }
+
+  // Get the sequence of bytes that the string literal denotes.
+  unsigned length = clangStringLiteral->getLength();
+  unsigned charByteWidth = clangStringLiteral->getCharByteWidth();
   xassert(charByteWidth > 0);
 
   size_t numBytes = length * charByteWidth;
@@ -2335,9 +2371,11 @@ E_stringLit *ClangImport::importStringLiteral(CXCursor cxExpr)
   // was done using unsigned arithmetic.
   xassert(numBytes / charByteWidth == length);
 
+  llvm::StringRef clangBytes = clangStringLiteral->getBytes();
+  xassert(clangBytes.size() == numBytes);
+
   slit->m_stringData.setAllocated(numBytes);
-  clang_getStringLiteralBytes(cxExpr,
-    slit->m_stringData.getData(), numBytes);
+  memcpy(slit->m_stringData.getData(), clangBytes.data(), numBytes);
 
   return slit;
 }

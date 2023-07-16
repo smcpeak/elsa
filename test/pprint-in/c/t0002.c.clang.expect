@@ -5,7 +5,7 @@ typedef int wchar_t;
 
 int mbtowc(int, wchar_t *);
 
-enum  {
+enum {
   A,
   B = A
 };

@@ -315,7 +315,7 @@ public:      // methods
   void addReceiver(FunctionType *methodType,
     SourceLoc loc, CompoundType const *containingClass, CVFlags cv);
 
-  ArrayType *importArrayType(CXType cxArrayType);
+  ArrayType *importArrayType(clang::ArrayType const *clangArrayType);
 
   S_compound *importCompoundStatement(
     clang::CompoundStmt const *clangCompoundStmt);
@@ -347,7 +347,10 @@ public:      // methods
 
   Expression *importExpression(clang::Expr const *clangExpr);
 
-  E_stringLit *importStringLiteral(CXCursor cxExpr);
+  StringRef getTokenText(clang::SourceLocation clangSrcLoc);
+
+  E_stringLit *importStringLiteral(
+    clang::StringLiteral const *clangStringLiteral);
 
   E_charLit *importCharacterLiteral(CXCursor cxExpr);
 
