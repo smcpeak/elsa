@@ -89,8 +89,6 @@ option dvisitor DelegatorASTVisitor;
 // Emit an mvisitor for the benefit of library clients.
 option mvisitor ModificationASTVisitor;
 
-option identityManager IdentityManager;
-
 // emit gdb() methods for debugging
 option gdb;
 
