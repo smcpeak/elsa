@@ -935,9 +935,19 @@ unsigned clang_stringLiteralElement(CXCursor stringLiteralCursor,
           default:
             return CXCharacterLiteralKind_Unknown;
 
+          // This is part of incomplete Clang-16 support.
+#if 0
+          // Evidently, at some point the C++ API renamed
+          // StringLiteral::Ascii to StringLiteral::Ordinary, but the
+          // corresponding constant in the C API is still called
+          // 'CXCharacterLiteralKind_Ascii', hence this irregular case.
+          case StringLiteral::Ordinary:
+            return CXCharacterLiteralKind_Ascii;
+#endif // 0
+
           #define KINDCASE(name) \
             case StringLiteral::name: return CXCharacterLiteralKind_##name;
-          KINDCASE(Ascii)
+          KINDCASE(Ascii)     // Clang-14 only; remove for Clang-16!
           KINDCASE(Wide)
           KINDCASE(UTF8)
           KINDCASE(UTF16)
