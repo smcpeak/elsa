@@ -165,7 +165,15 @@ TOCLEAN += *.o *.d *.exe
 # created in time to be used by other build processes which need it.
 
 # Arguments to find-extra-deps.py.
-EXTRADEPS_ARGS := *.d
+EXTRADEPS_ARGS :=
+
+# Always record the dependency of clang-import.o even if that is not
+# part of the build configuration so that extradep.mk is independent of
+# that configuration.
+EXTRADEPS_ARGS += --add 'clang-import.o: cc.ast.gen.h'
+
+# Scan the generated dependecny files.
+EXTRADEPS_ARGS += *.d
 
 .PHONY: remake-extradep
 remake-extradep:
@@ -188,7 +196,8 @@ validate-extradep: all
 	  echo "extradep.mk may need updating; run 'make remake-extradep'"; \
 	  echo "if you have added a new *generated* header file or a new"; \
 	  echo "dependency on a generated header.  Otherwise,"; \
-	  echo "for a new normal header 'git add' it to satisfy this check."; \
+	  echo "for a new normal header, 'git add' it to satisfy this check."; \
+	  echo "You can also set env IGNORE_EXTRADEP to skip this check."; \
 	  exit 2; \
 	fi
 	rm extradep.tmp
