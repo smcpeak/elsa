@@ -3,7 +3,7 @@
 
 #include "baselexer.h"   // this module
 #include "strtable.h"    // StringTable
-#include "exc.h"         // throw_XOpen
+#include "syserr.h"      // xsyserror
 
 #include "sm-fstream.h"  // ifstream
 
@@ -39,7 +39,7 @@ istream *BaseLexer::openFile(char const *fname)
   if (!*inputStream) {
     // destructor won't be called so delete here.
     delete inputStream; inputStream = NULL;
-    throw_XOpen(fname);
+    xsyserror("open", fname);
   }
   return inputStream;
 }
