@@ -45,6 +45,9 @@ public:    // funcs
   ImplicitConversion(ImplicitConversion const &obj)
     : DMEMB(kind), DMEMB(scs), DMEMB(user), DMEMB(scs2) {}
 
+  ImplicitConversion& operator= (ImplicitConversion const &obj)
+    { CMEMB(kind); CMEMB(scs); CMEMB(user); CMEMB(scs2); return *this; }
+
   // for determining whether the conversion attempt succeeded
   operator bool () const { return kind != IC_NONE; }
 

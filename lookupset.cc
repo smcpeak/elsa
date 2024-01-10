@@ -91,6 +91,7 @@ Variable *vfilter(Variable *v, LookupFlags flags)
 
 // --------------------- LookupSet ----------------------
 LookupSet::LookupSet()
+  : SObjList<Variable>()
 {}
 
 LookupSet::~LookupSet()
@@ -98,6 +99,7 @@ LookupSet::~LookupSet()
 
 
 LookupSet::LookupSet(LookupSet const &obj)
+  : SObjList<Variable>()
 {
   copy(obj);
 }

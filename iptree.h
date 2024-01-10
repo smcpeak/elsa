@@ -4,10 +4,11 @@
 #ifndef IPTREE_H
 #define IPTREE_H
 
-#include "objlist.h"        // ObjList
-#include "str.h"            // rostring
 #include "array.h"          // GrowArray
 #include "bitstrmap.h"      // BitStrMap
+#include "objlist.h"        // ObjList
+#include "sm-macros.h"      // CMEMB, DMEMB
+#include "str.h"            // rostring
 
 #include "sm-iostream.h"    // ostream
 #include <stdio.h>          // FILE
@@ -54,8 +55,10 @@ public:      // funcs
   Interval() : lo(0), hi(0) {}
   Interval(int L, int H) : lo(L), hi(H) {}
 
+  Interval(Interval const &obj)
+    : DMEMB(lo), DMEMB(hi) {}
   Interval& operator= (Interval const &obj)
-    { lo=obj.lo; hi=obj.hi; return *this; }
+    { CMEMB(lo); CMEMB(hi); return *this; }
 
   // number of elements in the interval
   int size() const

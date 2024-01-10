@@ -433,6 +433,12 @@ public:
   STemplateArgument(Type *t) : kind(STA_TYPE) { value.t = t; }
   STemplateArgument(STemplateArgument const &obj);
 
+  STemplateArgument& operator= (STemplateArgument const &obj);
+
+  // Copy 'value' from 'obj' into 'this'.  Requires that they have the
+  // same 'kind'.
+  void copyValue(STemplateArgument const &obj);
+
   // 'new' + copy ctor
   STemplateArgument *shallowClone() const;
 

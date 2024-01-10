@@ -23,6 +23,7 @@
 
 // smbase
 #include "array.h"                     // ArrayStack
+#include "sm-macros.h"                 // CMEMB, DMEMB
 #include "sobjlist.h"                  // SObjList
 #include "srcloc.h"                    // SourceLoc
 #include "strtable.h"                  // StringRef
@@ -41,11 +42,13 @@ private:     // types
   public:
     ActiveEdgeRecord()
       : source(NULL), target(NULL) {}
+    ActiveEdgeRecord(ActiveEdgeRecord const &obj)
+      : DMEMB(source), DMEMB(target) {}
     ActiveEdgeRecord(Scope *s, Scope *t)
       : source(s), target(t) {}
 
     ActiveEdgeRecord& operator= (ActiveEdgeRecord const &obj)
-      { source=obj.source; target=obj.target; return *this; }
+      { CMEMB(source); CMEMB(target); return *this; }
   };
 
 private:     // data

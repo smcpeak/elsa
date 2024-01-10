@@ -683,14 +683,45 @@ void TemplateInfo::debugPrint(int depth, bool printPartialInsts)
 STemplateArgument::STemplateArgument(STemplateArgument const &obj)
   : kind(obj.kind)
 {
-  if (kind == STA_TYPE) {
-    value.t = obj.value.t;
+  copyValue(obj);
+}
+
+
+STemplateArgument& STemplateArgument::operator= (STemplateArgument const &obj)
+{
+  if (this != &obj) {
+    kind = obj.kind;
+    copyValue(obj);
   }
-  else if (kind == STA_INT) {
-    value.i = obj.value.i;
-  }
-  else {
-    value.v = obj.value.v;
+
+  return *this;
+}
+
+
+void STemplateArgument::copyValue(STemplateArgument const &obj)
+{
+  xassert(kind == obj.kind);
+
+  switch (kind) {
+    case STA_TYPE:
+      value.t = obj.value.t;
+      break;
+
+    case STA_INT:
+      value.i = obj.value.i;
+      break;
+
+    case STA_DEPEXPR:
+      value.e = obj.value.e;
+      break;
+
+    case STA_ATOMIC:
+      value.at = obj.value.at;
+      break;
+
+    default:
+      value.v = obj.value.v;
+      break;
   }
 }
 
