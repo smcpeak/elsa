@@ -45,9 +45,10 @@ istream *BaseLexer::openFile(char const *fname)
 }
 
 BaseLexer::BaseLexer(StringTable &s, char const *fname)
-  : yyFlexLexer(openFile(fname)),
+  : yyFlexLexer(),
+    LexerInterface(),
 
-    // 'inputStream' is initialized by 'openFile'
+    inputStream(NULL),       // changed below
     srcFile(NULL),           // changed below
 
     nextLoc(SL_UNKNOWN),     // changed below
@@ -57,6 +58,9 @@ BaseLexer::BaseLexer(StringTable &s, char const *fname)
     errors(0),
     warnings(0)
 {
+  // Set 'inputStream' and initialize the lexer to use it.
+  yym_restart(openFile(fname));
+
   srcFile = sourceLocManager->getInternalFile(fname);
 
   loc = sourceLocManager->encodeBegin(fname);
@@ -72,9 +76,10 @@ istream *BaseLexer::openString(char const *buf, int len)
 
 BaseLexer::BaseLexer(StringTable &s, SourceLoc initLoc,
                      char const *buf, int len)
-  : yyFlexLexer(openString(buf, len)),
+  : yyFlexLexer(),
+    LexerInterface(),
 
-    // 'inputStream' is initialized by 'openString'
+    inputStream(NULL),       // changed below
     srcFile(NULL),           // changed below
 
     nextLoc(initLoc),
@@ -84,6 +89,9 @@ BaseLexer::BaseLexer(StringTable &s, SourceLoc initLoc,
     errors(0),
     warnings(0)
 {
+  // Set 'inputStream' and initialize the lexer to use it.
+  yym_restart(openString(buf, len));
+
   // decode the given location
   char const *fname;
   int line, col;
