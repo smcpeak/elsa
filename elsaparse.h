@@ -70,10 +70,13 @@ public:      // data
   // to false during parsing.
   ElabActivities m_elabActivities;
 
-  // The parsed TU.
+  // The parsed TU.  This may be nullptr after parsing, for example if
+  // "-tr parseTree" is passed.  It is never nullptr if
+  // 'm_tcheckCompleted' is true.
   TranslationUnit *m_translationUnit;
 
-  // The 'main' function definition; NULL if none.
+  // The 'main' function definition, or nullptr if there was not a
+  // 'main' function in the translation unit.
   Function *m_mainFunction;
 
   // Time in milliseconds for various phases.
@@ -81,6 +84,12 @@ public:      // data
   long m_tcheckTime;
   long m_integrityTime;
   long m_elaborationTime;
+
+  // True if we ran and completed the type check phase.  There are some
+  // ad-hoc tracing flags, such as "-tr stopAfterParse", that cause
+  // 'parse()' to return true without having done type checking, and
+  // consumers may need to adjust their behavior accordingly.
+  bool m_tcheckCompleted;
 
 public:      // methods
   ElsaParse(StringTable &stringTable, CCLang &lang);

@@ -192,11 +192,14 @@ void test_astbuild(ElsaParse &elsaParse)
                         elsaParse.m_lang, locProvider);
   TestASTBuildVisitor visitor(elsaParse, astBuild);
 
-  if (elsaParse.m_translationUnit) {
+  if (elsaParse.m_tcheckCompleted) {
+    xassert(elsaParse.m_translationUnit);
     elsaParse.m_translationUnit->traverse(visitor);
   }
   else {
-    // The TU is missing for "-tr parseTree".  That's fine.
+    // The TU is missing for "-tr parseTree", and is incompletely
+    // populated for "-tr stopAfterParse".  Skip the AST build tests in
+    // those cases.
   }
 }
 

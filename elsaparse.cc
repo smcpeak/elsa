@@ -187,7 +187,8 @@ ElsaParse::ElsaParse(StringTable &stringTable_, CCLang &lang_)
     m_parseTime(0),
     m_tcheckTime(0),
     m_integrityTime(0),
-    m_elaborationTime(0)
+    m_elaborationTime(0),
+    m_tcheckCompleted(false)
 {}
 
 
@@ -310,6 +311,7 @@ bool ElsaParse::parse(char const *inputFname)
     Env env(m_stringTable, m_lang, m_typeFactory, madeUpVariables, builtinVars, m_translationUnit);
     try {
       env.tcheckTranslationUnit(m_translationUnit);
+      m_tcheckCompleted = true;
     }
     catch (XUnimp &x) {
       HANDLER();

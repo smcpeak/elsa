@@ -526,6 +526,16 @@ out/clang-pprint/%: pprint/% pprint/%.clang.expect pprint/%.clang.isc.expect $(C
 #check-clang: out/clang-pprint/try-catch.cc
 
 
+# ------------------------ misc cmdline tests --------------------------
+# Test that the "-tr stopAfterParse" flag does not cause a crash.
+out/t0001-stopAfterParse.ok: $(CCPARSE) ../in/t0001.cc
+	$(CREATE_OUTPUT_DIRECTORY)
+	./$(CCPARSE) -tr stopAfterParse ../in/t0001.cc
+	touch $@
+
+check: out/t0001-stopAfterParse.ok
+
+
 # ---------------------------- unit tests ------------------------------
 out/unit-tests.ok: $(CCPARSE)
 	$(CREATE_OUTPUT_DIRECTORY)
