@@ -84,9 +84,6 @@ verbatim {
 #define D(msg) \
   trace("cc") << msg << endl
 
-inline ostream& operator<< (ostream &os, SourceLoc sl)
-  { return os << toString(sl); }
-
 // implemented in implint.cc
 bool filterOutImplIntFirstParam
   (SourceLoc loc,
@@ -664,9 +661,9 @@ nonterm(PQName*) NAD2 {
   -> on:OperatorFunctionId
        { return new PQ_operator(loc, on, str(on->getOperatorName())); }
   -> on:OperatorFunctionId "<" list:TemplateArgumentListOpt ">"
-       { xunimp(stringc << loc << " templatized operator (fc042c37-50e2-4596-8460-c095e7ac892b)"); }
+       { xunimp(stringbc(loc << " templatized operator (fc042c37-50e2-4596-8460-c095e7ac892b)")); }
   -> "template" on:OperatorFunctionId "<" list:TemplateArgumentListOpt ">"
-       { xunimp(stringc << loc << " templatized operator (fc042c37-50e2-4596-8460-c095e7ac892b)"); }
+       { xunimp(stringbc(loc << " templatized operator (fc042c37-50e2-4596-8460-c095e7ac892b)")); }
 
   // qualifier names
   -> n:Identifier "<" list:TemplateArgumentListOpt ">" "::" rest:NAD1
@@ -2445,8 +2442,8 @@ nonterm ClassOrTypename {
   //    in order to categorize parse errors.
   -> "template" "<" plist:TemplateParameterList ">" "class"
      {
-       xunimp(stringc << loc << " templatized template parameter list"
-              " (25eb7000-851c-4028-b762-4e365a5b10bf)");
+       xunimp(stringbc(loc << " templatized template parameter list"
+              " (25eb7000-851c-4028-b762-4e365a5b10bf)"));
      }
 }
 
@@ -2540,8 +2537,8 @@ nonterm(TopForm*) ExplicitInstantiation {
   -> "template" d:BlockDeclaration
        { return new TF_explicitInst(loc, DF_NONE, d); }
   -> "inline" "template" d:BlockDeclaration
-       { xunimp(stringc << loc << " inline explicit instantiations"
-                " (c24a5f9c-edbd-4945-a56a-ed73a1d6a0fa)"); }
+       { xunimp(stringbc(loc << " inline explicit instantiations"
+                " (c24a5f9c-edbd-4945-a56a-ed73a1d6a0fa)")); }
 }
 
 // ------ A.13 Exception handling ------

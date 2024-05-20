@@ -2509,7 +2509,7 @@ void TS_classSpec::tcheckIntoCompound(
       // for debugging; this checks that the 'visited' flags are being
       // cleared properly, among other things
       string h2 = ct->renderSubobjHierarchy();
-      if (!h1.equals(h2)) {
+      if (!stringEquals(h1, h2)) {
         xfailure("second rendering doesn't match first");
       }
     }

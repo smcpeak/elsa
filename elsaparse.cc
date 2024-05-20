@@ -632,10 +632,10 @@ Type *ElsaParse::getGlobalType(char const *typeName_) const
 
   Variable *var = m_translationUnit->globalScope->rawLookupVariable(typeName);
   if (!var) {
-    xfailure(stringb("not in the global scope: " << typeName));
+    xfailure(stringbc("not in the global scope: " << typeName));
   }
   if (!var->hasFlag(DF_TYPEDEF)) {
-    xfailure(stringb("not a type: " << typeName));
+    xfailure(stringbc("not a type: " << typeName));
   }
   return var->type;
 }
@@ -645,7 +645,7 @@ Variable *ElsaParse::getGlobalVar(char const *varName) const
 {
   Variable *var = getGlobalVarOpt(varName);
   if (!var) {
-    xfailure(stringb("not in the global scope: " << varName));
+    xfailure(stringbc("not in the global scope: " << varName));
   }
   return var;
 }
@@ -667,8 +667,8 @@ Variable *ElsaParse::getFieldOf(Variable *container,
   CompoundType *ct = container->type->asRval()->asCompoundType();
   Variable *field = ct->rawLookupVariable(fieldName);
   if (!field) {
-    xfailure(stringb("not in '" << container->name <<
-                     "': " << fieldName));
+    xfailure(stringbc("not in '" << container->name <<
+                      "': " << fieldName));
   }
   return field;
 }

@@ -85,7 +85,7 @@ SimpleTypeId ParseEnv::uberSimpleType(SourceLoc loc, UberModifiers m)
     case UM_LONG | UM_DOUBLE | UM_IMAGINARY:   return ST_LONG_DOUBLE_IMAGINARY;
 
     default:
-      error(loc, stringc << "malformed type: " << toString(m));
+      error(loc, stringbc("malformed type: " << toString(m)));
       return ST_ERROR;
   }
 }
@@ -120,7 +120,7 @@ UberModifiers ParseEnv
     }
     else {
       // C++ 7.1.5p1
-      error(loc, stringc << "duplicate modifier: " << toString(dups));
+      error(loc, stringbc("duplicate modifier: " << toString(dups)));
     }
   }
 

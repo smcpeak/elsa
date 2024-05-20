@@ -253,7 +253,7 @@ TypeSpecifier *ElsaASTBuild::makeTypeSpecifier(Type const *type)
 
     default:
       // The template types get here.  I'm not ready to do them yet.
-      xunimp(stringb("makeASTTypeId for: " << atype->toString()));
+      xunimp(stringbc("makeASTTypeId for: " << atype->toString()));
   }
 
   tspec->cv = atype->cv;

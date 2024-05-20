@@ -41,7 +41,7 @@ ostream &overloadTrace();
   // print a message, indent, and at the end of this function,
   // outdent automatically
   #define OVERLOADINDTRACE(msg) \
-    OverloadIndTrace otrace(stringc << msg);
+    OverloadIndTrace otrace(stringbc(msg));
 
   // just print a message at the current indentation
   #define OVERLOADTRACE(msg) \

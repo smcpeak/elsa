@@ -899,7 +899,7 @@ void Scope::scheduleActiveUsingEdge(Env &env, Scope *target)
 void Scope::openedScope(Env &env)
 {
   if (onScopeStack) {
-    xfailure(stringc << "opened twice: " << desc());
+    xfailure_stringbc("opened twice: " << desc());
   }
   onScopeStack = true;
 

@@ -856,7 +856,7 @@ Scope *Variable::getDenotedScope() const
     return ct;
   }
 
-  xfailure(stringc << "expected '" << name << "' to name a scope");
+  xfailure_stringbc("expected '" << name << "' to name a scope");
   return NULL;    // silence warning
 }
 

@@ -1246,8 +1246,8 @@ nonterm(AttributeSpecifierList*) AttributeSpecifierList {
 
 nonterm(NamespaceDecl*) NamespaceDecl {
   -> "using" "namespace" n:IdExpression AttributeSpecifierList ";"
-       { xunimp(stringc << loc << " using namespace __attribute__"
-                " (a86c8a1e-2cd7-41bd-8a23-f9049358c166)");
+       { xunimp(stringbc(loc << " using namespace __attribute__"
+                " (a86c8a1e-2cd7-41bd-8a23-f9049358c166)"));
          return new ND_usingDir(n); }
 }
 

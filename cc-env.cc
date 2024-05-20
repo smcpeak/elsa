@@ -13,7 +13,7 @@
 #include "strutil.h"                   // suffixEquals, prefixEquals
 
 // smbase
-#include "string-utils.h"              // join
+#include "string-utils.h"              // join, doubleQuote
 #include "strtable.h"                  // StringTable
 #include "trace.h"                     // tracingSys
 
@@ -41,10 +41,6 @@ void gdbScopeSeq(ScopeSeq &ss)
     scope->gdb();
   }
 }
-
-
-inline ostream& operator<< (ostream &os, SourceLoc sl)
-  { return os << toString(sl); }
 
 
 // --------------------
@@ -1093,11 +1089,11 @@ void Env::possiblyCheckTentativeDefinitions()
   std::string actual = join(tentDefnSet, "");
 
   // Compare to what the test specified.
-  if (actual != std::string(expectedTentativeDefinitions)) {
+  if (actual != expectedTentativeDefinitions) {
     error(stringb(
       "__elsa_checkTentativeDefinitions failed:\n" <<
-      "  actual: " << actual << '\n' <<
-      "  expect: " << expectedTentativeDefinitions));
+      "  actual: " << doubleQuote(actual) << '\n' <<
+      "  expect: " << doubleQuote(expectedTentativeDefinitions)));
   }
 }
 

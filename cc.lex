@@ -428,7 +428,7 @@ PPCHAR        ([^\\\n]|{BACKSL}{NOTNL})
   /* illegal */
 .  {
   updLoc();
-  err(stringc << "illegal character: '" << YY_TEXT[0] << "'");
+  err(stringbc("illegal character: '" << YY_TEXT[0] << "'"));
 }
 
 <<EOF>> {

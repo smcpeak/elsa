@@ -119,7 +119,7 @@ void CFGEnv::resolveGotos()
       g->next = NextPtr(target, false);
     }
     else {
-      err(g->loc, stringc << "goto to undefined label: " << g->target);
+      err(g->loc, stringbc("goto to undefined label: " << g->target));
     }
   }
 
@@ -215,7 +215,7 @@ void CFGEnv::connectEnclosingSwitch(Statement *stmt, char const *kind)
 {
   S_switch *sw = getCurrentSwitch();
   if (!sw) {
-    err(stmt->loc, stringc << kind << " can only appear in the context of a 'switch'");
+    err(stmt->loc, stringbc(kind << " can only appear in the context of a 'switch'"));
   }
   else {
     sw->cases.append(stmt);

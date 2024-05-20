@@ -712,10 +712,10 @@ StandardConversion getStandardConversion
         return conv.error("cannot convert rvalue to lvalue");
       }
 
-      return conv.error(stringc
+      return conv.error(stringbc(""
         << "different type constructors, "
         << ctorName(src->getTag()) << " vs. "
-        << ctorName(dest->getTag()));
+        << ctorName(dest->getTag())));
     }
     else {
       return SC_ERROR;     // for performance, don't make the string at all

@@ -40,7 +40,7 @@ bool GrepVisitor::matches(Variable *var)
 {
   // compare line first for efficiency
   return line == sourceLocManager->getLine(var->loc) &&
-         name.equals(var->name);
+         stringEquals(name, var->name);
 }
 
 void GrepVisitor::tryHit(Variable *var, SourceLoc refLoc, char const *use)

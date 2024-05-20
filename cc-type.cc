@@ -665,8 +665,8 @@ int CompoundType::getDataMemberOffset(
     offset += iter.data()->type->reprSize(typeSizes);
   }
 
-  xfailure(stringc << "getDataMemberOffset: no such member: "
-                   << dataMember->name);
+  xfailure_stringbc("getDataMemberOffset: no such member: "
+                    << dataMember->name);
   return 0;  // silence warning
 }
 
