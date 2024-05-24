@@ -181,7 +181,7 @@ IPTree *parseFile(rostring fname)
 
 void entry(int argc, char *argv[])
 {
-  xBase::logExceptions = false;
+  XBase::logExceptions = false;
 
   if (argc < 2) {
     xbase(stringc << "usage: " << argv[0] << " foo.c.str [tree]");

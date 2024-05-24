@@ -41,7 +41,7 @@
 
 // smbase
 #include "astlist.h"                   // ASTList
-#include "exc.h"                       // xBase
+#include "exc.h"                       // XBase
 #include "objlist.h"                   // ObjList
 #include "serialno.h"                  // INHERIT_SERIAL_BASE
 #include "sobjlist.h"                  // SObjList
@@ -1461,7 +1461,7 @@ inline SObjList<T> const & objToSObjListC(ObjList<T> const &list)
 // -------------------- XReprSize ---------------------
 // thrown when the reprSize() function cannot determine an
 // array size
-class XReprSize : public xBase {
+class XReprSize : public XBase {
 public:
   // This is set to true when the reason for failing to determine a
   // size is that a dynamically-sized array was involved (this is a

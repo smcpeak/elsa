@@ -12,11 +12,11 @@
 
 // ------------------ XCtrlC -------------------
 XCtrlC::XCtrlC()
-  : xBase("ctrl-c")
+  : XBase("ctrl-c")
 {}
 
 XCtrlC::XCtrlC(XCtrlC const &obj)
-  : xBase(obj)
+  : XBase(obj)
 {}
 
 XCtrlC::~XCtrlC()
@@ -243,7 +243,7 @@ bool Minimizer::minimizeChildren(Node *sub)
 
 void entry(int argc, char *argv[])
 {
-  xBase::logExceptions = false;
+  XBase::logExceptions = false;
   string progName = argv[0];
 
   TRACE_ARGS();

@@ -23,7 +23,7 @@
 
 // smbase
 #include "array.h"                     // ArrayStack, ArrayStackEmbed
-#include "exc.h"                       // xBase
+#include "exc.h"                       // XBase
 #include "objstack.h"                  // ObjStack
 #include "owner.h"                     // Owner
 #include "ptrmap.h"                    // PtrMap

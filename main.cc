@@ -282,7 +282,7 @@ static char const *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
 static int doit(int argc, char **argv)
 {
   // I think this is more noise than signal at this point
-  xBase::logExceptions = false;
+  XBase::logExceptions = false;
 
   SourceLocManager mgr;
 
@@ -450,7 +450,7 @@ int main(int argc, char **argv)
     cerr << x << endl;
     return 10;
   }
-  catch (xBase &x) {
+  catch (XBase &x) {
     HANDLER();
     cerr << x << endl;
     return 4;

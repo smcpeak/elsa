@@ -77,7 +77,7 @@ bool GrepVisitor::visitDeclarator(Declarator *obj)
 // ---------------------- main -------------------------
 void doit(int argc, char **argv)
 {
-  xBase::logExceptions = false;
+  XBase::logExceptions = false;
 
   SourceLocManager mgr;
   StringTable strTable;
@@ -157,7 +157,7 @@ int main(int argc, char **argv)
   try {
     doit(argc, argv);
   }
-  catch (xBase &x) {
+  catch (XBase &x) {
     HANDLER();
     cout << x << endl;
     abort();

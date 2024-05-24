@@ -385,7 +385,7 @@ void finishBoundaries()
 
 void entry(int argc, char *argv[])
 {
-  xBase::logExceptions = false;
+  XBase::logExceptions = false;
 
   if (argc != 2) {
     xbase(stringc << "usage: " << argv[0] << " foo.c\n"
@@ -407,7 +407,7 @@ void entry(int argc, char *argv[])
   try {
     yylex();
   }
-  catch (xBase &x) {
+  catch (XBase &x) {
     x.addContext(stringc << "lexing on line " << lineNum);
     throw;
   }
@@ -420,7 +420,7 @@ int main(int argc, char *argv[])
     entry(argc, argv);
     return 0;
   }
-  catch (xBase &x) {
+  catch (XBase &x) {
     cout << x.why() << endl;
     return 4;
   }

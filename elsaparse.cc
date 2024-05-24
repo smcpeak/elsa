@@ -145,7 +145,7 @@ public:
 };
 
 
-static void handle_xBase(Env &env, xBase &x, bool printWarnings)
+static void handle_XBase(Env &env, XBase &x, bool printWarnings)
 {
   // typically an assertion failure from the tchecker; catch it here
   // so we can print the errors, and something about the location
@@ -357,11 +357,11 @@ bool ElsaParse::parse(char const *inputFname)
 
       // if we don't have a basis for reducing severity, pass this on
       // to the normal handler
-      handle_xBase(env, x, m_printWarnings);
+      handle_XBase(env, x, m_printWarnings);
     }
-    catch (xBase &x) {
+    catch (XBase &x) {
       HANDLER();
-      handle_xBase(env, x, m_printWarnings);
+      handle_XBase(env, x, m_printWarnings);
     }
 
     int numErrors = env.errors.numErrors();
