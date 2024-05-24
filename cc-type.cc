@@ -31,6 +31,9 @@
 #include "strutil.h"                   // copyToStaticBuffer
 #include "trace.h"                     // tracingSys
 
+// libc++
+#include <algorithm>                   // std::max
+
 // libc
 #include <stdlib.h>                    // getenv
 
@@ -464,7 +467,7 @@ int CompoundType::reprSize(TypeSizes const &typeSizes) const
 
     if (keyword == K_UNION) {
       // representation size is max over field sizes
-      total = max(total, v->type->reprSize(typeSizes));
+      total = std::max(total, v->type->reprSize(typeSizes));
       continue;
     }
 

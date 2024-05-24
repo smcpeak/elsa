@@ -15,6 +15,8 @@
 #include "mtype.h"         // MType
 #include "pair.h"          // pair
 
+#include "save-restore.h"  // SET_RESTORE
+
 
 void copyTemplateArgs(ObjList<STemplateArgument> &dest,
                       ObjList<STemplateArgument> const &src)
@@ -2796,7 +2798,7 @@ void Env::instantiateClassBody(Variable *inst)
   // check the class body, forcing it to use 'instCT'; don't check
   // method bodies
   {
-    Restorer<bool> r(checkFunctionBodies, false);
+    SET_RESTORE(checkFunctionBodies, false);
     instCT->syntax->tcheckIntoCompound(*this, DF_NONE, instCT);
   }
 

@@ -31,7 +31,8 @@
 
 // smbase
 #include "owner.h"                     // Owner
-#include "sm-macros.h"                 // Restorer, NULLABLE
+#include "save-restore.h"              // SET_RESTORE
+#include "sm-macros.h"                 // NULLABLE
 #include "strutil.h"                   // decodeEscapes, prefixEquals, pluraln
 #include "subobject-access-path.h"     // SubobjectAccessPath
 #include "typelistiter.h"              // TypeListIter_FakeList
@@ -540,7 +541,7 @@ void Function::tcheckBody(Env &env)
   // once we get into the body of a function, if we end up triggering
   // additional instantiations, they should *not* see any prevailing
   // second-pass mode
-  Restorer<bool> re(env.secondPassTcheck, false);
+  SET_RESTORE(env.secondPassTcheck, false);
 
   // location for random purposes..
   SourceLoc loc = nameAndParams->var->loc;
@@ -2518,7 +2519,7 @@ void TS_classSpec::tcheckIntoCompound(
   // look at members: first pass is to enter them into the environment
   {
     // don't check function bodies
-    Restorer<bool> r(env.checkFunctionBodies, false);
+    SET_RESTORE(env.checkFunctionBodies, false);
 
     FOREACH_ASTLIST_NC(Member, members->list, iter) {
       Member *member = iter.data();
@@ -2590,7 +2591,7 @@ void TS_classSpec::tcheckFunctionBodies(Env &env)
 
   // inform the members that they are being checked on the second
   // pass through a class definition
-  Restorer<bool> r(env.secondPassTcheck, true);
+  SET_RESTORE(env.secondPassTcheck, true);
 
   // check function bodies and elaborate ctors and dtors of member
   // declarations

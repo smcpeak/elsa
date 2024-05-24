@@ -40,6 +40,8 @@
 #include "trace.h"             // TRACE
 #include "cc-print.h"          // PrintEnv
 
+#include "save-restore.h"      // SET_RESTORE
+
 // cc-type.h
 Type *makeLvalType(TypeFactory &tfac, Type *underlying);
 
@@ -119,7 +121,7 @@ Variable *ElabVisitor::makeVariable(SourceLoc loc, StringRef name, Type *type, D
 // TODO: Remove this in favor of using m_astBuild directly.
 IDeclarator *ElabVisitor::makeInnermostDeclarator(SourceLoc loc, Variable *var)
 {
-  RESTORER(SourceLoc, enclosingStmtLoc, loc);
+  SET_RESTORE(enclosingStmtLoc, loc);
   return m_astBuild.makeInnermostDeclarator(var);
 }
 
@@ -144,7 +146,7 @@ Declarator *ElabVisitor::makeDeclarator(SourceLoc loc, Variable *var, Declarator
 Declaration *ElabVisitor::makeDeclaration(SourceLoc loc, Variable *var, DeclaratorContext context)
 {
   // Set 'enclosingStmtLoc', which 'm_astBuild' uses.
-  RESTORER(SourceLoc, enclosingStmtLoc, loc);
+  SET_RESTORE(enclosingStmtLoc, loc);
 
   // Build the declaration.
   return m_astBuild.makeDeclaration(var, context);
@@ -156,7 +158,7 @@ Function *ElabVisitor::makeFunction(SourceLoc loc, Variable *var,
                                     FakeList<MemberInit> *inits,
                                     S_compound *body)
 {
-  RESTORER(SourceLoc, enclosingStmtLoc, loc);
+  SET_RESTORE(enclosingStmtLoc, loc);
   FunctionType *ft = var->type->asFunctionType();
 
   std::pair<TypeSpecifier*, Declarator*> ts_and_decl =
@@ -270,7 +272,7 @@ E_constructor *ElabVisitor::makeCtorExpr(
   FakeList<ArgExpression> *args)    // arguments to ctor (tcheck'd)
 {
   xassert(target->type->isReference());
-  RESTORER(SourceLoc, enclosingStmtLoc, loc);
+  SET_RESTORE(enclosingStmtLoc, loc);
 
   TypeSpecifier *typeSpecifier = m_astBuild.makeTypeSpecifier(type);
   E_constructor *ector0 = new E_constructor(typeSpecifier, args);

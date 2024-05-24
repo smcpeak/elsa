@@ -3,6 +3,8 @@
 
 #include "astvisit.h"       // this module
 
+#include "save-restore.h"   // SET_RESTORE
+
 
 ASTVisitorEx::ASTVisitorEx()
   : loc(SL_UNKNOWN)
@@ -24,7 +26,7 @@ bool ASTVisitorEx::visitFunction(Function *obj)
   // template with instantiations to visit?
   if (obj->isTemplate()) {
     // instantiations are concrete
-    Restorer<bool> r(m_inTemplate, false);
+    SET_RESTORE(m_inTemplate, false);
 
     TemplateInfo *ti = obj->nameAndParams->var->templateInfo();
     SFOREACH_OBJLIST(Variable, ti->instantiations, iter) {

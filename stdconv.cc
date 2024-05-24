@@ -6,6 +6,8 @@
 #include "cc-env.h"       // Env
 #include "trace.h"        // tracingSys
 
+#include <algorithm>      // std::max
+
 
 /*
  * 2005-04-03: ARR_QUAL_CONV:
@@ -1073,8 +1075,8 @@ static SimpleTypeId uacHelper(SimpleTypeId leftId, SimpleTypeId rightId)
   getIntegerStats(rightId, rightLength, rightUns);
 
   // least upper bound of a product lattice
-  int lubLength = max(leftLength, rightLength);
-  int lubUns = max(leftUns, rightUns);
+  int lubLength = std::max(leftLength, rightLength);
+  int lubUns = std::max(leftUns, rightUns);
 
   // put them back together
   static SimpleTypeId const map[3 /*length*/][2 /*unsignedness*/] = {

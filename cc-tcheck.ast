@@ -20,7 +20,7 @@ verbatim {
 
   // smbase
   #include "datablok.h"      // DataBlock
-  #include "sm-macros.h"     // Restorer
+  #include "save-restore.h"  // SET_RESTORE
 
   // libc++
   #include <vector>          // std::vector
@@ -991,19 +991,19 @@ class TemplateDeclaration {
        custom preemptTraverse {
          // we are now in a template if we already were, or if this
          // declaration is not a complete specialization
-         Restorer<bool> r(vis.m_inTemplate, vis.m_inTemplate || params!=NULL);
+         SET_RESTORE(vis.m_inTemplate, vis.m_inTemplate || params!=NULL);
        }
      }
 
   -> TD_decl {
        custom preemptTraverse {
-         Restorer<bool> r(vis.m_inTemplate, vis.m_inTemplate || params!=NULL);
+         SET_RESTORE(vis.m_inTemplate, vis.m_inTemplate || params!=NULL);
        }
      }
 
   -> TD_tmember {
        custom preemptTraverse {
-         Restorer<bool> r(vis.m_inTemplate, vis.m_inTemplate || params!=NULL);
+         SET_RESTORE(vis.m_inTemplate, vis.m_inTemplate || params!=NULL);
        }
      }
 }

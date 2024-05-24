@@ -1006,7 +1006,7 @@ Type *E_binary::itcheck_complex_arith(Env &env)
   // NOTE: The following computations have not been thoroughly tested.
 
   // result precision: promote to larger
-  int prec = max(prec1, prec2);
+  int prec = std::max(prec1, prec2);
 
   // result axis
   int axis;
