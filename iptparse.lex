@@ -7,6 +7,7 @@
 %{
 #include "iptparse.h"       // token definitions
 #include "exc.h"            // xfatal
+#include "xassert.h"        // xassert
 
 int lexerSval = 0;
 %}
