@@ -45,9 +45,9 @@ enum ErrorFlags {
 
   // This flag means this error arose during an attempt to tcheck an
   // alternative that might not be the correct interpretation, and
-  // during that attempt, an x_assert was raised.  Consequently, the
+  // during that attempt, an XAssert was raised.  Consequently, the
   // presence of this error message in the error list *cannot* be
-  // used to justify reducing the severity of the x_assert.
+  // used to justify reducing the severity of the XAssert.
   EF_FROM_DISAMB   = 0x08,
 
   // This flag means the error arose during type checking of an

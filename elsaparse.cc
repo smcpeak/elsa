@@ -320,7 +320,7 @@ bool ElsaParse::parse(char const *inputFname)
       cerr << "in code near " << env.locStr() << ":\n";
       throw;
     }
-    catch (x_assert &x) {
+    catch (XAssert &x) {
       HANDLER();
 
       if (env.errors.hasFromNonDisambErrors()) {

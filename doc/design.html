@@ -1492,7 +1492,7 @@ Within elsa, there are three main assertion-related functions,
 defined in <a href="../../smbase/xassert.h">xassert.h</a>:
 <ul>
 <li><code>xassert(cond)</code>: Each time it is encountered, <code>cond</code> is
-evaluated.  If <code>cond</code> is false, the <code>x_assert</code> assertion
+evaluated.  If <code>cond</code> is false, the <code>XAssert</code> assertion
 (<a href="../../smbase/exc.h">exc.h</a>) is thrown.  Normally, this
 exception is only caught by <code>main()</code>, so it is similar to the
 C library's <code>assert</code>, which calls <code>abort()</code>.  However,
@@ -1504,7 +1504,7 @@ what has caused the failure.
 is compiled away if <code>NDEBUG</code> is defined.  It is used for checks
 that may significantly affect performance.
 
-<li><code>xfailure(msg)</code>: This is always throws <code>x_assert</code>,
+<li><code>xfailure(msg)</code>: This is always throws <code>XAssert</code>,
 with the given message.  It is often used in code paths that are
 believed to not be reachable.
 </ul>

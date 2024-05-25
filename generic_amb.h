@@ -146,7 +146,7 @@ NODE *resolveAmbiguity(
       try {
         alt->mid_tcheck(env, extra);
       }
-      catch (x_assert &x) {
+      catch (XAssert &x) {
         HANDLER();
         env.errors.markAllAsFromDisamb();
         throw;
