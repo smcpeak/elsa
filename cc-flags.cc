@@ -56,7 +56,7 @@ char **buildPrefixUppercaseMap(char const *prefix, char const * const *src,
 
 
 // find the index of a string in 'names' that equals 'str', or
-// throw xFormat on error
+// throw XFormat on error
 int findInMap(char const * const *names, int numNames,
               char const *kind, char const *str)
 {
