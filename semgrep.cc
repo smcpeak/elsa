@@ -77,8 +77,6 @@ bool GrepVisitor::visitDeclarator(Declarator *obj)
 // ---------------------- main -------------------------
 void doit(int argc, char **argv)
 {
-  XBase::logExceptions = false;
-
   SourceLocManager mgr;
   StringTable strTable;
 

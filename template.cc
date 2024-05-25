@@ -4988,7 +4988,7 @@ InstantiationContextIsolator::~InstantiationContextIsolator()
 
 // ---------------------- XTypeDeduction ------------------------
 XTypeDeduction::XTypeDeduction(XTypeDeduction const &obj)
-  : XBase(obj)
+  : XMessage(obj)
 {}
 
 XTypeDeduction::~XTypeDeduction()

@@ -385,8 +385,6 @@ void finishBoundaries()
 
 void entry(int argc, char *argv[])
 {
-  XBase::logExceptions = false;
-
   if (argc != 2) {
     xbase(stringc << "usage: " << argv[0] << " foo.c\n"
                   << "  writes foo.c.str");

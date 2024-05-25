@@ -3040,13 +3040,13 @@ Variable *BasicTypeFactory::makeVariable(
 
 // -------------------- XReprSize -------------------
 XReprSize::XReprSize(bool d)
-  : XBase(stringc << "reprSize of a " << (d ? "dynamically-sized" : "sizeless")
-                  << " array"),
+  : XMessage(stringc << "reprSize of a " << (d ? "dynamically-sized" : "sizeless")
+                     << " array"),
     isDynamic(d)
 {}
 
 XReprSize::XReprSize(XReprSize const &obj)
-  : XBase(obj),
+  : XMessage(obj),
     isDynamic(obj.isDynamic)
 {}
 

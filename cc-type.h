@@ -1461,7 +1461,7 @@ inline SObjList<T> const & objToSObjListC(ObjList<T> const &list)
 // -------------------- XReprSize ---------------------
 // thrown when the reprSize() function cannot determine an
 // array size
-class XReprSize : public XBase {
+class XReprSize : public XMessage {
 public:
   // This is set to true when the reason for failing to determine a
   // size is that a dynamically-sized array was involved (this is a

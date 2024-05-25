@@ -34,9 +34,9 @@ CXX_WARNING_FLAGS =
 # Flags for C or C++ standard to use.
 C_STD_FLAGS   = -std=c99
 
-# Elsa itself should need only C++11, but if Clang integration is
-# enabled, this gets upped to C++17 below.
-CXX_STD_FLAGS = -std=c++11
+# C++17 is needed because that is what smbase uses and it affects
+# mangled names (at least when using GCC).
+CXX_STD_FLAGS = -std=c++17
 
 # -D flags to pass to preprocessor.
 DEFINES =
@@ -290,9 +290,6 @@ CLANG_MODULE_CXXFLAGS += -isystem$(CLANG_LLVM_INCLUDE_DIR)
 # This allows Elsa to point the Clang library at the its (Clang's)
 # library header files needed when parsing.
 CLANG_MODULE_CXXFLAGS += -DCLANG_LLVM_LIB_DIR='"$(CLANG_LLVM_LIB_DIR)"'
-
-# I need C++17 for the Clang-16 or greater C++ interface.
-CXX_STD_FLAGS = -std=c++17
 
 clang-%.o: clang-%.cc
 	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(CXXFLAGS) $(CLANG_MODULE_CXXFLAGS) $<

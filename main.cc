@@ -281,9 +281,6 @@ static char const *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
 
 static int doit(int argc, char **argv)
 {
-  // I think this is more noise than signal at this point
-  XBase::logExceptions = false;
-
   SourceLocManager mgr;
 
   // string table for storing parse tree identifiers

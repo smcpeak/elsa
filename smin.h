@@ -6,11 +6,11 @@
 
 #include "iptparse.h"       // parseFile
 #include "iptree.h"         // IPTree
-#include "exc.h"            // XBase
+#include "exc.h"            // XMessage
 
 
 // thrown when Ctrl-C pressed
-class XCtrlC : public XBase {
+class XCtrlC : public XMessage {
 public:
   XCtrlC();
   XCtrlC(XCtrlC const &obj);
