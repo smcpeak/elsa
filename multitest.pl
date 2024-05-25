@@ -282,7 +282,8 @@ sub mysystem {
     }
 
     # some other signal
-    die("child died with signal $signame[$sig]\n");
+    my $cmd = join(' ', @args);
+    die("child (\"$cmd\") died with signal $signame[$sig]\n");
   }
 
   return $code >> 8;
