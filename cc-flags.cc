@@ -8,7 +8,7 @@
 #include "type-sizes.h"                // TypeSize
 
 // smbase
-#include "exc.h"                       // xformat
+#include "exc.h"                       // smbase::xformat
 #include "sm-macros.h"                 // STATIC_ASSERT
 #include "strtokpc.h"                  // StrtokParseC
 #include "trace.h"                     // tracingSys
@@ -16,6 +16,8 @@
 
 // libc
 #include <ctype.h>                     // toupper
+
+using namespace smbase;
 
 
 // the check for array[limit-1] is meant to ensure that there

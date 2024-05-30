@@ -9,9 +9,12 @@
 #include "strip-comments.h"            // strip_comments_unit_tests
 
 // smbase
+#include "exc.h"                       // smbase::{XBase, XUnimp, XFatal}
 #include "objcount.h"                  // CheckObjectCount
 #include "strutil.h"                   // prefixEquals
 #include "trace.h"                     // tracingSys
+
+using namespace smbase;
 
 
 enum TargetPlatform {

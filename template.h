@@ -571,9 +571,9 @@ public:      // funcs
 
 
 // thrown when type deduction fails in some cases
-class XTypeDeduction : public XMessage {
+class XTypeDeduction : public smbase::XMessage {
 public:
-  XTypeDeduction(rostring why) : XMessage(why) {}
+  XTypeDeduction(rostring why) : smbase::XMessage(why) {}
   XTypeDeduction(XTypeDeduction const &obj);
   ~XTypeDeduction();
 };

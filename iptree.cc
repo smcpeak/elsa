@@ -3,8 +3,10 @@
 
 #include "iptree.h"       // this module
 #include "autofile.h"     // AutoFILE
-#include "syserr.h"       // xsyserror
+#include "syserr.h"       // smbase::xsyserror
 #include "trace.h"        // TRACE
+
+using namespace smbase;
 
 
 // --------------------- Relevance ----------------------

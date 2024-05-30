@@ -1,17 +1,20 @@
 // semgrep.cc
 // example Elsa application: semantic grep
 
-#include "sm-iostream.h"  // cout
-#include <stdlib.h>       // exit, atoi
-
 #include "parssppt.h"     // ParseTreeAndTokens
-#include "srcloc.h"       // SourceLocManager
 #include "cc-env.h"       // Env
 #include "cc-ast.h"       // C++ AST (r)
 #include "cc-lang.h"      // CCLang
 #include "parsetables.h"  // ParseTables
 #include "cc.gr.gen.h"    // CCParse
+
+// smbase
+#include "exc.h"          // smbase::XBase
+#include "sm-iostream.h"  // cout
+#include "srcloc.h"       // SourceLocManager
 #include "strtokp.h"      // StrtokParse
+
+#include <stdlib.h>       // exit, atoi
 
 
 // ---------------------- GrepVisitor ------------------------
@@ -155,7 +158,7 @@ int main(int argc, char **argv)
   try {
     doit(argc, argv);
   }
-  catch (XBase &x) {
+  catch (smbase::XBase &x) {
     HANDLER();
     cout << x << endl;
     abort();

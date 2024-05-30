@@ -10,8 +10,11 @@
 #include "integrity.h"                 // IntegrityVisitor
 
 // smbase
+#include "exc.h"                       // smbase::XUnimp
 #include "sm-test.h"                   // EXPECT_EQ
 #include "trace.h"                     // tracingSys
+
+using namespace smbase;
 
 
 // Visitor that tests ElsaASTBuild at certain nodes.

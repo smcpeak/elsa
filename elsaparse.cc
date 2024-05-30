@@ -21,6 +21,7 @@
 #include "ptreenode.h"                 // PTreeNode
 
 // smbase
+#include "exc.h"                       // smbase::XBase
 #include "gcc-options.h"               // gccLanguageForFile
 #include "nonport.h"                   // getMilliseconds
 #include "sm-fstream.h"                // ofstream
@@ -32,6 +33,8 @@
 
 // libc
 #include <stdlib.h>                    // exit, getenv, abort
+
+using namespace smbase;
 
 
 // little check: is it true that only global declarators

@@ -7,6 +7,9 @@
 
 #include "cc-ast.h"         // C++ AST
 #include "cc-env.h"         // Env, DisambiguationErrorTrapper
+
+// smbase
+#include "exc.h"            // smbase::XAssert
 #include "objlist.h"        // ObjList
 #include "trace.h"          // TRACE
 
@@ -146,7 +149,7 @@ NODE *resolveAmbiguity(
       try {
         alt->mid_tcheck(env, extra);
       }
-      catch (XAssert &x) {
+      catch (smbase::XAssert &x) {
         HANDLER();
         env.errors.markAllAsFromDisamb();
         throw;

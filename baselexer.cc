@@ -3,7 +3,7 @@
 
 #include "baselexer.h"   // this module
 #include "strtable.h"    // StringTable
-#include "syserr.h"      // xsyserror
+#include "syserr.h"      // smbase::xsyserror
 
 #include "sm-fstream.h"  // ifstream
 
@@ -27,6 +27,9 @@
     return new istrstream(buf, len);
   }
 #endif
+
+
+using namespace smbase;
 
 
 // this function effectively lets me initialize one of the
