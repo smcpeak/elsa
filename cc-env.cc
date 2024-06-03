@@ -13,7 +13,7 @@
 #include "strutil.h"                   // suffixEquals, prefixEquals
 
 // smbase
-#include "string-utils.h"              // join, doubleQuote
+#include "string-util.h"               // join, doubleQuote
 #include "strtable.h"                  // StringTable
 #include "trace.h"                     // tracingSys
 

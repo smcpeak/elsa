@@ -3,7 +3,7 @@
 
 #include "integrity.h"                 // this module
 
-#include "vector-utils.h"              // back_or_null, vec_contains
+#include "vector-util.h"               // back_or_null, vec_contains
 
 
 IntegrityVisitor::IntegrityVisitor(CCLang const &lang, bool inTemplate)

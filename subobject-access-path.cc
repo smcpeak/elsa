@@ -9,7 +9,7 @@
 
 // smbase
 #include "str.h"                       // stringb
-#include "vector-utils.h"              // toString(std::vector<T>)
+#include "vector-util.h"               // toString(std::vector<T>)
 
 
 int SubobjectAccessPath::arrayIndexAt(int index) const
