@@ -3,6 +3,10 @@
 
 #include "ast_build.h"                 // this module
 
+// smbase
+#include "string-util.h"               // doubleQuote
+
+// this dir
 #include "cc-lang.h"                   // CCLang
 
 
@@ -518,7 +522,7 @@ E_stringLit *ElsaASTBuild::makeE_stringLit(char const *text)
   // This is kind of ugly; I have to turn 'text' into C syntax because
   // my AST representation keeps it after parsing, and the
   // pretty-printer in turn relies on that...
-  string s = quoted(text);
+  string s = doubleQuote(text);
 
   StringRef sref = m_stringTable.add(s);
   E_stringLit *ret = new E_stringLit(sref);

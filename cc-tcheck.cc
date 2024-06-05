@@ -30,10 +30,12 @@
 #include "trace.h"                     // trace
 
 // smbase
+#include "c-string-reader.h"           // smbase::{parseQuotedCString, decodeCStringEscapesToString}
 #include "owner.h"                     // Owner
 #include "save-restore.h"              // SET_RESTORE
 #include "sm-macros.h"                 // NULLABLE
-#include "strutil.h"                   // decodeEscapes, prefixEquals, pluraln
+#include "strutil.h"                   // decodeEscapes, pluraln
+#include "string-util.h"               // beginsWith
 #include "subobject-access-path.h"     // SubobjectAccessPath
 #include "typelistiter.h"              // TypeListIter_FakeList
 
@@ -52,6 +54,8 @@
 #else
   #define D(stuff) stuff
 #endif
+
+using namespace smbase;
 
 
 // forwards in this file
@@ -365,7 +369,7 @@ string collectContinuations(E_stringLit *strLit)
   stringBuilder sb;
 
   while (strLit) {
-    sb << parseQuotedString(strLit->text);
+    sb << parseQuotedCString(strLit->text);
     strLit = strLit->continuation;
   }
 
@@ -379,7 +383,7 @@ void TF_asm::itcheck(Env &env)
 
   if (AD_string *ads = ad->ifAD_string()) {
     string text = ads->text->m_stringData.toString();
-    if (prefixEquals(text, "collectLookupResults")) {
+    if (beginsWith(text, "collectLookupResults")) {
       // this activates an internal diagnostic that will collect
       // the E_variable lookup results as warnings, then at the
       // end of the program, compare them to this string
@@ -5909,13 +5913,19 @@ void E_stringLit::tcheck_strlit(Env &env)
 }
 
 
-void quotedUnescape(ArrayStack<char> &dest, char const *src,
-                    char delim, bool allowNewlines)
+// Return the decoded character values from the C string literal syntax
+// in 'src'.
+std::string quotedUnescape(
+  std::string const &src, char delim, bool allowNewlines)
 {
-  // strip quotes or ticks
-  decodeEscapes(dest, substring(src+1, strlen(src)-2),
-                delim, allowNewlines);
+  // Strip quotes or ticks.
+  xassert(src.size() >= 2);
+  std::string inside = src.substr(1, src.size()-2);
+
+  // Decode the escapes.
+  return decodeCStringEscapesToString(inside, delim, allowNewlines);
 }
+
 
 // TODO: This should share logic with E_stringLit decoding.
 Type *E_charLit::itcheck_x(Env &env, Expression *&replacement)
@@ -5935,8 +5945,8 @@ Type *E_charLit::itcheck_x(Env &env, Expression *&replacement)
     srcText++;
   }
 
-  ArrayStack<char> temp;
-  quotedUnescape(temp, srcText, '\'', false /*allowNewlines*/);
+  std::string temp =
+    quotedUnescape(srcText, '\'', false /*allowNewlines*/);
   if (temp.length() == 0) {
     return env.error("character literal with no characters");
   }
@@ -7465,7 +7475,7 @@ static Type *internalTestingHooks
             return env.error(stringc << "__test_mtype argument " << (i+1)*2+1+1
                                      << " must be a string literal");
           }
-          StringRef nameStr = env.str(parseQuotedString(name->asE_stringLit()->text));
+          StringRef nameStr = env.str(parseQuotedCString(name->asE_stringLit()->text));
 
           // it should correspond to an existing binding in 'mtype'
           STemplateArgument binding(mtype.getBoundValue(nameStr, env.tfac));

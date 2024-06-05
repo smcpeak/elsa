@@ -11,7 +11,7 @@
 // smbase
 #include "exc.h"                       // smbase::{XBase, XUnimp, XFatal}
 #include "objcount.h"                  // CheckObjectCount
-#include "strutil.h"                   // prefixEquals
+#include "string-util.h"               // beginsWith
 #include "trace.h"                     // tracingSys
 
 using namespace smbase;
@@ -107,7 +107,7 @@ static char const *myProcessArgs(int argc, char **argv, ElsaParse &elsaParse,
     if (traceProcessArg(argc, argv)) {
       continue;
     }
-    else if (prefixEquals(argv[1], "-x")) {
+    else if (beginsWith(argv[1], "-x")) {
       string lang(argv[1]+2);
       if (!elsaParse.setDashXLanguage(lang)) {
         xfatal(stringb("Unrecognized -x argument: \"" << lang << "\"."));

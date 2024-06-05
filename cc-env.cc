@@ -10,10 +10,9 @@
 #include "implconv.h"                  // ImplicitConversion
 #include "mtype.h"                     // MType
 #include "overload.h"                  // OVERLOADTRACE
-#include "strutil.h"                   // suffixEquals, prefixEquals
 
 // smbase
-#include "string-util.h"               // join, doubleQuote
+#include "string-util.h"               // join, doubleQuote, beginsWith
 #include "strtable.h"                  // StringTable
 #include "trace.h"                     // tracingSys
 
@@ -1397,7 +1396,7 @@ void Env::gdbScopes()
          !iter.isDone();
          iter.adv()) {
       // suppress __builtins, etc.
-      if (prefixEquals(iter.key(), "__")) continue;
+      if (beginsWith(iter.key(), "__")) continue;
 
       Variable *value = iter.value();
       if (value->isNamespace()) {
