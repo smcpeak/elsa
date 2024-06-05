@@ -30,7 +30,7 @@
 #include "trace.h"                     // trace
 
 // smbase
-#include "c-string-reader.h"           // smbase::{parseQuotedCString, decodeCStringEscapesToString}
+#include "c-string-reader.h"           // smbase::{parseQuotedCString, decodeCStringEscapesToString, CStringReaderFlags}
 #include "owner.h"                     // Owner
 #include "save-restore.h"              // SET_RESTORE
 #include "sm-macros.h"                 // NULLABLE
@@ -5922,8 +5922,14 @@ std::string quotedUnescape(
   xassert(src.size() >= 2);
   std::string inside = src.substr(1, src.size()-2);
 
+  CStringReaderFlags flags =
+    (allowNewlines? CSRF_ALLOW_NEWLINES : CSRF_NONE);
+
+  // Historically, Elsa tolerated out of range characters.
+  flags |= CSRF_ALLOW_TOO_LARGE_CODE_POINTS;
+
   // Decode the escapes.
-  return decodeCStringEscapesToString(inside, delim, allowNewlines);
+  return decodeCStringEscapesToString(inside, delim, flags);
 }
 
 
