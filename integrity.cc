@@ -3,7 +3,7 @@
 
 #include "integrity.h"                 // this module
 
-#include "vector-util.h"               // back_or_null, vec_contains
+#include "vector-util.h"               // vecBackOr, vecContains, vecPopCheck
 
 
 IntegrityVisitor::IntegrityVisitor(CCLang const &lang, bool inTemplate)
@@ -41,12 +41,12 @@ void IntegrityVisitor::foundAmbiguous(void *obj, void **ambig, char const *kind)
 
 IntegrityVisitor::EnclosingSyntax IntegrityVisitor::getEnclosingSyntax() const
 {
-  return back_or_value(m_enclosingSyntaxStack, ES_NONE);
+  return vecBackOr(m_enclosingSyntaxStack, ES_NONE);
 }
 
 bool IntegrityVisitor::withinSyntax(EnclosingSyntax es) const
 {
-  return vec_contains(m_enclosingSyntaxStack, es);
+  return vecContains(m_enclosingSyntaxStack, es);
 }
 
 void IntegrityVisitor::pushSyntax(EnclosingSyntax es)
@@ -56,7 +56,7 @@ void IntegrityVisitor::pushSyntax(EnclosingSyntax es)
 
 void IntegrityVisitor::popSyntax(EnclosingSyntax es)
 {
-  pop_check(m_enclosingSyntaxStack, es);
+  vecPopCheck(m_enclosingSyntaxStack, es);
 }
 
 

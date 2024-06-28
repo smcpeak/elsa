@@ -13,9 +13,13 @@
 #include "typelistiter.h"  // TypeListIter
 #include "cc-ast-aux.h"    // LoweredASTVisitor
 #include "mtype.h"         // MType
-#include "pair.h"          // pair
 
 #include "save-restore.h"  // SET_RESTORE
+
+#include <utility>         // std::{make_pair, pair}
+
+using std::make_pair;
+using std::pair;
 
 
 void copyTemplateArgs(ObjList<STemplateArgument> &dest,
